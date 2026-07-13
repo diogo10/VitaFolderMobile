@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode/deepseek-v4-flash-free",
+  "agent": {
+    "plan": {
+      "mode": "primary",
+      "model": "opencode/deepseek-v4-flash-free",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    }
+  }
+}
