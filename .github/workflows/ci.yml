@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Dart Analyze
+        run: dart analyze
+
+      - name: Flutter Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
