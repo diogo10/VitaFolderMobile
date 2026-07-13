@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/core/injections/service_locator.dart';
+import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
+import 'package:vita_folder_mobile/features/home/presentation/views/home_view.dart';
 import 'package:vita_folder_mobile/features/posts/presentation/cubit/posts_cubit.dart';
 
 void main() async {
@@ -13,6 +15,9 @@ void main() async {
       providers: [
         BlocProvider(
           create: (_) => slInstance<PostsCubit>(instanceName: 'postsCubit'),
+        ),
+        BlocProvider(
+          create: (_) => slInstance<HomeCubit>(instanceName: 'homeCubit'),
         ),
       ],
       child: const MyApp(),
@@ -45,6 +50,13 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView> {
   int _selectedIndex = 0;
 
+  static const List<Widget> _tabViews = [
+    HomeView(),
+    Center(child: Text('Search Content')),
+    Center(child: Text('Favorites Content')),
+    Center(child: Text('Profile Content')),
+  ];
+
   static const List<String> _tabLabels = [
     'Home',
     'Search',
@@ -62,12 +74,7 @@ class _MainViewState extends State<MainView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Text(
-          '${_tabLabels[_selectedIndex]} Content',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-      ),
+      body: _tabViews[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
