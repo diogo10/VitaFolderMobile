@@ -47,4 +47,4 @@ TASK_DESCRIPTION=$(echo "$pending_task" | jq -r '.description')
 
 echo "RUN opencode tasks"
 
-opencode run --title "$TASK_TITLE" "$TASK_DESCRIPTION - do the task and create a pull request with the changes."
+opencode run --title "$TASK_TITLE" "$TASK_DESCRIPTION - do the task and run all the tests. Fix the tests if needed and create a pull request with the changes."
