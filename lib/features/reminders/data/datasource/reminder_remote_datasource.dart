@@ -4,10 +4,10 @@ import 'package:vita_folder_mobile/core/network/dio_client.dart';
 
 Dio http = DioClient.instance();
 
-class PostRemoteDatasource {
-  Future<List<dynamic>> getPosts() async {
+class ReminderRemoteDatasource {
+  Future<List<dynamic>> getReminders() async {
     try {
-      final Response<dynamic> response = await http.get('/posts');
+      final Response<dynamic> response = await http.get('/reminders');
       return response.data;
     } on DioException catch (e) {
       throw Failure(message: e.message ?? 'Dio error occurred');

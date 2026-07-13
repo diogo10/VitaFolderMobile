@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vita_folder_mobile/features/posts/presentation/widgets/post_widget.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminder_widget.dart';
 
 void main() {
-  group('PostWidget', () {
+  group('ReminderWidget', () {
     const title = 'Test Title';
     const body = 'Test Body Content';
 
     Widget buildTestWidget() {
       return MaterialApp(
         home: Scaffold(
-          body: PostWidget(title: title, body: body),
+          body: ReminderWidget(title: title, body: body),
         ),
       );
     }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class PostWidget extends StatelessWidget {
+class ReminderWidget extends StatelessWidget {
   final String title;
   final String body;
-  const PostWidget({super.key, required this.title, required this.body});
+  const ReminderWidget({super.key, required this.title, required this.body});
 
   @override
   Widget build(BuildContext context) {
