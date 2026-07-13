@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/core/injections/service_locator.dart';
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/home_view.dart';
-import 'package:vita_folder_mobile/features/posts/presentation/cubit/posts_cubit.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +14,7 @@ void main() async {
     MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => slInstance<PostsCubit>(instanceName: 'postsCubit'),
+          create: (_) => slInstance<RemindersCubit>(instanceName: 'remindersCubit'),
         ),
         BlocProvider(
           create: (_) => slInstance<HomeCubit>(instanceName: 'homeCubit'),
