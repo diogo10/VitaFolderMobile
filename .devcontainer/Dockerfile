@@ -9,8 +9,7 @@ RUN apt-get clean
 RUN curl -fsSL https://opencode.ai/install | bash
 
 # Install Flutter related dependencies
-RUN git clone -b '3.29.3' --single-branch https://github.com/flutter/flutter.git --depth 1 /flutter
+RUN git clone -b '3.41.6' --single-branch https://github.com/flutter/flutter.git --depth 1 /flutter
 ENV PATH="/flutter/bin:$PATH"
 RUN flutter doctor
-
 RUN curl -fsSL https://fvm.app/install.sh | bash
