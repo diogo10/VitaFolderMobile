@@ -5,6 +5,8 @@ import 'package:vita_folder_mobile/features/account/presentation/cubit/account_c
 import 'package:vita_folder_mobile/features/account/presentation/views/account_view.dart';
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/home_view.dart';
+import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
+import 'package:vita_folder_mobile/features/people/presentation/views/people_view.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/screens/reminders_view.dart';
 
@@ -21,6 +23,9 @@ void main() async {
         ),
         BlocProvider(
           create: (_) => slInstance<HomeCubit>(instanceName: 'homeCubit'),
+        ),
+        BlocProvider(
+          create: (_) => slInstance<PeopleCubit>(instanceName: 'peopleCubit'),
         ),
         BlocProvider(
           create: (_) => AccountCubit(),
@@ -59,21 +64,21 @@ class _MainViewState extends State<MainView> {
   static const List<Widget> _tabViews = [
     HomeView(),
     RemindersView(),
-    Center(child: Text('Favorites Content')),
+    PeopleView(),
     AccountView(),
   ];
 
   static const List<String> _tabLabels = [
     'Home',
     'Reminders',
-    'Favorites',
+    'People',
     'Account',
   ];
 
   static const List<IconData> _tabIcons = [
     Icons.home,
     Icons.notifications,
-    Icons.favorite,
+    Icons.people,
     Icons.person,
   ];
 
