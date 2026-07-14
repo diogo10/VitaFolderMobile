@@ -4,6 +4,7 @@ import 'package:vita_folder_mobile/core/injections/service_locator.dart';
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/home_view.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/screens/reminders_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,21 +53,21 @@ class _MainViewState extends State<MainView> {
 
   static const List<Widget> _tabViews = [
     HomeView(),
-    Center(child: Text('Search Content')),
+    RemindersView(),
     Center(child: Text('Favorites Content')),
     Center(child: Text('Profile Content')),
   ];
 
   static const List<String> _tabLabels = [
     'Home',
-    'Search',
+    'Reminders',
     'Favorites',
     'Profile',
   ];
 
   static const List<IconData> _tabIcons = [
     Icons.home,
-    Icons.search,
+    Icons.notifications,
     Icons.favorite,
     Icons.person,
   ];

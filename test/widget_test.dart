@@ -57,7 +57,7 @@ void main() {
 
       expect(find.byType(BottomNavigationBar), findsOneWidget);
       expect(find.text('Home'), findsOneWidget);
-      expect(find.text('Search'), findsOneWidget);
+      expect(find.text('Reminders'), findsOneWidget);
       expect(find.text('Favorites'), findsOneWidget);
       expect(find.text('Profile'), findsOneWidget);
     });
@@ -66,9 +66,10 @@ void main() {
         (tester) async {
       await tester.pumpWidget(_pumpApp());
 
-      await tester.tap(find.text('Search'));
+      await tester.tap(find.text('Reminders'));
       await tester.pump();
-      expect(find.text('Search Content'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 15));
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
       await tester.tap(find.text('Favorites'));
       await tester.pump();
