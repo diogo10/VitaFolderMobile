@@ -24,6 +24,7 @@ class _RemindersViewState extends State<RemindersView> {
       listener: (context, state) {},
       builder: (context, state) {
         return Scaffold(
+          backgroundColor: const Color(0xFFF9F7F4),
           appBar: AppBar(
             title: const Text('Reminders'),
           ),
