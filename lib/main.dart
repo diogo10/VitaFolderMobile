@@ -61,7 +61,7 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _tabViews = [
+  final List<Widget> _tabViews = const [
     HomeView(),
     RemindersView(),
     PeopleView(),
@@ -85,8 +85,12 @@ class _MainViewState extends State<MainView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _tabViews[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _tabViews,
+      ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
         items: List.generate(
