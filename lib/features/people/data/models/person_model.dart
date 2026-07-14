@@ -1,0 +1,29 @@
+import 'dart:convert';
+import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
+
+class PersonModel extends PersonEntity {
+  PersonModel({required super.id, required super.name, required super.email, required super.phone});
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'phone': phone,
+    };
+  }
+
+  factory PersonModel.fromMap(Map<String, dynamic> map) {
+    return PersonModel(
+      id: map['id'] is int ? map['id'] : int.parse(map['id'].toString()),
+      name: map['name'] as String,
+      email: map['email'] as String,
+      phone: map['phone'] as String,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory PersonModel.fromJson(String source) =>
+      PersonModel.fromMap(json.decode(source) as Map<String, dynamic>);
+}
