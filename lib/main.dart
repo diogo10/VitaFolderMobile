@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/core/injections/service_locator.dart';
+import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
+import 'package:vita_folder_mobile/features/account/presentation/views/account_view.dart';
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/home_view.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
@@ -18,6 +20,9 @@ void main() async {
         ),
         BlocProvider(
           create: (_) => slInstance<HomeCubit>(instanceName: 'homeCubit'),
+        ),
+        BlocProvider(
+          create: (_) => AccountCubit(),
         ),
       ],
       child: const MyApp(),
@@ -54,14 +59,14 @@ class _MainViewState extends State<MainView> {
     HomeView(),
     Center(child: Text('Search Content')),
     Center(child: Text('Favorites Content')),
-    Center(child: Text('Profile Content')),
+    AccountView(),
   ];
 
   static const List<String> _tabLabels = [
     'Home',
     'Search',
     'Favorites',
-    'Profile',
+    'Account',
   ];
 
   static const List<IconData> _tabIcons = [
