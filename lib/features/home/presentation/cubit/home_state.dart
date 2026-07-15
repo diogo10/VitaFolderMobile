@@ -17,6 +17,10 @@ class HomeLoaded extends HomeState {
   HomeLoaded({required this.data});
 }
 
+class HomeEmpty extends HomeState {
+  HomeEmpty();
+}
+
 class HomeError extends HomeState {
   HomeError();
 }

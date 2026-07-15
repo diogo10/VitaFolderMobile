@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +10,8 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vita_folder_mobile/core/injections/service_locator.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
+import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
+import 'package:vita_folder_mobile/features/home/domain/repository/home_repository.dart';
 import 'package:vita_folder_mobile/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
@@ -20,6 +23,19 @@ import 'package:vita_folder_mobile/features/reminders/data/datasource/reminder_r
 import 'package:vita_folder_mobile/features/reminders/domain/usecase/get_reminder_usecase.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/main.dart';
+
+class _MockHomeRepository implements HomeRepository {
+  @override
+  Future<Either<Exception, HomeEntity>> getHomeData() async {
+    return Right(
+      HomeEntity(
+        greeting: 'Good morning!',
+        date: 'Monday, July 13',
+        message: 'You have 3 tasks remaining today.',
+      ),
+    );
+  }
+}
 
 Widget _pumpApp() {
   return MultiBlocProvider(
@@ -104,6 +120,22 @@ void main() {
     SharedPreferences.setMockInitialValues({'onboarding_completed': true});
     final serviceLocator = ServiceLocator();
     await serviceLocator.init();
+
+    await slInstance.unregister<HomeCubit>(instanceName: 'homeCubit');
+    await slInstance.unregister<GetHomeDataUsecase>(instanceName: 'getHomeDataUsecase');
+    await slInstance.unregister<HomeRepository>(instanceName: 'homeRepositoryImpl');
+    slInstance.registerSingleton<HomeRepository>(
+      _MockHomeRepository(),
+      instanceName: 'homeRepositoryImpl',
+    );
+    slInstance.registerSingleton<GetHomeDataUsecase>(
+      GetHomeDataUsecase(
+        repository: slInstance<HomeRepository>(
+          instanceName: 'homeRepositoryImpl',
+        ),
+      ),
+      instanceName: 'getHomeDataUsecase',
+    );
 
     reminders.http.httpClientAdapter = _MockDioAdapter();
   });
