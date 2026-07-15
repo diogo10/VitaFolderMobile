@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_state.dart';
+import 'package:vita_folder_mobile/features/account/presentation/views/account_loaded_widget.dart';
 
 class AccountView extends StatefulWidget {
   const AccountView({super.key});
@@ -26,7 +27,7 @@ class _AccountViewState extends State<AccountView> {
         }
 
         if (state is AccountLoaded) {
-          return const Center(child: Text('Account'));
+          return const AccountLoadedWidget();
         }
 
         return const SizedBox.shrink();
