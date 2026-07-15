@@ -13,7 +13,13 @@ class PeopleCubit extends Cubit<PeopleState> {
 
     result.fold(
       (err) => emit(PeopleError()),
-      (people) => emit(PeopleLoaded(people: people)),
+      (people) {
+        if (people.isEmpty) {
+          emit(PeopleEmpty());
+        } else {
+          emit(PeopleLoaded(people: people));
+        }
+      },
     );
   }
 }

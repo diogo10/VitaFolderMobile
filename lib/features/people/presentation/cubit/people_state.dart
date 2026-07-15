@@ -12,6 +12,10 @@ class PeopleLoading extends PeopleState {
   PeopleLoading();
 }
 
+class PeopleEmpty extends PeopleState {
+  PeopleEmpty();
+}
+
 class PeopleLoaded extends PeopleState {
   List<PersonEntity> people;
   PeopleLoaded({required this.people});

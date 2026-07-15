@@ -12,29 +12,20 @@ class AccountHeaderWidget extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      color: context.colorScheme.background,
+      color: context.colorScheme.surface,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Container(
-                width: 50,
-                height: 50,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  color: surface,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(Icons.home_rounded, size: 24),
-              ),
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: surface,
-                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(Icons.more_horiz_rounded, size: 24),
               ),
@@ -85,33 +76,10 @@ class AccountHeaderWidget extends StatelessWidget {
               color: onSurface,
             ),
           ),
-          const SizedBox(height: 8),
           Text(
             'sarah@smithfamily.com',
             style: context.textTheme.bodyMedium?.copyWith(
-              color: onSurface.withOpacity(0.7),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Container(
-            decoration: BoxDecoration(
-              color: primaryColor,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.king_bed, color: Colors.white, size: 18),
-                const SizedBox(width: 10),
-                Text(
-                  'Family Admin',
-                  style: context.textTheme.labelLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+              color: onSurface.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 28),
@@ -131,7 +99,7 @@ class AccountHeaderWidget extends StatelessWidget {
                       Text(
                         'Current Plan',
                         style: context.textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withOpacity(0.85),
+                          color: Colors.white.withValues(alpha: 0.85),
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -146,7 +114,7 @@ class AccountHeaderWidget extends StatelessWidget {
                       Text(
                         'Up to 8 members · Unlimited reminders',
                         style: context.textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withOpacity(0.85),
+                          color: Colors.white.withValues(alpha: 0.85),
                         ),
                       ),
                     ],
@@ -170,23 +138,6 @@ class AccountHeaderWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Container(
-              decoration: BoxDecoration(
-                color: surface,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-              child: Text(
-                'Manage',
-                style: context.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: onSurface,
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

@@ -20,6 +20,7 @@ class HomeEmptyActionCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: context.colorScheme.surface,
       elevation: 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
