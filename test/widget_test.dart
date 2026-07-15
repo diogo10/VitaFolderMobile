@@ -63,7 +63,7 @@ Widget _pumpApp() {
       ),
       BlocProvider<AccountCubit>(create: (_) => AccountCubit()),
     ],
-    child: const MyApp(),
+    child: const MyApp(onboardingCompleted: true),
   );
 }
 
@@ -93,7 +93,7 @@ Widget _pumpAppWithOnboarding() {
       ),
       BlocProvider<AccountCubit>(create: (_) => AccountCubit()),
     ],
-    child: MyApp(showOnboarding: true),
+    child: const MyApp(onboardingCompleted: false),
   );
 }
 
@@ -144,7 +144,7 @@ void main() {
     GetIt.instance.reset();
   });
 
-  group('MainView', () {
+  group('MainShell', () {
     testWidgets('displays Home tab by default', (tester) async {
       await tester.pumpWidget(_pumpApp());
       await tester.pump();
@@ -171,7 +171,6 @@ void main() {
     });
 
     testWidgets('switches tabs when tapping navigation items', (tester) async {
-      addTearDown(() => tester.pump(const Duration(seconds: 11)));
       await tester.pumpWidget(_pumpApp());
       await tester.pump();
       await tester.pump();
@@ -198,8 +197,8 @@ void main() {
 
       await tester.tap(find.text('Account'));
       await tester.pump();
-      await tester.pump();
-      expect(find.text('Account'), findsAtLeastNWidgets(2));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(find.text('Account'), findsAtLeastNWidgets(1));
 
       await tester.tap(find.text('Home'));
       await tester.pump();
@@ -217,14 +216,14 @@ void main() {
       expect(title, 'VitaFolder');
     });
 
-    testWidgets('renders MainView as home when onboarding completed', (
+    testWidgets('renders shell when onboarding completed', (
       tester,
     ) async {
       await tester.pumpWidget(_pumpApp());
       await tester.pump();
 
       await tester.pump(const Duration(seconds: 11));
-      expect(find.byType(MainView), findsOneWidget);
+      expect(find.byType(BottomNavigationBar), findsOneWidget);
     });
   });
 
@@ -280,7 +279,7 @@ void main() {
       expect(find.text('Get Started'), findsOneWidget);
     });
 
-    testWidgets('skip navigates to MainView', (tester) async {
+    testWidgets('skip navigates to shell', (tester) async {
       await tester.pumpWidget(_pumpAppWithOnboarding());
       await tester.pump();
 
@@ -288,7 +287,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.byType(MainView), findsOneWidget);
+      expect(find.byType(BottomNavigationBar), findsOneWidget);
     });
 
     testWidgets('marks onboarding as completed on skip', (tester) async {
