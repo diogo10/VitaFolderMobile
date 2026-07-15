@@ -15,7 +15,8 @@ import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboardin
 import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_view.dart';
 import 'package:vita_folder_mobile/features/people/domain/usecase/get_people_usecase.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
-import 'package:vita_folder_mobile/features/reminders/data/datasource/reminder_remote_datasource.dart' as reminders;
+import 'package:vita_folder_mobile/features/reminders/data/datasource/reminder_remote_datasource.dart'
+    as reminders;
 import 'package:vita_folder_mobile/features/reminders/domain/usecase/get_reminder_usecase.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/main.dart';
@@ -25,25 +26,26 @@ Widget _pumpApp() {
     providers: [
       BlocProvider<HomeCubit>(
         create: (_) => HomeCubit(
-          getHomeDataUsecase:
-              GetIt.instance<GetHomeDataUsecase>(instanceName: 'getHomeDataUsecase'),
+          getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
+            instanceName: 'getHomeDataUsecase',
+          ),
         ),
       ),
       BlocProvider<RemindersCubit>(
         create: (_) => RemindersCubit(
-          getReminderUsecase:
-              GetIt.instance<GetReminderUsecase>(instanceName: 'getReminderUsecase'),
+          getReminderUsecase: GetIt.instance<GetReminderUsecase>(
+            instanceName: 'getReminderUsecase',
+          ),
         ),
       ),
       BlocProvider<PeopleCubit>(
         create: (_) => PeopleCubit(
-          getPeopleUsecase:
-              GetIt.instance<GetPeopleUsecase>(instanceName: 'getPeopleUsecase'),
+          getPeopleUsecase: GetIt.instance<GetPeopleUsecase>(
+            instanceName: 'getPeopleUsecase',
+          ),
         ),
       ),
-      BlocProvider<AccountCubit>(
-        create: (_) => AccountCubit(),
-      ),
+      BlocProvider<AccountCubit>(create: (_) => AccountCubit()),
     ],
     child: const MyApp(),
   );
@@ -54,25 +56,26 @@ Widget _pumpAppWithOnboarding() {
     providers: [
       BlocProvider<HomeCubit>(
         create: (_) => HomeCubit(
-          getHomeDataUsecase:
-              GetIt.instance<GetHomeDataUsecase>(instanceName: 'getHomeDataUsecase'),
+          getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
+            instanceName: 'getHomeDataUsecase',
+          ),
         ),
       ),
       BlocProvider<RemindersCubit>(
         create: (_) => RemindersCubit(
-          getReminderUsecase:
-              GetIt.instance<GetReminderUsecase>(instanceName: 'getReminderUsecase'),
+          getReminderUsecase: GetIt.instance<GetReminderUsecase>(
+            instanceName: 'getReminderUsecase',
+          ),
         ),
       ),
       BlocProvider<PeopleCubit>(
         create: (_) => PeopleCubit(
-          getPeopleUsecase:
-              GetIt.instance<GetPeopleUsecase>(instanceName: 'getPeopleUsecase'),
+          getPeopleUsecase: GetIt.instance<GetPeopleUsecase>(
+            instanceName: 'getPeopleUsecase',
+          ),
         ),
       ),
-      BlocProvider<AccountCubit>(
-        create: (_) => AccountCubit(),
-      ),
+      BlocProvider<AccountCubit>(create: (_) => AccountCubit()),
     ],
     child: MyApp(showOnboarding: true),
   );
@@ -122,8 +125,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
     });
 
-    testWidgets('displays bottom navigation bar with 4 items',
-        (tester) async {
+    testWidgets('displays bottom navigation bar with 4 items', (tester) async {
       await tester.pumpWidget(_pumpApp());
       await tester.pump();
 
@@ -136,8 +138,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
     });
 
-    testWidgets('switches tabs when tapping navigation items',
-        (tester) async {
+    testWidgets('switches tabs when tapping navigation items', (tester) async {
       addTearDown(() => tester.pump(const Duration(seconds: 11)));
       await tester.pumpWidget(_pumpApp());
       await tester.pump();
@@ -151,8 +152,17 @@ void main() {
       await tester.tap(find.text('People'));
       await tester.pump();
       await tester.pump();
-      expect(find.text('John Doe'), findsOneWidget);
-      expect(find.text('jane@example.com'), findsOneWidget);
+      expect(find.text('The Circle'), findsOneWidget);
+      expect(find.text('Family Invite Code'), findsOneWidget);
+      expect(find.text('1 Pending Invite'), findsOneWidget);
+
+      await tester.scrollUntilVisible(find.text('Members'), 300);
+      expect(find.text('Members'), findsOneWidget);
+      expect(find.text('Sarah Smith'), findsOneWidget);
+
+      await tester.scrollUntilVisible(find.text('Role Permissions'), 300);
+      expect(find.text('Add Family Member'), findsOneWidget);
+      expect(find.text('Role Permissions'), findsOneWidget);
 
       await tester.tap(find.text('Account'));
       await tester.pump();
@@ -175,8 +185,9 @@ void main() {
       expect(title, 'VitaFolder');
     });
 
-    testWidgets('renders MainView as home when onboarding completed',
-        (tester) async {
+    testWidgets('renders MainView as home when onboarding completed', (
+      tester,
+    ) async {
       await tester.pumpWidget(_pumpApp());
       await tester.pump();
 
@@ -256,8 +267,9 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      final datasource =
-          GetIt.instance<OnboardingLocalDatasource>(instanceName: 'onboardingLocalDatasource');
+      final datasource = GetIt.instance<OnboardingLocalDatasource>(
+        instanceName: 'onboardingLocalDatasource',
+      );
       final completed = await datasource.isOnboardingCompleted();
       expect(completed, isTrue);
     });

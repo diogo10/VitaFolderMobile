@@ -1,0 +1,98 @@
+import 'package:flutter/material.dart';
+
+class FamilyHeaderWidget extends StatelessWidget {
+  final String role;
+  final VoidCallback? onNotificationsPressed;
+  final VoidCallback? onProfilePressed;
+
+  const FamilyHeaderWidget({
+    super.key,
+    required this.role,
+    this.onNotificationsPressed,
+    this.onProfilePressed,
+  });
+
+  static const _brown = Color(0xFF725C43);
+  static const _cream = Color(0xFFF2EDE4);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const _HeaderIcon(icon: Icons.home_rounded),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            role,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: _brown,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton.filled(
+              tooltip: 'Notifications',
+              onPressed: onNotificationsPressed,
+              style: IconButton.styleFrom(
+                backgroundColor: _cream,
+                foregroundColor: _brown,
+              ),
+              icon: const Icon(Icons.notifications_rounded, size: 20),
+            ),
+            const Positioned(
+              right: 8,
+              top: 7,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Color(0xFFC68B42),
+                  shape: BoxShape.circle,
+                ),
+                child: SizedBox.square(dimension: 6),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(width: 4),
+        Semantics(
+          button: true,
+          label: 'Open profile',
+          child: InkWell(
+            onTap: onProfilePressed,
+            customBorder: const CircleBorder(),
+            child: const CircleAvatar(
+              radius: 20,
+              backgroundColor: _cream,
+              child: Icon(
+                Icons.person_rounded,
+                color: Color(0xFF725C43),
+                size: 24,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HeaderIcon extends StatelessWidget {
+  final IconData icon;
+
+  const _HeaderIcon({required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: const BoxDecoration(
+        color: Color(0xFF725C43),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(icon, color: Colors.white, size: 18),
+    );
+  }
+}

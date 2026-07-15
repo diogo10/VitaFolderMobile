@@ -11,21 +11,24 @@ import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cub
 import 'package:vita_folder_mobile/features/people/presentation/views/people_view.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/screens/reminders_view.dart';
+import 'package:vita_folder_mobile/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final serviceLocator = ServiceLocator();
   await serviceLocator.init();
 
-  final datasource =
-      slInstance<OnboardingLocalDatasource>(instanceName: 'onboardingLocalDatasource');
+  final datasource = slInstance<OnboardingLocalDatasource>(
+    instanceName: 'onboardingLocalDatasource',
+  );
   final onboardingCompleted = await datasource.isOnboardingCompleted();
 
   runApp(
     MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => slInstance<RemindersCubit>(instanceName: 'remindersCubit'),
+          create: (_) =>
+              slInstance<RemindersCubit>(instanceName: 'remindersCubit'),
         ),
         BlocProvider(
           create: (_) => slInstance<HomeCubit>(instanceName: 'homeCubit'),
@@ -33,9 +36,7 @@ void main() async {
         BlocProvider(
           create: (_) => slInstance<PeopleCubit>(instanceName: 'peopleCubit'),
         ),
-        BlocProvider(
-          create: (_) => AccountCubit(),
-        ),
+        BlocProvider(create: (_) => AccountCubit()),
       ],
       child: MyApp(showOnboarding: !onboardingCompleted),
     ),
@@ -51,10 +52,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'VitaFolder',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       home: showOnboarding ? const _OnboardingWrapper() : const MainView(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -63,21 +64,20 @@ class _OnboardingWrapper extends StatelessWidget {
   const _OnboardingWrapper();
 
   Future<void> _completeOnboarding(BuildContext context) async {
-    final datasource =
-        slInstance<OnboardingLocalDatasource>(instanceName: 'onboardingLocalDatasource');
+    final datasource = slInstance<OnboardingLocalDatasource>(
+      instanceName: 'onboardingLocalDatasource',
+    );
     await datasource.completeOnboarding();
     if (context.mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MainView()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const MainView()));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return OnboardingView(
-      onComplete: () => _completeOnboarding(context),
-    );
+    return OnboardingView(onComplete: () => _completeOnboarding(context));
   }
 }
 
@@ -93,41 +93,81 @@ class _MainViewState extends State<MainView> {
 
   final List<Widget> _tabViews = const [
     HomeView(),
-    RemindersView(),
     PeopleView(),
+    RemindersView(),
     AccountView(),
   ];
 
   static const List<String> _tabLabels = [
     'Home',
-    'Reminders',
     'People',
+    'Reminders',
     'Account',
   ];
 
   static const List<IconData> _tabIcons = [
-    Icons.home,
-    Icons.notifications,
-    Icons.people,
-    Icons.person,
+    Icons.home_rounded,
+    Icons.groups_rounded,
+    Icons.notifications_rounded,
+    Icons.account_circle_rounded,
   ];
+
+  Widget _buildNavigationIcon(int index, {required bool isSelected}) {
+    final icon = Icon(
+      _tabIcons[index],
+      size: 24,
+      color: isSelected ? Colors.white : const Color(0xFFC2B299),
+    );
+    final iconWithBadge = index == 2
+        ? Badge(
+            backgroundColor: const Color(0xFFC2B299),
+            smallSize: 7,
+            offset: const Offset(5, -3),
+            child: icon,
+          )
+        : icon;
+
+    if (!isSelected) return iconWithBadge;
+
+    return Container(
+      width: 52,
+      height: 52,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        color: Color(0xFF9A8262),
+        shape: BoxShape.circle,
+      ),
+      child: iconWithBadge,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _tabViews,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        items: List.generate(
-          _tabLabels.length,
-          (i) => BottomNavigationBarItem(
-            icon: Icon(_tabIcons[i]),
-            label: _tabLabels[i],
+      body: IndexedStack(index: _selectedIndex, children: _tabViews),
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(
+          border: Border(top: BorderSide(color: Color(0xFFE8DFD3))),
+        ),
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          elevation: 0,
+          backgroundColor: const Color(0xFFFFFBF7),
+          selectedItemColor: const Color(0xFF8B7558),
+          unselectedItemColor: const Color(0xFFC2B299),
+          selectedFontSize: 12,
+          unselectedFontSize: 12,
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+          currentIndex: _selectedIndex,
+          onTap: (index) => setState(() => _selectedIndex = index),
+          items: List.generate(
+            _tabLabels.length,
+            (i) => BottomNavigationBarItem(
+              icon: _buildNavigationIcon(i, isSelected: false),
+              label: _tabLabels[i],
+              activeIcon: _buildNavigationIcon(i, isSelected: true),
+            ),
           ),
         ),
       ),
