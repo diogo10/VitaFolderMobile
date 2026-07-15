@@ -9,6 +9,7 @@ import 'package:vita_folder_mobile/features/people/presentation/widgets/family_h
 import 'package:vita_folder_mobile/features/people/presentation/widgets/invite_code_card_widget.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/pending_invite_card_widget.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/role_permissions_card_widget.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class PeopleLoadedWidget extends StatefulWidget {
   final List<PersonEntity> people;
@@ -37,6 +38,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return ColoredBox(
       color: const Color(0xFFFFFCF8),
       child: SafeArea(
@@ -48,12 +50,12 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
             children: [
               FamilyHeaderWidget(
                 onNotificationsPressed: () =>
-                    _showMessage('No new notifications'),
-                onProfilePressed: () => _showMessage('Profile selected'),
+                    _showMessage(l.peopleLoadedNotificationMessage),
+                onProfilePressed: () => _showMessage(l.peopleLoadedProfileMessage),
               ),
               const SizedBox(height: 26),
               Text(
-                'The Circle',
+                l.peopleLoadedTheCircle,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   color: const Color(0xFF604B38),
                   fontWeight: FontWeight.w800,
@@ -62,7 +64,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
               ),
               const SizedBox(height: 2),
               Text(
-                '${widget.people.length} members · Smith Family',
+                l.peopleLoadedMembersCount(widget.people.length),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: const Color(0xFFB0906C),
                 ),
@@ -73,34 +75,34 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                 expiresInDays: 6,
                 onCopyPressed: () => _copyToClipboard(
                   _inviteCodes[_inviteCodeIndex].replaceAll('•', ''),
-                  'Invite code copied',
+                  l.peopleLoadedInviteCodeCopied,
                 ),
                 onSharePressed: () => _copyToClipboard(
                   'https://vitafolder.app/invite/'
                       '${_inviteCodes[_inviteCodeIndex].replaceAll('•', '')}',
-                  'Invite link copied',
+                  l.peopleLoadedInviteLinkCopied,
                 ),
                 onRefreshPressed: () {
                   setState(() {
                     _inviteCodeIndex =
                         (_inviteCodeIndex + 1) % _inviteCodes.length;
                   });
-                  _showMessage('Invite code refreshed');
+                  _showMessage(l.peopleLoadedInviteCodeRefreshed);
                 },
               ),
               const SizedBox(height: 24),
               PendingInviteCardWidget(
                 email: 'grandma@smith.com',
-                sentAtLabel: '2 days ago',
+                sentAtLabel: l.peopleLoadedPendingInviteSent,
                 onResendPressed: () =>
-                    _showMessage('Invitation sent again'),
+                    _showMessage(l.peopleLoadedInvitationSentAgain),
               ),
               const SizedBox(height: 26),
               Row(
                 children: [
                   Expanded(
                     child: Text(
-                      'Members',
+                      l.peopleLoadedMembersTitle,
                       style: Theme.of(context).textTheme.titleMedium
                           ?.copyWith(
                             color: const Color(0xFF604B38),
@@ -109,7 +111,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                     ),
                   ),
                   FilledButton.icon(
-                    onPressed: () => _showMessage('Add member selected'),
+                    onPressed: () => _showMessage(l.peopleLoadedAddMemberSelected),
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xFF92724F),
                       foregroundColor: Colors.white,
@@ -126,8 +128,8 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                       Icons.person_add_alt_1_rounded,
                       size: 16,
                     ),
-                    label: const Text(
-                      'Add Member',
+                    label: Text(
+                      l.peopleLoadedAddMemberButton,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
@@ -145,7 +147,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                 role: FamilyMemberRole.admin,
                 avatarColor: const Color(0xFF70969A),
                 statusColor: const Color(0xFF53B77A),
-                onPressed: () => _showMessage('Sarah Smith selected'),
+                onPressed: () => _showMessage(l.peopleLoadedMemberSelected('Sarah Smith')),
               ),
               const SizedBox(height: 10),
               FamilyMemberCardWidget(
@@ -156,7 +158,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                 role: FamilyMemberRole.parent,
                 avatarColor: const Color(0xFF3D76A8),
                 statusColor: const Color(0xFF5D9DF5),
-                onPressed: () => _showMessage('James Smith selected'),
+                onPressed: () => _showMessage(l.peopleLoadedMemberSelected('James Smith')),
               ),
               const SizedBox(height: 10),
               FamilyMemberCardWidget(
@@ -167,7 +169,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                 role: FamilyMemberRole.child,
                 avatarColor: const Color(0xFFB47D88),
                 statusColor: const Color(0xFFB56AF4),
-                onPressed: () => _showMessage('Lily Smith selected'),
+                onPressed: () => _showMessage(l.peopleLoadedMemberSelected('Lily Smith')),
               ),
               const SizedBox(height: 10),
               FamilyMemberCardWidget(
@@ -178,7 +180,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                 role: FamilyMemberRole.child,
                 avatarColor: const Color(0xFF7F8F82),
                 statusColor: const Color(0xFFB56AF4),
-                onPressed: () => _showMessage('Max Smith selected'),
+                onPressed: () => _showMessage(l.peopleLoadedMemberSelected('Max Smith')),
               ),
               const SizedBox(height: 10),
               FamilyMemberCardWidget(
@@ -189,16 +191,16 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                 role: FamilyMemberRole.member,
                 avatarColor: const Color(0xFF8A7592),
                 statusColor: const Color(0xFF45C76C),
-                onPressed: () => _showMessage('Rose Smith selected'),
+                onPressed: () => _showMessage(l.peopleLoadedMemberSelected('Rose Smith')),
               ),
               const SizedBox(height: 12),
               AddFamilyMemberCardWidget(
-                onPressed: () => _showMessage('Add family member selected'),
+                onPressed: () => _showMessage(l.peopleLoadedAddFamilyMemberSelected),
               ),
               const SizedBox(height: 16),
               RolePermissionsCardWidget(
                 onLearnMorePressed: () =>
-                    _showMessage('Role permissions selected'),
+                    _showMessage(l.peopleLoadedRolePermissionsSelected),
               ),
             ],
           ),

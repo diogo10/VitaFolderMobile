@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class AccountHeaderWidget extends StatelessWidget {
@@ -9,6 +10,7 @@ class AccountHeaderWidget extends StatelessWidget {
     final primaryColor = context.colorScheme.primary;
     final onSurface = context.colorScheme.onSurface;
     final surface = context.colorScheme.surface;
+    final l = AppLocalizations.of(context)!;
 
     return Container(
       width: double.infinity,
@@ -46,6 +48,10 @@ class AccountHeaderWidget extends StatelessWidget {
                 Image.network(
                   'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80',
                   fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => Container(
+                    color: surface,
+                    child: Icon(Icons.person_rounded, size: 60, color: primaryColor),
+                  ),
                 ),
                 Positioned(
                   right: 0,
@@ -97,14 +103,14 @@ class AccountHeaderWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Current Plan',
+                        l.accountHeaderCurrentPlan,
                         style: context.textTheme.bodySmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.85),
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Family Pro',
+                        l.accountHeaderPlanName,
                         style: context.textTheme.headlineSmall?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -112,7 +118,7 @@ class AccountHeaderWidget extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Up to 8 members · Unlimited reminders',
+                        l.accountHeaderPlanDescription,
                         style: context.textTheme.bodySmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.85),
                         ),
@@ -127,7 +133,7 @@ class AccountHeaderWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
-                    'Active',
+                    l.accountHeaderStatusActive,
                     style: context.textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: onSurface,

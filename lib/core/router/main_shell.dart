@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class MainShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
   const MainShell({super.key, required this.navigationShell});
-
-  static const List<String> _tabLabels = [
-    'Home',
-    'People',
-    'Reminders',
-    'Account',
-  ];
 
   static const List<IconData> _tabIcons = [
     Icons.home_rounded,
@@ -19,6 +13,11 @@ class MainShell extends StatelessWidget {
     Icons.notifications_rounded,
     Icons.account_circle_rounded,
   ];
+
+  List<String> _tabLabels(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return [l.navHome, l.navPeople, l.navReminders, l.navAccount];
+  }
 
   Widget _buildNavigationIcon(int index, {required bool isSelected}) {
     final icon = Icon(
@@ -51,6 +50,7 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final labels = _tabLabels(context);
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: DecoratedBox(
@@ -73,10 +73,10 @@ class MainShell extends StatelessWidget {
             initialLocation: index == navigationShell.currentIndex,
           ),
           items: List.generate(
-            _tabLabels.length,
+            labels.length,
             (i) => BottomNavigationBarItem(
               icon: _buildNavigationIcon(i, isSelected: false),
-              label: _tabLabels[i],
+              label: labels[i],
               activeIcon: _buildNavigationIcon(i, isSelected: true),
             ),
           ),

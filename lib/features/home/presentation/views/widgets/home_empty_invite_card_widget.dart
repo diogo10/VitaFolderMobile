@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class HomeEmptyInviteCardWidget extends StatelessWidget {
@@ -11,6 +12,7 @@ class HomeEmptyInviteCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -39,7 +41,7 @@ class HomeEmptyInviteCardWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Invite a Parent',
+                  l.homeEmptyInviteInviteParentTitle,
                   style: context.textTheme.titleMedium?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -47,7 +49,7 @@ class HomeEmptyInviteCardWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Collaborate in your family hub',
+                  l.homeEmptyInviteInviteParentSubtitle,
                   style: context.textTheme.bodySmall?.copyWith(
                     color: Colors.white70,
                   ),
@@ -62,7 +64,7 @@ class HomeEmptyInviteCardWidget extends StatelessWidget {
               Icons.share_rounded,
               size: 18,
             ),
-            label: const Text('Share'),
+            label: Text(l.homeEmptyInviteShareButton),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: context.colorScheme.primary,

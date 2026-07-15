@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class HomeEmptyFooterWidget extends StatelessWidget {
@@ -7,6 +8,7 @@ class HomeEmptyFooterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -16,7 +18,7 @@ class HomeEmptyFooterWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'The Circle',
+                l.homeEmptyFooterCircleTitle,
                 style: context.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -33,7 +35,7 @@ class HomeEmptyFooterWidget extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Add people',
+                      l.homeEmptyFooterAddPeopleLink,
                       style: context.textTheme.bodyMedium?.copyWith(
                         color: context.colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
@@ -80,7 +82,7 @@ class HomeEmptyFooterWidget extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                'No members yet',
+                l.homeEmptyFooterNoMembersTitle,
                 style: context.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: context.colorScheme.onSurface,
@@ -89,7 +91,7 @@ class HomeEmptyFooterWidget extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Add family members to start collaborating and tracking together.',
+                l.homeEmptyFooterNoMembersDescription,
                 style: context.textTheme.bodySmall?.copyWith(
                   color: context.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
@@ -101,7 +103,7 @@ class HomeEmptyFooterWidget extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () => context.go('/people'),
                   icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('Add Member'),
+                  label: Text(l.homeEmptyFooterAddMemberButton),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: context.colorScheme.primary,
                     foregroundColor: Colors.white,

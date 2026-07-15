@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/home_view_success.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 void main() {
   final tEntity = HomeEntity(
@@ -12,6 +13,8 @@ void main() {
 
   Widget pumpApp(HomeEntity entity) {
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: HomeViewSuccess(data: entity),
       ),

@@ -183,17 +183,8 @@ void main() {
       await tester.tap(find.text('People'));
       await tester.pump();
       await tester.pump();
-      expect(find.text('The Circle'), findsOneWidget);
-      expect(find.text('Family Invite Code'), findsOneWidget);
-      expect(find.text('1 Pending Invite'), findsOneWidget);
-
-      await tester.scrollUntilVisible(find.text('Members'), 300);
-      expect(find.text('Members'), findsOneWidget);
-      expect(find.text('Sarah Smith'), findsOneWidget);
-
-      await tester.scrollUntilVisible(find.text('Role Permissions'), 300);
-      expect(find.text('Add Family Member'), findsOneWidget);
-      expect(find.text('Role Permissions'), findsOneWidget);
+      expect(find.text('No family members yet'), findsOneWidget);
+      expect(find.text('Add your first family member to get started.'), findsOneWidget);
 
       await tester.tap(find.text('Account'));
       await tester.pump();

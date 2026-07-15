@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class RemindersErrorWidget extends StatelessWidget {
   final VoidCallback? onRetry;
@@ -7,6 +8,7 @@ class RemindersErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -18,14 +20,14 @@ class RemindersErrorWidget extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Something went wrong',
+            l.remindersErrorTitle,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Could not load reminders',
+            l.remindersErrorDescription,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
@@ -35,7 +37,7 @@ class RemindersErrorWidget extends StatelessWidget {
             FilledButton.tonalIcon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try again'),
+              label: Text(l.remindersErrorRetry),
             ),
           ],
         ],

@@ -7,6 +7,7 @@ import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dar
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_state.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/home_view.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class _MockHomeCubit extends MockCubit<HomeState> implements HomeCubit {}
 
@@ -21,6 +22,8 @@ void main() {
   Widget pumpApp(HomeState state) {
     when(() => cubit.state).thenReturn(state);
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: BlocProvider<HomeCubit>.value(
           value: cubit,

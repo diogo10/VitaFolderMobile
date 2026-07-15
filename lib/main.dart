@@ -7,6 +7,7 @@ import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.d
 import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/app_theme.dart';
 
 void main() async {
@@ -52,6 +53,8 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       routerConfig: createRouter(onboardingCompleted: onboardingCompleted),
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
     );
   }
 }

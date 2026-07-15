@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class OnboardingView extends StatefulWidget {
   final VoidCallback onComplete;
@@ -46,7 +47,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                 alignment: Alignment.topRight,
                 child: TextButton(
                   onPressed: _onSkip,
-                  child: const Text('Skip'),
+                  child: Text(AppLocalizations.of(context)!.onboardingSkip),
                 ),
               ),
             ),
@@ -73,7 +74,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: _onNext,
-                  child: Text(_currentPage < 2 ? 'Next' : 'Get Started'),
+                  child: Text(_currentPage < 2 ? AppLocalizations.of(context)!.onboardingNext : AppLocalizations.of(context)!.onboardingGetStarted),
                 ),
               ),
             ),

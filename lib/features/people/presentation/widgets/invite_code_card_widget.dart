@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class InviteCodeCardWidget extends StatelessWidget {
   final String code;
@@ -21,6 +22,7 @@ class InviteCodeCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -61,7 +63,7 @@ class InviteCodeCardWidget extends StatelessWidget {
                   ),
                 ),
                 IconButton.filled(
-                  tooltip: 'Copy invite code',
+                  tooltip: l.peopleWidgetsInviteCodeCopyTooltip,
                   onPressed: onCopyPressed,
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.white.withValues(alpha: 0.15),
@@ -84,7 +86,7 @@ class InviteCodeCardWidget extends StatelessWidget {
               Expanded(
                 child: _InviteActionButton(
                   icon: Icons.share_rounded,
-                  label: 'Share Link',
+                  label: l.peopleWidgetsInviteCodeShareButton,
                   onPressed: onSharePressed,
                   prominent: true,
                 ),
@@ -93,7 +95,7 @@ class InviteCodeCardWidget extends StatelessWidget {
               Expanded(
                 child: _InviteActionButton(
                   icon: Icons.refresh_rounded,
-                  label: 'Refresh Code',
+                  label: l.peopleWidgetsInviteCodeRefreshButton,
                   onPressed: onRefreshPressed,
                 ),
               ),
@@ -103,14 +105,14 @@ class InviteCodeCardWidget extends StatelessWidget {
           Center(
             child: Text.rich(
               TextSpan(
-                text: 'Code expires in ',
+                text: l.peopleWidgetsInviteCodeExpiresPrefix,
                 children: [
                   TextSpan(
-                    text: '$expiresInDays days',
+                    text: l.peopleWidgetsInviteCodeExpiresDays(expiresInDays),
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
-                  const TextSpan(
-                    text: ' · Share with trusted family\nmembers only',
+                  TextSpan(
+                    text: l.peopleWidgetsInviteCodeExpiresSuffix,
                   ),
                 ],
               ),
@@ -133,6 +135,7 @@ class _CardLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Row(
       children: [
         Container(
@@ -146,7 +149,7 @@ class _CardLabel extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Text(
-          'Family Invite Code',
+          l.peopleWidgetsInviteCodeCardLabel,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             color: Colors.white.withValues(alpha: 0.78),
             fontWeight: FontWeight.w700,

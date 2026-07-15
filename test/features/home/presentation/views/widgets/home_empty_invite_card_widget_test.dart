@@ -1,29 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_invite_card_widget.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 void main() {
   group('HomeEmptyInviteCardWidget', () {
-    testWidgets('renders Invite a Parent heading', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: HomeEmptyInviteCardWidget(onSharePressed: () {}),
-          ),
+    Widget buildApp({required VoidCallback onSharePressed}) {
+      return MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: HomeEmptyInviteCardWidget(onSharePressed: onSharePressed),
         ),
       );
+    }
+
+    testWidgets('renders Invite a Parent heading', (tester) async {
+      await tester.pumpWidget(buildApp(onSharePressed: () {}));
 
       expect(find.text('Invite a Parent'), findsOneWidget);
     });
 
     testWidgets('renders collaboration description', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: HomeEmptyInviteCardWidget(onSharePressed: () {}),
-          ),
-        ),
-      );
+      await tester.pumpWidget(buildApp(onSharePressed: () {}));
 
       expect(
         find.text('Collaborate in your family hub'),
@@ -32,13 +31,7 @@ void main() {
     });
 
     testWidgets('renders Share button', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: HomeEmptyInviteCardWidget(onSharePressed: () {}),
-          ),
-        ),
-      );
+      await tester.pumpWidget(buildApp(onSharePressed: () {}));
 
       expect(find.widgetWithText(ElevatedButton, 'Share'), findsOneWidget);
     });
@@ -47,13 +40,7 @@ void main() {
       var pressed = false;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: HomeEmptyInviteCardWidget(
-              onSharePressed: () => pressed = true,
-            ),
-          ),
-        ),
+        buildApp(onSharePressed: () => pressed = true),
       );
 
       await tester.tap(find.widgetWithText(ElevatedButton, 'Share'));

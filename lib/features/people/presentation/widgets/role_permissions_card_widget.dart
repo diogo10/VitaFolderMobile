@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class RolePermissionsCardWidget extends StatelessWidget {
   final VoidCallback? onLearnMorePressed;
@@ -7,6 +8,7 @@ class RolePermissionsCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -28,7 +30,7 @@ class RolePermissionsCardWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Role Permissions',
+                  l.peopleWidgetsRolePermissionsTitle,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: const Color(0xFF725C43),
                     fontWeight: FontWeight.w800,
@@ -36,8 +38,7 @@ class RolePermissionsCardWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  'Admins can manage all members. Parents can add tasks. '
-                  'Children have view-only access.',
+                  l.peopleWidgetsRolePermissionsDescription,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: const Color(0xFFA98B6B),
                     fontSize: 11,
@@ -53,9 +54,9 @@ class RolePermissionsCardWidget extends StatelessWidget {
                     minimumSize: const Size(0, 30),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Text(
-                    'Learn more →',
-                    style: TextStyle(
+                  child: Text(
+                    l.peopleWidgetsRolePermissionsLearnMore,
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       decoration: TextDecoration.underline,

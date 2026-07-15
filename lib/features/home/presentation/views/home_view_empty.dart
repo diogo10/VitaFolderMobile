@@ -5,12 +5,14 @@ import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_header_widget.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_invite_card_widget.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_reminders_widget.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class HomeViewEmpty extends StatelessWidget {
   const HomeViewEmpty({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -21,25 +23,25 @@ class HomeViewEmpty extends StatelessWidget {
             const SizedBox(height: 24),
             HomeEmptyActionCardWidget(
               icon: Icons.group_rounded,
-              title: 'Add people to your Circle',
-              subtitle: 'Invite parents, kids or caregivers to your family.',
-              buttonLabel: 'Add',
+              title: l.homeEmptyAddPeopleTitle,
+              subtitle: l.homeEmptyAddPeopleSubtitle,
+              buttonLabel: l.homeEmptyAddPeopleButton,
               onPressed: () => context.go('/people'),
             ),
             const SizedBox(height: 16),
             HomeEmptyActionCardWidget(
               icon: Icons.notifications_active_rounded,
-              title: 'Set up a Reminder',
-              subtitle: 'Schedule tasks, events and never miss a thing.',
-              buttonLabel: 'Set up',
+              title: l.homeEmptyReminderTitle,
+              subtitle: l.homeEmptyReminderSubtitle,
+              buttonLabel: l.homeEmptyReminderButton,
               onPressed: () => context.go('/reminders'),
             ),
             const SizedBox(height: 16),
             HomeEmptyActionCardWidget(
               icon: Icons.person_add_alt_1_rounded,
-              title: 'Complete your Account',
-              subtitle: 'Add your name, photo and contact details.',
-              buttonLabel: 'Go',
+              title: l.homeEmptyAccountTitle,
+              subtitle: l.homeEmptyAccountSubtitle,
+              buttonLabel: l.homeEmptyAccountButton,
               onPressed: () => context.go('/account'),
             ),
             const SizedBox(height: 20),

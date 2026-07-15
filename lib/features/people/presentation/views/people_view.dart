@@ -4,6 +4,7 @@ import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cub
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_state.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/people_empty_widget.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/people_loaded_widget.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class PeopleView extends StatefulWidget {
   const PeopleView({super.key});
@@ -28,7 +29,7 @@ class _PeopleViewState extends State<PeopleView> {
             child: FilledButton.icon(
               onPressed: context.read<PeopleCubit>().getPeople,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try again'),
+              label: Text(AppLocalizations.of(context)!.peopleViewTryAgain),
             ),
           );
         }

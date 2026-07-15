@@ -4,6 +4,7 @@ import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.d
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_state.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/home_view_empty.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/home_view_success.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -28,7 +29,7 @@ class _HomeViewState extends State<HomeView> {
         }
 
         if (state is HomeError) {
-          return const Center(child: Text('Something went wrong.'));
+          return Center(child: Text(AppLocalizations.of(context)!.homeError));
         }
 
         if (state is HomeEmpty) {

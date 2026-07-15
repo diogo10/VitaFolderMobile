@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_header_widget.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 Widget _pumpApp() {
-  return const MaterialApp(
-    home: Scaffold(body: HomeEmptyHeaderWidget()),
+  return MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: const Scaffold(body: HomeEmptyHeaderWidget()),
   );
 }
 

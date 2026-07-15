@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class AccountSettingsWidget extends StatelessWidget {
@@ -6,70 +7,71 @@ class AccountSettingsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: const [
+        children: [
           _AccountSettingsSection(
-            title: 'ACCOUNT',
+            title: l.accountSettingsAccountSection,
             items: [
               _AccountSettingsItemData(
                 icon: Icons.person_rounded,
-                title: 'Edit Profile',
-                subtitle: 'Name, photo, contact info',
+                title: l.accountSettingsEditProfile,
+                subtitle: l.accountSettingsEditProfileSubtitle,
               ),
               _AccountSettingsItemData(
                 icon: Icons.lock_outline_rounded,
-                title: 'Password & Security',
-                subtitle: 'Change password, 2FA',
+                title: l.accountSettingsPasswordSecurity,
+                subtitle: l.accountSettingsPasswordSecuritySubtitle,
               ),
               _AccountSettingsItemData(
                 icon: Icons.notifications_rounded,
-                title: 'Notifications',
-                subtitle: 'Push, email preferences',
+                title: l.accountSettingsNotifications,
+                subtitle: l.accountSettingsNotificationsSubtitle,
               ),
             ],
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           _AccountSettingsSection(
-            title: 'FAMILY',
+            title: l.accountSettingsFamilySection,
             items: [
               _AccountSettingsItemData(
                 icon: Icons.house_rounded,
-                title: 'Family Settings',
-                subtitle: 'Family name, preferences',
+                title: l.accountSettingsFamilySettings,
+                subtitle: l.accountSettingsFamilySettingsSubtitle,
               ),
               _AccountSettingsItemData(
                 icon: Icons.person_search_rounded,
-                title: 'Roles & Permissions',
-                subtitle: 'Manage admin access',
+                title: l.accountSettingsRolesPermissions,
+                subtitle: l.accountSettingsRolesPermissionsSubtitle,
               ),
               _AccountSettingsItemData(
                 icon: Icons.person_add_alt_1_rounded,
-                title: 'Invite Members',
-                subtitle: 'Share invite code',
+                title: l.accountSettingsInviteMembers,
+                subtitle: l.accountSettingsInviteMembersSubtitle,
               ),
             ],
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           _AccountSettingsSection(
-            title: 'SUPPORT',
+            title: l.accountSettingsSupportSection,
             items: [
               _AccountSettingsItemData(
                 icon: Icons.help_outline_rounded,
-                title: 'Help & FAQ',
-                subtitle: 'Get answers, contact support',
+                title: l.accountSettingsHelpFaq,
+                subtitle: l.accountSettingsHelpFaqSubtitle,
               ),
               _AccountSettingsItemData(
                 icon: Icons.privacy_tip_rounded,
-                title: 'Privacy Policy',
-                subtitle: 'How we handle your data',
+                title: l.accountSettingsPrivacyPolicy,
+                subtitle: l.accountSettingsPrivacyPolicySubtitle,
               ),
               _AccountSettingsItemData(
                 icon: Icons.logout_rounded,
-                title: 'Sign Out',
-                subtitle: 'Log out of this device',
+                title: l.accountSettingsSignOut,
+                subtitle: l.accountSettingsSignOutSubtitle,
                 accent: true,
               ),
             ],

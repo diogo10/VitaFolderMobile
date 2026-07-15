@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/family_header_widget.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class HomeViewSuccess extends StatelessWidget {
   final HomeEntity data;
@@ -23,7 +24,7 @@ class HomeViewSuccess extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             Text(
-              'Today',
+              AppLocalizations.of(context)!.homeToday,
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -40,11 +41,12 @@ class HomeViewSuccess extends StatelessWidget {
 
   Widget _buildStatsRow(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
           child: _StatCard(
-            label: 'Tasks',
+            label: l.homeTasks,
             value: '3',
             color: scheme.primary,
           ),
@@ -52,7 +54,7 @@ class HomeViewSuccess extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _StatCard(
-            label: 'Completed',
+            label: l.homeCompleted,
             value: '1',
             color: Colors.green,
           ),
@@ -60,7 +62,7 @@ class HomeViewSuccess extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _StatCard(
-            label: 'Pending',
+            label: l.homePending,
             value: '2',
             color: Colors.orange,
           ),

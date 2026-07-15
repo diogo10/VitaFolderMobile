@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class PendingInviteCardWidget extends StatelessWidget {
   final String email;
@@ -14,6 +15,7 @@ class PendingInviteCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     const orange = Color(0xFFE67E22);
 
     return Container(
@@ -45,7 +47,7 @@ class PendingInviteCardWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '1 Pending Invite',
+                  l.peopleWidgetsPendingInviteCardTitle,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: const Color(0xFFAD4B0B),
                     fontWeight: FontWeight.w800,
@@ -69,9 +71,9 @@ class PendingInviteCardWidget extends StatelessWidget {
               minimumSize: const Size(0, 40),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text(
-              'Resend',
-              style: TextStyle(
+            child: Text(
+              l.peopleWidgetsPendingInviteResendButton,
+              style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
                 decoration: TextDecoration.underline,

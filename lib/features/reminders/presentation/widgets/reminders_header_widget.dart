@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class RemindersHeaderWidget extends StatefulWidget {
@@ -9,8 +10,8 @@ class RemindersHeaderWidget extends StatefulWidget {
 
   const RemindersHeaderWidget({
     super.key,
-    this.title = 'Reminders',
-    this.subtitle = 'Nothing scheduled yet',
+    required this.title,
+    required this.subtitle,
     this.onCategoryChanged,
     this.onFilterPressed,
   });
@@ -20,11 +21,17 @@ class RemindersHeaderWidget extends StatefulWidget {
 }
 
 class _RemindersHeaderWidgetState extends State<RemindersHeaderWidget> {
-  static const categories = ['All', 'Chores', 'Appointments', 'Birthdays'];
-  String selectedCategory = categories.first;
+  String selectedCategory = '';
+
+  List<String> _categories(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return [l.remindersHeaderAll, l.remindersHeaderChores, l.remindersHeaderAppointments, l.remindersHeaderBirthdays];
+  }
 
   @override
   Widget build(BuildContext context) {
+    final categories = _categories(context);
+    if (selectedCategory.isEmpty) selectedCategory = categories.first;
     final textColor = context.colorScheme.onSurface;
     final background = context.colorScheme.surface;
     final highlight = context.colorScheme.primary;

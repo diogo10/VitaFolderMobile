@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_header_widget.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_suggestions_cards_widget.dart';
@@ -10,6 +11,7 @@ class RemindersEmptyWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final primaryColor = context.colorScheme.primary;
     final onSurface = context.colorScheme.onSurface;
+    final l = AppLocalizations.of(context)!;
 
     return SafeArea(
       child: Center(
@@ -17,9 +19,9 @@ class RemindersEmptyWidget extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-            const RemindersHeaderWidget(
-              title: 'Reminders',
-              subtitle: 'Nothing scheduled yet',
+            RemindersHeaderWidget(
+              title: l.remindersHeaderTitle,
+              subtitle: l.remindersHeaderSubtitle,
             ),
             const SizedBox(height: 8),
             Container(
@@ -51,7 +53,7 @@ class RemindersEmptyWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 26),
                   Text(
-                    'No reminders yet',
+                    l.remindersEmptyTitle,
                     style: context.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: onSurface,
@@ -60,7 +62,7 @@ class RemindersEmptyWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Keep your family on track — create your first reminder for chores, appointments or birthdays.',
+                    l.remindersEmptyDescription,
                     style: context.textTheme.bodyMedium?.copyWith(
                       color: onSurface.withValues(alpha: 0.7),
                     ),
@@ -72,7 +74,7 @@ class RemindersEmptyWidget extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {},
                       icon: const Icon(Icons.add_rounded, size: 18),
-                      label: const Text('Create First Reminder'),
+                      label: Text(l.remindersEmptyCreateButton),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
@@ -95,7 +97,7 @@ class RemindersEmptyWidget extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 8.0),
                   child: Text(
-                    'What can you track ?',
+                    l.remindersEmptySuggestionsTitle,
                     style: context.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: primaryColor,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class AddFamilyMemberCardWidget extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -7,6 +8,7 @@ class AddFamilyMemberCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Material(
       color: const Color(0xFFFFFCF8),
       shape: RoundedRectangleBorder(
@@ -44,7 +46,7 @@ class AddFamilyMemberCardWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Add Family Member',
+                      l.peopleWidgetsAddFamilyMemberTitle,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: const Color(0xFFB0906C),
                         fontWeight: FontWeight.w700,
@@ -52,7 +54,7 @@ class AddFamilyMemberCardWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'Invite via code or email',
+                      l.peopleWidgetsAddFamilyMemberSubtitle,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: const Color(0xFFC5AD91),
                         fontSize: 11,

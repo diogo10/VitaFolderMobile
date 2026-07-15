@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class FamilyHeaderWidget extends StatelessWidget {
   final String? role;
@@ -17,6 +18,7 @@ class FamilyHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     if (role == null) return const SizedBox.shrink();
     return Row(
       children: [
@@ -35,7 +37,7 @@ class FamilyHeaderWidget extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             IconButton.filled(
-              tooltip: 'Notifications',
+              tooltip: l.peopleWidgetsFamilyHeaderNotificationsTooltip,
               onPressed: onNotificationsPressed,
               style: IconButton.styleFrom(
                 backgroundColor: _cream,
@@ -59,7 +61,7 @@ class FamilyHeaderWidget extends StatelessWidget {
         const SizedBox(width: 4),
         Semantics(
           button: true,
-          label: 'Open profile',
+          label: l.peopleWidgetsFamilyHeaderProfileSemantics,
           child: InkWell(
             onTap: onProfilePressed,
             customBorder: const CircleBorder(),
