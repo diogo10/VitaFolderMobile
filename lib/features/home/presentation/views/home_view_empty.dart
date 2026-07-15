@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_action_card_widget.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_footer_widget.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_header_widget.dart';
@@ -23,7 +24,7 @@ class HomeViewEmpty extends StatelessWidget {
               title: 'Add people to your Circle',
               subtitle: 'Invite parents, kids or caregivers to your family.',
               buttonLabel: 'Add',
-              onPressed: () {},
+              onPressed: () => context.go('/people'),
             ),
             const SizedBox(height: 16),
             HomeEmptyActionCardWidget(
@@ -31,7 +32,7 @@ class HomeViewEmpty extends StatelessWidget {
               title: 'Set up a Reminder',
               subtitle: 'Schedule tasks, events and never miss a thing.',
               buttonLabel: 'Set up',
-              onPressed: () {},
+              onPressed: () => context.go('/reminders'),
             ),
             const SizedBox(height: 16),
             HomeEmptyActionCardWidget(
@@ -39,7 +40,7 @@ class HomeViewEmpty extends StatelessWidget {
               title: 'Complete your Account',
               subtitle: 'Add your name, photo and contact details.',
               buttonLabel: 'Go',
-              onPressed: () {},
+              onPressed: () => context.go('/account'),
             ),
             const SizedBox(height: 20),
             HomeEmptyInviteCardWidget(

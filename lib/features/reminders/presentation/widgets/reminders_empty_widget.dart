@@ -1,0 +1,118 @@
+import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/theme/theme_extensions.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_header_widget.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_suggestions_cards_widget.dart';
+
+class RemindersEmptyWidget extends StatelessWidget {
+  const RemindersEmptyWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final primaryColor = context.colorScheme.primary;
+    final onSurface = context.colorScheme.onSurface;
+
+    return SafeArea(
+      child: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+            const RemindersHeaderWidget(
+              title: 'Reminders',
+              subtitle: 'Nothing scheduled yet',
+            ),
+            const SizedBox(height: 8),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              decoration: BoxDecoration(
+                color: context.colorScheme.surface,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: onSurface.withValues(alpha: 0.08),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Icon(
+                      Icons.notifications_rounded,
+                      size: 32,
+                      color: primaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 26),
+                  Text(
+                    'No reminders yet',
+                    style: context.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Keep your family on track — create your first reminder for chores, appointments or birthdays.',
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: onSurface.withValues(alpha: 0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text('Create First Reminder'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 8.0),
+                  child: Text(
+                    'What can you track ?',
+                    style: context.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor,
+                    ),
+                    textAlign: TextAlign.start,
+                  ),
+                ),
+              ],
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: RemindersSuggestionsCardsWidget(),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  }
+}

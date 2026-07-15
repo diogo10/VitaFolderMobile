@@ -67,7 +67,6 @@ class _PeopleViewState extends State<PeopleView> {
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                 children: [
                   FamilyHeaderWidget(
-                    role: 'FamilyAdmin',
                     onNotificationsPressed: () =>
                         _showMessage('No new notifications'),
                     onProfilePressed: () => _showMessage('Profile selected'),

@@ -17,6 +17,10 @@ class LoadedReminders extends RemindersState {
   LoadedReminders({required this.reminders});
 }
 
+class EmptyReminders extends RemindersState {
+  EmptyReminders();
+}
+
 class ReminderError extends RemindersState {
   ReminderError();
 }

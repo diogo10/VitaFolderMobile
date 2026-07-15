@@ -178,7 +178,7 @@ void main() {
       await tester.tap(find.text('Reminders'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 15));
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('No reminders yet'), findsOneWidget);
 
       await tester.tap(find.text('People'));
       await tester.pump();

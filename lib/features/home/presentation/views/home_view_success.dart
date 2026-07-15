@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/family_header_widget.dart';
 
@@ -17,8 +18,8 @@ class HomeViewSuccess extends StatelessWidget {
           children: [
             FamilyHeaderWidget(
               role: data.greeting,
-              onNotificationsPressed: () {},
-              onProfilePressed: () {},
+              onNotificationsPressed: () => context.go('/reminders'),
+              onProfilePressed: () => context.go('/account'),
             ),
             const SizedBox(height: 32),
             Text(

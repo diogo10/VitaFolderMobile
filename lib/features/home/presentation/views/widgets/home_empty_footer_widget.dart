@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class HomeEmptyFooterWidget extends StatelessWidget {
@@ -21,7 +22,7 @@ class HomeEmptyFooterWidget extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed:() => context.go('/people'),
                 style: TextButton.styleFrom(
                   foregroundColor: context.colorScheme.onSurface,
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -98,7 +99,7 @@ class HomeEmptyFooterWidget extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () => context.go('/people'),
                   icon: const Icon(Icons.add_rounded, size: 18),
                   label: const Text('Add Member'),
                   style: ElevatedButton.styleFrom(

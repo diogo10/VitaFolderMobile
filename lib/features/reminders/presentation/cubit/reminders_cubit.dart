@@ -9,11 +9,17 @@ class RemindersCubit extends Cubit<RemindersState> {
 
   Future<void> getReminders() async {
     emit(RemindersLoading());
-    final reminders = await getReminderUsecase();
+    final result = await getReminderUsecase();
 
-    reminders.fold(
+    result.fold(
       (err) => emit(ReminderError()),
-      (reminders) => emit(LoadedReminders(reminders: reminders)),
+      (reminders) {
+        if (reminders.isEmpty) {
+          emit(EmptyReminders());
+        } else {
+          emit(LoadedReminders(reminders: reminders));
+        }
+      },
     );
   }
 }

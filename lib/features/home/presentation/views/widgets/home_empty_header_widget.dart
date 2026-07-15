@@ -18,8 +18,10 @@ class HomeEmptyHeaderWidget extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           'Welcome to FamilyAdmin',
-          style: context.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            color: const Color(0xFF604B38),
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
           ),
         ),
         const SizedBox(height: 12),

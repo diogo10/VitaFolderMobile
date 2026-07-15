@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class FamilyHeaderWidget extends StatelessWidget {
-  final String role;
+  final String? role;
   final VoidCallback? onNotificationsPressed;
   final VoidCallback? onProfilePressed;
 
   const FamilyHeaderWidget({
     super.key,
-    required this.role,
+    this.role,
     this.onNotificationsPressed,
     this.onProfilePressed,
   });
@@ -17,13 +17,14 @@ class FamilyHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (role == null) return const SizedBox.shrink();
     return Row(
       children: [
         const _HeaderIcon(icon: Icons.home_rounded),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            role,
+            role!,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
               color: _brown,
               fontWeight: FontWeight.w700,

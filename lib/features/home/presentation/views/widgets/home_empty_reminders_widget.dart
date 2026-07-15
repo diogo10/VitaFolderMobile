@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class HomeEmptyRemindersWidget extends StatelessWidget {
@@ -71,7 +72,7 @@ class HomeEmptyRemindersWidget extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () => context.go('/reminders'),
                   icon: const Icon(
                     Icons.add_rounded,
                     size: 18,
