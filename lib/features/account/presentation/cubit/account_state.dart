@@ -11,7 +11,10 @@ class AccountLoading extends AccountState {
 }
 
 class AccountLoaded extends AccountState {
-  AccountLoaded();
+  final String userName;
+  final String email;
+
+  AccountLoaded({required this.userName, required this.email});
 }
 
 class NoAccount extends AccountState {

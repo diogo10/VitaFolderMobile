@@ -2,7 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class AccountNoAccountAuthWidget extends StatelessWidget {
-  const AccountNoAccountAuthWidget({super.key});
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final VoidCallback onSignIn;
+  final bool isLoading;
+
+  const AccountNoAccountAuthWidget({
+    super.key,
+    required this.emailController,
+    required this.passwordController,
+    required this.onSignIn,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -47,17 +58,19 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextFormField(
-                decoration: InputDecoration(
+                controller: emailController,
+                decoration: const InputDecoration(
                   labelText: 'Email address',
-                  prefixIcon: const Icon(Icons.mail_outline),
+                  prefixIcon: Icon(Icons.mail_outline),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 18),
               TextFormField(
-                decoration: InputDecoration(
+                controller: passwordController,
+                decoration: const InputDecoration(
                   labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  prefixIcon: Icon(Icons.lock_outline),
                 ),
                 obscureText: true,
               ),
@@ -75,13 +88,22 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: isLoading ? null : onSignIn,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: const Text('Sign In'),
+                child: isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('Sign In'),
               ),
             ],
           ),

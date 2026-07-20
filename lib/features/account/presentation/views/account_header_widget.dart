@@ -3,7 +3,14 @@ import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class AccountHeaderWidget extends StatelessWidget {
-  const AccountHeaderWidget({super.key});
+  final String userName;
+  final String email;
+
+  const AccountHeaderWidget({
+    super.key,
+    required this.userName,
+    required this.email,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,13 +52,9 @@ class AccountHeaderWidget extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Image.network(
-                  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80',
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    color: surface,
-                    child: Icon(Icons.person_rounded, size: 60, color: primaryColor),
-                  ),
+                Container(
+                  color: Colors.blue,
+                  child: const Icon(Icons.person_rounded, size: 60, color: Colors.white),
                 ),
                 Positioned(
                   right: 0,
@@ -76,14 +79,14 @@ class AccountHeaderWidget extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            'Sarah Smith',
+            userName,
             style: context.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
               color: onSurface,
             ),
           ),
           Text(
-            'sarah@smithfamily.com',
+            email,
             style: context.textTheme.bodyMedium?.copyWith(
               color: onSurface.withValues(alpha: 0.7),
             ),

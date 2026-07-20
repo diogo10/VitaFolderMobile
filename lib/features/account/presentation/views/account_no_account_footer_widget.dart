@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class AccountNoAccountFooterWidget extends StatelessWidget {
@@ -21,7 +22,9 @@ class AccountNoAccountFooterWidget extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                context.push('/sign-up');
+              },
               child: const Text('Create a free account'),
             ),
           ],

@@ -49,15 +49,18 @@
             "request": "launch",
             "type": "dart",
             "flutterMode": "debug",
+            "program": "${workspaceFolder}/lib/main.dart",
             "args": [
                 "-d",
-                "ios"
+                "iPhone 17"
             ]
         },
         {
             "name": "VitaFolderMobile",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "program": "${workspaceFolder}/lib/main.dart",
+            "flutterMode": "debug"
         },
         {
             "name": "VitaFolderMobile (profile mode)",
