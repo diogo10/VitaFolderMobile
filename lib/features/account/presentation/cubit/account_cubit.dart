@@ -7,6 +7,6 @@ class AccountCubit extends Cubit<AccountState> {
   Future<void> loadAccount() async {
     emit(AccountLoading());
     await Future.delayed(const Duration(milliseconds: 100));
-    emit(AccountLoaded());
+    emit(NoAccount());
   }
 }

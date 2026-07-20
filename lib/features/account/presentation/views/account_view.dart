@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/features/account/presentation/views/no_account_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_state.dart';
@@ -24,6 +25,10 @@ class _AccountViewState extends State<AccountView> {
       builder: (context, state) {
         if (state is AccountLoading) {
           return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state is NoAccount) {
+          return const NoAccountView();
         }
 
         if (state is AccountLoaded) {

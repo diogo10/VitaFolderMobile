@@ -13,3 +13,7 @@ class AccountLoading extends AccountState {
 class AccountLoaded extends AccountState {
   AccountLoaded();
 }
+
+class NoAccount extends AccountState {
+  NoAccount();
+}
