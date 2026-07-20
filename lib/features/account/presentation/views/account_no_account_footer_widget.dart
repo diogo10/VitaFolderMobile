@@ -17,7 +17,7 @@ class AccountNoAccountFooterWidget extends StatelessWidget {
             Text(
               'New to FamilyAdmin?',
               style: context.textTheme.bodyMedium?.copyWith(
-                color: onSurface.withOpacity(0.74),
+                color: onSurface.withValues(alpha: 0.74),
               ),
             ),
             TextButton(
@@ -64,7 +64,7 @@ class _AccountNoAccountFeatureItem extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: context.colorScheme.primary.withOpacity(0.14),
+              color: context.colorScheme.primary.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(icon, size: 20, color: context.colorScheme.primary),
@@ -74,7 +74,7 @@ class _AccountNoAccountFeatureItem extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: context.textTheme.bodySmall?.copyWith(
-              color: context.colorScheme.onSurface.withOpacity(0.74),
+              color: context.colorScheme.onSurface.withValues(alpha: 0.74),
             ),
           ),
         ],

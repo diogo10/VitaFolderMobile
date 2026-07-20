@@ -6,10 +6,8 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = context.colorScheme.primary;
     final onSurface = context.colorScheme.onSurface;
     final surface = context.colorScheme.surface;
-    final secondary = context.colorScheme.secondary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -73,7 +71,7 @@ class _AccountNoAccountHeroWidget extends StatelessWidget {
     final primary = colorScheme.primary;
     final onPrimary = colorScheme.onPrimary;
     final surface = colorScheme.surface;
-    final surfaceVariant = colorScheme.surfaceVariant;
+    final surfaceContainerHighest = colorScheme.surfaceContainerHighest;
 
     return SizedBox(
       width: 260,
@@ -86,7 +84,7 @@ class _AccountNoAccountHeroWidget extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [primary.withOpacity(0.18), primary.withOpacity(0.02)],
+                  colors: [primary.withValues(alpha: 0.18), primary.withValues(alpha: 0.02)],
                 ),
               ),
             ),
@@ -100,7 +98,7 @@ class _AccountNoAccountHeroWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(48),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
+                    color: Colors.black.withValues(alpha: 0.06),
                     blurRadius: 24,
                     offset: const Offset(0, 18),
                   ),
@@ -122,7 +120,7 @@ class _AccountNoAccountHeroWidget extends StatelessWidget {
               width: 58,
               height: 58,
               decoration: BoxDecoration(
-                color: surfaceVariant,
+                color: surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(Icons.notifications_rounded, size: 28),
@@ -163,7 +161,7 @@ class _AccountNoAccountHeroWidget extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: surfaceVariant,
+                color: surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
@@ -173,7 +171,7 @@ class _AccountNoAccountHeroWidget extends StatelessWidget {
                   Text(
                     'Family admin',
                     style: context.textTheme.bodySmall?.copyWith(
-                      color: context.colorScheme.onSurface.withOpacity(0.75),
+                      color: context.colorScheme.onSurface.withValues(alpha: 0.75),
                     ),
                   ),
                 ],
@@ -195,7 +193,7 @@ class _AccountNoAccountAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return CircleAvatar(
       radius: 18,
-      backgroundColor: context.colorScheme.primary.withOpacity(0.14),
+      backgroundColor: context.colorScheme.primary.withValues(alpha: 0.14),
       child: Text(
         label,
         style: context.textTheme.bodyMedium?.copyWith(
@@ -220,7 +218,7 @@ class _AccountNoAccountChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.colorScheme.surface,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: context.colorScheme.outline.withOpacity(0.6)),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.6)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

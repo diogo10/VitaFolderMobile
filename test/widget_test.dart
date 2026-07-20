@@ -224,23 +224,23 @@ void main() {
       await tester.pump();
 
       expect(find.byType(OnboardingView), findsOneWidget);
-      expect(find.text('1'), findsOneWidget);
+      expect(find.text('Bring your whole family together'), findsOneWidget);
     });
 
     testWidgets('displays 3 pages with navigation dots', (tester) async {
       await tester.pumpWidget(_pumpAppWithOnboarding());
       await tester.pump();
 
-      expect(find.text('1'), findsOneWidget);
+      expect(find.text('Bring your whole family together'), findsOneWidget);
 
       final pageView = find.byType(PageView);
       await tester.drag(pageView, const Offset(-500, 0));
       await tester.pump();
-      expect(find.text('2'), findsOneWidget);
+      expect(find.text('Stay on top of every task'), findsOneWidget);
 
       await tester.drag(pageView, const Offset(-500, 0));
       await tester.pump();
-      expect(find.text('3'), findsOneWidget);
+      expect(find.text('Celebrate every moment as a family'), findsOneWidget);
     });
 
     testWidgets('shows skip and next buttons', (tester) async {
@@ -259,14 +259,14 @@ void main() {
       expect(find.text('Next'), findsOneWidget);
       await tester.tap(find.text('Next'));
       await tester.pumpAndSettle(const Duration(seconds: 1));
-      expect(find.text('2'), findsOneWidget);
+      expect(find.text('Stay on top of every task'), findsOneWidget);
       expect(find.text('Next'), findsOneWidget);
 
       await tester.tap(find.text('Next'));
       await tester.pumpAndSettle(const Duration(seconds: 1));
       await tester.pump();
 
-      expect(find.text('3'), findsOneWidget);
+      expect(find.text('Celebrate every moment as a family'), findsOneWidget);
       expect(find.text('Get Started'), findsOneWidget);
     });
 
