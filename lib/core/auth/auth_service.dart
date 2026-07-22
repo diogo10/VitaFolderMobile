@@ -5,10 +5,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class AuthService {
   User? get currentUser => Supabase.instance.client.auth.currentUser;
 
-  bool get isLoggedIn => Supabase.instance.client.auth.currentUser != null;
+  bool isLoggedIn() { 
+    return Supabase.instance.client.auth.currentUser != null;
+  }
 
-  Stream<AuthState> get onAuthStateChanged =>
-      Supabase.instance.client.auth.onAuthStateChange;
+  String get currentUserId => Supabase.instance.client.auth.currentUser?.id ?? '';
 
   Future<User?> signUp({
     required String email,
@@ -21,6 +22,10 @@ class AuthService {
 
     if (response.user == null) {
       throw AuthException('An unexpected error occurred.');
+    }
+
+    if (response.user != null && response.user!.email == null) {
+       Supabase.instance.client.auth.startAutoRefresh();
     }
 
     

@@ -1,6 +1,9 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:vita_folder_mobile/features/people/domain/entities/family_entity.dart';
 import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
 
 abstract interface class PeopleRepository {
   Future<Either<Exception, List<PersonEntity>>> getPeople();
+  Future<Either<Exception, FamilyEntity>> getFamily();
+  Future<Either<Exception, bool>> createFamily({required String name, required String inviteCode});
 }

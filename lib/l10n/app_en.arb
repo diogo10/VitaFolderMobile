@@ -38,10 +38,14 @@
   "homeEmptyRemindersEmptyDescription": "Create your first reminder to keep the family on track.",
   "homeEmptyRemindersCreateButton": "Create Reminder",
   "peopleViewTryAgain": "Try again",
+  "cancel": "Cancel",
+  "ok": "OK",
+  "peopleViewCreateFamily": "Create Family",
+  "peopleViewFamilyNameHint": "Enter family name",
   "peopleEmptyTitle": "No family members yet",
   "peopleEmptyDescription": "Add your first family member to get started.",
   "peopleLoadedTheCircle": "The Circle",
-  "peopleLoadedMembersCount": "{count} members · Smith Family",
+  "peopleLoadedMembersCount": "{count} members · {family}",
   "@peopleLoadedMembersCount": {
     "placeholders": {
       "count": {

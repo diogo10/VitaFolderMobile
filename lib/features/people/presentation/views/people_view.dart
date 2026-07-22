@@ -14,6 +14,44 @@ class PeopleView extends StatefulWidget {
 }
 
 class _PeopleViewState extends State<PeopleView> {
+  final _familyNameController = TextEditingController();
+
+  void _onCreateFamilyPressed() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.peopleViewCreateFamily),
+        content: TextField(
+          controller: _familyNameController,
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.peopleViewFamilyNameHint,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              _familyNameController.clear();
+              Navigator.of(dialogContext).pop();
+            },
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              final name = _familyNameController.text.trim();
+              if (name.isNotEmpty) {
+                context.read<PeopleCubit>().createFamily(name: name);
+                _familyNameController.clear();
+                Navigator.of(dialogContext).pop();
+              }
+            },
+            child: Text(AppLocalizations.of(context)!.ok),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   @override
   void initState() {
     super.initState();
@@ -35,14 +73,20 @@ class _PeopleViewState extends State<PeopleView> {
         }
 
         if (state is PeopleEmpty) {
-          return PeopleEmptyWidget();
+          return PeopleEmptyWidget(
+            onCreateFamilyPressed: _onCreateFamilyPressed,
+          );
         }
 
         if (state is! PeopleLoaded) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        return PeopleLoadedWidget(people: state.people);
+        return PeopleLoadedWidget(
+          people: state.people,
+          inviteCode: state.inviteCode,
+          familyName: state.familyName,
+        );
       },
     );
   }

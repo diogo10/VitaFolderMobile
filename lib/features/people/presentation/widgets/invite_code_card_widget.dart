@@ -97,6 +97,8 @@ class InviteCodeCardWidget extends StatelessWidget {
                   icon: Icons.refresh_rounded,
                   label: l.peopleWidgetsInviteCodeRefreshButton,
                   onPressed: onRefreshPressed,
+                  prominent: false,
+                  textColor: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
             ],
@@ -165,12 +167,14 @@ class _InviteActionButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final bool prominent;
+  final Color? textColor;
 
   const _InviteActionButton({
     required this.icon,
     required this.label,
     required this.onPressed,
     this.prominent = false,
+    this.textColor,
   });
 
   @override
@@ -189,10 +193,11 @@ class _InviteActionButton extends StatelessWidget {
             : BorderSide(color: Colors.white.withValues(alpha: 0.2)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
       ),
-      icon: Icon(icon, size: 17),
+      icon: Icon(icon, size: 17, color: textColor),
       label: FittedBox(
         fit: BoxFit.scaleDown,
-        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+        child: Text(label, style: TextStyle(fontWeight: FontWeight.w700, 
+        color: textColor)),
       ),
     );
   }

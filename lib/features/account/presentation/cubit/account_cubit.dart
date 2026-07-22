@@ -58,4 +58,15 @@ class AccountCubit extends Cubit<AccountState> {
       emit(NoAccount());
     }
   }
+
+  Future<void> signOut() async {
+    emit(AccountLoading());
+
+    try {
+      await _authService.signOut();
+      emit(AccountLogoutSuccess());
+    } catch (_) {
+      emit(NoAccount());
+    }
+  }
 }

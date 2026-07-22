@@ -2,39 +2,183 @@ import 'package:flutter/material.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class PeopleEmptyWidget extends StatelessWidget {
-  const PeopleEmptyWidget({super.key});
+  final VoidCallback? onCreateFamilyPressed;
+
+  const PeopleEmptyWidget({super.key, this.onCreateFamilyPressed});
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.people_outline_rounded,
-            size: 72,
-            color: Color(0xFFB0906C),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l.peopleEmptyTitle,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF604B38),
+    const primary = Color(0xFF604B38);
+    const accent = Color(0xFFB0906C);
+
+    return SafeArea(
+      child: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l.peopleLoadedTheCircle,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: const Color(0xFF604B38),
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+                Text(
+                  // headline (localized)
+                  l.peopleEmptyTitle,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: primary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  // subtitle / description (localized)
+                  l.peopleEmptyDescription,
+                  style: const TextStyle(fontSize: 14, color: accent),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 18),
+
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(width: 12),
+                    OutlinedButton(
+                      onPressed: onCreateFamilyPressed,
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: accent),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: const Text(
+                        '+ Create Family',
+                        style: TextStyle(color: Color(0xFF604B38)),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 18),
+
+                // Invite code card
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          'Enter Invite Code',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Text(
+                                  'XX-0000',
+                                  style: TextStyle(
+                                    letterSpacing: 4,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Join Family',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Ask your family admin for the invite code',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                // Quick actions
+                Column(
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const CircleAvatar(
+                        backgroundColor: Color(0xFFF7EDE3),
+                        child: Icon(Icons.mail_outline, color: primary),
+                      ),
+                      title: const Text('Email Invite'),
+                      subtitle: const Text(
+                        'Check your email for an invitation link',
+                      ),
+                      onTap: () {},
+                    ),
+                    const SizedBox(height: 6),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const CircleAvatar(
+                        backgroundColor: Color(0xFFF7EDE3),
+                        child: Icon(Icons.lock_outline, color: primary),
+                      ),
+                      title: const Text('Private & Secure'),
+                      subtitle: const Text(
+                        'Only people with the code or a direct invite can join.',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            l.peopleEmptyDescription,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFFB0906C),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
     );
   }

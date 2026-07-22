@@ -45,7 +45,7 @@ class _SignUpViewState extends State<SignUpView> {
           listener: (context, state) {
             if (state is SignUpSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: const Text("Thanks, confirm your email to finish the registration.")),
+                SnackBar(content: const Text("Thanks, You have finished the the registration.")),
               );
               context.go('/home');
             }

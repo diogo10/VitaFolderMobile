@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class AccountSettingsWidget extends StatelessWidget {
@@ -73,6 +75,9 @@ class AccountSettingsWidget extends StatelessWidget {
                 title: l.accountSettingsSignOut,
                 subtitle: l.accountSettingsSignOutSubtitle,
                 accent: true,
+                onTap: () {
+                  context.read<AccountCubit>().signOut();
+                },
               ),
             ],
           ),
@@ -138,12 +143,14 @@ class _AccountSettingsItemData {
   final String title;
   final String subtitle;
   final bool accent;
+  final VoidCallback? onTap;
 
   const _AccountSettingsItemData({
     required this.icon,
     required this.title,
     required this.subtitle,
     this.accent = false,
+    this.onTap,
   });
 }
 
@@ -191,7 +198,7 @@ class _AccountSettingsItem extends StatelessWidget {
             ),
           ),
           trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
-          onTap: () {},
+          onTap: data.onTap,
         ),
         if (!isLast) const Divider(height: 1),
       ],

@@ -130,6 +130,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get peopleViewTryAgain => 'Try again';
 
   @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get peopleViewCreateFamily => 'Create Family';
+
+  @override
+  String get peopleViewFamilyNameHint => 'Enter family name';
+
+  @override
   String get peopleEmptyTitle => 'No family members yet';
 
   @override
@@ -140,8 +152,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get peopleLoadedTheCircle => 'The Circle';
 
   @override
-  String peopleLoadedMembersCount(int count) {
-    return '$count members · Smith Family';
+  String peopleLoadedMembersCount(int count, Object family) {
+    return '$count members · $family';
   }
 
   @override

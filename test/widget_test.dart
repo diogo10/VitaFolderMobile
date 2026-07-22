@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:vita_folder_mobile/core/injections/service_locator.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
 import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
@@ -16,6 +17,7 @@ import 'package:vita_folder_mobile/features/home/domain/usecase/get_home_data_us
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_view.dart';
+import 'package:vita_folder_mobile/features/people/domain/usecase/create_family_usecase.dart';
 import 'package:vita_folder_mobile/features/people/domain/usecase/get_people_usecase.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/data/datasource/reminder_remote_datasource.dart'
@@ -59,6 +61,9 @@ Widget _pumpApp() {
           getPeopleUsecase: GetIt.instance<GetPeopleUsecase>(
             instanceName: 'getPeopleUsecase',
           ),
+          createFamilyUsecase: GetIt.instance<CreateFamilyUsecase>(
+            instanceName: 'createFamilyUsecase',
+          ),
         ),
       ),
       BlocProvider<AccountCubit>(create: (_) => AccountCubit()),
@@ -89,6 +94,9 @@ Widget _pumpAppWithOnboarding() {
           getPeopleUsecase: GetIt.instance<GetPeopleUsecase>(
             instanceName: 'getPeopleUsecase',
           ),
+          createFamilyUsecase: GetIt.instance<CreateFamilyUsecase>(
+            instanceName: 'createFamilyUsecase',
+          ),
         ),
       ),
       BlocProvider<AccountCubit>(create: (_) => AccountCubit()),
@@ -118,6 +126,10 @@ class _MockDioAdapter implements HttpClientAdapter {
 void main() {
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({'onboarding_completed': true});
+    await Supabase.initialize(
+      url: 'https://mock.supabase.co',
+      publishableKey: 'mock-anon-key',
+    );
     final serviceLocator = ServiceLocator();
     await serviceLocator.init();
 

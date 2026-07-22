@@ -20,3 +20,7 @@ class AccountLoaded extends AccountState {
 class NoAccount extends AccountState {
   NoAccount();
 }
+
+class AccountLogoutSuccess extends AccountState {
+  AccountLogoutSuccess();
+}

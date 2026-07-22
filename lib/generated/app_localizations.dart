@@ -326,6 +326,30 @@ abstract class AppLocalizations {
   /// **'Try again'**
   String get peopleViewTryAgain;
 
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @peopleViewCreateFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Family'**
+  String get peopleViewCreateFamily;
+
+  /// No description provided for @peopleViewFamilyNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter family name'**
+  String get peopleViewFamilyNameHint;
+
   /// No description provided for @peopleEmptyTitle.
   ///
   /// In en, this message translates to:
@@ -347,8 +371,8 @@ abstract class AppLocalizations {
   /// No description provided for @peopleLoadedMembersCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} members · Smith Family'**
-  String peopleLoadedMembersCount(int count);
+  /// **'{count} members · {family}'**
+  String peopleLoadedMembersCount(int count, Object family);
 
   /// No description provided for @peopleLoadedInviteCodeCopied.
   ///
