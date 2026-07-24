@@ -97,7 +97,7 @@
   "peopleWidgetsInviteCodeExpiresSuffix": " · Share with trusted family\nmembers only",
   "peopleWidgetsPendingInviteCardTitle": "1 Pending Invite",
   "peopleWidgetsPendingInviteResendButton": "Resend",
-  "peopleWidgetsRolePermissionsTitle": "Role Permissions",
+  "peopleWidgetsRolePermissionsTitle": "Roles",
   "peopleWidgetsRolePermissionsDescription": "Admins can manage all members. Parents can add tasks. Children have view-only access.",
   "peopleWidgetsRolePermissionsLearnMore": "Learn more →",
   "accountHeaderCurrentPlan": "Current Plan",

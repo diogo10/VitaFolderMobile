@@ -4,6 +4,7 @@ import 'package:vita_folder_mobile/features/account/presentation/views/account_v
 import 'package:vita_folder_mobile/features/home/presentation/views/home_view.dart';
 import 'package:vita_folder_mobile/features/login/presentation/views/sign_up_screen.dart';
 import 'package:vita_folder_mobile/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:vita_folder_mobile/features/people/presentation/views/invite_people_screen.dart';
 import 'package:vita_folder_mobile/features/people/presentation/views/people_view.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/screens/reminders_view.dart';
 
@@ -14,6 +15,10 @@ GoRouter createRouter({required bool onboardingCompleted}) {
       GoRoute(
         path: '/sign-up',
         builder: (context, state) => const SignUpView(),
+      ),
+      GoRoute(
+        path: '/invite-people',
+        builder: (context, state) => const InvitePeopleScreen(),
       ),
       GoRoute(
         path: '/onboarding',

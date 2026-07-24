@@ -253,7 +253,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get peopleWidgetsPendingInviteResendButton => 'Resend';
 
   @override
-  String get peopleWidgetsRolePermissionsTitle => 'Role Permissions';
+  String get peopleWidgetsRolePermissionsTitle => 'Roles';
 
   @override
   String get peopleWidgetsRolePermissionsDescription =>

@@ -7,6 +7,7 @@ class InviteCodeCardWidget extends StatelessWidget {
   final VoidCallback? onCopyPressed;
   final VoidCallback? onSharePressed;
   final VoidCallback? onRefreshPressed;
+  final VoidCallback? onClose;
 
   const InviteCodeCardWidget({
     super.key,
@@ -15,6 +16,7 @@ class InviteCodeCardWidget extends StatelessWidget {
     this.onCopyPressed,
     this.onSharePressed,
     this.onRefreshPressed,
+    this.onClose,
   });
 
   static const _cardColor = Color(0xFF9A7D59);
@@ -40,7 +42,22 @@ class InviteCodeCardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _CardLabel(),
+          Row(
+            children: [
+              const Expanded(child: _CardLabel()),
+              if (onClose != null)
+                SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.close_rounded, color: Colors.white, size: 18),
+                    onPressed: onClose,
+                    tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),

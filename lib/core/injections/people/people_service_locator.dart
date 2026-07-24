@@ -4,6 +4,7 @@ import 'package:vita_folder_mobile/features/people/data/repository/people_reposi
 import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
 import 'package:vita_folder_mobile/features/people/domain/usecase/create_family_usecase.dart';
 import 'package:vita_folder_mobile/features/people/domain/usecase/get_people_usecase.dart';
+import 'package:vita_folder_mobile/features/people/presentation/cubit/invite_people_cubit.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
 
 class PeopleServiceLocator {
@@ -43,6 +44,13 @@ class PeopleServiceLocator {
         createFamilyUsecase: sl(instanceName: 'createFamilyUsecase'),
       ),
       instanceName: 'peopleCubit',
+    );
+
+    sl.registerSingleton<InvitePeopleCubit>(
+      InvitePeopleCubit(
+        edgetFunctions: sl(instanceName: 'edgetFunctions'),
+      ),
+      instanceName: 'invitePeopleCubit',
     );
   }
 }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vita_folder_mobile/core/injections/service_locator.dart';
+import 'package:vita_folder_mobile/features/people/data/datasource/people_local_datasource.dart';
 import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/add_family_member_card_widget.dart';
@@ -27,6 +30,23 @@ class PeopleLoadedWidget extends StatefulWidget {
 }
 
 class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
+  bool _inviteCodeCardDismissed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDismissedState();
+  }
+
+  Future<void> _loadDismissedState() async {
+    final datasource = slInstance<PeopleLocalDatasource>(
+      instanceName: 'peopleLocalDatasource',
+    );
+    final dismissed = await datasource.isInviteCodeCardDismissed();
+    if (mounted) {
+      setState(() => _inviteCodeCardDismissed = dismissed);
+    }
+  }
 
   Future<void> _copyToClipboard(String value, String message) async {
     await Clipboard.setData(ClipboardData(text: value));
@@ -38,6 +58,16 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _closeInviteCodeCard() async {
+    final datasource = slInstance<PeopleLocalDatasource>(
+      instanceName: 'peopleLocalDatasource',
+    );
+    await datasource.dismissInviteCodeCard();
+    if (mounted) {
+      setState(() => _inviteCodeCardDismissed = true);
+    }
   }
 
   @override
@@ -74,33 +104,41 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                   color: const Color(0xFFB0906C),
                 ),
               ),
-              const SizedBox(height: 22),
-              InviteCodeCardWidget(
-                code: widget.inviteCode,
-                expiresInDays: 6,
-                onCopyPressed: () => _copyToClipboard(
-                  widget.inviteCode,
-                  l.peopleLoadedInviteCodeCopied,
+              if (!_inviteCodeCardDismissed) ...[
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: InviteCodeCardWidget(
+                    code: widget.inviteCode,
+                    expiresInDays: 6,
+                    onCopyPressed: () => _copyToClipboard(
+                      widget.inviteCode,
+                      l.peopleLoadedInviteCodeCopied,
+                    ),
+                    onSharePressed: () => _copyToClipboard(
+                      'https://vitafolder.app/invite/'
+                      '${widget.inviteCode.replaceAll('•', '')}',
+                      l.peopleLoadedInviteLinkCopied,
+                    ),
+                    onClose: () => _closeInviteCodeCard(),
+                  ),
                 ),
-                onSharePressed: () => _copyToClipboard(
-                  'https://vitafolder.app/invite/'
-                  '${widget.inviteCode.replaceAll('•', '')}',
-                  l.peopleLoadedInviteLinkCopied,
-                ),
-              ),
-              const SizedBox(height: 26),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      l.peopleLoadedMembersTitle,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: const Color(0xFF604B38),
-                        fontWeight: FontWeight.w800,
+                const SizedBox(height: 26),
+              ],
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l.peopleLoadedMembersTitle,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: const Color(0xFF604B38),
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 14),
               FamilyMemberCardWidget(
@@ -164,13 +202,12 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
               ),
               const SizedBox(height: 12),
               AddFamilyMemberCardWidget(
-                onPressed: () =>
-                    _showMessage(l.peopleLoadedAddFamilyMemberSelected),
+                onPressed: () => context.push('/invite-people'),
               ),
               const SizedBox(height: 16),
               RolePermissionsCardWidget(
                 onLearnMorePressed: () =>
-                    _showMessage(l.peopleLoadedRolePermissionsSelected),
+                    context.go("/account"),
               ),
             ],
           ),

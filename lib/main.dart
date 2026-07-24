@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/core/auth/auth_service.dart';
+import 'package:vita_folder_mobile/core/functions/edget_functions.dart';
 import 'package:vita_folder_mobile/core/injections/service_locator.dart';
 import 'package:vita_folder_mobile/core/router/app_router.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/login/presentation/cubit/sign_up_cubit.dart';
 import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
+import 'package:vita_folder_mobile/features/people/presentation/cubit/invite_people_cubit.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
@@ -51,6 +53,11 @@ void main() async {
             slInstance<AuthService>(instanceName: 'authService'),
           ),
         ),
+        BlocProvider(
+          create: (_) => InvitePeopleCubit(
+            edgetFunctions: slInstance<EdgetFunctions>(instanceName: 'edgetFunctions'),
+          ),
+        )
       ],
       child: MyApp(onboardingCompleted: onboardingCompleted),
     ),

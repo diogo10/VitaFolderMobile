@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:vita_folder_mobile/core/auth/auth_service.dart';
+import 'package:vita_folder_mobile/core/functions/edget_functions.dart';
 import 'package:vita_folder_mobile/core/injections/home/home_service_locator.dart';
 import 'package:vita_folder_mobile/core/injections/people/people_service_locator.dart';
 import 'package:vita_folder_mobile/core/injections/reminders/reminder_service_locator.dart';
@@ -12,6 +13,11 @@ class ServiceLocator {
     slInstance.registerSingleton<AuthService>(
       AuthService(),
       instanceName: 'authService',
+    );
+
+    slInstance.registerSingleton<EdgetFunctions>(
+      EdgetFunctions(),
+      instanceName: 'edgetFunctions',
     );
 
     slInstance.registerSingleton<OnboardingLocalDatasource>(

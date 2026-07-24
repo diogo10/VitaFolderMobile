@@ -557,7 +557,7 @@ abstract class AppLocalizations {
   /// No description provided for @peopleWidgetsRolePermissionsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Role Permissions'**
+  /// **'Roles'**
   String get peopleWidgetsRolePermissionsTitle;
 
   /// No description provided for @peopleWidgetsRolePermissionsDescription.
