@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/core/functions/edget_functions.dart';
+import 'package:vita_folder_mobile/core/injections/account/account_service_locator.dart';
 import 'package:vita_folder_mobile/core/injections/home/home_service_locator.dart';
 import 'package:vita_folder_mobile/core/injections/people/people_service_locator.dart';
 import 'package:vita_folder_mobile/core/injections/reminders/reminder_service_locator.dart';
@@ -28,10 +29,13 @@ class ServiceLocator {
     final reminderServiceLocator = ReminderServiceLocator(slInstance);
     reminderServiceLocator.init();
 
-    final homeServiceLocator = HomeServiceLocator(slInstance);
-    homeServiceLocator.init();
-
-    final peopleServiceLocator = PeopleServiceLocator(slInstance);
+     final peopleServiceLocator = PeopleServiceLocator(slInstance);
     peopleServiceLocator.init();
+
+    final homeServiceLocator = HomeServiceLocator(slInstance);
+    homeServiceLocator.init(slInstance(instanceName: 'authService'));
+
+    final accountServiceLocator = AccountServiceLocator(slInstance);
+    accountServiceLocator.init();
   }
 }

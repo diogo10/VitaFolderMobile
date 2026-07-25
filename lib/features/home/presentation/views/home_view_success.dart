@@ -1,137 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
-import 'package:vita_folder_mobile/features/people/presentation/widgets/family_header_widget.dart';
+import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_action_card_widget.dart';
+import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_footer_widget.dart';
+import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_header_widget.dart';
+import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_invite_card_widget.dart';
+import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_reminders_widget.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class HomeViewSuccess extends StatelessWidget {
   final HomeEntity data;
-
   const HomeViewSuccess({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            FamilyHeaderWidget(
-              role: data.greeting,
-              onNotificationsPressed: () => context.go('/reminders'),
-              onProfilePressed: () => context.go('/account'),
+             HomeEmptyHeaderWidget(
+              isLoggedIn: data.message.isNotEmpty,
             ),
-            const SizedBox(height: 32),
-            Text(
-              AppLocalizations.of(context)!.homeToday,
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 20),
-            _buildStatsRow(context),
             const SizedBox(height: 24),
-            _buildTaskCard(context, data.message),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatsRow(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final l = AppLocalizations.of(context)!;
-    return Row(
-      children: [
-        Expanded(
-          child: _StatCard(
-            label: l.homeTasks,
-            value: '3',
-            color: scheme.primary,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _StatCard(
-            label: l.homeCompleted,
-            value: '1',
-            color: Colors.green,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _StatCard(
-            label: l.homePending,
-            value: '2',
-            color: Colors.orange,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTaskCard(BuildContext context, String message) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(
-              Icons.task_alt,
-              color: Theme.of(context).colorScheme.primary,
-              size: 32,
+            HomeEmptyActionCardWidget(
+              icon: Icons.group_rounded,
+              title: l.homeEmptyAddPeopleTitle,
+              subtitle: l.homeEmptyAddPeopleSubtitle,
+              buttonLabel: l.homeEmptyAddPeopleButton,
+              onPressed: () => context.go('/people'),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                message,
-                style: Theme.of(context).textTheme.bodyLarge,
+            const SizedBox(height: 16),
+            HomeEmptyActionCardWidget(
+              icon: Icons.notifications_active_rounded,
+              title: l.homeEmptyReminderTitle,
+              subtitle: l.homeEmptyReminderSubtitle,
+              buttonLabel: l.homeEmptyReminderButton,
+              onPressed: () => context.go('/reminders'),
+            ),
+            const SizedBox(height: 16),
+            HomeEmptyActionCardWidget(
+              icon: Icons.person_add_alt_1_rounded,
+              title: l.homeEmptyAccountTitle,
+              subtitle: l.homeEmptyAccountSubtitle,
+              buttonLabel: l.homeEmptyAccountButton,
+              onPressed: () => context.go('/account'),
+            ),
+            const SizedBox(height: 24),
+            if (data.peopleInCircle.isNotEmpty)
+              HomeEmptyInviteCardWidget(
+                onSharePressed: () {},
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color color;
-
-  const _StatCard({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-            ),
+              const HomeEmptyFooterWidget(),
+            const SizedBox(height: 20),
+            const HomeEmptyRemindersWidget(),
           ],
         ),
       ),

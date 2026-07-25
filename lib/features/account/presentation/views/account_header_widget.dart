@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class AccountHeaderWidget extends StatelessWidget {
@@ -17,7 +16,6 @@ class AccountHeaderWidget extends StatelessWidget {
     final primaryColor = context.colorScheme.primary;
     final onSurface = context.colorScheme.onSurface;
     final surface = context.colorScheme.surface;
-    final l = AppLocalizations.of(context)!;
 
     return Container(
       width: double.infinity,
@@ -26,20 +24,6 @@ class AccountHeaderWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.more_horiz_rounded, size: 24),
-              ),
-            ],
-          ),
           const SizedBox(height: 24),
           Container(
             width: 120,
@@ -91,62 +75,7 @@ class AccountHeaderWidget extends StatelessWidget {
               color: onSurface.withValues(alpha: 0.7),
             ),
           ),
-          const SizedBox(height: 28),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              color: primaryColor,
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l.accountHeaderCurrentPlan,
-                        style: context.textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.85),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        l.accountHeaderPlanName,
-                        style: context.textTheme.headlineSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        l.accountHeaderPlanDescription,
-                        style: context.textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.85),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: surface,
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Text(
-                    l.accountHeaderStatusActive,
-                    style: context.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: onSurface,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
         ],
       ),
     );

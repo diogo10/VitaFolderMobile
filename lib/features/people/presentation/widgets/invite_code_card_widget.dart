@@ -122,26 +122,10 @@ class InviteCodeCardWidget extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Center(
-            child: Text.rich(
-              TextSpan(
-                text: l.peopleWidgetsInviteCodeExpiresPrefix,
-                children: [
-                  TextSpan(
-                    text: l.peopleWidgetsInviteCodeExpiresDays(expiresInDays),
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+            child: Text(
+                    l.peopleWidgetsInviteCodeExpiresSuffix,
+                    style: const TextStyle(fontSize: 12, color: _softWhite),
                   ),
-                  TextSpan(
-                    text: l.peopleWidgetsInviteCodeExpiresSuffix,
-                  ),
-                ],
-              ),
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: _softWhite.withValues(alpha: 0.72),
-                height: 1.35,
-                fontSize: 11,
-              ),
-            ),
           ),
         ],
       ),

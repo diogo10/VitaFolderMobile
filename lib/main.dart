@@ -44,9 +44,7 @@ void main() async {
           create: (_) => slInstance<PeopleCubit>(instanceName: 'peopleCubit'),
         ),
         BlocProvider(
-          create: (_) => AccountCubit(
-            slInstance<AuthService>(instanceName: 'authService'),
-          ),
+          create: (_) => slInstance<AccountCubit>(instanceName: 'accountCubit'),
         ),
         BlocProvider(
           create: (_) => SignUpCubit(

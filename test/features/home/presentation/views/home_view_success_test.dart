@@ -9,6 +9,7 @@ void main() {
     greeting: 'Good morning!',
     date: 'Monday, July 13',
     message: 'You have 3 tasks remaining today.',
+    peopleInCircle: [],
   );
 
   Widget pumpApp(HomeEntity entity) {
@@ -68,6 +69,7 @@ void main() {
         greeting: 'Good evening!',
         date: 'Monday, July 13',
         message: 'You have 1 task remaining.',
+        peopleInCircle: [],
       );
 
       await tester.pumpWidget(pumpApp(otherEntity));

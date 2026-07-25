@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class AccountSettingsWidget extends StatelessWidget {
-  const AccountSettingsWidget({super.key});
+  final String familyCode;
+  const AccountSettingsWidget({super.key, required this.familyCode});
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +24,6 @@ class AccountSettingsWidget extends StatelessWidget {
                 icon: Icons.person_rounded,
                 title: l.accountSettingsEditProfile,
                 subtitle: l.accountSettingsEditProfileSubtitle,
-              ),
-              _AccountSettingsItemData(
-                icon: Icons.lock_outline_rounded,
-                title: l.accountSettingsPasswordSecurity,
-                subtitle: l.accountSettingsPasswordSecuritySubtitle,
               ),
               _AccountSettingsItemData(
                 icon: Icons.notifications_rounded,
@@ -53,6 +50,7 @@ class AccountSettingsWidget extends StatelessWidget {
                 icon: Icons.person_add_alt_1_rounded,
                 title: l.accountSettingsInviteMembers,
                 subtitle: l.accountSettingsInviteMembersSubtitle,
+                onTap: () => context.go('/people'),
               ),
             ],
           ),

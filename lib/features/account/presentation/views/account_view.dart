@@ -24,7 +24,7 @@ class _AccountViewState extends State<AccountView> {
   Widget build(BuildContext context) {
     return BlocConsumer<AccountCubit, AccountState>(
       listener: (context, state) {
-        if (state is AccountLogoutSuccess || state is AccountLoaded) {
+        if (state is AccountLogoutSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("You have been signed out.")),
           );

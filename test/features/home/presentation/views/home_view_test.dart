@@ -58,6 +58,7 @@ void main() {
         greeting: 'Good morning!',
         date: 'Monday, July 13',
         message: 'You have 3 tasks remaining today.',
+        peopleInCircle: [],
       );
 
       await tester.pumpWidget(pumpApp(HomeLoaded(data: entity)));

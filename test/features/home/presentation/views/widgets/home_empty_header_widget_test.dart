@@ -7,7 +7,9 @@ Widget _pumpApp() {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: const Scaffold(body: HomeEmptyHeaderWidget()),
+    home: const Scaffold(body: HomeEmptyHeaderWidget(
+      isLoggedIn: false,
+    )),
   );
 }
 

@@ -3,7 +3,8 @@ import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class HomeEmptyHeaderWidget extends StatelessWidget {
-  const HomeEmptyHeaderWidget({super.key});
+  final bool isLoggedIn;
+  const HomeEmptyHeaderWidget({required this.isLoggedIn, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,13 +12,6 @@ class HomeEmptyHeaderWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l.homeEmptyHeaderSubtitle,
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: Colors.grey[600],
-          ),
-        ),
-        const SizedBox(height: 4),
         Text(
           l.homeEmptyHeaderTitle,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(

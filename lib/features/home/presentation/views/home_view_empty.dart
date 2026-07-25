@@ -19,7 +19,9 @@ class HomeViewEmpty extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const HomeEmptyHeaderWidget(),
+            const HomeEmptyHeaderWidget( 
+              isLoggedIn: false,
+            ),
             const SizedBox(height: 24),
             HomeEmptyActionCardWidget(
               icon: Icons.group_rounded,

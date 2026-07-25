@@ -1,12 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_state.dart';
+import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
 
 class AccountCubit extends Cubit<AccountState> {
   final AuthService _authService;
+  final PeopleRepository _peopleRepository;
 
-  AccountCubit([AuthService? authService])
-      : _authService = authService ?? AuthService(),
+  AccountCubit({
+    required AuthService authService,
+    required PeopleRepository peopleRepository,
+  })  : _authService = authService,
+        _peopleRepository = peopleRepository,
         super(AccountInitial());
 
   Future<void> loadAccount() async {
@@ -16,11 +21,13 @@ class AccountCubit extends Cubit<AccountState> {
       final user = _authService.currentUser;
 
       if (user != null) {
+        final familyCode = await _getFamilyCodeForUser();
         emit(
           AccountLoaded(
             userName: user.userMetadata?['full_name']?.toString() ??
                 user.email?.split('@').first ?? 'User',
             email: user.email ?? '',
+            familyCode: familyCode,
           ),
         );
         return;
@@ -47,11 +54,13 @@ class AccountCubit extends Cubit<AccountState> {
       );
 
       final user = _authService.currentUser;
+      final familyCode = await _getFamilyCodeForUser();
       emit(
         AccountLoaded(
           userName: user?.userMetadata?['full_name']?.toString() ??
               email.trim().split('@').first,
           email: user?.email ?? email.trim(),
+          familyCode: familyCode,
         ),
       );
     } catch (_) {
@@ -68,5 +77,10 @@ class AccountCubit extends Cubit<AccountState> {
     } catch (_) {
       emit(NoAccount());
     }
+  }
+
+  Future<String> _getFamilyCodeForUser() async {
+    final result = await _peopleRepository.getFamily();
+    return result.fold((_) => '', (family) => family.inviteCode);
   }
 }

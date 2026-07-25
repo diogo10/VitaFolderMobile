@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class PeopleEmptyWidget extends StatelessWidget {
@@ -159,7 +160,12 @@ class PeopleEmptyWidget extends StatelessWidget {
                       subtitle: const Text(
                         'Check your email for an invitation link',
                       ),
-                      onTap: () {},
+                      onTap: () => launchUrl(
+                        Uri(
+                          scheme: 'mailto',
+                          path: '',
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 6),
                     ListTile(

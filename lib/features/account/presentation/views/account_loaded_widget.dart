@@ -27,7 +27,9 @@ class AccountLoadedWidget extends StatelessWidget {
               userName: loadedState.userName,
               email: loadedState.email,
             ),
-            const AccountSettingsWidget(),
+            AccountSettingsWidget(
+              familyCode: loadedState.familyCode, // Pass the actual family code here
+            ),
           ],
         ),
       ),

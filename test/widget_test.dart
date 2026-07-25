@@ -9,14 +9,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/core/injections/service_locator.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
-import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
-import 'package:vita_folder_mobile/features/home/domain/repository/home_repository.dart';
 import 'package:vita_folder_mobile/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_view.dart';
+import 'package:vita_folder_mobile/features/people/domain/entities/family_entity.dart';
+import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
+import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
 import 'package:vita_folder_mobile/features/people/domain/usecase/create_family_usecase.dart';
 import 'package:vita_folder_mobile/features/people/domain/usecase/get_people_usecase.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
@@ -26,17 +28,22 @@ import 'package:vita_folder_mobile/features/reminders/domain/usecase/get_reminde
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/main.dart';
 
-class _MockHomeRepository implements HomeRepository {
+class _FakeAuthService extends AuthService {
   @override
-  Future<Either<Exception, HomeEntity>> getHomeData() async {
-    return Right(
-      HomeEntity(
-        greeting: 'Good morning!',
-        date: 'Monday, July 13',
-        message: 'You have 3 tasks remaining today.',
-      ),
-    );
-  }
+  bool isLoggedIn() => true;
+}
+
+class _FakePeopleRepository implements PeopleRepository {
+  @override
+  Future<Either<Exception, List<PersonEntity>>> getPeople() async => Right([]);
+
+  @override
+  Future<Either<Exception, FamilyEntity>> getFamily() async => Right(
+        FamilyEntity(name: 'Fam', inviteCode: 'ABC'),
+      );
+
+  @override
+  Future<Either<Exception, bool>> createFamily({required String name, required String inviteCode}) async => Right(true);
 }
 
 Widget _pumpApp() {
@@ -66,7 +73,11 @@ Widget _pumpApp() {
           ),
         ),
       ),
-      BlocProvider<AccountCubit>(create: (_) => AccountCubit()),
+      BlocProvider<AccountCubit>(
+        create: (_) => GetIt.instance<AccountCubit>(
+          instanceName: 'accountCubit',
+        ),
+      ),
     ],
     child: const MyApp(onboardingCompleted: true),
   );
@@ -99,7 +110,11 @@ Widget _pumpAppWithOnboarding() {
           ),
         ),
       ),
-      BlocProvider<AccountCubit>(create: (_) => AccountCubit()),
+      BlocProvider<AccountCubit>(
+        create: (_) => GetIt.instance<AccountCubit>(
+          instanceName: 'accountCubit',
+        ),
+      ),
     ],
     child: const MyApp(onboardingCompleted: false),
   );
@@ -135,16 +150,10 @@ void main() {
 
     await slInstance.unregister<HomeCubit>(instanceName: 'homeCubit');
     await slInstance.unregister<GetHomeDataUsecase>(instanceName: 'getHomeDataUsecase');
-    await slInstance.unregister<HomeRepository>(instanceName: 'homeRepositoryImpl');
-    slInstance.registerSingleton<HomeRepository>(
-      _MockHomeRepository(),
-      instanceName: 'homeRepositoryImpl',
-    );
     slInstance.registerSingleton<GetHomeDataUsecase>(
       GetHomeDataUsecase(
-        repository: slInstance<HomeRepository>(
-          instanceName: 'homeRepositoryImpl',
-        ),
+        authService: _FakeAuthService(),
+        peopleRepository: _FakePeopleRepository(),
       ),
       instanceName: 'getHomeDataUsecase',
     );
@@ -163,7 +172,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Today'), findsOneWidget);
-      expect(find.text('Good morning!'), findsOneWidget);
+      expect(find.text('Hello'), findsOneWidget);
       expect(find.text('Search Content'), findsNothing);
 
       await tester.pump(const Duration(seconds: 1));
