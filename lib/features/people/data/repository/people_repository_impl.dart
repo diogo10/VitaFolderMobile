@@ -15,31 +15,6 @@ class PeopleRepositoryImpl implements PeopleRepository {
       _authService = authService ?? AuthService();
 
   @override
-  Future<Either<Exception, FamilyEntity>> getFamily() async {
-    try {
-      final userId = _authService.currentUserId;
-      final response = await _client
-          .from('families')
-          .select()
-          .eq('created_by', userId);
-
-      if (response.isEmpty) {
-        return Left(Exception('No families found'));
-      }
-
-      final body = response.single;
-      final families = FamilyEntity(
-        name: body['name'],
-        inviteCode: body['invite_code'],
-      );
-      return Right(families);
-    } catch (e) {
-      debugPrint('Error getting the family: $e');
-      return Left(Exception(e.toString()));
-    }
-  }
-
-  @override
   Future<FamilyEntity?> getFamilyBy(String id) async {
     try {
       final response = await _client.from('families').select().eq('id', id);

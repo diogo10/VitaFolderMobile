@@ -5,6 +5,7 @@ import 'package:vita_folder_mobile/core/injections/account/account_service_locat
 import 'package:vita_folder_mobile/core/injections/home/home_service_locator.dart';
 import 'package:vita_folder_mobile/core/injections/people/people_service_locator.dart';
 import 'package:vita_folder_mobile/core/injections/reminders/reminder_service_locator.dart';
+import 'package:vita_folder_mobile/core/local_storage/local_storage_datasource.dart';
 import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 
 final GetIt slInstance = GetIt.instance;
@@ -24,6 +25,11 @@ class ServiceLocator {
     slInstance.registerSingleton<OnboardingLocalDatasource>(
       OnboardingLocalDatasource(),
       instanceName: 'onboardingLocalDatasource',
+    );
+
+    slInstance.registerSingleton<LocalStorageDatasource>(
+      LocalStorageDatasource(),
+      instanceName: 'localStorageDatasource',
     );
 
     final reminderServiceLocator = ReminderServiceLocator(slInstance);

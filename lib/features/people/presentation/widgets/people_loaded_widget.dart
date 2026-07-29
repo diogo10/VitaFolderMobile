@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vita_folder_mobile/core/local_storage/local_storage_datasource.dart';
 import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/add_family_member_card_widget.dart';
@@ -28,6 +30,26 @@ class PeopleLoadedWidget extends StatefulWidget {
 }
 
 class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
+  final _storage = GetIt.instance<LocalStorageDatasource>(
+    instanceName: 'localStorageDatasource',
+  );
+  bool _showInviteCodeCard = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInviteCodeCardVisibility();
+  }
+
+  Future<void> _loadInviteCodeCardVisibility() async {
+    final dismissed = await _storage.getBool(
+      'invite_code_card_dismissed_${widget.inviteCode}',
+    );
+    if (mounted) {
+      setState(() => _showInviteCodeCard = !dismissed);
+    }
+  }
+
   Future<void> _copyToClipboard(String value, String message) async {
     await Clipboard.setData(ClipboardData(text: value));
     if (!mounted) return;
@@ -104,6 +126,14 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
     }
   }
 
+  void _closeInviteCodeCardClicked() {
+    _storage.setBool(
+      'invite_code_card_dismissed_${widget.inviteCode}',
+      true,
+    );
+    setState(() => _showInviteCodeCard = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -138,23 +168,25 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                   color: const Color(0xFFB0906C),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: InviteCodeCardWidget(
-                  code: widget.inviteCode,
-                  expiresInDays: 6,
-                  onCopyPressed: () => _copyToClipboard(
-                    widget.inviteCode,
-                    l.peopleLoadedInviteCodeCopied,
-                  ),
-                  onSharePressed: () => _copyToClipboard(
-                    'https://vitafolder.app/invite/'
-                    '${widget.inviteCode.replaceAll('•', '')}',
-                    l.peopleLoadedInviteLinkCopied,
+              if (_showInviteCodeCard)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: InviteCodeCardWidget(
+                    code: widget.inviteCode,
+                    expiresInDays: 6,
+                    onCopyPressed: () => _copyToClipboard(
+                      widget.inviteCode,
+                      l.peopleLoadedInviteCodeCopied,
+                    ),
+                    onSharePressed: () => _copyToClipboard(
+                      'https://vitafolder.app/invite/'
+                      '${widget.inviteCode.replaceAll('•', '')}',
+                      l.peopleLoadedInviteLinkCopied,
+                    ),
+                    onClose: _closeInviteCodeCardClicked,
                   ),
                 ),
-              ),
-              const SizedBox(height: 26),
+              SizedBox(height: _showInviteCodeCard ? 26 : 8),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: Row(

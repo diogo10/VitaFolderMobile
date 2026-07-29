@@ -39,11 +39,6 @@ class _FakePeopleRepository implements PeopleRepository {
   Future<Either<Exception, List<PersonEntity>>> getPeople() async => Right([]);
 
   @override
-  Future<Either<Exception, FamilyEntity>> getFamily() async => Right(
-        FamilyEntity(name: 'Fam', inviteCode: 'ABC'),
-      );
-
-  @override
   Future<Either<Exception, bool>> createFamily({required String name, required String inviteCode}) async => Right(true);
 
   @override

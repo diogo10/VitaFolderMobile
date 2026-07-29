@@ -49,7 +49,7 @@ class AccountSettingsWidget extends StatelessWidget {
               _AccountSettingsItemData(
                 icon: Icons.person_add_alt_1_rounded,
                 title: l.accountSettingsInviteMembers,
-                subtitle: l.accountSettingsInviteMembersSubtitle,
+                subtitle: "$familyCode - ${l.accountSettingsInviteMembersSubtitle}",
                 onTap: () => context.go('/people'),
               ),
             ],

@@ -85,7 +85,7 @@ class AccountCubit extends Cubit<AccountState> {
   }
 
   Future<String> _getFamilyCodeForUser() async {
-    final result = await _peopleRepository.getFamily();
+    final result = await _peopleRepository.getMyFamily();
     return result.fold((_) => '', (family) => family.inviteCode);
   }
 }
