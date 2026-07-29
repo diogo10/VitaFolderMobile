@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_state.dart';
 import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
@@ -45,8 +46,6 @@ class AccountCubit extends Cubit<AccountState> {
       return;
     }
 
-    emit(AccountLoading());
-
     try {
       await _authService.signIn(
         email: email.trim(),
@@ -54,6 +53,7 @@ class AccountCubit extends Cubit<AccountState> {
       );
 
       final user = _authService.currentUser;
+       emit(AccountLoading());
       final familyCode = await _getFamilyCodeForUser();
       emit(
         AccountLoaded(
@@ -63,8 +63,13 @@ class AccountCubit extends Cubit<AccountState> {
           familyCode: familyCode,
         ),
       );
-    } catch (_) {
-      emit(NoAccount());
+    } on Exception catch (e, _) {
+      if (e is AuthApiException) {
+        emit(LoginFailed());
+      } else {
+        emit(NoAccount());
+      }
+  
     }
   }
 

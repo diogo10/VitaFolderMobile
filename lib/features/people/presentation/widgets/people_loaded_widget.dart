@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vita_folder_mobile/core/injections/service_locator.dart';
-import 'package:vita_folder_mobile/features/people/data/datasource/people_local_datasource.dart';
 import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/add_family_member_card_widget.dart';
@@ -30,24 +28,6 @@ class PeopleLoadedWidget extends StatefulWidget {
 }
 
 class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
-  bool _inviteCodeCardDismissed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadDismissedState();
-  }
-
-  Future<void> _loadDismissedState() async {
-    final datasource = slInstance<PeopleLocalDatasource>(
-      instanceName: 'peopleLocalDatasource',
-    );
-    final dismissed = await datasource.isInviteCodeCardDismissed();
-    if (mounted) {
-      setState(() => _inviteCodeCardDismissed = dismissed);
-    }
-  }
-
   Future<void> _copyToClipboard(String value, String message) async {
     await Clipboard.setData(ClipboardData(text: value));
     if (!mounted) return;
@@ -60,13 +40,67 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<void> _closeInviteCodeCard() async {
-    final datasource = slInstance<PeopleLocalDatasource>(
-      instanceName: 'peopleLocalDatasource',
-    );
-    await datasource.dismissInviteCodeCard();
-    if (mounted) {
-      setState(() => _inviteCodeCardDismissed = true);
+  List<Widget> _buildMemberCards(AppLocalizations l) {
+    final colors = <FamilyMemberRole, Color>{
+      FamilyMemberRole.admin: const Color(0xFF70969A),
+      FamilyMemberRole.parent: const Color(0xFF3D76A8),
+      FamilyMemberRole.child: const Color(0xFFB47D88),
+      FamilyMemberRole.member: const Color(0xFF8A7592),
+    };
+    final statusColors = <FamilyMemberRole, Color>{
+      FamilyMemberRole.admin: const Color(0xFF53B77A),
+      FamilyMemberRole.parent: const Color(0xFF5D9DF5),
+      FamilyMemberRole.child: const Color(0xFFB56AF4),
+      FamilyMemberRole.member: const Color(0xFF45C76C),
+    };
+
+    final cards = <Widget>[];
+    for (int i = 0; i < widget.people.length; i++) {
+      if (i > 0) cards.add(const SizedBox(height: 10));
+      final person = widget.people[i];
+      final role = _roleFromString(person.role);
+      cards.add(
+        FamilyMemberCardWidget(
+          key: ValueKey(person.id ?? i),
+          name: person.name ?? '',
+          relationship: _relationshipFromRole(person.role),
+          detail: person.email ?? person.phone ?? '',
+          status: 'Active',
+          role: role,
+          avatarColor: colors[role]!,
+          statusColor: statusColors[role]!,
+          onPressed: () => _showMessage(
+            l.peopleLoadedMemberSelected(person.name ?? ''),
+          ),
+        ),
+      );
+    }
+    return cards;
+  }
+
+  FamilyMemberRole _roleFromString(String? role) {
+    switch (role?.toLowerCase()) {
+      case 'admin':
+        return FamilyMemberRole.admin;
+      case 'parent':
+        return FamilyMemberRole.parent;
+      case 'child':
+        return FamilyMemberRole.child;
+      default:
+        return FamilyMemberRole.member;
+    }
+  }
+
+  String _relationshipFromRole(String? role) {
+    switch (role?.toLowerCase()) {
+      case 'admin':
+        return 'Admin';
+      case 'parent':
+        return 'Parent';
+      case 'child':
+        return 'Child';
+      default:
+        return 'Member';
     }
   }
 
@@ -104,28 +138,25 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                   color: const Color(0xFFB0906C),
                 ),
               ),
-              if (!_inviteCodeCardDismissed) ...[
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: InviteCodeCardWidget(
-                    code: widget.inviteCode,
-                    expiresInDays: 6,
-                    onCopyPressed: () => _copyToClipboard(
-                      widget.inviteCode,
-                      l.peopleLoadedInviteCodeCopied,
-                    ),
-                    onSharePressed: () => _copyToClipboard(
-                      'https://vitafolder.app/invite/'
-                      '${widget.inviteCode.replaceAll('•', '')}',
-                      l.peopleLoadedInviteLinkCopied,
-                    ),
-                    onClose: () => _closeInviteCodeCard(),
-                  ),
-                ),
-                const SizedBox(height: 26),
-              ],
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
+                child: InviteCodeCardWidget(
+                  code: widget.inviteCode,
+                  expiresInDays: 6,
+                  onCopyPressed: () => _copyToClipboard(
+                    widget.inviteCode,
+                    l.peopleLoadedInviteCodeCopied,
+                  ),
+                  onSharePressed: () => _copyToClipboard(
+                    'https://vitafolder.app/invite/'
+                    '${widget.inviteCode.replaceAll('•', '')}',
+                    l.peopleLoadedInviteLinkCopied,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 26),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: Row(
                   children: [
                     Expanded(
@@ -140,66 +171,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
-              FamilyMemberCardWidget(
-                name: 'Sarah Smith',
-                relationship: 'Mom',
-                detail: 'sarah@smith.com',
-                status: 'Active now',
-                role: FamilyMemberRole.admin,
-                avatarColor: const Color(0xFF70969A),
-                statusColor: const Color(0xFF53B77A),
-                onPressed: () =>
-                    _showMessage(l.peopleLoadedMemberSelected('Sarah Smith')),
-              ),
-              const SizedBox(height: 10),
-              FamilyMemberCardWidget(
-                name: 'James Smith',
-                relationship: 'Dad',
-                detail: 'james@smith.com',
-                status: 'At Work',
-                role: FamilyMemberRole.parent,
-                avatarColor: const Color(0xFF3D76A8),
-                statusColor: const Color(0xFF5D9DF5),
-                onPressed: () =>
-                    _showMessage(l.peopleLoadedMemberSelected('James Smith')),
-              ),
-              const SizedBox(height: 10),
-              FamilyMemberCardWidget(
-                name: 'Lily Smith',
-                relationship: 'Daughter',
-                detail: 'Age 9',
-                status: 'At School',
-                role: FamilyMemberRole.child,
-                avatarColor: const Color(0xFFB47D88),
-                statusColor: const Color(0xFFB56AF4),
-                onPressed: () =>
-                    _showMessage(l.peopleLoadedMemberSelected('Lily Smith')),
-              ),
-              const SizedBox(height: 10),
-              FamilyMemberCardWidget(
-                name: 'Max Smith',
-                relationship: 'Son',
-                detail: 'Age 7',
-                status: 'At School',
-                role: FamilyMemberRole.child,
-                avatarColor: const Color(0xFF7F8F82),
-                statusColor: const Color(0xFFB56AF4),
-                onPressed: () =>
-                    _showMessage(l.peopleLoadedMemberSelected('Max Smith')),
-              ),
-              const SizedBox(height: 10),
-              FamilyMemberCardWidget(
-                name: 'Rose Smith',
-                relationship: 'Grandma',
-                detail: 'rose@smith.com',
-                status: 'Last seen 2h ago',
-                role: FamilyMemberRole.member,
-                avatarColor: const Color(0xFF8A7592),
-                statusColor: const Color(0xFF45C76C),
-                onPressed: () =>
-                    _showMessage(l.peopleLoadedMemberSelected('Rose Smith')),
-              ),
+              ..._buildMemberCards(l),
               const SizedBox(height: 12),
               AddFamilyMemberCardWidget(
                 onPressed: () => context.push('/invite-people'),

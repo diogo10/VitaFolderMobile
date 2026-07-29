@@ -539,7 +539,7 @@ abstract class AppLocalizations {
   /// No description provided for @peopleWidgetsInviteCodeExpiresSuffix.
   ///
   /// In en, this message translates to:
-  /// **' · Share with trusted family\nmembers only'**
+  /// **'Share with trusted family members only'**
   String get peopleWidgetsInviteCodeExpiresSuffix;
 
   /// No description provided for @peopleWidgetsPendingInviteCardTitle.

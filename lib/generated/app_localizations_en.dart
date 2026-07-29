@@ -244,7 +244,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get peopleWidgetsInviteCodeExpiresSuffix =>
-      ' · Share with trusted family\nmembers only';
+      'Share with trusted family members only';
 
   @override
   String get peopleWidgetsPendingInviteCardTitle => '1 Pending Invite';

@@ -60,7 +60,14 @@ class _PeopleViewState extends State<PeopleView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PeopleCubit, PeopleState>(
+    return BlocConsumer<PeopleCubit, PeopleState>(
+      listener: (context, state) {
+        if (state is PeopleInvalidFamilyCode) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Invalid family code. Please try again.")),
+          );
+        }
+      },
       builder: (context, state) {
         if (state is PeopleError) {
           return Center(
@@ -72,9 +79,10 @@ class _PeopleViewState extends State<PeopleView> {
           );
         }
 
-        if (state is PeopleEmpty) {
+        if (state is PeopleEmpty || state is PeopleInvalidFamilyCode) {
           return PeopleEmptyWidget(
             onCreateFamilyPressed: _onCreateFamilyPressed,
+            onJoinFamilyPressed: (code) => context.read<PeopleCubit>().joinFamily(familyCode: code),
           );
         }
 

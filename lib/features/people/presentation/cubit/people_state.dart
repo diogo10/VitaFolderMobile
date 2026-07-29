@@ -16,6 +16,10 @@ class PeopleEmpty extends PeopleState {
   PeopleEmpty();
 }
 
+class PeopleInvalidFamilyCode extends PeopleState {
+  PeopleInvalidFamilyCode();
+}
+
 class PeopleLoaded extends PeopleState {
   List<PersonEntity> people;
   String inviteCode;

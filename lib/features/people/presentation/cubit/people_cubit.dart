@@ -1,15 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/features/people/domain/usecase/get_people_usecase.dart';
 import 'package:vita_folder_mobile/features/people/domain/usecase/create_family_usecase.dart';
+import 'package:vita_folder_mobile/features/people/domain/usecase/join_family_usecase.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_state.dart';
-
 class PeopleCubit extends Cubit<PeopleState> {
   GetPeopleUsecase getPeopleUsecase;
   CreateFamilyUsecase createFamilyUsecase;
+  JoinFamilyUsecase joinFamilyUsecase;
 
   PeopleCubit({
     required this.getPeopleUsecase,
     required this.createFamilyUsecase,
+    required this.joinFamilyUsecase,
   }) : super(PeopleInitial());
 
   Future<void> createFamily({required String name}) async {
@@ -17,6 +19,15 @@ class PeopleCubit extends Cubit<PeopleState> {
     final result = await createFamilyUsecase(name: name);
 
     result.fold((err) => emit(PeopleError()), (created) {
+      getPeople();
+    });
+  }
+
+  Future<void> joinFamily({required String familyCode}) async {
+    emit(PeopleLoading());
+    final result = await joinFamilyUsecase(familyCode: familyCode);
+
+    result.fold((err) => emit(PeopleInvalidFamilyCode()), (joined) {
       getPeople();
     });
   }

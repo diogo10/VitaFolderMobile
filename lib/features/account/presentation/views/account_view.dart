@@ -5,6 +5,8 @@ import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.d
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_state.dart';
 import 'package:vita_folder_mobile/features/account/presentation/views/account_loaded_widget.dart';
+import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 
 class AccountView extends StatefulWidget {
   const AccountView({super.key});
@@ -29,7 +31,16 @@ class _AccountViewState extends State<AccountView> {
             const SnackBar(content: Text("You have been signed out.")),
           );
 
+           // Reaload tabs 
            context.read<HomeCubit>().getHomeData();
+           context.read<PeopleCubit>().getPeople();
+           context.read<RemindersCubit>().getReminders();
+        }
+
+        if (state is LoginFailed) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Login failed. Please try again.")),
+          );
         }
       },
       builder: (context, state) {
@@ -37,7 +48,7 @@ class _AccountViewState extends State<AccountView> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (state is NoAccount || state is AccountLogoutSuccess) {
+        if (state is NoAccount || state is AccountLogoutSuccess || state is LoginFailed) {
           return const NoAccountView();
         }
 

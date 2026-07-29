@@ -2,10 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
-class PeopleEmptyWidget extends StatelessWidget {
+class PeopleEmptyWidget extends StatefulWidget {
   final VoidCallback? onCreateFamilyPressed;
+  final ValueChanged<String>? onJoinFamilyPressed;
 
-  const PeopleEmptyWidget({super.key, this.onCreateFamilyPressed});
+  const PeopleEmptyWidget({super.key, this.onCreateFamilyPressed, this.onJoinFamilyPressed});
+
+  @override
+  State<PeopleEmptyWidget> createState() => _PeopleEmptyWidgetState();
+}
+
+class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
+  final _inviteCodeController = TextEditingController();
+
+  @override
+  void dispose() {
+    _inviteCodeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +72,7 @@ class PeopleEmptyWidget extends StatelessWidget {
                   children: [
                     const SizedBox(width: 12),
                     OutlinedButton(
-                      onPressed: onCreateFamilyPressed,
+                      onPressed: widget.onCreateFamilyPressed,
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: accent),
                         shape: RoundedRectangleBorder(
@@ -107,18 +121,22 @@ class PeopleEmptyWidget extends StatelessWidget {
                                   color: Colors.grey.shade100,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Text(
-                                  'XX-0000',
-                                  style: TextStyle(
-                                    letterSpacing: 4,
-                                    fontSize: 18,
-                                  ),
+                                child: TextField(
+                                controller: _inviteCodeController,
+                                style: const TextStyle(
+                                  letterSpacing: 4,
+                                  fontSize: 18,
                                 ),
+                                decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: 'XX-0000',
+                                ),
+                              ),
                               ),
                             ),
                             const SizedBox(width: 12),
                             ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () => widget.onJoinFamilyPressed?.call(_inviteCodeController.text),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primary,
                                 shape: RoundedRectangleBorder(

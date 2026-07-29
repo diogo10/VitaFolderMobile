@@ -111,8 +111,8 @@ class InviteCodeCardWidget extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _InviteActionButton(
-                  icon: Icons.refresh_rounded,
-                  label: l.peopleWidgetsInviteCodeRefreshButton,
+                  icon: Icons.share,
+                  label: "Compartilhar código",
                   onPressed: onRefreshPressed,
                   prominent: false,
                   textColor: Colors.white.withValues(alpha: 0.9),
@@ -124,7 +124,7 @@ class InviteCodeCardWidget extends StatelessWidget {
           Center(
             child: Text(
                     l.peopleWidgetsInviteCodeExpiresSuffix,
-                    style: const TextStyle(fontSize: 12, color: _softWhite),
+                    style: const TextStyle(fontSize: 10, color: _softWhite),
                   ),
           ),
         ],

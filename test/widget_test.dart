@@ -21,6 +21,7 @@ import 'package:vita_folder_mobile/features/people/domain/entities/person_entity
 import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
 import 'package:vita_folder_mobile/features/people/domain/usecase/create_family_usecase.dart';
 import 'package:vita_folder_mobile/features/people/domain/usecase/get_people_usecase.dart';
+import 'package:vita_folder_mobile/features/people/domain/usecase/join_family_usecase.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/data/datasource/reminder_remote_datasource.dart'
     as reminders;
@@ -44,6 +45,23 @@ class _FakePeopleRepository implements PeopleRepository {
 
   @override
   Future<Either<Exception, bool>> createFamily({required String name, required String inviteCode}) async => Right(true);
+
+  @override
+  Future<Either<Exception, FamilyEntity>> getMyFamily() async => Right(
+        FamilyEntity(name: 'Fam', inviteCode: 'ABC'),
+      );
+
+  @override
+  Future<Either<Exception, bool>> joinFamily({required String inviteCode}) async => Right(true);
+
+  @override
+  Future<FamilyEntity?> getFamilyBy(String id) async => FamilyEntity(name: 'Fam', inviteCode: 'ABC');
+
+  @override
+  Future<List<String>> getFamilyIdsForUser(String userId) async => [];
+
+  @override
+  Future<List<PersonEntity>> getProfilesWithRoleForFamily(String familyId) async => [];
 }
 
 Widget _pumpApp() {
@@ -70,6 +88,9 @@ Widget _pumpApp() {
           ),
           createFamilyUsecase: GetIt.instance<CreateFamilyUsecase>(
             instanceName: 'createFamilyUsecase',
+          ),
+          joinFamilyUsecase: GetIt.instance<JoinFamilyUsecase>(
+            instanceName: 'joinFamilyUsecase',
           ),
         ),
       ),
@@ -107,6 +128,9 @@ Widget _pumpAppWithOnboarding() {
           ),
           createFamilyUsecase: GetIt.instance<CreateFamilyUsecase>(
             instanceName: 'createFamilyUsecase',
+          ),
+          joinFamilyUsecase: GetIt.instance<JoinFamilyUsecase>(
+            instanceName: 'joinFamilyUsecase',
           ),
         ),
       ),
@@ -171,8 +195,8 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Today'), findsOneWidget);
-      expect(find.text('Hello'), findsOneWidget);
+      expect(find.text('Welcome to FamilyAdmin'), findsOneWidget);
+      expect(find.text('Upcoming Reminders'), findsOneWidget);
       expect(find.text('Search Content'), findsNothing);
 
       await tester.pump(const Duration(seconds: 1));
@@ -215,7 +239,7 @@ void main() {
       await tester.tap(find.text('Home'));
       await tester.pump();
       await tester.pump();
-      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('Welcome to FamilyAdmin'), findsOneWidget);
     });
   });
 

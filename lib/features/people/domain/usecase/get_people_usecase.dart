@@ -11,7 +11,7 @@ class GetPeopleUsecase {
 
   Future<Either<Exception, PeopleData>> call() async {
     final peopleResult = await repository.getPeople();
-    final familyResult = await repository.getFamily();
+    final familyResult = await repository.getMyFamily();
     final people = peopleResult.getOrElse((_) => <PersonEntity>[]);
 
     return Right(

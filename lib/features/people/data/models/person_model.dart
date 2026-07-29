@@ -2,14 +2,19 @@ import 'dart:convert';
 import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
 
 class PersonModel extends PersonEntity {
-  PersonModel({required super.id, required super.name, required super.email, required super.phone});
+  PersonModel({
+    required String id,
+    required String name,
+    required String email,
+    required String phone,
+  }) : super(id: id, name: name, email: email, phone: phone);
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
-      'name': name,
-      'email': email,
-      'phone': phone,
+      'id': id ?? '',
+      'name': name ?? '',
+      'email': email ?? '',
+      'phone': phone ?? '',
     };
   }
 

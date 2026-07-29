@@ -27,6 +27,23 @@ class FakePeopleRepository implements PeopleRepository {
 
   @override
   Future<Either<Exception, bool>> createFamily({required String name, required String inviteCode}) async => Right(true);
+
+  @override
+  Future<Either<Exception, FamilyEntity>> getMyFamily() async => Right(
+        FamilyEntity(name: 'Test', inviteCode: 'ABC123'),
+      );
+
+  @override
+  Future<Either<Exception, bool>> joinFamily({required String inviteCode}) async => Right(true);
+
+  @override
+  Future<FamilyEntity?> getFamilyBy(String id) async => FamilyEntity(name: 'Test', inviteCode: 'ABC123');
+
+  @override
+  Future<List<String>> getFamilyIdsForUser(String userId) async => [];
+
+  @override
+  Future<List<PersonEntity>> getProfilesWithRoleForFamily(String familyId) async => [];
 }
 
 void main() {

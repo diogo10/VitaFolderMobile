@@ -11,6 +11,7 @@ class SignUpCubit extends Cubit<SignUpState> {
   Future<void> signUp({
     required String email,
     required String password,
+    required String name
   }) async {
     emit(SignUpLoading());
 
@@ -18,6 +19,7 @@ class SignUpCubit extends Cubit<SignUpState> {
       final user = await _authService.signUp(
         email: email,
         password: password,
+        name: name
       );
 
       if (user != null) {

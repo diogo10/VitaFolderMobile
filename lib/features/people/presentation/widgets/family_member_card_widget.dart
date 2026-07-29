@@ -181,6 +181,7 @@ class FamilyMemberCardWidget extends StatelessWidget {
   }
 
   String _initials(String value) {
+    if (value.isEmpty) return "";
     final words = value.trim().split(RegExp(r'\s+'));
     return words.take(2).map((word) => word[0].toUpperCase()).join();
   }

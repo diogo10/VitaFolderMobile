@@ -73,7 +73,7 @@
   "peopleWidgetsInviteCodeRefreshButton": "Atualizar Código",
   "peopleWidgetsInviteCodeExpiresPrefix": "Código expira em ",
   "peopleWidgetsInviteCodeExpiresDays": "{count} dias",
-  "peopleWidgetsInviteCodeExpiresSuffix": " · Compartilhe apenas com\nfamiliares de confiança",
+  "peopleWidgetsInviteCodeExpiresSuffix": "Compartilhe apenas com familiares de confiança",
   "peopleWidgetsPendingInviteCardTitle": "1 Convite Pendente",
   "peopleWidgetsPendingInviteResendButton": "Reenviar",
   "peopleWidgetsRolePermissionsTitle": "Funções",

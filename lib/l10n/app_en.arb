@@ -94,7 +94,7 @@
       }
     }
   },
-  "peopleWidgetsInviteCodeExpiresSuffix": "Share with trusted family\nmembers only",
+  "peopleWidgetsInviteCodeExpiresSuffix": "Share with trusted family members only",
   "peopleWidgetsPendingInviteCardTitle": "1 Pending Invite",
   "peopleWidgetsPendingInviteResendButton": "Resend",
   "peopleWidgetsRolePermissionsTitle": "Roles",

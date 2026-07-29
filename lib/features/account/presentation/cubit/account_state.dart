@@ -25,3 +25,7 @@ class NoAccount extends AccountState {
 class AccountLogoutSuccess extends AccountState {
   AccountLogoutSuccess();
 }
+
+class LoginFailed extends AccountState {
+  LoginFailed();
+}
