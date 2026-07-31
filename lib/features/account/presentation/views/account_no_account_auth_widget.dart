@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class AccountNoAccountAuthWidget extends StatelessWidget {
@@ -19,6 +20,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final onSurface = context.colorScheme.onSurface;
     final surface = context.colorScheme.surface;
 
@@ -27,16 +29,16 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
       children: [
         _AccountNoAccountSocialButton(
           icon: Icons.g_mobiledata,
-          label: 'Continue with Google',
+          label: l.accountNoAccountContinueGoogle,
         ),
         const SizedBox(height: 14),
         _AccountNoAccountSocialButton(
           icon: Icons.apple,
-          label: 'Continue with Apple',
+          label: l.accountNoAccountContinueApple,
         ),
         const SizedBox(height: 20),
         Text(
-          'or sign in with email',
+          l.accountNoAccountOrEmail,
           textAlign: TextAlign.center,
           style: context.textTheme.bodyMedium?.copyWith(
             color: onSurface.withValues(alpha: 0.68),
@@ -61,18 +63,18 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
             children: [
               TextFormField(
                 controller: emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email address',
-                  prefixIcon: Icon(Icons.mail_outline),
+                decoration: InputDecoration(
+                  labelText: l.accountNoAccountEmailLabel,
+                  prefixIcon: const Icon(Icons.mail_outline),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 18),
               TextFormField(
                 controller: passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: Icon(Icons.lock_outline),
+                decoration: InputDecoration(
+                  labelText: l.accountNoAccountPasswordLabel,
+                  prefixIcon: const Icon(Icons.lock_outline),
                 ),
                 obscureText: true,
               ),
@@ -85,7 +87,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
                     foregroundColor: context.colorScheme.primary,
                     textStyle: context.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                  child: const Text('Forgot password?'),
+                  child: Text(l.accountNoAccountForgotPassword),
                 ),
               ),
               const SizedBox(height: 8),
@@ -105,7 +107,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('Sign In'),
+                    : Text(l.accountNoAccountSignIn),
               ),
             ],
           ),

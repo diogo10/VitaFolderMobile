@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class OnboardingPageWidget extends StatelessWidget {
@@ -24,7 +25,7 @@ class OnboardingPageWidget extends StatelessWidget {
             hero,
             const SizedBox(height: 36),
             Text(
-              'Family Circle',
+              AppLocalizations.of(context)!.onboardingFamilyCircleLabel,
               style: context.textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: context.colorScheme.onSurface.withValues(alpha: 0.74),

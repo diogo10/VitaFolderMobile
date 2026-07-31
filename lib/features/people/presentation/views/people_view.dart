@@ -64,7 +64,9 @@ class _PeopleViewState extends State<PeopleView> {
       listener: (context, state) {
         if (state is PeopleInvalidFamilyCode) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Invalid family code. Please try again.")),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.peopleInvalidFamilyCode),
+            ),
           );
         }
       },

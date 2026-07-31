@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class AccountNoAccountFooterWidget extends StatelessWidget {
@@ -7,6 +8,7 @@ class AccountNoAccountFooterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final onSurface = context.colorScheme.onSurface;
 
     return Column(
@@ -16,7 +18,7 @@ class AccountNoAccountFooterWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'New to FamilyAdmin?',
+              l.accountNoAccountNewToApp,
               style: context.textTheme.bodyMedium?.copyWith(
                 color: onSurface.withValues(alpha: 0.74),
               ),
@@ -25,25 +27,25 @@ class AccountNoAccountFooterWidget extends StatelessWidget {
               onPressed: () {
                 context.push('/sign-up');
               },
-              child: const Text('Create a free account'),
+              child: Text(l.accountNoAccountCreateFreeAccount),
             ),
           ],
         ),
         const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
+          children: [
             _AccountNoAccountFeatureItem(
               icon: Icons.lock_outline_rounded,
-              label: 'Secure & private',
+              label: l.accountNoAccountSecurePrivate,
             ),
             _AccountNoAccountFeatureItem(
               icon: Icons.star_outline_rounded,
-              label: 'Free to start',
+              label: l.accountNoAccountFreeToStart,
             ),
             _AccountNoAccountFeatureItem(
               icon: Icons.group_rounded,
-              label: 'Family plan',
+              label: l.accountNoAccountFamilyPlan,
             ),
           ],
         ),

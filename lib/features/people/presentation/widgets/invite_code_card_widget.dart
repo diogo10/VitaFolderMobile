@@ -112,7 +112,7 @@ class InviteCodeCardWidget extends StatelessWidget {
               Expanded(
                 child: _InviteActionButton(
                   icon: Icons.share,
-                  label: "Compartilhar código",
+                  label: l.peopleWidgetsInviteCodeRefreshButton,
                   onPressed: onRefreshPressed,
                   prominent: false,
                   textColor: Colors.white.withValues(alpha: 0.9),

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/features/login/presentation/cubit/sign_up_cubit.dart';
 import 'package:vita_folder_mobile/features/login/presentation/cubit/sign_up_state.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class SignUpView extends StatefulWidget {
   const SignUpView({super.key});
@@ -37,10 +38,11 @@ class _SignUpViewState extends State<SignUpView> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(),
-        title: const Text('Sign Up'),
+        title: Text(l.signUpTitle),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -48,13 +50,16 @@ class _SignUpViewState extends State<SignUpView> {
           listener: (context, state) {
             if (state is SignUpSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: const Text("Thanks, You have finished the the registration.")),
+                SnackBar(content: Text(l.signUpSuccessMessage)),
               );
               context.go('/home');
             }
             if (state is SignUpError) {
+              final message = state.code == SignUpErrorCode.unexpected
+                  ? l.signUpUnexpectedError
+                  : state.message ?? '';
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
+                SnackBar(content: Text(message)),
               );
             }
           },
@@ -69,13 +74,13 @@ class _SignUpViewState extends State<SignUpView> {
                   TextFormField(
                     controller: _nameController,
                     textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l.signUpNameLabel,
+                      border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your name';
+                        return l.signUpNameRequired;
                       }
                       return null;
                     },
@@ -84,16 +89,16 @@ class _SignUpViewState extends State<SignUpView> {
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l.signUpEmailLabel,
+                      border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter an email';
+                        return l.signUpEmailRequired;
                       }
                       if (!value.contains('@')) {
-                        return 'Please enter a valid email';
+                        return l.signUpEmailInvalid;
                       }
                       return null;
                     },
@@ -102,16 +107,16 @@ class _SignUpViewState extends State<SignUpView> {
                   TextFormField(
                     controller: _passwordController,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l.signUpPasswordLabel,
+                      border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
+                        return l.signUpPasswordRequired;
                       }
                       if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                        return l.signUpPasswordTooShort;
                       }
                       return null;
                     },
@@ -128,7 +133,7 @@ class _SignUpViewState extends State<SignUpView> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Sign Up'),
+                        : Text(l.signUpTitle),
                   ),
                 ],
               ),

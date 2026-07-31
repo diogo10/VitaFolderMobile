@@ -83,9 +83,9 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                           vertical: 12,
                         ),
                       ),
-                      child: const Text(
-                        '+ Create Family',
-                        style: TextStyle(color: Color(0xFF604B38)),
+                      child: Text(
+                        l.peopleEmptyCreateFamily,
+                        style: const TextStyle(color: Color(0xFF604B38)),
                       ),
                     ),
                   ],
@@ -104,9 +104,9 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Text(
-                          'Enter Invite Code',
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                        Text(
+                          l.peopleEmptyEnterCode,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 8),
                         Row(
@@ -143,16 +143,16 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              child: const Text(
-                                'Join Family',
-                                style: TextStyle(color: Colors.white),
+                              child: Text(
+                                l.peopleEmptyJoinFamily,
+                                style: const TextStyle(color: Colors.white),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'Ask your family admin for the invite code',
+                          l.peopleEmptyAskAdmin,
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             fontSize: 12,
@@ -174,9 +174,9 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                         backgroundColor: Color(0xFFF7EDE3),
                         child: Icon(Icons.mail_outline, color: primary),
                       ),
-                      title: const Text('Email Invite'),
-                      subtitle: const Text(
-                        'Check your email for an invitation link',
+                      title: Text(l.peopleEmptyEmailInvite),
+                      subtitle: Text(
+                        l.peopleEmptyEmailInviteSubtitle,
                       ),
                       onTap: () => launchUrl(
                         Uri(
@@ -192,9 +192,9 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                         backgroundColor: Color(0xFFF7EDE3),
                         child: Icon(Icons.lock_outline, color: primary),
                       ),
-                      title: const Text('Private & Secure'),
-                      subtitle: const Text(
-                        'Only people with the code or a direct invite can join.',
+                      title: Text(l.peopleEmptyPrivateSecure),
+                      subtitle: Text(
+                        l.peopleEmptyPrivateSecureSubtitle,
                       ),
                     ),
                   ],

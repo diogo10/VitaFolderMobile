@@ -7,6 +7,7 @@ import 'package:vita_folder_mobile/features/account/presentation/cubit/account_s
 import 'package:vita_folder_mobile/features/account/presentation/views/account_loaded_widget.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class AccountView extends StatefulWidget {
   const AccountView({super.key});
@@ -26,9 +27,11 @@ class _AccountViewState extends State<AccountView> {
   Widget build(BuildContext context) {
     return BlocConsumer<AccountCubit, AccountState>(
       listener: (context, state) {
+        final l = AppLocalizations.of(context)!;
+
         if (state is AccountLogoutSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("You have been signed out.")),
+            SnackBar(content: Text(l.accountSignedOut)),
           );
 
            // Reaload tabs 
@@ -39,23 +42,23 @@ class _AccountViewState extends State<AccountView> {
 
         if (state is LoginFailed) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Login failed. Please try again.")),
+            SnackBar(content: Text(l.accountLoginFailed)),
           );
         }
 
         if (state is PasswordResetSent) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                "We've sent a link to your email to reset your password.",
-              ),
-            ),
+            SnackBar(content: Text(l.accountPasswordResetSent)),
           );
         }
 
         if (state is PasswordResetError) {
+          final message = switch (state.code) {
+            PasswordResetErrorCode.emptyEmail => l.accountPasswordResetEnterEmail,
+            PasswordResetErrorCode.sendFailed => l.accountPasswordResetFailed,
+          };
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
+            SnackBar(content: Text(message)),
           );
         }
       },

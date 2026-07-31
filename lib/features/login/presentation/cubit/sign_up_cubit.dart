@@ -25,12 +25,12 @@ class SignUpCubit extends Cubit<SignUpState> {
       if (user != null) {
         emit(SignUpSuccess(user));
       } else {
-        emit(SignUpError('An unexpected error occurred.'));
+        emit(SignUpError(code: SignUpErrorCode.unexpected));
       }
     } on AuthException catch (e) {
-      emit(SignUpError(e.message));
+      emit(SignUpError(message: e.message));
     } catch (e) {
-      emit(SignUpError(e.toString()));
+      emit(SignUpError(message: e.toString()));
     }
   }
 }

@@ -18,8 +18,11 @@ class SignUpSuccess extends SignUpState {
   SignUpSuccess(this.user);
 }
 
-class SignUpError extends SignUpState {
-  final String message;
+enum SignUpErrorCode { unexpected }
 
-  SignUpError(this.message);
+class SignUpError extends SignUpState {
+  final String? message;
+  final SignUpErrorCode? code;
+
+  SignUpError({this.message, this.code});
 }

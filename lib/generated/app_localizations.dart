@@ -146,6 +146,54 @@ abstract class AppLocalizations {
   /// **'Get Started'**
   String get onboardingGetStarted;
 
+  /// No description provided for @onboardingTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Bring your whole family together'**
+  String get onboardingTitle1;
+
+  /// No description provided for @onboardingSubtitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite parents, children, and caregivers to join your private family circle and collaborate in real time.'**
+  String get onboardingSubtitle1;
+
+  /// No description provided for @onboardingTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay on top of every task'**
+  String get onboardingTitle2;
+
+  /// No description provided for @onboardingSubtitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Share chores, appointments, and reminders with your circle so nothing gets overlooked.'**
+  String get onboardingSubtitle2;
+
+  /// No description provided for @onboardingTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Celebrate every moment as a family'**
+  String get onboardingTitle3;
+
+  /// No description provided for @onboardingSubtitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep everyone connected with simple reminders, shared plans, and family timelines.'**
+  String get onboardingSubtitle3;
+
+  /// No description provided for @onboardingFamilyCircleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Family Circle'**
+  String get onboardingFamilyCircleLabel;
+
+  /// No description provided for @onboardingInviteBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Invite'**
+  String get onboardingInviteBadge;
+
   /// No description provided for @homeError.
   ///
   /// In en, this message translates to:
@@ -751,6 +799,336 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile updated successfully'**
   String get manageProfileSuccessMessage;
+
+  /// No description provided for @accountSignedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'You have been signed out.'**
+  String get accountSignedOut;
+
+  /// No description provided for @accountLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed. Please try again.'**
+  String get accountLoginFailed;
+
+  /// No description provided for @accountPasswordResetSent.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve sent a link to your email to reset your password.'**
+  String get accountPasswordResetSent;
+
+  /// No description provided for @accountPasswordResetEnterEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email address.'**
+  String get accountPasswordResetEnterEmail;
+
+  /// No description provided for @accountPasswordResetFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not send the reset link. Please try again.'**
+  String get accountPasswordResetFailed;
+
+  /// No description provided for @accountNoAccountContinueGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get accountNoAccountContinueGoogle;
+
+  /// No description provided for @accountNoAccountContinueApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Apple'**
+  String get accountNoAccountContinueApple;
+
+  /// No description provided for @accountNoAccountOrEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'or sign in with email'**
+  String get accountNoAccountOrEmail;
+
+  /// No description provided for @accountNoAccountEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address'**
+  String get accountNoAccountEmailLabel;
+
+  /// No description provided for @accountNoAccountPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get accountNoAccountPasswordLabel;
+
+  /// No description provided for @accountNoAccountForgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get accountNoAccountForgotPassword;
+
+  /// No description provided for @accountNoAccountSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get accountNoAccountSignIn;
+
+  /// No description provided for @accountNoAccountNewToApp.
+  ///
+  /// In en, this message translates to:
+  /// **'New to FamilyAdmin?'**
+  String get accountNoAccountNewToApp;
+
+  /// No description provided for @accountNoAccountCreateFreeAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a free account'**
+  String get accountNoAccountCreateFreeAccount;
+
+  /// No description provided for @accountNoAccountSecurePrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure & private'**
+  String get accountNoAccountSecurePrivate;
+
+  /// No description provided for @accountNoAccountFreeToStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Free to start'**
+  String get accountNoAccountFreeToStart;
+
+  /// No description provided for @accountNoAccountFamilyPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Family plan'**
+  String get accountNoAccountFamilyPlan;
+
+  /// No description provided for @accountNoAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your family, organised together'**
+  String get accountNoAccountTitle;
+
+  /// No description provided for @accountNoAccountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your circle, set reminders and collaborate as a family — all in one place.'**
+  String get accountNoAccountSubtitle;
+
+  /// No description provided for @accountNoAccountChipChores.
+  ///
+  /// In en, this message translates to:
+  /// **'Chores'**
+  String get accountNoAccountChipChores;
+
+  /// No description provided for @accountNoAccountChipAppointments.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointments'**
+  String get accountNoAccountChipAppointments;
+
+  /// No description provided for @accountNoAccountChipFamilyCircle.
+  ///
+  /// In en, this message translates to:
+  /// **'Family Circle'**
+  String get accountNoAccountChipFamilyCircle;
+
+  /// No description provided for @accountNoAccountFamilyAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Family admin'**
+  String get accountNoAccountFamilyAdmin;
+
+  /// No description provided for @signUpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Up'**
+  String get signUpTitle;
+
+  /// No description provided for @signUpNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get signUpNameLabel;
+
+  /// No description provided for @signUpEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get signUpEmailLabel;
+
+  /// No description provided for @signUpPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get signUpPasswordLabel;
+
+  /// No description provided for @signUpSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks, You have finished the the registration.'**
+  String get signUpSuccessMessage;
+
+  /// No description provided for @signUpNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your name'**
+  String get signUpNameRequired;
+
+  /// No description provided for @signUpEmailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an email'**
+  String get signUpEmailRequired;
+
+  /// No description provided for @signUpEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email'**
+  String get signUpEmailInvalid;
+
+  /// No description provided for @signUpPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a password'**
+  String get signUpPasswordRequired;
+
+  /// No description provided for @signUpPasswordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters'**
+  String get signUpPasswordTooShort;
+
+  /// No description provided for @signUpUnexpectedError.
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred.'**
+  String get signUpUnexpectedError;
+
+  /// No description provided for @peopleInvalidFamilyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid family code. Please try again.'**
+  String get peopleInvalidFamilyCode;
+
+  /// No description provided for @invitePeopleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite People'**
+  String get invitePeopleTitle;
+
+  /// No description provided for @invitePeopleSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite sent!'**
+  String get invitePeopleSent;
+
+  /// No description provided for @invitePeopleSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Invite'**
+  String get invitePeopleSend;
+
+  /// No description provided for @invitePeopleEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get invitePeopleEmailLabel;
+
+  /// No description provided for @invitePeopleRelationshipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Relationship'**
+  String get invitePeopleRelationshipLabel;
+
+  /// No description provided for @invitePeopleRelationshipSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Self'**
+  String get invitePeopleRelationshipSelf;
+
+  /// No description provided for @invitePeopleRelationshipSpouse.
+  ///
+  /// In en, this message translates to:
+  /// **'Spouse'**
+  String get invitePeopleRelationshipSpouse;
+
+  /// No description provided for @invitePeopleRelationshipChild.
+  ///
+  /// In en, this message translates to:
+  /// **'Child'**
+  String get invitePeopleRelationshipChild;
+
+  /// No description provided for @invitePeopleRelationshipParent.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent'**
+  String get invitePeopleRelationshipParent;
+
+  /// No description provided for @invitePeopleRelationshipOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get invitePeopleRelationshipOther;
+
+  /// No description provided for @invitePeopleError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send invite email.'**
+  String get invitePeopleError;
+
+  /// No description provided for @invitePeopleEmailSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'You have been invited as a {relationship} for VitaFolder'**
+  String invitePeopleEmailSubject(String relationship);
+
+  /// No description provided for @peopleEmptyCreateFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Create Family'**
+  String get peopleEmptyCreateFamily;
+
+  /// No description provided for @peopleEmptyEnterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Invite Code'**
+  String get peopleEmptyEnterCode;
+
+  /// No description provided for @peopleEmptyJoinFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Family'**
+  String get peopleEmptyJoinFamily;
+
+  /// No description provided for @peopleEmptyAskAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask your family admin for the invite code'**
+  String get peopleEmptyAskAdmin;
+
+  /// No description provided for @peopleEmptyEmailInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Invite'**
+  String get peopleEmptyEmailInvite;
+
+  /// No description provided for @peopleEmptyEmailInviteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your email for an invitation link'**
+  String get peopleEmptyEmailInviteSubtitle;
+
+  /// No description provided for @peopleEmptyPrivateSecure.
+  ///
+  /// In en, this message translates to:
+  /// **'Private & Secure'**
+  String get peopleEmptyPrivateSecure;
+
+  /// No description provided for @peopleEmptyPrivateSecureSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only people with the code or a direct invite can join.'**
+  String get peopleEmptyPrivateSecureSubtitle;
 
   /// No description provided for @remindersHeaderTitle.
   ///

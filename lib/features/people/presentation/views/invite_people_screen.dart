@@ -25,15 +25,15 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
   String _relationshipLabel(InviteRelationship rel, AppLocalizations l) {
     switch (rel) {
       case InviteRelationship.self:
-        return 'Self';
+        return l.invitePeopleRelationshipSelf;
       case InviteRelationship.spouse:
-        return 'Spouse';
+        return l.invitePeopleRelationshipSpouse;
       case InviteRelationship.child:
-        return 'Child';
+        return l.invitePeopleRelationshipChild;
       case InviteRelationship.parent:
-        return 'Parent';
+        return l.invitePeopleRelationshipParent;
       case InviteRelationship.other:
-        return 'Other';
+        return l.invitePeopleRelationshipOther;
     }
   }
 
@@ -42,20 +42,23 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Invite People'),
+        title: Text(l.invitePeopleTitle),
       ),
       body: BlocListener<InvitePeopleCubit, InvitePeopleState>(
         listener: (context, state) {
           if (state is InvitePeopleSuccess) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
-              ..showSnackBar(const SnackBar(content: Text('Invite sent!')));
+              ..showSnackBar(SnackBar(content: Text(l.invitePeopleSent)));
             context.pop();
           }
           if (state is InvitePeopleError) {
+            final message = state.code == InvitePeopleErrorCode.sendFailed
+                ? l.invitePeopleError
+                : state.message ?? '';
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(state.message)));
+              ..showSnackBar(SnackBar(content: Text(message)));
           }
         },
         child: Padding(
@@ -66,17 +69,17 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l.invitePeopleEmailLabel,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 20),
               DropdownButtonFormField<InviteRelationship>(
                 initialValue: _selectedRelationship,
-                decoration: const InputDecoration(
-                  labelText: 'Relationship',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l.invitePeopleRelationshipLabel,
+                  border: const OutlineInputBorder(),
                 ),
                 items: InviteRelationship.values.map((rel) {
                   return DropdownMenuItem(
@@ -103,6 +106,9 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
                             context.read<InvitePeopleCubit>().sendInvite(
                                   email: email,
                                   relationship: _selectedRelationship,
+                                  subject: l.invitePeopleEmailSubject(
+                                    _relationshipLabel(_selectedRelationship, l),
+                                  ),
                                 );
                           },
                     child: isLoading
@@ -111,7 +117,7 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Send Invite'),
+                        : Text(l.invitePeopleSend),
                   );
                 },
               ),

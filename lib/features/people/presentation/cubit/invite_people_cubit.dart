@@ -11,16 +11,17 @@ class InvitePeopleCubit extends Cubit<InvitePeopleState> {
   Future<void> sendInvite({
     required String email,
     required InviteRelationship relationship,
+    required String subject,
   }) async {
     emit(InvitePeopleLoading());
     try {
       final result = await edgetFunctions.sendEmail(
         to: email,
-        subject: 'You have been invited as a ${relationship.name} for VitaFolder',
+        subject: subject,
       );
 
       if (!result) {
-        emit(InvitePeopleError(message: 'Failed to send invite email.'));
+        emit(InvitePeopleError(code: InvitePeopleErrorCode.sendFailed));
         return;
       }
 

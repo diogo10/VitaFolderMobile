@@ -3,6 +3,7 @@ import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboar
 import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_header_widget.dart';
 import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_page_widget.dart';
 import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_progress_widget.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class OnboardingView extends StatefulWidget {
   final VoidCallback onComplete;
@@ -17,20 +18,7 @@ class _OnboardingViewState extends State<OnboardingView> {
   final _pageController = PageController();
   int _currentPage = 0;
 
-  static const _pages = [
-    _OnboardingPageData(
-      title: 'Bring your whole family together',
-      subtitle: 'Invite parents, children, and caregivers to join your private family circle and collaborate in real time.',
-    ),
-    _OnboardingPageData(
-      title: 'Stay on top of every task',
-      subtitle: 'Share chores, appointments, and reminders with your circle so nothing gets overlooked.',
-    ),
-    _OnboardingPageData(
-      title: 'Celebrate every moment as a family',
-      subtitle: 'Keep everyone connected with simple reminders, shared plans, and family timelines.',
-    ),
-  ];
+  static const _pageCount = 3;
 
   @override
   void dispose() {
@@ -43,7 +31,7 @@ class _OnboardingViewState extends State<OnboardingView> {
   }
 
   void _onNext() {
-    if (_currentPage < _pages.length - 1) {
+    if (_currentPage < _pageCount - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -53,8 +41,25 @@ class _OnboardingViewState extends State<OnboardingView> {
     }
   }
 
+  List<_OnboardingPageData> _pages(AppLocalizations l) => [
+        _OnboardingPageData(
+          title: l.onboardingTitle1,
+          subtitle: l.onboardingSubtitle1,
+        ),
+        _OnboardingPageData(
+          title: l.onboardingTitle2,
+          subtitle: l.onboardingSubtitle2,
+        ),
+        _OnboardingPageData(
+          title: l.onboardingTitle3,
+          subtitle: l.onboardingSubtitle3,
+        ),
+      ];
+
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final pages = _pages(l);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -63,10 +68,10 @@ class _OnboardingViewState extends State<OnboardingView> {
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                itemCount: _pages.length,
+                itemCount: _pageCount,
                 onPageChanged: (page) => setState(() => _currentPage = page),
                 itemBuilder: (context, index) {
-                  final page = _pages[index];
+                  final page = pages[index];
                   return OnboardingPageWidget(
                     title: page.title,
                     subtitle: page.subtitle,
@@ -75,10 +80,10 @@ class _OnboardingViewState extends State<OnboardingView> {
                 },
               ),
             ),
-            OnboardingProgressWidget(currentPage: _currentPage, pageCount: _pages.length),
+            OnboardingProgressWidget(currentPage: _currentPage, pageCount: _pageCount),
             const SizedBox(height: 24),
             OnboardingFooterWidget(
-              isLastPage: _currentPage == _pages.length - 1,
+              isLastPage: _currentPage == _pageCount - 1,
               onNext: _onNext,
             ),
             const SizedBox(height: 32),
@@ -153,7 +158,7 @@ class _OnboardingHeroWidget extends StatelessWidget {
                   Icon(Icons.person_add_alt_1_rounded, size: 18, color: primary),
                   const SizedBox(width: 6),
                   Text(
-                    '+ Invite',
+                    AppLocalizations.of(context)!.onboardingInviteBadge,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.78),
                     ),

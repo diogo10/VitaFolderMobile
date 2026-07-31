@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class AccountNoAccountHeaderWidget extends StatelessWidget {
@@ -6,6 +7,7 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final onSurface = context.colorScheme.onSurface;
     final surface = context.colorScheme.surface;
 
@@ -30,7 +32,7 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
         Center(child: _AccountNoAccountHeroWidget()),
         const SizedBox(height: 32),
         Text(
-          'Your family, organised together',
+          l.accountNoAccountTitle,
           textAlign: TextAlign.center,
           style: context.textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
@@ -39,7 +41,7 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          'Manage your circle, set reminders and collaborate as a family — all in one place.',
+          l.accountNoAccountSubtitle,
           textAlign: TextAlign.center,
           style: context.textTheme.bodyMedium?.copyWith(
             color: onSurface.withValues(alpha: 0.72),
@@ -51,10 +53,19 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
           spacing: 10,
           runSpacing: 10,
           alignment: WrapAlignment.center,
-          children: const [
-            _AccountNoAccountChip(label: 'Chores', icon: Icons.checklist_rtl),
-            _AccountNoAccountChip(label: 'Appointments', icon: Icons.calendar_today_rounded),
-            _AccountNoAccountChip(label: 'Family Circle', icon: Icons.groups_rounded),
+          children: [
+            _AccountNoAccountChip(
+              label: l.accountNoAccountChipChores,
+              icon: Icons.checklist_rtl,
+            ),
+            _AccountNoAccountChip(
+              label: l.accountNoAccountChipAppointments,
+              icon: Icons.calendar_today_rounded,
+            ),
+            _AccountNoAccountChip(
+              label: l.accountNoAccountChipFamilyCircle,
+              icon: Icons.groups_rounded,
+            ),
           ],
         ),
       ],
@@ -169,7 +180,7 @@ class _AccountNoAccountHeroWidget extends StatelessWidget {
                   Icon(Icons.flare_rounded, size: 18, color: primary),
                   const SizedBox(width: 6),
                   Text(
-                    'Family admin',
+                    AppLocalizations.of(context)!.accountNoAccountFamilyAdmin,
                     style: context.textTheme.bodySmall?.copyWith(
                       color: context.colorScheme.onSurface.withValues(alpha: 0.75),
                     ),

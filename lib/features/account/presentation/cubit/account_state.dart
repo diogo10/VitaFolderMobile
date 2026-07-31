@@ -40,7 +40,9 @@ class PasswordResetSent extends AccountState {
   PasswordResetSent();
 }
 
+enum PasswordResetErrorCode { emptyEmail, sendFailed }
+
 class PasswordResetError extends AccountState {
-  final String message;
-  PasswordResetError({required this.message});
+  final PasswordResetErrorCode code;
+  PasswordResetError({required this.code});
 }

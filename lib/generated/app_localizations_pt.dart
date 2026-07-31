@@ -33,6 +33,33 @@ class AppLocalizationsPt extends AppLocalizations {
   String get onboardingGetStarted => 'Começar';
 
   @override
+  String get onboardingTitle1 => 'Reúna toda a sua família em um só lugar';
+
+  @override
+  String get onboardingSubtitle1 =>
+      'Convide pais, filhos e cuidadores para entrar no seu círculo familiar privado e colaborar em tempo real.';
+
+  @override
+  String get onboardingTitle2 => 'Fique por dentro de cada tarefa';
+
+  @override
+  String get onboardingSubtitle2 =>
+      'Compartilhe tarefas, compromissos e lembretes com o seu círculo para que nada passe despercebido.';
+
+  @override
+  String get onboardingTitle3 => 'Celebre cada momento em família';
+
+  @override
+  String get onboardingSubtitle3 =>
+      'Mantenha todos conectados com lembretes simples, planos compartilhados e cronologias familiares.';
+
+  @override
+  String get onboardingFamilyCircleLabel => 'Círculo da Família';
+
+  @override
+  String get onboardingInviteBadge => '+ Convidar';
+
+  @override
   String get homeError => 'Algo deu errado.';
 
   @override
@@ -360,6 +387,182 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get manageProfileSuccessMessage => 'Perfil atualizado com sucesso';
+
+  @override
+  String get accountSignedOut => 'Sua sessão foi encerrada.';
+
+  @override
+  String get accountLoginFailed => 'Falha no login. Tente novamente.';
+
+  @override
+  String get accountPasswordResetSent =>
+      'Enviamos um link para o seu email redefinir sua senha.';
+
+  @override
+  String get accountPasswordResetEnterEmail =>
+      'Por favor, digite seu endereço de email.';
+
+  @override
+  String get accountPasswordResetFailed =>
+      'Não foi possível enviar o link de redefinição. Tente novamente.';
+
+  @override
+  String get accountNoAccountContinueGoogle => 'Continuar com Google';
+
+  @override
+  String get accountNoAccountContinueApple => 'Continuar com Apple';
+
+  @override
+  String get accountNoAccountOrEmail => 'ou entre com email';
+
+  @override
+  String get accountNoAccountEmailLabel => 'Endereço de email';
+
+  @override
+  String get accountNoAccountPasswordLabel => 'Senha';
+
+  @override
+  String get accountNoAccountForgotPassword => 'Esqueceu a senha?';
+
+  @override
+  String get accountNoAccountSignIn => 'Entrar';
+
+  @override
+  String get accountNoAccountNewToApp => 'Novo no FamilyAdmin?';
+
+  @override
+  String get accountNoAccountCreateFreeAccount => 'Crie uma conta gratuita';
+
+  @override
+  String get accountNoAccountSecurePrivate => 'Seguro e privado';
+
+  @override
+  String get accountNoAccountFreeToStart => 'Grátis para começar';
+
+  @override
+  String get accountNoAccountFamilyPlan => 'Plano familiar';
+
+  @override
+  String get accountNoAccountTitle => 'Sua família, organizada em conjunto';
+
+  @override
+  String get accountNoAccountSubtitle =>
+      'Gerencie seu círculo, defina lembretes e colabore em família — tudo em um só lugar.';
+
+  @override
+  String get accountNoAccountChipChores => 'Tarefas';
+
+  @override
+  String get accountNoAccountChipAppointments => 'Compromissos';
+
+  @override
+  String get accountNoAccountChipFamilyCircle => 'Círculo da Família';
+
+  @override
+  String get accountNoAccountFamilyAdmin => 'Admin da família';
+
+  @override
+  String get signUpTitle => 'Cadastre-se';
+
+  @override
+  String get signUpNameLabel => 'Nome';
+
+  @override
+  String get signUpEmailLabel => 'Email';
+
+  @override
+  String get signUpPasswordLabel => 'Senha';
+
+  @override
+  String get signUpSuccessMessage => 'Obrigado, você concluiu o cadastro.';
+
+  @override
+  String get signUpNameRequired => 'Por favor, digite seu nome';
+
+  @override
+  String get signUpEmailRequired => 'Por favor, digite um email';
+
+  @override
+  String get signUpEmailInvalid => 'Por favor, digite um email válido';
+
+  @override
+  String get signUpPasswordRequired => 'Por favor, digite uma senha';
+
+  @override
+  String get signUpPasswordTooShort =>
+      'A senha deve ter pelo menos 6 caracteres';
+
+  @override
+  String get signUpUnexpectedError => 'Ocorreu um erro inesperado.';
+
+  @override
+  String get peopleInvalidFamilyCode =>
+      'Código de família inválido. Tente novamente.';
+
+  @override
+  String get invitePeopleTitle => 'Convidar Pessoas';
+
+  @override
+  String get invitePeopleSent => 'Convite enviado!';
+
+  @override
+  String get invitePeopleSend => 'Enviar Convite';
+
+  @override
+  String get invitePeopleEmailLabel => 'Email';
+
+  @override
+  String get invitePeopleRelationshipLabel => 'Parentesco';
+
+  @override
+  String get invitePeopleRelationshipSelf => 'Eu mesmo(a)';
+
+  @override
+  String get invitePeopleRelationshipSpouse => 'Cônjuge';
+
+  @override
+  String get invitePeopleRelationshipChild => 'Filho(a)';
+
+  @override
+  String get invitePeopleRelationshipParent => 'Pai/Mãe';
+
+  @override
+  String get invitePeopleRelationshipOther => 'Outro';
+
+  @override
+  String get invitePeopleError => 'Falha ao enviar o email de convite.';
+
+  @override
+  String invitePeopleEmailSubject(String relationship) {
+    return 'Você foi convidado(a) como $relationship para o VitaFolder';
+  }
+
+  @override
+  String get peopleEmptyCreateFamily => '+ Criar Família';
+
+  @override
+  String get peopleEmptyEnterCode => 'Digite o Código de Convite';
+
+  @override
+  String get peopleEmptyJoinFamily => 'Entrar na Família';
+
+  @override
+  String get peopleEmptyAskAdmin =>
+      'Peça o código de convite ao administrador da sua família';
+
+  @override
+  String get peopleEmptyEmailInvite => 'Convite por Email';
+
+  @override
+  String get peopleEmptyEmailInviteSubtitle =>
+      'Verifique seu email para um link de convite';
+
+  @override
+  String get peopleEmptyPrivateSecure => 'Privado e Seguro';
+
+  @override
+  String get peopleEmptyPrivateSecureSubtitle =>
+      'Apenas pessoas com o código ou um convite direto podem entrar.';
 
   @override
   String get remindersHeaderTitle => 'Lembretes';

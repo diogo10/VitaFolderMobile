@@ -79,7 +79,7 @@ class AccountCubit extends Cubit<AccountState> {
 
   Future<void> forgotPassword(String email) async {
     if (email.trim().isEmpty) {
-      emit(PasswordResetError(message: 'Please enter your email address.'));
+      emit(PasswordResetError(code: PasswordResetErrorCode.emptyEmail));
       return;
     }
 
@@ -87,11 +87,7 @@ class AccountCubit extends Cubit<AccountState> {
       await _authService.resetPassword(email);
       emit(PasswordResetSent());
     } catch (_) {
-      emit(
-        PasswordResetError(
-          message: 'We could not send the reset link. Please try again.',
-        ),
-      );
+      emit(PasswordResetError(code: PasswordResetErrorCode.sendFailed));
     }
   }
 
