@@ -347,6 +347,21 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountSettingsSignOutSubtitle => 'Sair deste dispositivo';
 
   @override
+  String get manageProfileTitle => 'Editar Perfil';
+
+  @override
+  String get manageProfileNameLabel => 'Nome';
+
+  @override
+  String get manageProfileSaveButton => 'Salvar';
+
+  @override
+  String get manageProfileNameRequired => 'Por favor, digite seu nome';
+
+  @override
+  String get manageProfileSuccessMessage => 'Perfil atualizado com sucesso';
+
+  @override
   String get remindersHeaderTitle => 'Lembretes';
 
   @override

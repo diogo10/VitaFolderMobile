@@ -10,4 +10,5 @@ abstract interface class PeopleRepository {
   Future<FamilyEntity?> getFamilyBy(String id);
   Future<List<String>> getFamilyIdsForUser(String userId);
   Future<List<PersonEntity>> getProfilesWithRoleForFamily(String familyId);
+  Future<List<String>> getMyFamilyRole();
 }

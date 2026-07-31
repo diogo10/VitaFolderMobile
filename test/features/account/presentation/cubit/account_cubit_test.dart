@@ -13,7 +13,17 @@ class FakeAuthService extends AuthService {
   Future<void> signIn({required String email, required String password}) async {}
 
   @override
-  User? get currentUser => null;
+  User? get currentUser => User.fromJson({
+        'id': 'user-id',
+        'email': 'user@example.com',
+      });
+
+  @override
+  Future<PersonEntity?> getAsPersonEntity() async => PersonEntity(
+        id: 'user-id',
+        name: 'Test User',
+        email: 'user@example.com',
+      );
 }
 
 class FakePeopleRepository implements PeopleRepository {
@@ -39,6 +49,9 @@ class FakePeopleRepository implements PeopleRepository {
 
   @override
   Future<List<PersonEntity>> getProfilesWithRoleForFamily(String familyId) async => [];
+
+  @override
+  Future<List<String>> getMyFamilyRole() async => ['member'];
 }
 
 void main() {

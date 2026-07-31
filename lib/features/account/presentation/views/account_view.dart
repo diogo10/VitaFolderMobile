@@ -42,13 +42,33 @@ class _AccountViewState extends State<AccountView> {
             const SnackBar(content: Text("Login failed. Please try again.")),
           );
         }
+
+        if (state is PasswordResetSent) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                "We've sent a link to your email to reset your password.",
+              ),
+            ),
+          );
+        }
+
+        if (state is PasswordResetError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
       },
       builder: (context, state) {
         if (state is AccountLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (state is NoAccount || state is AccountLogoutSuccess || state is LoginFailed) {
+        if (state is NoAccount ||
+            state is AccountLogoutSuccess ||
+            state is LoginFailed ||
+            state is PasswordResetSent ||
+            state is PasswordResetError) {
           return const NoAccountView();
         }
 

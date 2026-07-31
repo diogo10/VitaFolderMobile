@@ -59,8 +59,31 @@ class AuthService {
     }
   }
 
+  Future<void> triggerForgetPassword({required String email}) async {
+    return Supabase.instance.client.auth.resetPasswordForEmail(email);
+  }
+
   Future<void> signOut() async {
     await Supabase.instance.client.auth.signOut();
+  }
+
+  // https://supabase.com/docs/guides/auth/passwords?queryGroups=language&language=dart#resetting-a-password
+  Future<void> resetPassword(String email) async {
+    await Supabase.instance.client.auth.resetPasswordForEmail(
+      email.trim(),
+      redirectTo: "http://example.com/account/update-password",
+    );
+  }
+
+  Future<void> updateName(String name) async {
+    final userId = currentUserId;
+    await Supabase.instance.client
+        .from('profiles')
+        .update({'full_name': name})
+        .eq('id', userId);
+    await Supabase.instance.client.auth.updateUser(
+      UserAttributes(data: {'full_name': name}),
+    );
   }
 
   Future<String?> getProfileName() async {
@@ -80,7 +103,7 @@ class AuthService {
 
   Future<PersonEntity?> getAsPersonEntity() async {
     try {
-      final userId = currentUserId;
+      final userId = currentUser?.id ?? "";
       final response = await Supabase.instance.client
           .from('profiles')
           .select()

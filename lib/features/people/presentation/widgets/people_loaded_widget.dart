@@ -69,12 +69,6 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
       FamilyMemberRole.child: const Color(0xFFB47D88),
       FamilyMemberRole.member: const Color(0xFF8A7592),
     };
-    final statusColors = <FamilyMemberRole, Color>{
-      FamilyMemberRole.admin: const Color(0xFF53B77A),
-      FamilyMemberRole.parent: const Color(0xFF5D9DF5),
-      FamilyMemberRole.child: const Color(0xFFB56AF4),
-      FamilyMemberRole.member: const Color(0xFF45C76C),
-    };
 
     final cards = <Widget>[];
     for (int i = 0; i < widget.people.length; i++) {
@@ -87,10 +81,8 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
           name: person.name ?? '',
           relationship: _relationshipFromRole(person.role),
           detail: person.email ?? person.phone ?? '',
-          status: 'Active',
           role: role,
           avatarColor: colors[role]!,
-          statusColor: statusColors[role]!,
           onPressed: () => _showMessage(
             l.peopleLoadedMemberSelected(person.name ?? ''),
           ),

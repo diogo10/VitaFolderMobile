@@ -722,6 +722,36 @@ abstract class AppLocalizations {
   /// **'Log out of this device'**
   String get accountSettingsSignOutSubtitle;
 
+  /// No description provided for @manageProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get manageProfileTitle;
+
+  /// No description provided for @manageProfileNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get manageProfileNameLabel;
+
+  /// No description provided for @manageProfileSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get manageProfileSaveButton;
+
+  /// No description provided for @manageProfileNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your name'**
+  String get manageProfileNameRequired;
+
+  /// No description provided for @manageProfileSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully'**
+  String get manageProfileSuccessMessage;
+
   /// No description provided for @remindersHeaderTitle.
   ///
   /// In en, this message translates to:

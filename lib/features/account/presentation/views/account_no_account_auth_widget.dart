@@ -5,6 +5,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
   final TextEditingController emailController;
   final TextEditingController passwordController;
   final VoidCallback onSignIn;
+  final VoidCallback onForgotPassword;
   final bool isLoading;
 
   const AccountNoAccountAuthWidget({
@@ -12,6 +13,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
     required this.emailController,
     required this.passwordController,
     required this.onSignIn,
+    required this.onForgotPassword,
     this.isLoading = false,
   });
 
@@ -78,7 +80,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: onForgotPassword,
                   style: TextButton.styleFrom(
                     foregroundColor: context.colorScheme.primary,
                     textStyle: context.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),

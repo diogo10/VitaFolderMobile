@@ -7,7 +7,8 @@ import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class AccountSettingsWidget extends StatelessWidget {
   final String familyCode;
-  const AccountSettingsWidget({super.key, required this.familyCode});
+  final bool isAdmin;
+  const AccountSettingsWidget({super.key, required this.familyCode, required this.isAdmin});
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +25,7 @@ class AccountSettingsWidget extends StatelessWidget {
                 icon: Icons.person_rounded,
                 title: l.accountSettingsEditProfile,
                 subtitle: l.accountSettingsEditProfileSubtitle,
+                onTap: () => context.push('/manage-profile'),
               ),
               _AccountSettingsItemData(
                 icon: Icons.notifications_rounded,
@@ -36,11 +38,13 @@ class AccountSettingsWidget extends StatelessWidget {
           _AccountSettingsSection(
             title: l.accountSettingsFamilySection,
             items: [
+              if(isAdmin)
               _AccountSettingsItemData(
                 icon: Icons.house_rounded,
                 title: l.accountSettingsFamilySettings,
                 subtitle: l.accountSettingsFamilySettingsSubtitle,
               ),
+              if (isAdmin)
               _AccountSettingsItemData(
                 icon: Icons.person_search_rounded,
                 title: l.accountSettingsRolesPermissions,

@@ -5,6 +5,7 @@ import 'package:vita_folder_mobile/core/functions/edget_functions.dart';
 import 'package:vita_folder_mobile/core/injections/service_locator.dart';
 import 'package:vita_folder_mobile/core/router/app_router.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
+import 'package:vita_folder_mobile/features/account/presentation/cubit/manage_profile_cubit.dart';
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/login/presentation/cubit/sign_up_cubit.dart';
 import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
@@ -45,6 +46,11 @@ void main() async {
         ),
         BlocProvider(
           create: (_) => slInstance<AccountCubit>(instanceName: 'accountCubit'),
+        ),
+        BlocProvider(
+          create: (_) => slInstance<ManageProfileCubit>(
+            instanceName: 'manageProfileCubit',
+          ),
         ),
         BlocProvider(
           create: (_) => SignUpCubit(

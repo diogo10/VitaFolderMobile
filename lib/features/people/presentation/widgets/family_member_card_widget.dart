@@ -21,10 +21,8 @@ class FamilyMemberCardWidget extends StatelessWidget {
   final String name;
   final String relationship;
   final String detail;
-  final String status;
   final FamilyMemberRole role;
   final Color avatarColor;
-  final Color statusColor;
   final VoidCallback? onPressed;
 
   const FamilyMemberCardWidget({
@@ -32,10 +30,8 @@ class FamilyMemberCardWidget extends StatelessWidget {
     required this.name,
     required this.relationship,
     required this.detail,
-    required this.status,
     required this.role,
     required this.avatarColor,
-    required this.statusColor,
     this.onPressed,
   });
 
@@ -67,19 +63,6 @@ class FamilyMemberCardWidget extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: -2,
-                    bottom: -2,
-                    child: Container(
-                      width: 13,
-                      height: 13,
-                      decoration: BoxDecoration(
-                        color: statusColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
                       ),
                     ),
                   ),
@@ -134,28 +117,6 @@ class FamilyMemberCardWidget extends StatelessWidget {
                         color: const Color(0xFFA98B6B),
                         fontSize: 11,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Container(
-                          width: 5,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            color: statusColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          status,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: const Color(0xFFB0906C),
-                                fontSize: 10,
-                              ),
-                        ),
-                      ],
                     ),
                   ],
                 ),

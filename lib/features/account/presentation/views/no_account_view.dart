@@ -49,6 +49,11 @@ class _NoAccountViewState extends State<NoAccountView> {
                         _passwordController.text,
                       );
                     },
+                    onForgotPassword: () {
+                      context
+                          .read<AccountCubit>()
+                          .forgotPassword(_emailController.text);
+                    },
                   );
                 },
               ),

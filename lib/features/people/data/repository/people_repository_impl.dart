@@ -150,9 +150,23 @@ class PeopleRepositoryImpl implements PeopleRepository {
   }
 
   @override
+  Future<List<String>> getMyFamilyRole() async {
+    final userId = _authService.currentUserId;
+    final res = await _client
+        .from('family_memberships')
+        .select('role')
+        .eq('user_id', userId);
+
+    final rows = res as List;
+    return rows.map((e) => e['role'] as String).toList();
+  }
+
+  @override
   Future<List<PersonEntity>> getProfilesWithRoleForFamily(
     String familyId,
   ) async {
+    //TODO: replace this with a edge function
+
     // Step 1: get memberships (user_id + role) for the family
     final membershipsRes = await _client
         .from('family_memberships')

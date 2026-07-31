@@ -28,7 +28,8 @@ class AccountLoadedWidget extends StatelessWidget {
               email: loadedState.email,
             ),
             AccountSettingsWidget(
-              familyCode: loadedState.familyCode, // Pass the actual family code here
+              familyCode: loadedState.familyCode, 
+              isAdmin: loadedState.myRole == "admin",
             ),
           ],
         ),

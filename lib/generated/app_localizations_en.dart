@@ -340,6 +340,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSettingsSignOutSubtitle => 'Log out of this device';
 
   @override
+  String get manageProfileTitle => 'Edit Profile';
+
+  @override
+  String get manageProfileNameLabel => 'Name';
+
+  @override
+  String get manageProfileSaveButton => 'Save';
+
+  @override
+  String get manageProfileNameRequired => 'Please enter your name';
+
+  @override
+  String get manageProfileSuccessMessage => 'Profile updated successfully';
+
+  @override
   String get remindersHeaderTitle => 'Reminders';
 
   @override

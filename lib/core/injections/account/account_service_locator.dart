@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
+import 'package:vita_folder_mobile/features/account/presentation/cubit/manage_profile_cubit.dart';
 import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
 
 class AccountServiceLocator {
@@ -14,6 +15,12 @@ class AccountServiceLocator {
         peopleRepository: sl<PeopleRepository>(instanceName: 'peopleRepositoryImpl'),
       ),
       instanceName: 'accountCubit',
+    );
+    sl.registerSingleton<ManageProfileCubit>(
+      ManageProfileCubit(
+        authService: sl<AuthService>(instanceName: 'authService'),
+      ),
+      instanceName: 'manageProfileCubit',
     );
   }
 }

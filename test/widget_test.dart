@@ -57,6 +57,9 @@ class _FakePeopleRepository implements PeopleRepository {
 
   @override
   Future<List<PersonEntity>> getProfilesWithRoleForFamily(String familyId) async => [];
+
+  @override
+  Future<List<String>> getMyFamilyRole() async => ['member'];
 }
 
 Widget _pumpApp() {

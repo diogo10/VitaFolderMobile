@@ -11,26 +11,28 @@ class AccountCubit extends Cubit<AccountState> {
   AccountCubit({
     required AuthService authService,
     required PeopleRepository peopleRepository,
-  })  : _authService = authService,
-        _peopleRepository = peopleRepository,
-        super(AccountInitial());
+  }) : _authService = authService,
+       _peopleRepository = peopleRepository,
+       super(AccountInitial());
 
   Future<void> loadAccount() async {
     emit(AccountLoading());
 
     try {
-      final user = _authService.currentUser;
+      final user = await _authService.getAsPersonEntity();
 
       if (user != null) {
         final familyCode = await _getFamilyCodeForUser();
+        final myRole = await _peopleRepository.getMyFamilyRole();
         emit(
           AccountLoaded(
-            userName: user.userMetadata?['full_name']?.toString() ??
-                user.email?.split('@').first ?? 'User',
+            userName: user.name ?? "------",
             email: user.email ?? '',
             familyCode: familyCode,
+            myRole: myRole.first
           ),
         );
+
         return;
       }
 
@@ -47,29 +49,20 @@ class AccountCubit extends Cubit<AccountState> {
     }
 
     try {
-      await _authService.signIn(
-        email: email.trim(),
-        password: password,
-      );
+      await _authService.signIn(email: email.trim(), password: password);
 
       final user = _authService.currentUser;
-       emit(AccountLoading());
-      final familyCode = await _getFamilyCodeForUser();
-      emit(
-        AccountLoaded(
-          userName: user?.userMetadata?['full_name']?.toString() ??
-              email.trim().split('@').first,
-          email: user?.email ?? email.trim(),
-          familyCode: familyCode,
-        ),
-      );
+      if (user != null) {
+        await loadAccount();
+      } else {
+        emit(LoginFailed());
+      }
     } on Exception catch (e, _) {
       if (e is AuthApiException) {
         emit(LoginFailed());
       } else {
         emit(NoAccount());
       }
-  
     }
   }
 
@@ -81,6 +74,24 @@ class AccountCubit extends Cubit<AccountState> {
       emit(AccountLogoutSuccess());
     } catch (_) {
       emit(NoAccount());
+    }
+  }
+
+  Future<void> forgotPassword(String email) async {
+    if (email.trim().isEmpty) {
+      emit(PasswordResetError(message: 'Please enter your email address.'));
+      return;
+    }
+
+    try {
+      await _authService.resetPassword(email);
+      emit(PasswordResetSent());
+    } catch (_) {
+      emit(
+        PasswordResetError(
+          message: 'We could not send the reset link. Please try again.',
+        ),
+      );
     }
   }
 
