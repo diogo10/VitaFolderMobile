@@ -770,6 +770,60 @@ abstract class AppLocalizations {
   /// **'Log out of this device'**
   String get accountSettingsSignOutSubtitle;
 
+  /// No description provided for @notificationSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Settings'**
+  String get notificationSettingsTitle;
+
+  /// No description provided for @notificationSettingsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'NOTIFICATIONS'**
+  String get notificationSettingsSection;
+
+  /// No description provided for @notificationSettingsEnableNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications'**
+  String get notificationSettingsEnableNotifications;
+
+  /// No description provided for @notificationSettingsEnableNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified about reminders and family updates'**
+  String get notificationSettingsEnableNotificationsSubtitle;
+
+  /// No description provided for @notificationSettingsEmailUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Email updates'**
+  String get notificationSettingsEmailUpdates;
+
+  /// No description provided for @notificationSettingsEmailUpdatesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive a summary by email'**
+  String get notificationSettingsEmailUpdatesSubtitle;
+
+  /// No description provided for @notificationSettingsPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications permission was denied. You can enable it in system settings.'**
+  String get notificationSettingsPermissionDenied;
+
+  /// No description provided for @notificationSettingsPermissionPermanentlyDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications permission is permanently denied. Please enable it in system settings.'**
+  String get notificationSettingsPermissionPermanentlyDenied;
+
+  /// No description provided for @notificationSettingsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong loading your settings.'**
+  String get notificationSettingsError;
+
   /// No description provided for @manageProfileTitle.
   ///
   /// In en, this message translates to:

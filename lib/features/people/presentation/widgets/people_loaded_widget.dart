@@ -201,10 +201,6 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                 onPressed: () => context.push('/invite-people'),
               ),
               const SizedBox(height: 16),
-              RolePermissionsCardWidget(
-                onLearnMorePressed: () =>
-                    context.go("/account"),
-              ),
             ],
           ),
         ),

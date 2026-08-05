@@ -60,6 +60,7 @@ dependencies:
 
   # URL launcher
   url_launcher: ^6.2.0
+  permission_handler: ^13.0.0
 
 dev_dependencies:
   flutter_test:

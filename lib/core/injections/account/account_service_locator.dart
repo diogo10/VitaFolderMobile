@@ -1,7 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:vita_folder_mobile/core/auth/auth_service.dart';
+import 'package:vita_folder_mobile/core/local_storage/local_storage_datasource.dart';
+import 'package:vita_folder_mobile/features/account/application/notification_permission_service.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/manage_profile_cubit.dart';
+import 'package:vita_folder_mobile/features/account/presentation/cubit/notification_settings_cubit.dart';
 import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
 
 class AccountServiceLocator {
@@ -21,6 +24,13 @@ class AccountServiceLocator {
         authService: sl<AuthService>(instanceName: 'authService'),
       ),
       instanceName: 'manageProfileCubit',
+    );
+    sl.registerSingleton<NotificationSettingsCubit>(
+      NotificationSettingsCubit(
+        permissionService: NotificationPermissionService(),
+        storage: sl<LocalStorageDatasource>(instanceName: 'localStorageDatasource'),
+      ),
+      instanceName: 'notificationSettingsCubit',
     );
   }
 }

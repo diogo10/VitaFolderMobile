@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
@@ -9,28 +8,9 @@ class AccountNoAccountFooterWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final onSurface = context.colorScheme.onSurface;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              l.accountNoAccountNewToApp,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: onSurface.withValues(alpha: 0.74),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                context.push('/sign-up');
-              },
-              child: Text(l.accountNoAccountCreateFreeAccount),
-            ),
-          ],
-        ),
         const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -31,6 +31,7 @@ class AccountSettingsWidget extends StatelessWidget {
                 icon: Icons.notifications_rounded,
                 title: l.accountSettingsNotifications,
                 subtitle: l.accountSettingsNotificationsSubtitle,
+                onTap: () => context.push('/notification-settings'),
               ),
             ],
           ),

@@ -367,6 +367,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSettingsSignOutSubtitle => 'Log out of this device';
 
   @override
+  String get notificationSettingsTitle => 'Notification Settings';
+
+  @override
+  String get notificationSettingsSection => 'NOTIFICATIONS';
+
+  @override
+  String get notificationSettingsEnableNotifications => 'Enable notifications';
+
+  @override
+  String get notificationSettingsEnableNotificationsSubtitle =>
+      'Get notified about reminders and family updates';
+
+  @override
+  String get notificationSettingsEmailUpdates => 'Email updates';
+
+  @override
+  String get notificationSettingsEmailUpdatesSubtitle =>
+      'Receive a summary by email';
+
+  @override
+  String get notificationSettingsPermissionDenied =>
+      'Notifications permission was denied. You can enable it in system settings.';
+
+  @override
+  String get notificationSettingsPermissionPermanentlyDenied =>
+      'Notifications permission is permanently denied. Please enable it in system settings.';
+
+  @override
+  String get notificationSettingsError =>
+      'Something went wrong loading your settings.';
+
+  @override
   String get manageProfileTitle => 'Edit Profile';
 
   @override

@@ -374,6 +374,38 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountSettingsSignOutSubtitle => 'Sair deste dispositivo';
 
   @override
+  String get notificationSettingsTitle => 'Configurações de Notificação';
+
+  @override
+  String get notificationSettingsSection => 'NOTIFICAÇÕES';
+
+  @override
+  String get notificationSettingsEnableNotifications => 'Ativar notificações';
+
+  @override
+  String get notificationSettingsEnableNotificationsSubtitle =>
+      'Seja notificado sobre lembretes e atualizações da família';
+
+  @override
+  String get notificationSettingsEmailUpdates => 'Atualizações por email';
+
+  @override
+  String get notificationSettingsEmailUpdatesSubtitle =>
+      'Receba um resumo por email';
+
+  @override
+  String get notificationSettingsPermissionDenied =>
+      'A permissão de notificações foi negada. Você pode ativá-la nas configurações do sistema.';
+
+  @override
+  String get notificationSettingsPermissionPermanentlyDenied =>
+      'A permissão de notificações foi negada permanentemente. Ative-a nas configurações do sistema.';
+
+  @override
+  String get notificationSettingsError =>
+      'Algo deu errado ao carregar suas configurações.';
+
+  @override
   String get manageProfileTitle => 'Editar Perfil';
 
   @override

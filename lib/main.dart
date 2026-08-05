@@ -4,8 +4,10 @@ import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/core/functions/edget_functions.dart';
 import 'package:vita_folder_mobile/core/injections/service_locator.dart';
 import 'package:vita_folder_mobile/core/router/app_router.dart';
+import 'package:vita_folder_mobile/features/account/application/notification_permission_service.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/manage_profile_cubit.dart';
+import 'package:vita_folder_mobile/features/account/presentation/cubit/notification_settings_cubit.dart';
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/login/presentation/cubit/sign_up_cubit.dart';
 import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
@@ -53,6 +55,11 @@ void main() async {
           ),
         ),
         BlocProvider(
+          create: (_) => slInstance<NotificationSettingsCubit>(
+            instanceName: 'notificationSettingsCubit',
+          ),
+        ),
+        BlocProvider(
           create: (_) => SignUpCubit(
             slInstance<AuthService>(instanceName: 'authService'),
           ),
@@ -68,10 +75,45 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final bool onboardingCompleted;
 
   const MyApp({super.key, required this.onboardingCompleted});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  bool _notificationPermissionRequested = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _requestNotificationPermission();
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _requestNotificationPermission();
+    }
+  }
+
+  void _requestNotificationPermission() {
+    if (_notificationPermissionRequested) return;
+    _notificationPermissionRequested = true;
+    NotificationPermissionService().requestNotificationPermission();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +121,7 @@ class MyApp extends StatelessWidget {
       title: 'VitaFolder',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      routerConfig: createRouter(onboardingCompleted: onboardingCompleted),
+      routerConfig: createRouter(onboardingCompleted: widget.onboardingCompleted),
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
