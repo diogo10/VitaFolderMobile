@@ -21,6 +21,7 @@ class ReminderServiceLocator {
     sl.registerSingleton<GetReminderUsecase>(
       GetReminderUsecase(
         repository: sl(instanceName: 'reminderRepositoryImpl'),
+        peopleRepository: sl<PeopleRepository>(instanceName: 'peopleRepositoryImpl'),
       ),
       instanceName: 'getReminderUsecase',
     );

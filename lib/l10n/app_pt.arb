@@ -227,5 +227,10 @@
   "createReminderTypeReimbursement": "Reembolso",
   "createReminderTypeBirthday": "Aniversário",
   "createReminderTypeChores": "Tarefas",
-  "createReminderTypeCustom": "Personalizado"
+  "createReminderTypeCustom": "Personalizado",
+  "reminderStatusPending": "Pendente",
+  "reminderStatusSent": "Enviado",
+  "reminderStatusDone": "Concluído",
+  "reminderStatusDismissed": "Dispensado",
+  "reminderStatusCancelled": "Cancelado"
 }

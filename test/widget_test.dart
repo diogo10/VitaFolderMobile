@@ -75,7 +75,7 @@ class _FakeReminderRepository implements ReminderRepository {
   }) async => Right([]);
 
   @override
-  Future<Either<Failure, bool>> createReminder(ReminderModel reminder) async => Right(true);
+  Future<Either<Failure, bool>> createReminder(ReminderModel reminder, String familyId) async => Right(true);
 
   @override
   Future<Either<Failure, bool>> removeReminder(int id) async => Right(true);
@@ -95,6 +95,7 @@ Widget _pumpApp() {
         create: (_) => RemindersCubit(
           getReminderUsecase: GetReminderUsecase(
             repository: _FakeReminderRepository(),
+            peopleRepository: _FakePeopleRepository(),
           ),
           peopleRepository: _FakePeopleRepository(),
           authService: _FakeAuthService(),
@@ -137,6 +138,7 @@ Widget _pumpAppWithOnboarding() {
         create: (_) => RemindersCubit(
           getReminderUsecase: GetReminderUsecase(
             repository: _FakeReminderRepository(),
+            peopleRepository: _FakePeopleRepository(),
           ),
           peopleRepository: _FakePeopleRepository(),
           authService: _FakeAuthService(),

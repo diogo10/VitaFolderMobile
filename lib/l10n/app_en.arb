@@ -248,5 +248,10 @@
   "createReminderTypeReimbursement": "Reimbursement",
   "createReminderTypeBirthday": "Birthday",
   "createReminderTypeChores": "Chores",
-  "createReminderTypeCustom": "Custom"
+  "createReminderTypeCustom": "Custom",
+  "reminderStatusPending": "Pending",
+  "reminderStatusSent": "Sent",
+  "reminderStatusDone": "Done",
+  "reminderStatusDismissed": "Dismissed",
+  "reminderStatusCancelled": "Cancelled"
 }

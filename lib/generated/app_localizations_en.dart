@@ -711,4 +711,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createReminderTypeCustom => 'Custom';
+
+  @override
+  String get reminderStatusPending => 'Pending';
+
+  @override
+  String get reminderStatusSent => 'Sent';
+
+  @override
+  String get reminderStatusDone => 'Done';
+
+  @override
+  String get reminderStatusDismissed => 'Dismissed';
+
+  @override
+  String get reminderStatusCancelled => 'Cancelled';
 }

@@ -11,7 +11,7 @@ class ReminderEntity {
   final String createdBy;
   final String createdAt;
 
-  ReminderEntity({
+ReminderEntity({
     required this.title,
     required this.body,
     required this.id,
@@ -22,4 +22,28 @@ class ReminderEntity {
     required this.createdBy,
     required this.createdAt,
   });
+
+  ReminderEntity copyWith({
+    String? title,
+    String? body,
+    String? id,
+    ReminderType? type,
+    String? dueDate,
+    String? repeatRule,
+    String? status,
+    String? createdBy,
+    String? createdAt,
+  }) {
+    return ReminderEntity(
+      title: title ?? this.title,
+      body: body ?? this.body,
+      id: id ?? this.id,
+      type: type ?? this.type,
+      dueDate: dueDate ?? this.dueDate,
+      repeatRule: repeatRule ?? this.repeatRule,
+      status: status ?? this.status,
+      createdBy: createdBy ?? this.createdBy,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }

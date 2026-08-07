@@ -8,7 +8,10 @@ class CreateReminderUsecase {
 
   CreateReminderUsecase({required this.repository});
 
-  Future<Either<Failure, bool>> call(ReminderModel reminder, String familyId) async {
+  Future<Either<Failure, bool>> call(
+    ReminderModel reminder,
+    String familyId,
+  ) async {
     return await repository.createReminder(reminder, familyId);
   }
 }

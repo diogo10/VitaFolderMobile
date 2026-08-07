@@ -1423,6 +1423,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Custom'**
   String get createReminderTypeCustom;
+
+  /// No description provided for @reminderStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get reminderStatusPending;
+
+  /// No description provided for @reminderStatusSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get reminderStatusSent;
+
+  /// No description provided for @reminderStatusDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get reminderStatusDone;
+
+  /// No description provided for @reminderStatusDismissed.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismissed'**
+  String get reminderStatusDismissed;
+
+  /// No description provided for @reminderStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get reminderStatusCancelled;
 }
 
 class _AppLocalizationsDelegate
