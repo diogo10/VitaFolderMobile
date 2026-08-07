@@ -10,7 +10,6 @@ import 'package:vita_folder_mobile/features/people/presentation/widgets/add_fami
 import 'package:vita_folder_mobile/features/people/presentation/widgets/family_member_card_widget.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/family_header_widget.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/invite_code_card_widget.dart';
-import 'package:vita_folder_mobile/features/people/presentation/widgets/role_permissions_card_widget.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class PeopleLoadedWidget extends StatefulWidget {

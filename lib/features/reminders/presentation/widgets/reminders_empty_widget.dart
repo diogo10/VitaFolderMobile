@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_header_widget.dart';
@@ -72,7 +73,7 @@ class RemindersEmptyWidget extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () => context.push('/create-reminder'),
                       icon: const Icon(Icons.add_rounded, size: 18),
                       label: Text(l.remindersEmptyCreateButton),
                       style: ElevatedButton.styleFrom(

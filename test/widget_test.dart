@@ -1,7 +1,3 @@
-import 'dart:async';
-import 'dart:typed_data';
-
-import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:vita_folder_mobile/core/auth/auth_service.dart';
+import 'package:vita_folder_mobile/core/errors/failure.dart';
 import 'package:vita_folder_mobile/core/injections/service_locator.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
 import 'package:vita_folder_mobile/features/home/domain/usecase/get_home_data_usecase.dart';
@@ -23,8 +20,10 @@ import 'package:vita_folder_mobile/features/people/domain/usecase/create_family_
 import 'package:vita_folder_mobile/features/people/domain/usecase/get_people_usecase.dart';
 import 'package:vita_folder_mobile/features/people/domain/usecase/join_family_usecase.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
-import 'package:vita_folder_mobile/features/reminders/data/datasource/reminder_remote_datasource.dart'
-    as reminders;
+import 'package:vita_folder_mobile/features/reminders/data/models/reminder_model.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/usecase/get_reminder_usecase.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/main.dart';
@@ -32,6 +31,9 @@ import 'package:vita_folder_mobile/main.dart';
 class _FakeAuthService extends AuthService {
   @override
   bool isLoggedIn() => true;
+
+  @override
+  String get currentUserId => 'fake-user';
 }
 
 class _FakePeopleRepository implements PeopleRepository {
@@ -53,13 +55,30 @@ class _FakePeopleRepository implements PeopleRepository {
   Future<FamilyEntity?> getFamilyBy(String id) async => FamilyEntity(name: 'Fam', inviteCode: 'ABC');
 
   @override
-  Future<List<String>> getFamilyIdsForUser(String userId) async => [];
+  Future<List<String>> getFamilyIdsForUser(String userId) async => ['fake-family'];
 
   @override
   Future<List<PersonEntity>> getProfilesWithRoleForFamily(String familyId) async => [];
 
   @override
   Future<List<String>> getMyFamilyRole() async => ['member'];
+}
+
+class _FakeReminderRepository implements ReminderRepository {
+  @override
+  Future<Either<Failure, List<ReminderEntity>>> getReminders(String familyId) async => Right([]);
+
+  @override
+  Future<Either<Failure, List<ReminderEntity>>> getRemindersByTypeAndFamily({
+    required ReminderType type,
+    required String familyId,
+  }) async => Right([]);
+
+  @override
+  Future<Either<Failure, bool>> createReminder(ReminderModel reminder) async => Right(true);
+
+  @override
+  Future<Either<Failure, bool>> removeReminder(int id) async => Right(true);
 }
 
 Widget _pumpApp() {
@@ -74,9 +93,11 @@ Widget _pumpApp() {
       ),
       BlocProvider<RemindersCubit>(
         create: (_) => RemindersCubit(
-          getReminderUsecase: GetIt.instance<GetReminderUsecase>(
-            instanceName: 'getReminderUsecase',
+          getReminderUsecase: GetReminderUsecase(
+            repository: _FakeReminderRepository(),
           ),
+          peopleRepository: _FakePeopleRepository(),
+          authService: _FakeAuthService(),
         ),
       ),
       BlocProvider<PeopleCubit>(
@@ -114,9 +135,11 @@ Widget _pumpAppWithOnboarding() {
       ),
       BlocProvider<RemindersCubit>(
         create: (_) => RemindersCubit(
-          getReminderUsecase: GetIt.instance<GetReminderUsecase>(
-            instanceName: 'getReminderUsecase',
+          getReminderUsecase: GetReminderUsecase(
+            repository: _FakeReminderRepository(),
           ),
+          peopleRepository: _FakePeopleRepository(),
+          authService: _FakeAuthService(),
         ),
       ),
       BlocProvider<PeopleCubit>(
@@ -142,24 +165,6 @@ Widget _pumpAppWithOnboarding() {
   );
 }
 
-class _MockDioAdapter implements HttpClientAdapter {
-  @override
-  Future<ResponseBody> fetch(
-    RequestOptions options,
-    Stream<Uint8List>? requestStream,
-    Future<dynamic>? cancelFuture,
-  ) async {
-    throw DioException(
-      type: DioExceptionType.connectionError,
-      requestOptions: options,
-      message: 'Mock adapter',
-    );
-  }
-
-  @override
-  void close({bool force = false}) {}
-}
-
 void main() {
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({'onboarding_completed': true});
@@ -179,8 +184,6 @@ void main() {
       ),
       instanceName: 'getHomeDataUsecase',
     );
-
-    reminders.http.httpClientAdapter = _MockDioAdapter();
   });
 
   tearDownAll(() {

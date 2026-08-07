@@ -13,6 +13,7 @@ import 'package:vita_folder_mobile/features/login/presentation/cubit/sign_up_cub
 import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/invite_people_cubit.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/app_theme.dart';
@@ -39,6 +40,11 @@ void main() async {
         BlocProvider(
           create: (_) =>
               slInstance<RemindersCubit>(instanceName: 'remindersCubit'),
+        ),
+        BlocProvider(
+          create: (_) => slInstance<CreateReminderCubit>(
+            instanceName: 'createReminderCubit',
+          ),
         ),
         BlocProvider(
           create: (_) => slInstance<HomeCubit>(instanceName: 'homeCubit'),

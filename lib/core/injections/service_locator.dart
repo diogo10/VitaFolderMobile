@@ -32,11 +32,11 @@ class ServiceLocator {
       instanceName: 'localStorageDatasource',
     );
 
+    final peopleServiceLocator = PeopleServiceLocator(slInstance);
+    peopleServiceLocator.init();
+
     final reminderServiceLocator = ReminderServiceLocator(slInstance);
     reminderServiceLocator.init();
-
-     final peopleServiceLocator = PeopleServiceLocator(slInstance);
-    peopleServiceLocator.init();
 
     final homeServiceLocator = HomeServiceLocator(slInstance);
     homeServiceLocator.init(slInstance(instanceName: 'authService'));

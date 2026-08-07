@@ -8,7 +8,7 @@ class GetReminderUsecase {
 
   GetReminderUsecase({required this.repository});
 
-  Future<Either<Failure, List<ReminderEntity>>> call() async {
-    return await repository.getReminders();
+  Future<Either<Failure, List<ReminderEntity>>> call(String familyId) async {
+    return await repository.getReminders(familyId);
   }
 }

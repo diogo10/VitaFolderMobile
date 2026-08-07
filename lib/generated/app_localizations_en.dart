@@ -651,4 +651,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remindersSuggestionsAddButton => 'Add';
+
+  @override
+  String get createReminderTitle => 'New Reminder';
+
+  @override
+  String get createReminderTitleLabel => 'Title';
+
+  @override
+  String get createReminderTitleRequired => 'Enter a title';
+
+  @override
+  String get createReminderBodyLabel => 'Details';
+
+  @override
+  String get createReminderTypeLabel => 'Type';
+
+  @override
+  String get createReminderDueDateLabel => 'Due date';
+
+  @override
+  String get createReminderRepeatRuleLabel => 'Repeat';
+
+  @override
+  String get createReminderRepeatNever => 'Never';
+
+  @override
+  String get createReminderRepeatDaily => 'Daily';
+
+  @override
+  String get createReminderRepeatWeekly => 'Weekly';
+
+  @override
+  String get createReminderRepeatMonthly => 'Monthly';
+
+  @override
+  String get createReminderSaveButton => 'Create Reminder';
+
+  @override
+  String get createReminderSuccessMessage => 'Reminder created successfully';
+
+  @override
+  String get createReminderTypeRenewal => 'Renewal';
+
+  @override
+  String get createReminderTypeAppointment => 'Appointment';
+
+  @override
+  String get createReminderTypeVaccine => 'Vaccine';
+
+  @override
+  String get createReminderTypeReimbursement => 'Reimbursement';
+
+  @override
+  String get createReminderTypeBirthday => 'Birthday';
+
+  @override
+  String get createReminderTypeChores => 'Chores';
+
+  @override
+  String get createReminderTypeCustom => 'Custom';
 }

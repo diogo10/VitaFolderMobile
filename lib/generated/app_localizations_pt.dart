@@ -660,4 +660,64 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get remindersSuggestionsAddButton => 'Adicionar';
+
+  @override
+  String get createReminderTitle => 'Novo Lembrete';
+
+  @override
+  String get createReminderTitleLabel => 'Título';
+
+  @override
+  String get createReminderTitleRequired => 'Digite um título';
+
+  @override
+  String get createReminderBodyLabel => 'Detalhes';
+
+  @override
+  String get createReminderTypeLabel => 'Tipo';
+
+  @override
+  String get createReminderDueDateLabel => 'Data de vencimento';
+
+  @override
+  String get createReminderRepeatRuleLabel => 'Repetir';
+
+  @override
+  String get createReminderRepeatNever => 'Nunca';
+
+  @override
+  String get createReminderRepeatDaily => 'Diariamente';
+
+  @override
+  String get createReminderRepeatWeekly => 'Semanalmente';
+
+  @override
+  String get createReminderRepeatMonthly => 'Mensalmente';
+
+  @override
+  String get createReminderSaveButton => 'Criar Lembrete';
+
+  @override
+  String get createReminderSuccessMessage => 'Lembrete criado com sucesso';
+
+  @override
+  String get createReminderTypeRenewal => 'Renovação';
+
+  @override
+  String get createReminderTypeAppointment => 'Compromisso';
+
+  @override
+  String get createReminderTypeVaccine => 'Vacina';
+
+  @override
+  String get createReminderTypeReimbursement => 'Reembolso';
+
+  @override
+  String get createReminderTypeBirthday => 'Aniversário';
+
+  @override
+  String get createReminderTypeChores => 'Tarefas';
+
+  @override
+  String get createReminderTypeCustom => 'Personalizado';
 }

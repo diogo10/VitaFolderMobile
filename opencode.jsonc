@@ -1,6 +1,30 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "opencode/deepseek-v4-flash-free",
+  "instructions": ["AGENTS.md"],
+  "command": {
+    "test": {
+      "description": "Run the Flutter test suite",
+      "options": {
+        "requireUserInput": false
+      },
+      "cli": "fvm flutter test"
+    },
+    "analyze": {
+      "description": "Analyze the Flutter codebase",
+      "options": {
+        "requireUserInput": false
+      },
+      "cli": "fvm flutter analyze"
+    },
+    "gen": {
+      "description": "Run code generation after changing models",
+      "options": {
+        "requireUserInput": false
+      },
+      "cli": "fvm dart run build_runner build --delete-conflicting-outputs"
+    }
+  },
   "agent": {
     "plan": {
       "mode": "primary",

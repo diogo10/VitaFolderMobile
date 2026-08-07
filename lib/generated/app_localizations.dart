@@ -1303,6 +1303,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add'**
   String get remindersSuggestionsAddButton;
+
+  /// No description provided for @createReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Reminder'**
+  String get createReminderTitle;
+
+  /// No description provided for @createReminderTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get createReminderTitleLabel;
+
+  /// No description provided for @createReminderTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a title'**
+  String get createReminderTitleRequired;
+
+  /// No description provided for @createReminderBodyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get createReminderBodyLabel;
+
+  /// No description provided for @createReminderTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get createReminderTypeLabel;
+
+  /// No description provided for @createReminderDueDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date'**
+  String get createReminderDueDateLabel;
+
+  /// No description provided for @createReminderRepeatRuleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat'**
+  String get createReminderRepeatRuleLabel;
+
+  /// No description provided for @createReminderRepeatNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get createReminderRepeatNever;
+
+  /// No description provided for @createReminderRepeatDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get createReminderRepeatDaily;
+
+  /// No description provided for @createReminderRepeatWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get createReminderRepeatWeekly;
+
+  /// No description provided for @createReminderRepeatMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get createReminderRepeatMonthly;
+
+  /// No description provided for @createReminderSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Reminder'**
+  String get createReminderSaveButton;
+
+  /// No description provided for @createReminderSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder created successfully'**
+  String get createReminderSuccessMessage;
+
+  /// No description provided for @createReminderTypeRenewal.
+  ///
+  /// In en, this message translates to:
+  /// **'Renewal'**
+  String get createReminderTypeRenewal;
+
+  /// No description provided for @createReminderTypeAppointment.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment'**
+  String get createReminderTypeAppointment;
+
+  /// No description provided for @createReminderTypeVaccine.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccine'**
+  String get createReminderTypeVaccine;
+
+  /// No description provided for @createReminderTypeReimbursement.
+  ///
+  /// In en, this message translates to:
+  /// **'Reimbursement'**
+  String get createReminderTypeReimbursement;
+
+  /// No description provided for @createReminderTypeBirthday.
+  ///
+  /// In en, this message translates to:
+  /// **'Birthday'**
+  String get createReminderTypeBirthday;
+
+  /// No description provided for @createReminderTypeChores.
+  ///
+  /// In en, this message translates to:
+  /// **'Chores'**
+  String get createReminderTypeChores;
+
+  /// No description provided for @createReminderTypeCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get createReminderTypeCustom;
 }
 
 class _AppLocalizationsDelegate

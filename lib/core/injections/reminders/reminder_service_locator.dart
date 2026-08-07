@@ -1,8 +1,11 @@
 import 'package:get_it/get_it.dart';
-import 'package:vita_folder_mobile/features/reminders/data/datasource/reminder_remote_datasource.dart';
+import 'package:vita_folder_mobile/core/auth/auth_service.dart';
+import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
 import 'package:vita_folder_mobile/features/reminders/data/repository/reminder_repository_impl.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/usecase/create_reminder_usecase.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/usecase/get_reminder_usecase.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 
 class ReminderServiceLocator {
@@ -10,15 +13,8 @@ class ReminderServiceLocator {
   ReminderServiceLocator(this.sl);
 
   void init() {
-    sl.registerSingleton<ReminderRemoteDatasource>(
-      ReminderRemoteDatasource(),
-      instanceName: 'reminderRemoteDatasource',
-    );
-
     sl.registerSingleton<ReminderRepository>(
-      ReminderRepositoryImpl(
-        reminderRemoteDatasource: sl(instanceName: 'reminderRemoteDatasource'),
-      ),
+      ReminderRepositoryImpl(),
       instanceName: 'reminderRepositoryImpl',
     );
 
@@ -29,11 +25,29 @@ class ReminderServiceLocator {
       instanceName: 'getReminderUsecase',
     );
 
+    sl.registerSingleton<CreateReminderUsecase>(
+      CreateReminderUsecase(
+        repository: sl(instanceName: 'reminderRepositoryImpl'),
+      ),
+      instanceName: 'createReminderUsecase',
+    );
+
     sl.registerSingleton<RemindersCubit>(
       RemindersCubit(
         getReminderUsecase: sl(instanceName: 'getReminderUsecase'),
+        peopleRepository: sl<PeopleRepository>(instanceName: 'peopleRepositoryImpl'),
+        authService: sl<AuthService>(instanceName: 'authService'),
       ),
       instanceName: 'remindersCubit',
+    );
+
+    sl.registerSingleton<CreateReminderCubit>(
+      CreateReminderCubit(
+        createReminderUsecase: sl(instanceName: 'createReminderUsecase'),
+        authService: sl<AuthService>(instanceName: 'authService'),
+        peopleRepository: sl<PeopleRepository>(instanceName: 'peopleRepositoryImpl'),
+      ),
+      instanceName: 'createReminderCubit',
     );
   }
 }

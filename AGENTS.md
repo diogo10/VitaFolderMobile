@@ -19,6 +19,7 @@ You are an expert software developer and coding assistant. Very experience in Fl
 - **SOLID Principles**: Follow object-oriented design principles
 - **Error Handling**: Always handle potential errors gracefully
 - **Security**: Consider security implications in your code
+- **Localization**: Do not hardcode displayed text; use generated `l10n` translations
 - **Version Control**: Write clear commit messages
 
 ## Development Commands
@@ -45,7 +46,7 @@ Each feature follows this internal structure:
 
 - `application/` - Services, use cases, business logic
 - `domain/` - Models (with `@MappableClass()`)
-- `presentation/` - Views and widgets
+- `presentation/` - Views, widgets, and state management (Bloc/Provider)
 - `data/` - Repositories, remote/local data sources
 
 ## Naming Conventions
@@ -56,7 +57,8 @@ Each feature follows this internal structure:
 | Widgets (reusable) | `*Widget` | `TicketCardWidget` |
 | Interfaces | `I*` prefix | `ILogger`, `ITicketDAO` |
 | Services | `*Service` | `ImportService`, `PDFService` |
-| Providers | `*Provider` | `ThemeProvider`, `CalendarProvider` |
+| State managers | `*Bloc` / `*Provider` | `LoginBloc`, `ThemeProvider`, `CalendarProvider` |
+| Routes | `*Route` | `AppRoute`, `LoginRoute` |
 | Models | `*Model` | `TNSTCTicketModel`, `EventModel` |
 | Files | snake_case | `home_view.dart`, `locator.dart` |
 | Classes | PascalCase | `TravelParserService` |
