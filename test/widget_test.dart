@@ -89,6 +89,9 @@ Widget _pumpApp() {
           getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
             instanceName: 'getHomeDataUsecase',
           ),
+          reminderRepository: _FakeReminderRepository(),
+          peopleRepository: _FakePeopleRepository(),
+          authService: _FakeAuthService(),
         ),
       ),
       BlocProvider<RemindersCubit>(
@@ -132,6 +135,9 @@ Widget _pumpAppWithOnboarding() {
           getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
             instanceName: 'getHomeDataUsecase',
           ),
+          reminderRepository: _FakeReminderRepository(),
+          peopleRepository: _FakePeopleRepository(),
+          authService: _FakeAuthService(),
         ),
       ),
       BlocProvider<RemindersCubit>(

@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_header_widget.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_suggestions_cards_widget.dart';
 
 class RemindersEmptyWidget extends StatelessWidget {
-  const RemindersEmptyWidget({super.key});
+  final bool isLoading;
+
+  const RemindersEmptyWidget({
+    super.key,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,17 +18,14 @@ class RemindersEmptyWidget extends StatelessWidget {
     final onSurface = context.colorScheme.onSurface;
     final l = AppLocalizations.of(context)!;
 
-    return SafeArea(
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-            RemindersHeaderWidget(
-              title: l.remindersHeaderTitle,
-              subtitle: l.remindersHeaderSubtitle,
-            ),
-            const SizedBox(height: 8),
+    return Stack(
+      children: [
+        Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 24),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -115,7 +116,15 @@ class RemindersEmptyWidget extends StatelessWidget {
           ],
         ),
       ),
-    ),
-  );
+        ),
+        if (isLoading)
+          const Positioned(
+            top: 0,
+            left: 24,
+            right: 24,
+            child: LinearProgressIndicator(),
+          ),
+      ],
+    );
   }
 }

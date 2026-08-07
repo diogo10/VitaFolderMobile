@@ -33,7 +33,7 @@ class _HomeViewState extends State<HomeView> {
         }
 
         if (state is HomeEmpty) {
-          return const HomeViewEmpty();
+          return HomeViewEmpty(state: state);
         }
 
         if (state is HomeLoaded) {

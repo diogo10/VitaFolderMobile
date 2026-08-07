@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:vita_folder_mobile/core/errors/failure.dart';
 import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
 
 class GetReminderUsecase {
@@ -10,8 +11,16 @@ class GetReminderUsecase {
 
   GetReminderUsecase({required this.repository, required this.peopleRepository});
 
-  Future<Either<Failure, List<ReminderEntity>>> call(String familyId) async {
-    final remindersResult = await repository.getReminders(familyId);
+  Future<Either<Failure, List<ReminderEntity>>> call(
+    String familyId, {
+    ReminderType? type,
+  }) async {
+    final remindersResult = type == null
+        ? await repository.getReminders(familyId)
+        : await repository.getRemindersByTypeAndFamily(
+            type: type,
+            familyId: familyId,
+          );
 
     return remindersResult.fold(
       (err) => Left(Failure(message: err.message)),

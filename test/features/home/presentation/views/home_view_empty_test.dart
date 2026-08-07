@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vita_folder_mobile/features/home/presentation/cubit/home_state.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/home_view_empty.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_header_widget.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_footer_widget.dart';
@@ -11,7 +12,7 @@ Widget _pumpApp() {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: HomeViewEmpty(),
+    home: HomeViewEmpty(state: HomeEmpty()),
   );
 }
 

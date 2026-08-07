@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vita_folder_mobile/features/home/presentation/cubit/home_state.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_action_card_widget.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_footer_widget.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_header_widget.dart';
@@ -8,7 +9,9 @@ import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class HomeViewEmpty extends StatelessWidget {
-  const HomeViewEmpty({super.key});
+  final HomeEmpty state;
+
+  const HomeViewEmpty({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -30,15 +33,17 @@ class HomeViewEmpty extends StatelessWidget {
               buttonLabel: l.homeEmptyAddPeopleButton,
               onPressed: () => context.go('/people'),
             ),
-            const SizedBox(height: 16),
-            HomeEmptyActionCardWidget(
-              icon: Icons.notifications_active_rounded,
-              title: l.homeEmptyReminderTitle,
-              subtitle: l.homeEmptyReminderSubtitle,
-              buttonLabel: l.homeEmptyReminderButton,
-              onPressed: () => context.go('/reminders'),
-            ),
-            const SizedBox(height: 16),
+            if (!state.hasReminders) ...[
+              const SizedBox(height: 16),
+              HomeEmptyActionCardWidget(
+                icon: Icons.notifications_active_rounded,
+                title: l.homeEmptyReminderTitle,
+                subtitle: l.homeEmptyReminderSubtitle,
+                buttonLabel: l.homeEmptyReminderButton,
+                onPressed: () => context.go('/reminders'),
+              ),
+              const SizedBox(height: 16),
+            ],
             HomeEmptyActionCardWidget(
               icon: Icons.person_add_alt_1_rounded,
               title: l.homeEmptyAccountTitle,

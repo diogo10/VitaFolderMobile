@@ -5,12 +5,14 @@ class HomeEntity {
   final String date;
   final String message;
   final List<PersonEntity> peopleInCircle;
+  final bool hasReminders;
 
   HomeEntity({
     required this.greeting,
     required this.date,
     required this.message,
     required this.peopleInCircle,
+    this.hasReminders = false,
   });
 
   HomeEntity copyWith({
@@ -18,12 +20,14 @@ class HomeEntity {
     String? date,
     String? message,
     List<PersonEntity>? peopleInCircle,
+    bool? hasReminders,
   }) {
     return HomeEntity(
       greeting: greeting ?? this.greeting,
       date: date ?? this.date,
       message: message ?? this.message,
       peopleInCircle: peopleInCircle ?? this.peopleInCircle,
+      hasReminders: hasReminders ?? this.hasReminders,
     );
   }
 }

@@ -18,7 +18,9 @@ class HomeLoaded extends HomeState {
 }
 
 class HomeEmpty extends HomeState {
-  HomeEmpty();
+  final bool hasReminders;
+
+  HomeEmpty({this.hasReminders = false});
 }
 
 class HomeError extends HomeState {

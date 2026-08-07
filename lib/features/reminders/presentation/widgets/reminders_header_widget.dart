@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class RemindersHeaderWidget extends StatefulWidget {
   final String title;
   final String subtitle;
-  final ValueChanged<String>? onCategoryChanged;
+  final ReminderType? selectedType;
+  final ValueChanged<ReminderType?>? onCategoryChanged;
   final VoidCallback? onFilterPressed;
 
   const RemindersHeaderWidget({
     super.key,
     required this.title,
     required this.subtitle,
+    this.selectedType,
     this.onCategoryChanged,
     this.onFilterPressed,
   });
@@ -21,17 +24,19 @@ class RemindersHeaderWidget extends StatefulWidget {
 }
 
 class _RemindersHeaderWidgetState extends State<RemindersHeaderWidget> {
-  String selectedCategory = '';
-
-  List<String> _categories(BuildContext context) {
+  List<({String label, ReminderType? type})> _categories(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    return [l.remindersHeaderAll, l.remindersHeaderChores, l.remindersHeaderAppointments, l.remindersHeaderBirthdays];
+    return [
+      (label: l.remindersHeaderAll, type: null),
+      (label: l.remindersHeaderChores, type: ReminderType.chores),
+      (label: l.remindersHeaderAppointments, type: ReminderType.appointment),
+      (label: l.remindersHeaderBirthdays, type: ReminderType.birthday),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
     final categories = _categories(context);
-    if (selectedCategory.isEmpty) selectedCategory = categories.first;
     final textColor = context.colorScheme.onSurface;
     final background = context.colorScheme.surface;
     final highlight = context.colorScheme.primary;
@@ -90,16 +95,13 @@ class _RemindersHeaderWidgetState extends State<RemindersHeaderWidget> {
               scrollDirection: Axis.horizontal,
               itemBuilder: (context, index) {
                 final category = categories[index];
-                final isSelected = category == selectedCategory;
-      
+                final isSelected = category.type == widget.selectedType;
+
                 return ChoiceChip(
-                  label: Text(category),
+                  label: Text(category.label),
                   selected: isSelected,
                   onSelected: (_) {
-                    setState(() {
-                      selectedCategory = category;
-                    });
-                    widget.onCategoryChanged?.call(category);
+                    widget.onCategoryChanged?.call(category.type);
                   },
                   selectedColor: highlight,
                   backgroundColor: background,

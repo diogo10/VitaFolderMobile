@@ -33,14 +33,15 @@ class HomeViewSuccess extends StatelessWidget {
               onPressed: () => context.go('/people'),
             ),
             const SizedBox(height: 16),
-            HomeEmptyActionCardWidget(
-              icon: Icons.notifications_active_rounded,
-              title: l.homeEmptyReminderTitle,
-              subtitle: l.homeEmptyReminderSubtitle,
-              buttonLabel: l.homeEmptyReminderButton,
-              onPressed: () => context.go('/reminders'),
-            ),
-            const SizedBox(height: 16),
+            if (!data.hasReminders)
+              HomeEmptyActionCardWidget(
+                icon: Icons.notifications_active_rounded,
+                title: l.homeEmptyReminderTitle,
+                subtitle: l.homeEmptyReminderSubtitle,
+                buttonLabel: l.homeEmptyReminderButton,
+                onPressed: () => context.go('/reminders'),
+              ),
+            if (!data.hasReminders) const SizedBox(height: 16),
             HomeEmptyActionCardWidget(
               icon: Icons.person_add_alt_1_rounded,
               title: l.homeEmptyAccountTitle,

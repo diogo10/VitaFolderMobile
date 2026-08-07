@@ -4,8 +4,10 @@ import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminde
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_state.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_empty_widget.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_error_widget.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_header_widget.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_loaded_widget.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_loading_widget.dart';
+import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class RemindersView extends StatefulWidget {
   const RemindersView({super.key});
@@ -23,21 +25,52 @@ class _RemindersViewState extends State<RemindersView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<RemindersCubit, RemindersState>(
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: const Color(0xFFF9F7F4),
-          body: switch (state) {
-            RemindersLoading() => const RemindersLoadingWidget(),
-            EmptyReminders() => const RemindersEmptyWidget(),
-            ReminderError() => RemindersErrorWidget(
-              onRetry: () => context.read<RemindersCubit>().getReminders(),
+    final l = AppLocalizations.of(context)!;
+    final cubit = context.read<RemindersCubit>();
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9F7F4),
+      body: SafeArea(
+        child: Column(
+          children: [
+            BlocBuilder<RemindersCubit, RemindersState>(
+              builder: (context, _) {
+                return RemindersHeaderWidget(
+                  title: l.remindersHeaderTitle,
+                  subtitle: l.remindersHeaderSubtitle,
+                  selectedType: cubit.selectedType,
+                  onCategoryChanged: (type) => cubit.getReminders(type: type),
+                );
+              },
             ),
-            LoadedReminders(:final reminders) => RemindersLoadedWidget(reminders: reminders),
-            _ => const RemindersLoadingWidget(),
-          },
-        );
-      },
+            Expanded(
+              child: BlocBuilder<RemindersCubit, RemindersState>(
+                builder: (context, state) {
+                  return switch (state) {
+                    RemindersLoading() => const RemindersLoadingWidget(),
+                    EmptyReminders(:final isLoading) =>
+                      RemindersEmptyWidget(isLoading: isLoading),
+                    ReminderError() => RemindersErrorWidget(
+                      onRetry: () => cubit.getReminders(),
+                    ),
+                    LoadedReminders(
+                      :final reminders,
+                      :final type,
+                      :final isLoading,
+                    ) =>
+                      RemindersLoadedWidget(
+                        reminders: reminders,
+                        selectedType: type,
+                        isLoading: isLoading,
+                      ),
+                    _ => const RemindersLoadingWidget(),
+                  };
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
