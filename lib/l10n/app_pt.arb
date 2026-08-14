@@ -215,9 +215,6 @@
   "peopleEmptyPrivateSecureSubtitle": "Apenas pessoas com o código ou um convite direto podem entrar.",
   "remindersHeaderTitle": "Lembretes",
   "remindersHeaderAll": "Todos",
-  "remindersHeaderChores": "Tarefas",
-  "remindersHeaderAppointments": "Compromissos",
-  "remindersHeaderBirthdays": "Aniversários",
   "remindersErrorTitle": "Algo deu errado",
   "remindersErrorDescription": "Não foi possível carregar os lembretes",
   "remindersErrorRetry": "Tentar novamente",
@@ -259,5 +256,15 @@
   "reminderStatusCancelled": "Cancelado",
   "remindersLoadedSectionToday": "Hoje",
   "remindersLoadedSectionTomorrow": "Amanhã",
-  "remindersLoadedSectionAllDay": "Dia todo"
+  "remindersLoadedSectionAllDay": "Dia todo",
+  "reminderDeleteDialogTitle": "Remover lembrete",
+  "reminderDeleteDialogMessage": "Tem certeza que deseja remover \"{title}\"?",
+  "@reminderDeleteDialogMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "reminderDeleteDialogConfirm": "Remover"
 }

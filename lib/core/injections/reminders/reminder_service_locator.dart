@@ -21,7 +21,9 @@ class ReminderServiceLocator {
     sl.registerSingleton<GetReminderUsecase>(
       GetReminderUsecase(
         repository: sl(instanceName: 'reminderRepositoryImpl'),
-        peopleRepository: sl<PeopleRepository>(instanceName: 'peopleRepositoryImpl'),
+        peopleRepository: sl<PeopleRepository>(
+          instanceName: 'peopleRepositoryImpl',
+        ),
       ),
       instanceName: 'getReminderUsecase',
     );
@@ -36,8 +38,11 @@ class ReminderServiceLocator {
     sl.registerSingleton<RemindersCubit>(
       RemindersCubit(
         getReminderUsecase: sl(instanceName: 'getReminderUsecase'),
-        peopleRepository: sl<PeopleRepository>(instanceName: 'peopleRepositoryImpl'),
+        peopleRepository: sl<PeopleRepository>(
+          instanceName: 'peopleRepositoryImpl',
+        ),
         authService: sl<AuthService>(instanceName: 'authService'),
+        reminderRepository: sl(instanceName: 'reminderRepositoryImpl'),
       ),
       instanceName: 'remindersCubit',
     );
@@ -46,7 +51,9 @@ class ReminderServiceLocator {
       CreateReminderCubit(
         createReminderUsecase: sl(instanceName: 'createReminderUsecase'),
         authService: sl<AuthService>(instanceName: 'authService'),
-        peopleRepository: sl<PeopleRepository>(instanceName: 'peopleRepositoryImpl'),
+        peopleRepository: sl<PeopleRepository>(
+          instanceName: 'peopleRepositoryImpl',
+        ),
       ),
       instanceName: 'createReminderCubit',
     );

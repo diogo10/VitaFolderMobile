@@ -643,15 +643,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get remindersHeaderAll => 'All';
 
   @override
-  String get remindersHeaderChores => 'Chores';
-
-  @override
-  String get remindersHeaderAppointments => 'Appointments';
-
-  @override
-  String get remindersHeaderBirthdays => 'Birthdays';
-
-  @override
   String get remindersErrorTitle => 'Something went wrong';
 
   @override
@@ -780,4 +771,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remindersLoadedSectionAllDay => 'All day';
+
+  @override
+  String get reminderDeleteDialogTitle => 'Remove reminder';
+
+  @override
+  String reminderDeleteDialogMessage(String title) {
+    return 'Are you sure you want to remove \"$title\"?';
+  }
+
+  @override
+  String get reminderDeleteDialogConfirm => 'Remove';
 }

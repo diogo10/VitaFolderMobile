@@ -1286,24 +1286,6 @@ abstract class AppLocalizations {
   /// **'All'**
   String get remindersHeaderAll;
 
-  /// No description provided for @remindersHeaderChores.
-  ///
-  /// In en, this message translates to:
-  /// **'Chores'**
-  String get remindersHeaderChores;
-
-  /// No description provided for @remindersHeaderAppointments.
-  ///
-  /// In en, this message translates to:
-  /// **'Appointments'**
-  String get remindersHeaderAppointments;
-
-  /// No description provided for @remindersHeaderBirthdays.
-  ///
-  /// In en, this message translates to:
-  /// **'Birthdays'**
-  String get remindersHeaderBirthdays;
-
   /// No description provided for @remindersErrorTitle.
   ///
   /// In en, this message translates to:
@@ -1555,6 +1537,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All day'**
   String get remindersLoadedSectionAllDay;
+
+  /// No description provided for @reminderDeleteDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove reminder'**
+  String get reminderDeleteDialogTitle;
+
+  /// No description provided for @reminderDeleteDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove \"{title}\"?'**
+  String reminderDeleteDialogMessage(String title);
+
+  /// No description provided for @reminderDeleteDialogConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get reminderDeleteDialogConfirm;
 }
 
 class _AppLocalizationsDelegate

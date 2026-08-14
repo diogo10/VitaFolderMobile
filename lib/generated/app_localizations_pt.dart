@@ -653,15 +653,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get remindersHeaderAll => 'Todos';
 
   @override
-  String get remindersHeaderChores => 'Tarefas';
-
-  @override
-  String get remindersHeaderAppointments => 'Compromissos';
-
-  @override
-  String get remindersHeaderBirthdays => 'Aniversários';
-
-  @override
   String get remindersErrorTitle => 'Algo deu errado';
 
   @override
@@ -791,4 +782,15 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get remindersLoadedSectionAllDay => 'Dia todo';
+
+  @override
+  String get reminderDeleteDialogTitle => 'Remover lembrete';
+
+  @override
+  String reminderDeleteDialogMessage(String title) {
+    return 'Tem certeza que deseja remover \"$title\"?';
+  }
+
+  @override
+  String get reminderDeleteDialogConfirm => 'Remover';
 }

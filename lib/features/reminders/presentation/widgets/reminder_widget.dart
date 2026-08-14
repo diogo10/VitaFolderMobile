@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class ReminderWidget extends StatelessWidget {
@@ -17,131 +19,164 @@ class ReminderWidget extends StatelessWidget {
     final dueDateLabel = _extractDueDateLabel(reminder.dueDate, timeLabel);
     final l = AppLocalizations.of(context)!;
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-          width: 0.5,
+    return GestureDetector(
+      onDoubleTap: () => _onDoubleTap(context),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+            width: 0.5,
+          ),
         ),
-      ),
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: typeColor.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(iconData, size: 24, color: typeColor),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    reminder.title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-                if (timeLabel != null)
+        elevation: 0,
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: typeColor.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                     ),
+                    child: Icon(iconData, size: 24, color: typeColor),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
                     child: Text(
-                      timeLabel,
+                      reminder.title,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: typeColor,
-                      ),
-                    ),
-                  )
-                else
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: typeColor.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Text(
-                      l.remindersLoadedSectionAllDay,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: typeColor,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                   ),
+                  if (timeLabel != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: typeColor.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Text(
+                        timeLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: typeColor,
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: typeColor.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Text(
+                        l.remindersLoadedSectionAllDay,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: typeColor,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              if (reminder.body.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(
+                  reminder.body,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
-            ),
-            if (reminder.body.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              Text(
-                reminder.body,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: colorScheme.onSurfaceVariant,
-                ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  if (dueDateLabel.isNotEmpty)
+                    _MetaItem(
+                      icon: Icons.event_rounded,
+                      label: dueDateLabel,
+                      textColor: colorScheme.onSurfaceVariant,
+                    ),
+                  if (reminder.repeatRule.isNotEmpty &&
+                      reminder.repeatRule != 'never')
+                    _MetaItem(
+                      icon: Icons.repeat_rounded,
+                      label: _repeatLabel(reminder.repeatRule, l),
+                      textColor: colorScheme.onSurfaceVariant,
+                    ),
+                  if (reminder.createdBy.isNotEmpty)
+                    _MetaItem(
+                      icon: Icons.person_rounded,
+                      label: reminder.createdBy,
+                      textColor: colorScheme.onSurfaceVariant,
+                    ),
+                  if (reminder.status.isNotEmpty &&
+                      reminder.status != 'pending')
+                    _StatusChip(
+                      status: reminder.status,
+                      colorScheme: colorScheme,
+                    ),
+                ],
               ),
             ],
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                if (dueDateLabel.isNotEmpty)
-                  _MetaItem(
-                    icon: Icons.event_rounded,
-                    label: dueDateLabel,
-                    textColor: colorScheme.onSurfaceVariant,
-                  ),
-                if (reminder.repeatRule.isNotEmpty &&
-                    reminder.repeatRule != 'never')
-                  _MetaItem(
-                    icon: Icons.repeat_rounded,
-                    label: _repeatLabel(reminder.repeatRule, l),
-                    textColor: colorScheme.onSurfaceVariant,
-                  ),
-                if (reminder.createdBy.isNotEmpty)
-                  _MetaItem(
-                    icon: Icons.person_rounded,
-                    label: reminder.createdBy,
-                    textColor: colorScheme.onSurfaceVariant,
-                  ),
-                if (reminder.status.isNotEmpty && reminder.status != 'pending')
-                  _StatusChip(
-                    status: reminder.status,
-                    colorScheme: colorScheme,
-                  ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _onDoubleTap(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
+    final cubit = context.read<RemindersCubit>();
+    final id = int.tryParse(reminder.id);
+    if (id == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.reminderDeleteDialogTitle),
+        content: Text(l.reminderDeleteDialogMessage(reminder.title)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l.reminderDeleteDialogConfirm),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await cubit.removeReminder(id);
+    }
   }
 
   Color _typeColor(ColorScheme colorScheme) {

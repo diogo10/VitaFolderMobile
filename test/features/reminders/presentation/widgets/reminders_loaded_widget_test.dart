@@ -6,6 +6,7 @@ import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/usecase/get_reminder_usecase.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_loaded_widget.dart';
@@ -17,6 +18,8 @@ class _FakeAuthService extends Mock implements AuthService {}
 
 class _FakeGetReminderUsecase extends Mock implements GetReminderUsecase {}
 
+class _FakeReminderRepository extends Mock implements ReminderRepository {}
+
 void main() {
   late RemindersCubit cubit;
 
@@ -25,6 +28,7 @@ void main() {
       getReminderUsecase: _FakeGetReminderUsecase(),
       peopleRepository: _FakePeopleRepository(),
       authService: _FakeAuthService(),
+      reminderRepository: _FakeReminderRepository(),
     );
   });
 

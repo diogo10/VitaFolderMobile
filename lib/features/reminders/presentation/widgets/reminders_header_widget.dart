@@ -33,10 +33,28 @@ class _RemindersHeaderWidgetState extends State<RemindersHeaderWidget> {
     final l = AppLocalizations.of(context)!;
     return [
       (label: l.remindersHeaderAll, type: null),
-      (label: l.remindersHeaderChores, type: ReminderType.chores),
-      (label: l.remindersHeaderAppointments, type: ReminderType.appointment),
-      (label: l.remindersHeaderBirthdays, type: ReminderType.birthday),
+      for (final type in ReminderType.values)
+        (label: _typeLabel(type, l), type: type),
     ];
+  }
+
+  String _typeLabel(ReminderType type, AppLocalizations l) {
+    switch (type) {
+      case ReminderType.renewal:
+        return l.createReminderTypeRenewal;
+      case ReminderType.appointment:
+        return l.createReminderTypeAppointment;
+      case ReminderType.vaccine:
+        return l.createReminderTypeVaccine;
+      case ReminderType.reimbursement:
+        return l.createReminderTypeReimbursement;
+      case ReminderType.birthday:
+        return l.createReminderTypeBirthday;
+      case ReminderType.chores:
+        return l.createReminderTypeChores;
+      case ReminderType.custom:
+        return l.createReminderTypeCustom;
+    }
   }
 
   @override

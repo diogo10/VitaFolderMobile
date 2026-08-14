@@ -236,9 +236,6 @@
   "peopleEmptyPrivateSecureSubtitle": "Only people with the code or a direct invite can join.",
   "remindersHeaderTitle": "Reminders",
   "remindersHeaderAll": "All",
-  "remindersHeaderChores": "Chores",
-  "remindersHeaderAppointments": "Appointments",
-  "remindersHeaderBirthdays": "Birthdays",
   "remindersErrorTitle": "Something went wrong",
   "remindersErrorDescription": "Could not load reminders",
   "remindersErrorRetry": "Try again",
@@ -280,5 +277,15 @@
   "reminderStatusCancelled": "Cancelled",
   "remindersLoadedSectionToday": "Today",
   "remindersLoadedSectionTomorrow": "Tomorrow",
-  "remindersLoadedSectionAllDay": "All day"
+  "remindersLoadedSectionAllDay": "All day",
+  "reminderDeleteDialogTitle": "Remove reminder",
+  "reminderDeleteDialogMessage": "Are you sure you want to remove \"{title}\"?",
+  "@reminderDeleteDialogMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "reminderDeleteDialogConfirm": "Remove"
 }

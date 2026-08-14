@@ -119,6 +119,7 @@ Widget _pumpApp() {
           ),
           peopleRepository: _FakePeopleRepository(),
           authService: _FakeAuthService(),
+          reminderRepository: _FakeReminderRepository(),
         ),
       ),
       BlocProvider<PeopleCubit>(
@@ -166,6 +167,7 @@ Widget _pumpAppWithOnboarding() {
           ),
           peopleRepository: _FakePeopleRepository(),
           authService: _FakeAuthService(),
+          reminderRepository: _FakeReminderRepository(),
         ),
       ),
       BlocProvider<PeopleCubit>(
