@@ -1,14 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
-class ReminderWidget extends StatelessWidget {
+class ReminderWidget extends StatefulWidget {
   final ReminderEntity reminder;
 
   const ReminderWidget({super.key, required this.reminder});
+
+  @override
+  State<ReminderWidget> createState() => _ReminderWidgetState();
+}
+
+class _ReminderWidgetState extends State<ReminderWidget> {
+  bool _actionsVisible = false;
+
+  ReminderEntity get reminder => widget.reminder;
+
+  void _toggleActions() {
+    setState(() => _actionsVisible = !_actionsVisible);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +34,7 @@ class ReminderWidget extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
 
     return GestureDetector(
-      onDoubleTap: () => _onDoubleTap(context),
+      onTap: _toggleActions,
       child: Card(
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
@@ -60,44 +74,39 @@ class ReminderWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (timeLabel != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: typeColor.withValues(alpha: 0.16),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Text(
-                        timeLabel,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: typeColor,
-                        ),
-                      ),
-                    )
-                  else
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: typeColor.withValues(alpha: 0.16),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Text(
-                        l.remindersLoadedSectionAllDay,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: typeColor,
-                        ),
-                      ),
-                    ),
+                  const SizedBox(width: 8),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    transitionBuilder: (child, animation) {
+                      return SlideTransition(
+                        position:
+                            Tween<Offset>(
+                              begin: const Offset(0.25, 0),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOut,
+                              ),
+                            ),
+                        child: FadeTransition(opacity: animation, child: child),
+                      );
+                    },
+                    child: _actionsVisible
+                        ? _ActionButtons(
+                            key: const ValueKey('actions'),
+                            typeColor: typeColor,
+                            onEdit: () => _onEdit(context),
+                            onRemove: () => _onRemove(context),
+                          )
+                        : _TrailingChip(
+                            key: ValueKey(timeLabel ?? 'allday'),
+                            label: timeLabel ?? l.remindersLoadedSectionAllDay,
+                            typeColor: typeColor,
+                          ),
+                  ),
                 ],
               ),
               if (reminder.body.isNotEmpty) ...[
@@ -150,7 +159,11 @@ class ReminderWidget extends StatelessWidget {
     );
   }
 
-  Future<void> _onDoubleTap(BuildContext context) async {
+  void _onEdit(BuildContext context) {
+    context.push('/create-reminder', extra: reminder.type);
+  }
+
+  Future<void> _onRemove(BuildContext context) async {
     final l = AppLocalizations.of(context)!;
     final cubit = context.read<RemindersCubit>();
     final id = int.tryParse(reminder.id);
@@ -218,10 +231,17 @@ class ReminderWidget extends StatelessWidget {
   }
 
   String? _extractTimeLabel(String dueDate) {
+    if (dueDate.trim().isEmpty) return null;
+
     final match = RegExp(
-      r'(\d{1,2}:\d{2}\s*(AM|PM|am|pm)|\d{1,2}\s*(AM|PM|am|pm))',
+      r'(\d{1,2}:\d{2}(?:\s*(?:AM|PM|am|pm))?)',
     ).firstMatch(dueDate);
-    return match?.group(0)?.trim();
+    if (match == null) return null;
+
+    final value = match.group(0)?.trim();
+    if (value == null || value.isEmpty) return null;
+
+    return value;
   }
 
   String _extractDueDateLabel(String dueDate, String? timeLabel) {
@@ -229,9 +249,9 @@ class ReminderWidget extends StatelessWidget {
       return dueDate;
     }
 
-    final trimmed = dueDate
-        .replaceFirst(timeLabel, '')
-        .replaceAll(RegExp(r'[·•\-]'), '')
+    final datePortion = dueDate.replaceFirst(timeLabel, '').trim();
+    final trimmed = datePortion
+        .replaceAll(RegExp(r'^[\s·•\-]+|[\s·•\-]+$'), '')
         .trim();
     return trimmed.isEmpty ? dueDate : trimmed;
   }
@@ -249,6 +269,104 @@ class ReminderWidget extends StatelessWidget {
     }
   }
 }
+
+class _TrailingChip extends StatelessWidget {
+  final String label;
+  final Color typeColor;
+
+  const _TrailingChip({
+    super.key,
+    required this.label,
+    required this.typeColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: _trailingSlotWidth,
+      height: _trailingSlotHeight,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: typeColor.withValues(alpha: 0.16),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: typeColor,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionButtons extends StatelessWidget {
+  final Color typeColor;
+  final VoidCallback onEdit;
+  final VoidCallback onRemove;
+
+  const _ActionButtons({
+    super.key,
+    required this.typeColor,
+    required this.onEdit,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: _trailingSlotWidth,
+      height: _trailingSlotHeight,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            onPressed: onEdit,
+            tooltip: 'Edit',
+            icon: const Icon(Icons.edit_rounded),
+            iconSize: 18,
+            color: typeColor,
+            style: IconButton.styleFrom(
+              backgroundColor: typeColor.withValues(alpha: 0.16),
+              minimumSize: const Size(_trailingButtonSize, _trailingButtonSize),
+              padding: EdgeInsets.zero,
+              visualDensity: VisualDensity.compact,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: onRemove,
+            tooltip: 'Remove',
+            icon: const Icon(Icons.delete_rounded),
+            iconSize: 18,
+            color: typeColor,
+            style: IconButton.styleFrom(
+              backgroundColor: typeColor.withValues(alpha: 0.16),
+              minimumSize: const Size(_trailingButtonSize, _trailingButtonSize),
+              padding: EdgeInsets.zero,
+              visualDensity: VisualDensity.compact,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+const double _trailingSlotHeight = 36;
+const double _trailingSlotWidth = 80;
+const double _trailingButtonSize = 36;
 
 class _StatusChip extends StatelessWidget {
   final String status;

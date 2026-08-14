@@ -718,6 +718,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get createReminderDueDateLabel => 'Data de vencimento';
 
   @override
+  String get createReminderTimeLabel => 'Hora';
+
+  @override
   String get createReminderRepeatRuleLabel => 'Repetir';
 
   @override

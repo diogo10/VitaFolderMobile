@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_reminder_state.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class CreateReminderScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   late ReminderType _selectedType;
   String _repeatRule = 'never';
   DateTime? _dueDate;
+  TimeOfDay? _dueTime;
 
   @override
   void initState() {
@@ -69,6 +71,13 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
     }
   }
 
+  String _formatTime(TimeOfDay time) {
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute $period';
+  }
+
   Future<void> _pickDueDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -78,19 +87,39 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       lastDate: DateTime(now.year + 10),
     );
     if (picked != null) {
-      setState(() => _dueDate = picked);
+      setState(() => _dueDate = _mergeDateTime(picked, _dueTime));
     }
+  }
+
+  Future<void> _pickDueTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _dueTime ?? const TimeOfDay(hour: 9, minute: 0),
+    );
+    if (picked != null) {
+      setState(() {
+        _dueTime = picked;
+        _dueDate = _mergeDateTime(_dueDate ?? DateTime.now(), picked);
+      });
+    }
+  }
+
+  DateTime? _mergeDateTime(DateTime date, TimeOfDay? time) {
+    if (time == null) {
+      return DateTime(date.year, date.month, date.day);
+    }
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
 
   void _onSave() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<CreateReminderCubit>().createReminder(
-            title: _titleController.text.trim(),
-            body: _bodyController.text.trim(),
-            type: _selectedType,
-            dueDate: _dueDate,
-            repeatRule: _repeatRule,
-          );
+        title: _titleController.text.trim(),
+        body: _bodyController.text.trim(),
+        type: _selectedType,
+        dueDate: _dueDate,
+        repeatRule: _repeatRule,
+      );
     }
   }
 
@@ -98,12 +127,11 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l.createReminderTitle),
-      ),
+      appBar: AppBar(title: Text(l.createReminderTitle)),
       body: BlocConsumer<CreateReminderCubit, CreateReminderState>(
         listener: (context, state) {
           if (state is CreateReminderSuccess) {
+            context.read<RemindersCubit>().getReminders();
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -177,8 +205,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                       labelText: l.createReminderRepeatRuleLabel,
                       border: const OutlineInputBorder(),
                     ),
-                    items: ['never', 'daily', 'weekly', 'monthly']
-                        .map((rule) {
+                    items: ['never', 'daily', 'weekly', 'monthly'].map((rule) {
                       return DropdownMenuItem(
                         value: rule,
                         child: Text(_repeatLabel(rule, l)),
@@ -198,6 +225,16 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                       _dueDate == null
                           ? l.createReminderDueDateLabel
                           : '${l.createReminderDueDateLabel}: ${_dueDate!.day}/${_dueDate!.month}/${_dueDate!.year}',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: isLoading ? null : _pickDueTime,
+                    icon: const Icon(Icons.schedule_rounded),
+                    label: Text(
+                      _dueTime == null
+                          ? l.createReminderTimeLabel
+                          : '${l.createReminderTimeLabel}: ${_formatTime(_dueTime!)}',
                     ),
                   ),
                   const SizedBox(height: 32),

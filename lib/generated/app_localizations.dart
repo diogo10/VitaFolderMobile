@@ -1406,6 +1406,12 @@ abstract class AppLocalizations {
   /// **'Due date'**
   String get createReminderDueDateLabel;
 
+  /// No description provided for @createReminderTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get createReminderTimeLabel;
+
   /// No description provided for @createReminderRepeatRuleLabel.
   ///
   /// In en, this message translates to:

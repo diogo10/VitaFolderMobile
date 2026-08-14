@@ -707,6 +707,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createReminderDueDateLabel => 'Due date';
 
   @override
+  String get createReminderTimeLabel => 'Time';
+
+  @override
   String get createReminderRepeatRuleLabel => 'Repeat';
 
   @override

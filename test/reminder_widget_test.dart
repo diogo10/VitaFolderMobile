@@ -63,6 +63,34 @@ void main() {
       expect(find.text(reminder.dueDate), findsOneWidget);
     });
 
+    testWidgets('extracts time label from dd/MM/yyyy HH:mm values', (tester) async {
+      final reminderWithTime = ReminderEntity(
+        id: '2',
+        title: 'Time Reminder',
+        body: 'Body',
+        type: ReminderType.appointment,
+        dueDate: '22/08/2026 15:00',
+        repeatRule: 'never',
+        status: 'pending',
+        createdBy: 'user-1',
+        createdAt: '2026-08-01',
+      );
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: ReminderWidget(reminder: reminderWithTime),
+          ),
+        ),
+      );
+
+      expect(find.text('15:00'), findsOneWidget);
+      expect(find.text('22/08/2026'), findsOneWidget);
+    });
+
     testWidgets('renders title with bold style', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
@@ -78,7 +106,7 @@ void main() {
     });
 
     testWidgets(
-      'double tap opens remove dialog and removes reminder on confirm',
+      'tap reveals edit and remove buttons then remove opens dialog',
       (tester) async {
         final repository = _FakeReminderRepository();
         final peopleRepository = _FakePeopleRepository();
@@ -98,9 +126,16 @@ void main() {
 
         await tester.pumpWidget(buildTestWidget(cubit: cubit));
 
+        expect(find.byIcon(Icons.edit_rounded), findsNothing);
+        expect(find.byIcon(Icons.delete_rounded), findsNothing);
+
         await tester.tap(find.text(reminder.title));
-        await tester.pump(const Duration(milliseconds: 50));
-        await tester.tap(find.text(reminder.title));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.edit_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.delete_rounded), findsOneWidget);
+
+        await tester.tap(find.byIcon(Icons.delete_rounded));
         await tester.pumpAndSettle();
 
         expect(find.byType(AlertDialog), findsOneWidget);

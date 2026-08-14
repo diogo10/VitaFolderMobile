@@ -235,6 +235,7 @@
   "createReminderBodyLabel": "Detalhes",
   "createReminderTypeLabel": "Tipo",
   "createReminderDueDateLabel": "Data de vencimento",
+  "createReminderTimeLabel": "Hora",
   "createReminderRepeatRuleLabel": "Repetir",
   "createReminderRepeatNever": "Nunca",
   "createReminderRepeatDaily": "Diariamente",

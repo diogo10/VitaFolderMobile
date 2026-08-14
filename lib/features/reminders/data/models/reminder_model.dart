@@ -20,13 +20,13 @@ class ReminderModel extends ReminderEntity {
     final value = rawDueDate.trim();
     if (value.isEmpty) return '';
 
-    final alreadyFormatted = DateFormat('dd/MM/yyyy').tryParse(value);
+    final alreadyFormatted = DateFormat('dd/MM/yyyy HH:mm').tryParse(value);
     if (alreadyFormatted != null) return value;
 
     final parsedDate = DateTime.tryParse(value);
     if (parsedDate == null) return value;
 
-    return DateFormat('dd/MM/yyyy').format(parsedDate);
+    return DateFormat('dd/MM/yyyy HH:mm').format(parsedDate);
   }
 
   Map<String, dynamic> toCreate(String familyId) {
@@ -34,7 +34,7 @@ class ReminderModel extends ReminderEntity {
       'title': title,
       'type': type.value,
       'body': body,
-      'due_at': dueDate.isEmpty ? null : _formatDueDateToDisplay(dueDate),
+      'due_at': dueDate.isEmpty ? null : dueDate,
       'repeat_rule': repeatRule,
       'status': status,
       'family_id': familyId,

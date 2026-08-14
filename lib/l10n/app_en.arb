@@ -256,6 +256,7 @@
   "createReminderBodyLabel": "Details",
   "createReminderTypeLabel": "Type",
   "createReminderDueDateLabel": "Due date",
+  "createReminderTimeLabel": "Time",
   "createReminderRepeatRuleLabel": "Repeat",
   "createReminderRepeatNever": "Never",
   "createReminderRepeatDaily": "Daily",
