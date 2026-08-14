@@ -235,7 +235,6 @@
   "peopleEmptyPrivateSecure": "Private & Secure",
   "peopleEmptyPrivateSecureSubtitle": "Only people with the code or a direct invite can join.",
   "remindersHeaderTitle": "Reminders",
-  "remindersHeaderSubtitle": "Nothing scheduled yet",
   "remindersHeaderAll": "All",
   "remindersHeaderChores": "Chores",
   "remindersHeaderAppointments": "Appointments",
@@ -278,5 +277,8 @@
   "reminderStatusSent": "Sent",
   "reminderStatusDone": "Done",
   "reminderStatusDismissed": "Dismissed",
-  "reminderStatusCancelled": "Cancelled"
+  "reminderStatusCancelled": "Cancelled",
+  "remindersLoadedSectionToday": "Today",
+  "remindersLoadedSectionTomorrow": "Tomorrow",
+  "remindersLoadedSectionAllDay": "All day"
 }

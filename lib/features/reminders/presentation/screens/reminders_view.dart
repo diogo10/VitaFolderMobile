@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_state.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_empty_widget.dart';
@@ -37,9 +38,11 @@ class _RemindersViewState extends State<RemindersView> {
               builder: (context, _) {
                 return RemindersHeaderWidget(
                   title: l.remindersHeaderTitle,
-                  subtitle: l.remindersHeaderSubtitle,
+                  role: cubit.myRole,
                   selectedType: cubit.selectedType,
                   onCategoryChanged: (type) => cubit.getReminders(type: type),
+                  onNotificationsPressed: () => context.go('/account'),
+                  onProfilePressed: () => context.go('/account'),
                 );
               },
             ),
@@ -48,8 +51,9 @@ class _RemindersViewState extends State<RemindersView> {
                 builder: (context, state) {
                   return switch (state) {
                     RemindersLoading() => const RemindersLoadingWidget(),
-                    EmptyReminders(:final isLoading) =>
-                      RemindersEmptyWidget(isLoading: isLoading),
+                    EmptyReminders(:final isLoading) => RemindersEmptyWidget(
+                      isLoading: isLoading,
+                    ),
                     ReminderError() => RemindersErrorWidget(
                       onRetry: () => cubit.getReminders(),
                     ),

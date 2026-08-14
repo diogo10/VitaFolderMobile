@@ -214,7 +214,6 @@
   "peopleEmptyPrivateSecure": "Privado e Seguro",
   "peopleEmptyPrivateSecureSubtitle": "Apenas pessoas com o código ou um convite direto podem entrar.",
   "remindersHeaderTitle": "Lembretes",
-  "remindersHeaderSubtitle": "Nada agendado ainda",
   "remindersHeaderAll": "Todos",
   "remindersHeaderChores": "Tarefas",
   "remindersHeaderAppointments": "Compromissos",
@@ -257,5 +256,8 @@
   "reminderStatusSent": "Enviado",
   "reminderStatusDone": "Concluído",
   "reminderStatusDismissed": "Dispensado",
-  "reminderStatusCancelled": "Cancelado"
+  "reminderStatusCancelled": "Cancelado",
+  "remindersLoadedSectionToday": "Hoje",
+  "remindersLoadedSectionTomorrow": "Amanhã",
+  "remindersLoadedSectionAllDay": "Dia todo"
 }

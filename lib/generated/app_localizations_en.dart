@@ -640,9 +640,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get remindersHeaderTitle => 'Reminders';
 
   @override
-  String get remindersHeaderSubtitle => 'Nothing scheduled yet';
-
-  @override
   String get remindersHeaderAll => 'All';
 
   @override
@@ -774,4 +771,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reminderStatusCancelled => 'Cancelled';
+
+  @override
+  String get remindersLoadedSectionToday => 'Today';
+
+  @override
+  String get remindersLoadedSectionTomorrow => 'Tomorrow';
+
+  @override
+  String get remindersLoadedSectionAllDay => 'All day';
 }

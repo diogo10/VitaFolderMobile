@@ -13,6 +13,9 @@ class RemindersCubit extends Cubit<RemindersState> {
   ReminderType? _selectedType;
   ReminderType? get selectedType => _selectedType;
 
+  String? _myRole;
+  String? get myRole => _myRole;
+
   RemindersCubit({
     required this.getReminderUsecase,
     required this.peopleRepository,
@@ -21,6 +24,7 @@ class RemindersCubit extends Cubit<RemindersState> {
 
   Future<void> getReminders({String? familyId, ReminderType? type}) async {
     _selectedType = type;
+    await _loadMyRole();
 
     final current = state;
     if (current is LoadedReminders) {
@@ -61,5 +65,10 @@ class RemindersCubit extends Cubit<RemindersState> {
     }
     final familyIds = await peopleRepository.getFamilyIdsForUser(userId);
     return familyIds.isEmpty ? null : familyIds.first;
+  }
+
+  Future<void> _loadMyRole() async {
+    final roles = await peopleRepository.getMyFamilyRole();
+    _myRole = roles.isEmpty ? null : roles.first;
   }
 }

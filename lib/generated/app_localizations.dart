@@ -1280,12 +1280,6 @@ abstract class AppLocalizations {
   /// **'Reminders'**
   String get remindersHeaderTitle;
 
-  /// No description provided for @remindersHeaderSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing scheduled yet'**
-  String get remindersHeaderSubtitle;
-
   /// No description provided for @remindersHeaderAll.
   ///
   /// In en, this message translates to:
@@ -1543,6 +1537,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancelled'**
   String get reminderStatusCancelled;
+
+  /// No description provided for @remindersLoadedSectionToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get remindersLoadedSectionToday;
+
+  /// No description provided for @remindersLoadedSectionTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get remindersLoadedSectionTomorrow;
+
+  /// No description provided for @remindersLoadedSectionAllDay.
+  ///
+  /// In en, this message translates to:
+  /// **'All day'**
+  String get remindersLoadedSectionAllDay;
 }
 
 class _AppLocalizationsDelegate

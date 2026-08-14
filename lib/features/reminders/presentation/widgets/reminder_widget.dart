@@ -58,13 +58,35 @@ class ReminderWidget extends StatelessWidget {
                 ),
                 if (timeLabel != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: typeColor.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Text(
                       timeLabel,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: typeColor,
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: typeColor.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      l.remindersLoadedSectionAllDay,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -96,7 +118,8 @@ class ReminderWidget extends StatelessWidget {
                     label: dueDateLabel,
                     textColor: colorScheme.onSurfaceVariant,
                   ),
-                if (reminder.repeatRule.isNotEmpty && reminder.repeatRule != 'never')
+                if (reminder.repeatRule.isNotEmpty &&
+                    reminder.repeatRule != 'never')
                   _MetaItem(
                     icon: Icons.repeat_rounded,
                     label: _repeatLabel(reminder.repeatRule, l),
@@ -109,7 +132,10 @@ class ReminderWidget extends StatelessWidget {
                     textColor: colorScheme.onSurfaceVariant,
                   ),
                 if (reminder.status.isNotEmpty && reminder.status != 'pending')
-                  _StatusChip(status: reminder.status, colorScheme: colorScheme),
+                  _StatusChip(
+                    status: reminder.status,
+                    colorScheme: colorScheme,
+                  ),
               ],
             ),
           ],
@@ -157,7 +183,9 @@ class ReminderWidget extends StatelessWidget {
   }
 
   String? _extractTimeLabel(String dueDate) {
-    final match = RegExp(r'(\d{1,2}:\d{2}\s*(AM|PM|am|pm)|\d{1,2}\s*(AM|PM|am|pm))').firstMatch(dueDate);
+    final match = RegExp(
+      r'(\d{1,2}:\d{2}\s*(AM|PM|am|pm)|\d{1,2}\s*(AM|PM|am|pm))',
+    ).firstMatch(dueDate);
     return match?.group(0)?.trim();
   }
 
@@ -166,7 +194,10 @@ class ReminderWidget extends StatelessWidget {
       return dueDate;
     }
 
-    final trimmed = dueDate.replaceFirst(timeLabel, '').replaceAll(RegExp(r'[·•\-]'), '').trim();
+    final trimmed = dueDate
+        .replaceFirst(timeLabel, '')
+        .replaceAll(RegExp(r'[·•\-]'), '')
+        .trim();
     return trimmed.isEmpty ? dueDate : trimmed;
   }
 
@@ -195,30 +226,30 @@ class _StatusChip extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     final (label, background, foreground) = switch (status) {
       'sent' => (
-          l.reminderStatusSent,
-          const Color(0xFFE3F2FD),
-          const Color(0xFF1E5FA8),
-        ),
+        l.reminderStatusSent,
+        const Color(0xFFE3F2FD),
+        const Color(0xFF1E5FA8),
+      ),
       'done' => (
-          l.reminderStatusDone,
-          const Color(0xFFE8F5E9),
-          const Color(0xFF2E7D32),
-        ),
+        l.reminderStatusDone,
+        const Color(0xFFE8F5E9),
+        const Color(0xFF2E7D32),
+      ),
       'dismissed' => (
-          l.reminderStatusDismissed,
-          const Color(0xFFF3E5F5),
-          const Color(0xFF6A1B9A),
-        ),
+        l.reminderStatusDismissed,
+        const Color(0xFFF3E5F5),
+        const Color(0xFF6A1B9A),
+      ),
       'cancelled' => (
-          l.reminderStatusCancelled,
-          const Color(0xFFFDECEA),
-          const Color(0xFFC62828),
-        ),
+        l.reminderStatusCancelled,
+        const Color(0xFFFDECEA),
+        const Color(0xFFC62828),
+      ),
       _ => (
-          l.reminderStatusPending,
-          const Color(0xFFFFF3E0),
-          const Color(0xFFE65100),
-        ),
+        l.reminderStatusPending,
+        const Color(0xFFFFF3E0),
+        const Color(0xFFE65100),
+      ),
     };
 
     return Container(
@@ -257,10 +288,7 @@ class _MetaItem extends StatelessWidget {
       children: [
         Icon(icon, size: 16, color: textColor.withValues(alpha: 0.8)),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(fontSize: 13, color: textColor),
-        ),
+        Text(label, style: TextStyle(fontSize: 13, color: textColor)),
       ],
     );
   }
