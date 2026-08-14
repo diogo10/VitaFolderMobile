@@ -46,6 +46,30 @@
   "homeEmptyRemindersEmptyTitle": "No reminders yet",
   "homeEmptyRemindersEmptyDescription": "Create your first reminder to keep the family on track.",
   "homeEmptyRemindersCreateButton": "Create Reminder",
+  "homeSuccessGreetingMorning": "Good morning,",
+  "homeSuccessGreetingAfternoon": "Good afternoon,",
+  "homeSuccessGreetingEvening": "Good evening,",
+  "homeSuccessActiveMembers": "{members} members active today · {pending} reminders pending",
+  "@homeSuccessActiveMembers": {
+    "placeholders": {
+      "members": {
+        "type": "int"
+      },
+      "pending": {
+        "type": "int"
+      }
+    }
+  },
+  "homeSuccessAddTaskTitle": "Add Task",
+  "homeSuccessAddTaskSubtitle": "Quickly schedule a task or event",
+  "homeSuccessAddTaskButton": "Add",
+  "homeSuccessManageActivityTitle": "Manage Activity",
+  "homeSuccessManageActivitySubtitle": "Review everything scheduled",
+  "homeSuccessManageActivityButton": "Open",
+  "homeSuccessRemindersAdd": "Add",
+  "homeSuccessRemindersToday": "Today",
+  "homeSuccessRemindersTomorrow": "Tomorrow",
+  "homeSuccessCircleManage": "Manage",
   "peopleViewTryAgain": "Try again",
   "cancel": "Cancel",
   "ok": "OK",

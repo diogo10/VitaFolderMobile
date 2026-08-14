@@ -15,6 +15,9 @@ class HomeServiceLocator {
       GetHomeDataUsecase(
         authService: authService,
         peopleRepository: sl(instanceName: 'peopleRepositoryImpl'),
+        reminderRepository: sl<ReminderRepository>(
+          instanceName: 'reminderRepositoryImpl',
+        ),
       ),
       instanceName: 'getHomeDataUsecase',
     );

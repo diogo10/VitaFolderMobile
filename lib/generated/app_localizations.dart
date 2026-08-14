@@ -374,6 +374,90 @@ abstract class AppLocalizations {
   /// **'Create Reminder'**
   String get homeEmptyRemindersCreateButton;
 
+  /// No description provided for @homeSuccessGreetingMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning,'**
+  String get homeSuccessGreetingMorning;
+
+  /// No description provided for @homeSuccessGreetingAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon,'**
+  String get homeSuccessGreetingAfternoon;
+
+  /// No description provided for @homeSuccessGreetingEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening,'**
+  String get homeSuccessGreetingEvening;
+
+  /// No description provided for @homeSuccessActiveMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'{members} members active today · {pending} reminders pending'**
+  String homeSuccessActiveMembers(int members, int pending);
+
+  /// No description provided for @homeSuccessAddTaskTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Task'**
+  String get homeSuccessAddTaskTitle;
+
+  /// No description provided for @homeSuccessAddTaskSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quickly schedule a task or event'**
+  String get homeSuccessAddTaskSubtitle;
+
+  /// No description provided for @homeSuccessAddTaskButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get homeSuccessAddTaskButton;
+
+  /// No description provided for @homeSuccessManageActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Activity'**
+  String get homeSuccessManageActivityTitle;
+
+  /// No description provided for @homeSuccessManageActivitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review everything scheduled'**
+  String get homeSuccessManageActivitySubtitle;
+
+  /// No description provided for @homeSuccessManageActivityButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get homeSuccessManageActivityButton;
+
+  /// No description provided for @homeSuccessRemindersAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get homeSuccessRemindersAdd;
+
+  /// No description provided for @homeSuccessRemindersToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get homeSuccessRemindersToday;
+
+  /// No description provided for @homeSuccessRemindersTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get homeSuccessRemindersTomorrow;
+
+  /// No description provided for @homeSuccessCircleManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get homeSuccessCircleManage;
+
   /// No description provided for @peopleViewTryAgain.
   ///
   /// In en, this message translates to:

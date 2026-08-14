@@ -2,13 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/home_view_success.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_header_widget.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_footer_widget.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_reminders_widget.dart';
+import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_circle_widget.dart';
+import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_success_header_widget.dart';
+import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_upcoming_reminders_widget.dart';
+import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 void main() {
-  final tEntity = HomeEntity(peopleInCircle: []);
+  final tEntity = HomeEntity(
+    peopleInCircle: [],
+    familyName: 'Smith Family',
+    myRole: 'admin',
+    activeMembers: 4,
+  );
 
   Widget pumpApp(HomeEntity entity) {
     return MaterialApp(
@@ -19,13 +27,13 @@ void main() {
   }
 
   group('HomeViewSuccess', () {
-    testWidgets('renders HomeEmptyHeaderWidget', (tester) async {
+    testWidgets('renders HomeSuccessHeaderWidget', (tester) async {
       await tester.pumpWidget(pumpApp(tEntity));
 
-      expect(find.byType(HomeEmptyHeaderWidget), findsOneWidget);
+      expect(find.byType(HomeSuccessHeaderWidget), findsOneWidget);
     });
 
-    testWidgets('renders three action cards with correct labels', (
+    testWidgets('renders family name and active members summary', (
       tester,
     ) async {
       await tester.pumpWidget(pumpApp(tEntity));
@@ -33,9 +41,18 @@ void main() {
         tester.element(find.byType(HomeViewSuccess)),
       )!;
 
-      expect(find.text(l.homeEmptyAddPeopleTitle), findsOneWidget);
-      expect(find.text(l.homeEmptyReminderTitle), findsOneWidget);
-      expect(find.text(l.homeEmptyAccountTitle), findsOneWidget);
+      expect(find.text('Smith Family'), findsOneWidget);
+      expect(find.text(l.homeSuccessActiveMembers(4, 0)), findsOneWidget);
+    });
+
+    testWidgets('renders action cards with correct labels', (tester) async {
+      await tester.pumpWidget(pumpApp(tEntity));
+      final l = AppLocalizations.of(
+        tester.element(find.byType(HomeViewSuccess)),
+      )!;
+
+      expect(find.text(l.homeSuccessAddTaskTitle), findsOneWidget);
+      expect(find.text(l.homeSuccessManageActivityTitle), findsOneWidget);
     });
 
     testWidgets('renders action card buttons', (tester) async {
@@ -45,29 +62,59 @@ void main() {
       )!;
 
       expect(
-        find.widgetWithText(ElevatedButton, l.homeEmptyAddPeopleButton),
+        find.widgetWithText(ElevatedButton, l.homeSuccessAddTaskButton),
         findsOneWidget,
       );
       expect(
-        find.widgetWithText(ElevatedButton, l.homeEmptyReminderButton),
-        findsOneWidget,
-      );
-      expect(
-        find.widgetWithText(ElevatedButton, l.homeEmptyAccountButton),
+        find.widgetWithText(ElevatedButton, l.homeSuccessManageActivityButton),
         findsOneWidget,
       );
     });
 
-    testWidgets('renders HomeEmptyFooterWidget', (tester) async {
-      await tester.pumpWidget(pumpApp(tEntity));
+    testWidgets('renders HomeCircleWidget when people present', (tester) async {
+      await tester.pumpWidget(
+        pumpApp(
+          HomeEntity(
+            peopleInCircle: [PersonEntity(name: 'Mom', role: 'parent')],
+            familyName: 'Smith Family',
+          ),
+        ),
+      );
 
-      expect(find.byType(HomeEmptyFooterWidget), findsOneWidget);
+      expect(find.byType(HomeCircleWidget), findsOneWidget);
     });
 
-    testWidgets('renders HomeEmptyRemindersWidget', (tester) async {
+    testWidgets('renders HomeEmptyRemindersWidget when no reminders', (
+      tester,
+    ) async {
       await tester.pumpWidget(pumpApp(tEntity));
 
-      expect(find.byType(HomeEmptyRemindersWidget), findsOneWidget);
+      expect(find.byType(HomeUpcomingRemindersWidget), findsNothing);
+    });
+
+    testWidgets('renders reminders tiles when reminders exist', (tester) async {
+      final entity = HomeEntity(
+        peopleInCircle: [],
+        familyName: 'Smith Family',
+        reminders: [
+          ReminderEntity(
+            title: 'Lily\'s Allergy Meds',
+            body: 'Take medicine below stairs',
+            id: '1',
+            type: ReminderType.renewal,
+            dueDate: _today(),
+            repeatRule: 'daily',
+            status: 'pending',
+            createdBy: 'Mom',
+            createdAt: '',
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(pumpApp(entity));
+
+      expect(find.byType(HomeUpcomingRemindersWidget), findsOneWidget);
+      expect(find.text('Lily\'s Allergy Meds'), findsOneWidget);
     });
 
     testWidgets('renders reminders section with localized heading', (
@@ -81,4 +128,11 @@ void main() {
       expect(find.text(l.homeEmptyRemindersSectionTitle), findsOneWidget);
     });
   });
+}
+
+String _today() {
+  final now = DateTime.now();
+  final day = now.day.toString().padLeft(2, '0');
+  final month = now.month.toString().padLeft(2, '0');
+  return '$day/$month/${now.year}';
 }

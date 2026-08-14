@@ -158,6 +158,52 @@ class AppLocalizationsPt extends AppLocalizations {
   String get homeEmptyRemindersCreateButton => 'Criar Lembrete';
 
   @override
+  String get homeSuccessGreetingMorning => 'Bom dia,';
+
+  @override
+  String get homeSuccessGreetingAfternoon => 'Boa tarde,';
+
+  @override
+  String get homeSuccessGreetingEvening => 'Boa noite,';
+
+  @override
+  String homeSuccessActiveMembers(int members, int pending) {
+    return '$members membros ativos hoje · $pending lembretes pendentes';
+  }
+
+  @override
+  String get homeSuccessAddTaskTitle => 'Adicionar Tarefa';
+
+  @override
+  String get homeSuccessAddTaskSubtitle =>
+      'Agende rapidamente uma tarefa ou evento';
+
+  @override
+  String get homeSuccessAddTaskButton => 'Adicionar';
+
+  @override
+  String get homeSuccessManageActivityTitle => 'Gerenciar Atividade';
+
+  @override
+  String get homeSuccessManageActivitySubtitle =>
+      'Revise tudo o que está agendado';
+
+  @override
+  String get homeSuccessManageActivityButton => 'Abrir';
+
+  @override
+  String get homeSuccessRemindersAdd => 'Adicionar';
+
+  @override
+  String get homeSuccessRemindersToday => 'Hoje';
+
+  @override
+  String get homeSuccessRemindersTomorrow => 'Amanhã';
+
+  @override
+  String get homeSuccessCircleManage => 'Gerenciar';
+
+  @override
   String get peopleViewTryAgain => 'Tentar novamente';
 
   @override

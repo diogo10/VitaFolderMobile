@@ -208,6 +208,7 @@ void main() {
       GetHomeDataUsecase(
         authService: _FakeAuthService(),
         peopleRepository: _FakePeopleRepository(),
+        reminderRepository: _FakeReminderRepository(),
       ),
       instanceName: 'getHomeDataUsecase',
     );
@@ -223,7 +224,7 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Welcome to FamilyAdmin'), findsOneWidget);
+      expect(find.text('Fam'), findsOneWidget);
       expect(find.text('Upcoming Reminders'), findsOneWidget);
       expect(find.text('Search Content'), findsNothing);
 
@@ -270,7 +271,7 @@ void main() {
       await tester.tap(find.text('Home'));
       await tester.pump();
       await tester.pump();
-      expect(find.text('Welcome to FamilyAdmin'), findsOneWidget);
+      expect(find.text('Fam'), findsOneWidget);
     });
   });
 

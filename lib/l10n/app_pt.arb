@@ -46,6 +46,30 @@
   "homeEmptyRemindersEmptyTitle": "Nenhum lembrete ainda",
   "homeEmptyRemindersEmptyDescription": "Crie seu primeiro lembrete para manter a família organizada.",
   "homeEmptyRemindersCreateButton": "Criar Lembrete",
+  "homeSuccessGreetingMorning": "Bom dia,",
+  "homeSuccessGreetingAfternoon": "Boa tarde,",
+  "homeSuccessGreetingEvening": "Boa noite,",
+  "homeSuccessActiveMembers": "{members} membros ativos hoje · {pending} lembretes pendentes",
+  "@homeSuccessActiveMembers": {
+    "placeholders": {
+      "members": {
+        "type": "int"
+      },
+      "pending": {
+        "type": "int"
+      }
+    }
+  },
+  "homeSuccessAddTaskTitle": "Adicionar Tarefa",
+  "homeSuccessAddTaskSubtitle": "Agende rapidamente uma tarefa ou evento",
+  "homeSuccessAddTaskButton": "Adicionar",
+  "homeSuccessManageActivityTitle": "Gerenciar Atividade",
+  "homeSuccessManageActivitySubtitle": "Revise tudo o que está agendado",
+  "homeSuccessManageActivityButton": "Abrir",
+  "homeSuccessRemindersAdd": "Adicionar",
+  "homeSuccessRemindersToday": "Hoje",
+  "homeSuccessRemindersTomorrow": "Amanhã",
+  "homeSuccessCircleManage": "Gerenciar",
   "peopleViewTryAgain": "Tentar novamente",
   "cancel": "Cancelar",
   "ok": "OK",
