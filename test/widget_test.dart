@@ -93,7 +93,7 @@ class _FakeReminderRepository implements ReminderRepository {
   ) async => Right(true);
 
   @override
-  Future<Either<Failure, bool>> removeReminder(int id) async => Right(true);
+  Future<Either<Failure, bool>> removeReminder(String id) async => Right(true);
 }
 
 Widget _pumpApp() {

@@ -12,7 +12,10 @@ abstract interface class ReminderRepository {
     required String familyId,
   });
 
-  Future<Either<Failure, bool>> createReminder(ReminderModel reminder, String familyId);
+  Future<Either<Failure, bool>> createReminder(
+    ReminderModel reminder,
+    String familyId,
+  );
 
-  Future<Either<Failure, bool>> removeReminder(int id);
+  Future<Either<Failure, bool>> removeReminder(String id);
 }

@@ -14,7 +14,9 @@ class ReminderRepositoryImpl implements ReminderRepository {
     : _client = client ?? Supabase.instance.client;
 
   @override
-  Future<Either<Failure, List<ReminderEntity>>> getReminders(String familyId) async {
+  Future<Either<Failure, List<ReminderEntity>>> getReminders(
+    String familyId,
+  ) async {
     try {
       final response = await _client
           .from('reminders')
@@ -56,7 +58,10 @@ class ReminderRepositoryImpl implements ReminderRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> createReminder(ReminderModel reminder, String familyId) async {
+  Future<Either<Failure, bool>> createReminder(
+    ReminderModel reminder,
+    String familyId,
+  ) async {
     try {
       final input = reminder.toCreate(familyId);
       await _client.from('reminders').insert(input);
@@ -70,7 +75,7 @@ class ReminderRepositoryImpl implements ReminderRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> removeReminder(int id) async {
+  Future<Either<Failure, bool>> removeReminder(String id) async {
     try {
       await _client.from('reminders').delete().eq('id', id);
       return Right(true);

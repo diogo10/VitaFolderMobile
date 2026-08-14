@@ -166,8 +166,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
   Future<void> _onRemove(BuildContext context) async {
     final l = AppLocalizations.of(context)!;
     final cubit = context.read<RemindersCubit>();
-    final id = int.tryParse(reminder.id);
-    if (id == null) return;
+    final id = reminder.id;
 
     final confirmed = await showDialog<bool>(
       context: context,

@@ -43,6 +43,7 @@ class _RemindersViewState extends State<RemindersView> {
                   onCategoryChanged: (type) => cubit.getReminders(type: type),
                   onNotificationsPressed: () => context.go('/account'),
                   onProfilePressed: () => context.go('/account'),
+                  onAddPressed: () => context.push('/create-reminder')
                 );
               },
             ),

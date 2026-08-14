@@ -9,7 +9,7 @@ class RemindersHeaderWidget extends StatefulWidget {
   final String? role;
   final ReminderType? selectedType;
   final ValueChanged<ReminderType?>? onCategoryChanged;
-  final VoidCallback? onFilterPressed;
+  final VoidCallback? onAddPressed;
   final VoidCallback? onNotificationsPressed;
   final VoidCallback? onProfilePressed;
 
@@ -19,7 +19,7 @@ class RemindersHeaderWidget extends StatefulWidget {
     this.role,
     this.selectedType,
     this.onCategoryChanged,
-    this.onFilterPressed,
+    this.onAddPressed,
     this.onNotificationsPressed,
     this.onProfilePressed,
   });
@@ -99,8 +99,8 @@ class _RemindersHeaderWidgetState extends State<RemindersHeaderWidget> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: IconButton(
-                        onPressed: widget.onFilterPressed,
-                        icon: Icon(Icons.tune_rounded, color: textColor),
+                        onPressed: widget.onAddPressed,
+                        icon: Icon(Icons.add, color: textColor),
                       ),
                     ),
                   ],

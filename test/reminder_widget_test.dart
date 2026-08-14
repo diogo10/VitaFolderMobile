@@ -63,7 +63,9 @@ void main() {
       expect(find.text(reminder.dueDate), findsOneWidget);
     });
 
-    testWidgets('extracts time label from dd/MM/yyyy HH:mm values', (tester) async {
+    testWidgets('extracts time label from dd/MM/yyyy HH:mm values', (
+      tester,
+    ) async {
       final reminderWithTime = ReminderEntity(
         id: '2',
         title: 'Time Reminder',
@@ -81,9 +83,7 @@ void main() {
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: ReminderWidget(reminder: reminderWithTime),
-          ),
+          home: Scaffold(body: ReminderWidget(reminder: reminderWithTime)),
         ),
       );
 
@@ -111,7 +111,7 @@ void main() {
         final repository = _FakeReminderRepository();
         final peopleRepository = _FakePeopleRepository();
         when(
-          () => repository.removeReminder(1),
+          () => repository.removeReminder(reminder.id),
         ).thenAnswer((_) async => Right(true));
         when(
           () => peopleRepository.getMyFamilyRole(),
@@ -147,7 +147,7 @@ void main() {
         await tester.tap(find.text('Remove'));
         await tester.pumpAndSettle();
 
-        verify(() => repository.removeReminder(1)).called(1);
+        verify(() => repository.removeReminder(reminder.id)).called(1);
 
         await cubit.close();
       },

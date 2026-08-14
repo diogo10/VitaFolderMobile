@@ -70,7 +70,7 @@ class RemindersCubit extends Cubit<RemindersState> {
     return familyIds.isEmpty ? null : familyIds.first;
   }
 
-  Future<void> removeReminder(int id) async {
+  Future<void> removeReminder(String id) async {
     final current = state;
     final currentReminders = current is LoadedReminders
         ? current.reminders
@@ -95,7 +95,7 @@ class RemindersCubit extends Cubit<RemindersState> {
           getReminders(type: currentType);
           return;
         }
-        final updated = currentReminders.where((r) => r.id != '$id').toList();
+        final updated = currentReminders.where((r) => r.id != id).toList();
         if (updated.isEmpty) {
           emit(EmptyReminders(type: currentType));
         } else {
