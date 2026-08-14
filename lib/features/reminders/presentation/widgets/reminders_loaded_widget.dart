@@ -1,70 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminder_widget.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class RemindersLoadedWidget extends StatelessWidget {
   final List<ReminderEntity> reminders;
-  final ReminderType? selectedType;
-  final bool isLoading;
 
-  const RemindersLoadedWidget({
-    super.key,
-    required this.reminders,
-    this.selectedType,
-    this.isLoading = false,
-  });
+  const RemindersLoadedWidget({super.key, required this.reminders});
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<RemindersCubit>();
     final groups = _groupByDay(context);
 
-    return RefreshIndicator(
-      onRefresh: () => cubit.getReminders(type: selectedType),
-      child: Stack(
-        children: [
-          ListView.builder(
-            padding: const EdgeInsets.only(top: 8, bottom: 24),
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: _itemCount(groups),
-            itemBuilder: (context, index) {
-              final item = groups[index];
-              if (item.isHeader) {
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 10),
-                  child: Text(
-                    item.label,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: const Color(0xFFB0906C),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                );
-              }
-              return ReminderWidget(
-                key: Key(item.reminder!.id),
-                reminder: item.reminder!,
-              );
-            },
-          ),
-          if (isLoading)
-            const Positioned(
-              top: 0,
-              left: 24,
-              right: 24,
-              child: LinearProgressIndicator(),
-            ),
-        ],
+    return SliverPadding(
+      padding: const EdgeInsets.only(top: 8, bottom: 24),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final item = groups[index];
+          if (item.isHeader) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 10),
+              child: Text(
+                item.label,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: const Color(0xFFB0906C),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            );
+          }
+          return ReminderWidget(
+            key: Key(item.reminder!.id),
+            reminder: item.reminder!,
+          );
+        }, childCount: groups.length),
       ),
     );
   }
-
-  int _itemCount(List<_ListEntry> groups) => groups.length;
 
   List<_ListEntry> _groupByDay(BuildContext context) {
     final l = AppLocalizations.of(context)!;

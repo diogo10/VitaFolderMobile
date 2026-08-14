@@ -24,6 +24,16 @@ class _ReminderWidgetState extends State<ReminderWidget> {
     setState(() => _actionsVisible = !_actionsVisible);
   }
 
+  bool get _alwaysShowActions {
+    return switch (reminder.type) {
+      ReminderType.chores ||
+      ReminderType.custom ||
+      ReminderType.renewal ||
+      ReminderType.reimbursement => true,
+      _ => false,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -94,7 +104,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
                         child: FadeTransition(opacity: animation, child: child),
                       );
                     },
-                    child: _actionsVisible
+                    child: _actionsVisible || _alwaysShowActions
                         ? _ActionButtons(
                             key: const ValueKey('actions'),
                             typeColor: typeColor,

@@ -43,7 +43,9 @@ void main() {
       home: Scaffold(
         body: BlocProvider.value(
           value: cubit,
-          child: RemindersLoadedWidget(reminders: reminders),
+          child: CustomScrollView(
+            slivers: [RemindersLoadedWidget(reminders: reminders)],
+          ),
         ),
       ),
     );

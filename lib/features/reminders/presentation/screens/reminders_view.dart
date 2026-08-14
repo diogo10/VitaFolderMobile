@@ -32,50 +32,64 @@ class _RemindersViewState extends State<RemindersView> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F7F4),
       body: SafeArea(
-        child: Column(
-          children: [
-            BlocBuilder<RemindersCubit, RemindersState>(
-              builder: (context, _) {
-                return RemindersHeaderWidget(
-                  title: l.remindersHeaderTitle,
-                  role: cubit.myRole,
-                  selectedType: cubit.selectedType,
-                  onCategoryChanged: (type) => cubit.getReminders(type: type),
-                  onNotificationsPressed: () => context.go('/account'),
-                  onProfilePressed: () => context.go('/account'),
-                  onAddPressed: () => context.push('/create-reminder')
-                );
-              },
-            ),
-            Expanded(
-              child: BlocBuilder<RemindersCubit, RemindersState>(
-                builder: (context, state) {
-                  return switch (state) {
-                    RemindersLoading() => const RemindersLoadingWidget(),
-                    EmptyReminders(:final isLoading) => RemindersEmptyWidget(
-                      isLoading: isLoading,
+        child: BlocBuilder<RemindersCubit, RemindersState>(
+          builder: (context, state) {
+            return RefreshIndicator(
+              onRefresh: () => cubit.getReminders(type: cubit.selectedType),
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: RemindersHeaderWidget(
+                      title: l.remindersHeaderTitle,
+                      role: cubit.myRole,
+                      selectedType: cubit.selectedType,
+                      onCategoryChanged: (type) =>
+                          cubit.getReminders(type: type),
+                      onNotificationsPressed: () => context.go('/account'),
+                      onProfilePressed: () => context.go('/account'),
+                      onAddPressed: () => context.push('/create-reminder'),
                     ),
-                    ReminderError() => RemindersErrorWidget(
-                      onRetry: () => cubit.getReminders(),
-                    ),
-                    LoadedReminders(
-                      :final reminders,
-                      :final type,
-                      :final isLoading,
-                    ) =>
-                      RemindersLoadedWidget(
-                        reminders: reminders,
-                        selectedType: type,
-                        isLoading: isLoading,
-                      ),
-                    _ => const RemindersLoadingWidget(),
-                  };
-                },
+                  ),
+                  ..._contentSlivers(context, state),
+                ],
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
+  }
+
+  List<Widget> _contentSlivers(BuildContext context, RemindersState state) {
+    final cubit = context.read<RemindersCubit>();
+    return switch (state) {
+      RemindersLoading() => const [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: RemindersLoadingWidget(),
+        ),
+      ],
+      EmptyReminders(:final isLoading) => [
+        SliverToBoxAdapter(child: RemindersEmptyWidget(isLoading: isLoading)),
+      ],
+      ReminderError() => [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: RemindersErrorWidget(onRetry: () => cubit.getReminders()),
+        ),
+      ],
+      LoadedReminders(:final reminders, :final isLoading) => [
+        if (isLoading)
+          const SliverToBoxAdapter(child: LinearProgressIndicator()),
+        RemindersLoadedWidget(reminders: reminders),
+      ],
+      _ => const [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: RemindersLoadingWidget(),
+        ),
+      ],
+    };
   }
 }
