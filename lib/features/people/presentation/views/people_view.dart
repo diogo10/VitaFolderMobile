@@ -51,7 +51,6 @@ class _PeopleViewState extends State<PeopleView> {
     );
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -65,7 +64,9 @@ class _PeopleViewState extends State<PeopleView> {
         if (state is PeopleInvalidFamilyCode) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.peopleInvalidFamilyCode),
+              content: Text(
+                AppLocalizations.of(context)!.peopleInvalidFamilyCode,
+              ),
             ),
           );
         }
@@ -84,7 +85,10 @@ class _PeopleViewState extends State<PeopleView> {
         if (state is PeopleEmpty || state is PeopleInvalidFamilyCode) {
           return PeopleEmptyWidget(
             onCreateFamilyPressed: _onCreateFamilyPressed,
-            onJoinFamilyPressed: (code) => context.read<PeopleCubit>().joinFamily(familyCode: code),
+            onJoinFamilyPressed: (code) =>
+                context.read<PeopleCubit>().joinFamily(familyCode: code),
+            onRefresh: () =>
+                context.read<PeopleCubit>().getPeople(isRefresh: true),
           );
         }
 

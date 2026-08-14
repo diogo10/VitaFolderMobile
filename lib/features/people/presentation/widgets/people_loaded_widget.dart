@@ -82,9 +82,8 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
           detail: person.email ?? person.phone ?? '',
           role: role,
           avatarColor: colors[role]!,
-          onPressed: () => _showMessage(
-            l.peopleLoadedMemberSelected(person.name ?? ''),
-          ),
+          onPressed: () =>
+              _showMessage(l.peopleLoadedMemberSelected(person.name ?? '')),
         ),
       );
     }
@@ -118,10 +117,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
   }
 
   void _closeInviteCodeCardClicked() {
-    _storage.setBool(
-      'invite_code_card_dismissed_${widget.inviteCode}',
-      true,
-    );
+    _storage.setBool('invite_code_card_dismissed_${widget.inviteCode}', true);
     setState(() => _showInviteCodeCard = false);
   }
 
@@ -132,7 +128,8 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
       color: const Color(0xFFFFFCF8),
       child: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => context.read<PeopleCubit>().getPeople(),
+          onRefresh: () =>
+              context.read<PeopleCubit>().getPeople(isRefresh: true),
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
@@ -154,7 +151,10 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
               ),
               const SizedBox(height: 2),
               Text(
-                l.peopleLoadedMembersCount(widget.people.length, widget.familyName),
+                l.peopleLoadedMembersCount(
+                  widget.people.length,
+                  widget.familyName,
+                ),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: const Color(0xFFB0906C),
                 ),
@@ -185,10 +185,11 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                     Expanded(
                       child: Text(
                         l.peopleLoadedMembersTitle,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: const Color(0xFF604B38),
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: const Color(0xFF604B38),
+                              fontWeight: FontWeight.w800,
+                            ),
                       ),
                     ),
                   ],

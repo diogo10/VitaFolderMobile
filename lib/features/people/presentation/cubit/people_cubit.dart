@@ -3,6 +3,7 @@ import 'package:vita_folder_mobile/features/people/domain/usecase/get_people_use
 import 'package:vita_folder_mobile/features/people/domain/usecase/create_family_usecase.dart';
 import 'package:vita_folder_mobile/features/people/domain/usecase/join_family_usecase.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_state.dart';
+
 class PeopleCubit extends Cubit<PeopleState> {
   GetPeopleUsecase getPeopleUsecase;
   CreateFamilyUsecase createFamilyUsecase;
@@ -32,8 +33,10 @@ class PeopleCubit extends Cubit<PeopleState> {
     });
   }
 
-  Future<void> getPeople() async {
-    emit(PeopleLoading());
+  Future<void> getPeople({bool isRefresh = false}) async {
+    if (!isRefresh) {
+      emit(PeopleLoading());
+    }
     final result = await getPeopleUsecase();
 
     result.fold((err) => emit(PeopleError()), (people) {

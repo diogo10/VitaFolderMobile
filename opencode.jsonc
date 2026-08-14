@@ -1,28 +1,25 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "formatter": true,
   "model": "opencode/deepseek-v4-flash-free",
-  "instructions": ["AGENTS.md"],
+  "instructions": [
+    "AGENTS.md"
+  ],
   "command": {
     "test": {
-      "description": "Run the Flutter test suite",
-      "options": {
-        "requireUserInput": false
-      },
-      "cli": "fvm flutter test"
+      "template": "Run the full test suite with coverage report and show any failures.\nFocus on the failing tests and suggest fixes.",
+      "description": "Run tests with coverage",
+      "agent": "build"
     },
     "analyze": {
-      "description": "Analyze the Flutter codebase",
-      "options": {
-        "requireUserInput": false
-      },
-      "cli": "fvm flutter analyze"
+      "template": "Analyze the Flutter codebase for potential issues.",
+      "description": "Analyze code quality",
+      "agent": "build"
     },
     "gen": {
-      "description": "Run code generation after changing models",
-      "options": {
-        "requireUserInput": false
-      },
-      "cli": "fvm dart run build_runner build --delete-conflicting-outputs"
+      "template": "Run code generation after changing models.",
+      "description": "Run code generation",
+      "agent": "build"
     }
   },
   "agent": {
@@ -33,6 +30,17 @@
         "write": false,
         "edit": false,
         "bash": false
+      }
+    },
+    "code-reviewer": {
+      "description": "Reviews code for best practices and potential issues",
+      "model": "opencode/nemotron-3-ultra-free",
+      "mode": "subagent",
+      "prompt": "You are a code reviewer. Focus on security, performance, and maintainability.",
+      "tools": {
+        // Disable file modification tools for review-only agent
+        "write": false,
+        "edit": false
       }
     }
   }
