@@ -17,33 +17,45 @@ void main() {
 
     testWidgets('renders Invite a Parent heading', (tester) async {
       await tester.pumpWidget(buildApp(onSharePressed: () {}));
+      final l = AppLocalizations.of(
+        tester.element(find.byType(HomeEmptyInviteCardWidget)),
+      )!;
 
-      expect(find.text('Invite a Parent'), findsOneWidget);
+      expect(find.text(l.homeEmptyInviteInviteParentTitle), findsOneWidget);
     });
 
     testWidgets('renders collaboration description', (tester) async {
       await tester.pumpWidget(buildApp(onSharePressed: () {}));
+      final l = AppLocalizations.of(
+        tester.element(find.byType(HomeEmptyInviteCardWidget)),
+      )!;
 
-      expect(
-        find.text('Collaborate in your family hub'),
-        findsOneWidget,
-      );
+      expect(find.text(l.homeEmptyInviteInviteParentSubtitle), findsOneWidget);
     });
 
     testWidgets('renders Share button', (tester) async {
       await tester.pumpWidget(buildApp(onSharePressed: () {}));
+      final l = AppLocalizations.of(
+        tester.element(find.byType(HomeEmptyInviteCardWidget)),
+      )!;
 
-      expect(find.widgetWithText(ElevatedButton, 'Share'), findsOneWidget);
+      expect(
+        find.widgetWithText(ElevatedButton, l.homeEmptyInviteShareButton),
+        findsOneWidget,
+      );
     });
 
     testWidgets('fires onSharePressed when Share is tapped', (tester) async {
       var pressed = false;
 
-      await tester.pumpWidget(
-        buildApp(onSharePressed: () => pressed = true),
-      );
+      await tester.pumpWidget(buildApp(onSharePressed: () => pressed = true));
+      final l = AppLocalizations.of(
+        tester.element(find.byType(HomeEmptyInviteCardWidget)),
+      )!;
 
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Share'));
+      await tester.tap(
+        find.widgetWithText(ElevatedButton, l.homeEmptyInviteShareButton),
+      );
       expect(pressed, isTrue);
     });
   });

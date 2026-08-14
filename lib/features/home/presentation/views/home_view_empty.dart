@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_state.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_action_card_widget.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_footer_widget.dart';
@@ -13,6 +14,11 @@ class HomeViewEmpty extends StatelessWidget {
 
   const HomeViewEmpty({super.key, required this.state});
 
+  Future<void> _shareInvite(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
+    await Share.share(l.homeEmptyInviteShareMessage);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -22,9 +28,7 @@ class HomeViewEmpty extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const HomeEmptyHeaderWidget( 
-              isLoggedIn: false,
-            ),
+            const HomeEmptyHeaderWidget(),
             const SizedBox(height: 24),
             HomeEmptyActionCardWidget(
               icon: Icons.group_rounded,
@@ -53,7 +57,7 @@ class HomeViewEmpty extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             HomeEmptyInviteCardWidget(
-              onSharePressed: () {},
+              onSharePressed: () => _shareInvite(context),
             ),
             const SizedBox(height: 24),
             const HomeEmptyFooterWidget(),

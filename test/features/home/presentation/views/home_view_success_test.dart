@@ -8,20 +8,13 @@ import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 void main() {
-  final tEntity = HomeEntity(
-    greeting: 'Good morning!',
-    date: 'Monday, July 13',
-    message: 'You have 3 tasks remaining today.',
-    peopleInCircle: [],
-  );
+  final tEntity = HomeEntity(peopleInCircle: []);
 
   Widget pumpApp(HomeEntity entity) {
     return MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: HomeViewSuccess(data: entity),
-      ),
+      home: Scaffold(body: HomeViewSuccess(data: entity)),
     );
   }
 
@@ -32,21 +25,37 @@ void main() {
       expect(find.byType(HomeEmptyHeaderWidget), findsOneWidget);
     });
 
-    testWidgets('renders three action cards with correct labels',
-        (tester) async {
+    testWidgets('renders three action cards with correct labels', (
+      tester,
+    ) async {
       await tester.pumpWidget(pumpApp(tEntity));
+      final l = AppLocalizations.of(
+        tester.element(find.byType(HomeViewSuccess)),
+      )!;
 
-      expect(find.text('Add people to your Circle'), findsOneWidget);
-      expect(find.text('Set up a Reminder'), findsOneWidget);
-      expect(find.text('Complete your Account'), findsOneWidget);
+      expect(find.text(l.homeEmptyAddPeopleTitle), findsOneWidget);
+      expect(find.text(l.homeEmptyReminderTitle), findsOneWidget);
+      expect(find.text(l.homeEmptyAccountTitle), findsOneWidget);
     });
 
     testWidgets('renders action card buttons', (tester) async {
       await tester.pumpWidget(pumpApp(tEntity));
+      final l = AppLocalizations.of(
+        tester.element(find.byType(HomeViewSuccess)),
+      )!;
 
-      expect(find.widgetWithText(ElevatedButton, 'Add'), findsOneWidget);
-      expect(find.widgetWithText(ElevatedButton, 'Set up'), findsOneWidget);
-      expect(find.widgetWithText(ElevatedButton, 'Go'), findsOneWidget);
+      expect(
+        find.widgetWithText(ElevatedButton, l.homeEmptyAddPeopleButton),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(ElevatedButton, l.homeEmptyReminderButton),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(ElevatedButton, l.homeEmptyAccountButton),
+        findsOneWidget,
+      );
     });
 
     testWidgets('renders HomeEmptyFooterWidget', (tester) async {
@@ -61,11 +70,15 @@ void main() {
       expect(find.byType(HomeEmptyRemindersWidget), findsOneWidget);
     });
 
-    testWidgets('renders reminders section with localized heading',
-        (tester) async {
+    testWidgets('renders reminders section with localized heading', (
+      tester,
+    ) async {
       await tester.pumpWidget(pumpApp(tEntity));
+      final l = AppLocalizations.of(
+        tester.element(find.byType(HomeViewSuccess)),
+      )!;
 
-      expect(find.text('Upcoming Reminders'), findsOneWidget);
+      expect(find.text(l.homeEmptyRemindersSectionTitle), findsOneWidget);
     });
   });
 }

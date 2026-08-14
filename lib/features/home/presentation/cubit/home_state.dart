@@ -1,28 +1,48 @@
 import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
 
 sealed class HomeState {
-  HomeState();
+  const HomeState();
+
+  @override
+  bool operator ==(Object other) => other.runtimeType == runtimeType;
+
+  @override
+  int get hashCode => runtimeType.hashCode;
 }
 
 class HomeInitial extends HomeState {
-  HomeInitial();
+  const HomeInitial();
 }
 
 class HomeLoading extends HomeState {
-  HomeLoading();
+  const HomeLoading();
 }
 
 class HomeLoaded extends HomeState {
   final HomeEntity data;
-  HomeLoaded({required this.data});
+
+  const HomeLoaded({required this.data});
+
+  @override
+  bool operator ==(Object other) => other is HomeLoaded && other.data == data;
+
+  @override
+  int get hashCode => Object.hash(runtimeType, data);
 }
 
 class HomeEmpty extends HomeState {
   final bool hasReminders;
 
-  HomeEmpty({this.hasReminders = false});
+  const HomeEmpty({this.hasReminders = false});
+
+  @override
+  bool operator ==(Object other) =>
+      other is HomeEmpty && other.hasReminders == hasReminders;
+
+  @override
+  int get hashCode => Object.hash(runtimeType, hasReminders);
 }
 
 class HomeError extends HomeState {
-  HomeError();
+  const HomeError();
 }

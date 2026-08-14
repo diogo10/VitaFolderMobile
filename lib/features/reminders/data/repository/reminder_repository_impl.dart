@@ -58,7 +58,8 @@ class ReminderRepositoryImpl implements ReminderRepository {
   @override
   Future<Either<Failure, bool>> createReminder(ReminderModel reminder, String familyId) async {
     try {
-      await _client.from('reminders').insert(reminder.toCreate(familyId));
+      final input = reminder.toCreate(familyId);
+      await _client.from('reminders').insert(input);
       return Right(true);
     } on Failure catch (e) {
       return Left(Failure(message: e.message));

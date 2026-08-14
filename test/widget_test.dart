@@ -10,6 +10,7 @@ import 'package:vita_folder_mobile/core/errors/failure.dart';
 import 'package:vita_folder_mobile/core/injections/service_locator.dart';
 import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
 import 'package:vita_folder_mobile/features/home/domain/usecase/get_home_data_usecase.dart';
+import 'package:vita_folder_mobile/features/home/domain/usecase/has_reminders_usecase.dart';
 import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_view.dart';
@@ -33,7 +34,7 @@ class _FakeAuthService extends AuthService {
   bool isLoggedIn() => true;
 
   @override
-  String get currentUserId => 'fake-user';
+  String? get currentUserId => 'fake-user';
 }
 
 class _FakePeopleRepository implements PeopleRepository {
@@ -41,24 +42,33 @@ class _FakePeopleRepository implements PeopleRepository {
   Future<Either<Exception, List<PersonEntity>>> getPeople() async => Right([]);
 
   @override
-  Future<Either<Exception, bool>> createFamily({required String name, required String inviteCode}) async => Right(true);
+  Future<Either<Exception, bool>> createFamily({
+    required String name,
+    required String inviteCode,
+  }) async => Right(true);
 
   @override
-  Future<Either<Exception, FamilyEntity>> getMyFamily() async => Right(
-        FamilyEntity(name: 'Fam', inviteCode: 'ABC'),
-      );
+  Future<Either<Exception, FamilyEntity>> getMyFamily() async =>
+      Right(FamilyEntity(name: 'Fam', inviteCode: 'ABC'));
 
   @override
-  Future<Either<Exception, bool>> joinFamily({required String inviteCode}) async => Right(true);
+  Future<Either<Exception, bool>> joinFamily({
+    required String inviteCode,
+  }) async => Right(true);
 
   @override
-  Future<FamilyEntity?> getFamilyBy(String id) async => FamilyEntity(name: 'Fam', inviteCode: 'ABC');
+  Future<FamilyEntity?> getFamilyBy(String id) async =>
+      FamilyEntity(name: 'Fam', inviteCode: 'ABC');
 
   @override
-  Future<List<String>> getFamilyIdsForUser(String userId) async => ['fake-family'];
+  Future<List<String>> getFamilyIdsForUser(String userId) async => [
+    'fake-family',
+  ];
 
   @override
-  Future<List<PersonEntity>> getProfilesWithRoleForFamily(String familyId) async => [];
+  Future<List<PersonEntity>> getProfilesWithRoleForFamily(
+    String familyId,
+  ) async => [];
 
   @override
   Future<List<String>> getMyFamilyRole() async => ['member'];
@@ -66,7 +76,9 @@ class _FakePeopleRepository implements PeopleRepository {
 
 class _FakeReminderRepository implements ReminderRepository {
   @override
-  Future<Either<Failure, List<ReminderEntity>>> getReminders(String familyId) async => Right([]);
+  Future<Either<Failure, List<ReminderEntity>>> getReminders(
+    String familyId,
+  ) async => Right([]);
 
   @override
   Future<Either<Failure, List<ReminderEntity>>> getRemindersByTypeAndFamily({
@@ -75,7 +87,10 @@ class _FakeReminderRepository implements ReminderRepository {
   }) async => Right([]);
 
   @override
-  Future<Either<Failure, bool>> createReminder(ReminderModel reminder, String familyId) async => Right(true);
+  Future<Either<Failure, bool>> createReminder(
+    ReminderModel reminder,
+    String familyId,
+  ) async => Right(true);
 
   @override
   Future<Either<Failure, bool>> removeReminder(int id) async => Right(true);
@@ -89,9 +104,11 @@ Widget _pumpApp() {
           getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
             instanceName: 'getHomeDataUsecase',
           ),
-          reminderRepository: _FakeReminderRepository(),
-          peopleRepository: _FakePeopleRepository(),
-          authService: _FakeAuthService(),
+          hasRemindersUsecase: HasRemindersUsecase(
+            authService: _FakeAuthService(),
+            peopleRepository: _FakePeopleRepository(),
+            reminderRepository: _FakeReminderRepository(),
+          ),
         ),
       ),
       BlocProvider<RemindersCubit>(
@@ -118,9 +135,8 @@ Widget _pumpApp() {
         ),
       ),
       BlocProvider<AccountCubit>(
-        create: (_) => GetIt.instance<AccountCubit>(
-          instanceName: 'accountCubit',
-        ),
+        create: (_) =>
+            GetIt.instance<AccountCubit>(instanceName: 'accountCubit'),
       ),
     ],
     child: const MyApp(onboardingCompleted: true),
@@ -135,9 +151,11 @@ Widget _pumpAppWithOnboarding() {
           getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
             instanceName: 'getHomeDataUsecase',
           ),
-          reminderRepository: _FakeReminderRepository(),
-          peopleRepository: _FakePeopleRepository(),
-          authService: _FakeAuthService(),
+          hasRemindersUsecase: HasRemindersUsecase(
+            authService: _FakeAuthService(),
+            peopleRepository: _FakePeopleRepository(),
+            reminderRepository: _FakeReminderRepository(),
+          ),
         ),
       ),
       BlocProvider<RemindersCubit>(
@@ -164,9 +182,8 @@ Widget _pumpAppWithOnboarding() {
         ),
       ),
       BlocProvider<AccountCubit>(
-        create: (_) => GetIt.instance<AccountCubit>(
-          instanceName: 'accountCubit',
-        ),
+        create: (_) =>
+            GetIt.instance<AccountCubit>(instanceName: 'accountCubit'),
       ),
     ],
     child: const MyApp(onboardingCompleted: false),
@@ -184,7 +201,9 @@ void main() {
     await serviceLocator.init();
 
     await slInstance.unregister<HomeCubit>(instanceName: 'homeCubit');
-    await slInstance.unregister<GetHomeDataUsecase>(instanceName: 'getHomeDataUsecase');
+    await slInstance.unregister<GetHomeDataUsecase>(
+      instanceName: 'getHomeDataUsecase',
+    );
     slInstance.registerSingleton<GetHomeDataUsecase>(
       GetHomeDataUsecase(
         authService: _FakeAuthService(),
@@ -238,7 +257,10 @@ void main() {
       await tester.pump();
       await tester.pump();
       expect(find.text('No family members yet'), findsOneWidget);
-      expect(find.text('Add your first family member to get started.'), findsOneWidget);
+      expect(
+        find.text('Add your first family member to get started.'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Account'));
       await tester.pump();
@@ -261,9 +283,7 @@ void main() {
       expect(title, 'VitaFolder');
     });
 
-    testWidgets('renders shell when onboarding completed', (
-      tester,
-    ) async {
+    testWidgets('renders shell when onboarding completed', (tester) async {
       await tester.pumpWidget(_pumpApp());
       await tester.pump();
 

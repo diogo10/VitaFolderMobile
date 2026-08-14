@@ -7,9 +7,7 @@ Widget _pumpApp() {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: const Scaffold(body: HomeEmptyHeaderWidget(
-      isLoggedIn: false,
-    )),
+    home: const Scaffold(body: HomeEmptyHeaderWidget()),
   );
 }
 
@@ -17,19 +15,20 @@ void main() {
   group('HomeEmptyHeaderWidget', () {
     testWidgets('renders welcome heading', (tester) async {
       await tester.pumpWidget(_pumpApp());
+      final l = AppLocalizations.of(
+        tester.element(find.byType(HomeEmptyHeaderWidget)),
+      )!;
 
-      expect(find.text('Welcome to FamilyAdmin'), findsOneWidget);
+      expect(find.text(l.homeEmptyHeaderTitle), findsOneWidget);
     });
 
     testWidgets('renders description text', (tester) async {
       await tester.pumpWidget(_pumpApp());
+      final l = AppLocalizations.of(
+        tester.element(find.byType(HomeEmptyHeaderWidget)),
+      )!;
 
-      expect(
-        find.text(
-          'Your family hub is ready. Set it up in a few easy steps.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.text(l.homeEmptyHeaderDescription), findsOneWidget);
     });
   });
 }

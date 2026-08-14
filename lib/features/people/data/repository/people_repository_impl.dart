@@ -35,6 +35,9 @@ class PeopleRepositoryImpl implements PeopleRepository {
   Future<Either<Exception, FamilyEntity>> getMyFamily() async {
     try {
       final userId = _authService.currentUserId;
+      if (userId == null) {
+        return Left(Exception('Not signed in.'));
+      }
       final response = await _client
           .from('family_memberships')
           .select()
@@ -63,6 +66,9 @@ class PeopleRepositoryImpl implements PeopleRepository {
   }) async {
     try {
       final userId = _authService.currentUserId;
+      if (userId == null) {
+        return Left(Exception('Not signed in.'));
+      }
       await _client.from('families').insert({
         'name': name,
         'created_by': userId,
@@ -98,6 +104,9 @@ class PeopleRepositoryImpl implements PeopleRepository {
       }
 
       final userId = _authService.currentUserId;
+      if (userId == null) {
+        throw Exception('Not signed in (no user id).');
+      }
       final familyId = response.single['id'];
       await _client.from('family_memberships').insert({
         'family_id': familyId,
@@ -123,6 +132,9 @@ class PeopleRepositoryImpl implements PeopleRepository {
   Future<Either<Exception, List<PersonEntity>>> getPeople() async {
     try {
       final userId = _authService.currentUserId;
+      if (userId == null) {
+        return Left(Exception('Not signed in.'));
+      }
       final response = await getFamilyIdsForUser(userId);
 
       if (response.isEmpty) {
@@ -152,6 +164,9 @@ class PeopleRepositoryImpl implements PeopleRepository {
   @override
   Future<List<String>> getMyFamilyRole() async {
     final userId = _authService.currentUserId;
+    if (userId == null) {
+      return [];
+    }
     final res = await _client
         .from('family_memberships')
         .select('role')

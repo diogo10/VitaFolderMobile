@@ -344,6 +344,12 @@ abstract class AppLocalizations {
   /// **'Share'**
   String get homeEmptyInviteShareButton;
 
+  /// No description provided for @homeEmptyInviteShareMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Join my family circle on VitaFolder.'**
+  String get homeEmptyInviteShareMessage;
+
   /// No description provided for @homeEmptyRemindersSectionTitle.
   ///
   /// In en, this message translates to:

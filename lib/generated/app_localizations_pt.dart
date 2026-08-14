@@ -141,6 +141,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get homeEmptyInviteShareButton => 'Compartilhar';
 
   @override
+  String get homeEmptyInviteShareMessage =>
+      'Junte-se ao meu círculo familiar no VitaFolder.';
+
+  @override
   String get homeEmptyRemindersSectionTitle => 'Próximos Lembretes';
 
   @override

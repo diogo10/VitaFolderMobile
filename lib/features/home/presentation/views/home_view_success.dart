@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_action_card_widget.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_footer_widget.dart';
@@ -12,6 +13,11 @@ class HomeViewSuccess extends StatelessWidget {
   final HomeEntity data;
   const HomeViewSuccess({super.key, required this.data});
 
+  Future<void> _shareInvite(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
+    await Share.share(l.homeEmptyInviteShareMessage);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -21,9 +27,7 @@ class HomeViewSuccess extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             HomeEmptyHeaderWidget(
-              isLoggedIn: data.message.isNotEmpty,
-            ),
+            const HomeEmptyHeaderWidget(),
             const SizedBox(height: 24),
             HomeEmptyActionCardWidget(
               icon: Icons.group_rounded,
@@ -33,7 +37,7 @@ class HomeViewSuccess extends StatelessWidget {
               onPressed: () => context.go('/people'),
             ),
             const SizedBox(height: 16),
-            if (!data.hasReminders)
+            if (!data.hasReminders) ...[
               HomeEmptyActionCardWidget(
                 icon: Icons.notifications_active_rounded,
                 title: l.homeEmptyReminderTitle,
@@ -41,7 +45,8 @@ class HomeViewSuccess extends StatelessWidget {
                 buttonLabel: l.homeEmptyReminderButton,
                 onPressed: () => context.go('/reminders'),
               ),
-            if (!data.hasReminders) const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
             HomeEmptyActionCardWidget(
               icon: Icons.person_add_alt_1_rounded,
               title: l.homeEmptyAccountTitle,
@@ -50,11 +55,13 @@ class HomeViewSuccess extends StatelessWidget {
               onPressed: () => context.go('/account'),
             ),
             const SizedBox(height: 24),
-            if (data.peopleInCircle.isNotEmpty)
+            if (data.peopleInCircle.isNotEmpty) ...[
               HomeEmptyInviteCardWidget(
-                onSharePressed: () {},
+                onSharePressed: () => _shareInvite(context),
               ),
-              const HomeEmptyFooterWidget(),
+              const SizedBox(height: 24),
+            ],
+            const HomeEmptyFooterWidget(),
             const SizedBox(height: 20),
             const HomeEmptyRemindersWidget(),
           ],

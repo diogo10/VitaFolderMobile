@@ -3,8 +3,7 @@ import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class HomeEmptyHeaderWidget extends StatelessWidget {
-  final bool isLoggedIn;
-  const HomeEmptyHeaderWidget({required this.isLoggedIn, super.key});
+  const HomeEmptyHeaderWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

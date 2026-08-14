@@ -12,7 +12,7 @@ Widget _pumpApp() {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: HomeViewEmpty(state: HomeEmpty()),
+    home: HomeViewEmpty(state: const HomeEmpty()),
   );
 }
 
@@ -24,21 +24,37 @@ void main() {
       expect(find.byType(HomeEmptyHeaderWidget), findsOneWidget);
     });
 
-    testWidgets('renders three action cards with correct labels',
-        (tester) async {
+    testWidgets('renders three action cards with correct labels', (
+      tester,
+    ) async {
       await tester.pumpWidget(_pumpApp());
+      final l = AppLocalizations.of(
+        tester.element(find.byType(HomeViewEmpty)),
+      )!;
 
-      expect(find.text('Add people to your Circle'), findsOneWidget);
-      expect(find.text('Set up a Reminder'), findsOneWidget);
-      expect(find.text('Complete your Account'), findsOneWidget);
+      expect(find.text(l.homeEmptyAddPeopleTitle), findsOneWidget);
+      expect(find.text(l.homeEmptyReminderTitle), findsOneWidget);
+      expect(find.text(l.homeEmptyAccountTitle), findsOneWidget);
     });
 
     testWidgets('renders action card buttons', (tester) async {
       await tester.pumpWidget(_pumpApp());
+      final l = AppLocalizations.of(
+        tester.element(find.byType(HomeViewEmpty)),
+      )!;
 
-      expect(find.widgetWithText(ElevatedButton, 'Add'), findsOneWidget);
-      expect(find.widgetWithText(ElevatedButton, 'Set up'), findsOneWidget);
-      expect(find.widgetWithText(ElevatedButton, 'Go'), findsOneWidget);
+      expect(
+        find.widgetWithText(ElevatedButton, l.homeEmptyAddPeopleButton),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(ElevatedButton, l.homeEmptyReminderButton),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(ElevatedButton, l.homeEmptyAccountButton),
+        findsOneWidget,
+      );
     });
 
     testWidgets('renders HomeEmptyInviteCardWidget', (tester) async {

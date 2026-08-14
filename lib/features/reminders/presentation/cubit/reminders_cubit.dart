@@ -19,19 +19,18 @@ class RemindersCubit extends Cubit<RemindersState> {
     required this.authService,
   }) : super(ReminderInitialState());
 
-  Future<void> getReminders({
-    String? familyId,
-    ReminderType? type,
-  }) async {
+  Future<void> getReminders({String? familyId, ReminderType? type}) async {
     _selectedType = type;
 
     final current = state;
     if (current is LoadedReminders) {
-      emit(LoadedReminders(
-        reminders: current.reminders,
-        type: type,
-        isLoading: true,
-      ));
+      emit(
+        LoadedReminders(
+          reminders: current.reminders,
+          type: type,
+          isLoading: true,
+        ),
+      );
     } else if (current is EmptyReminders) {
       emit(EmptyReminders(type: type, isLoading: true));
     } else {
@@ -46,21 +45,18 @@ class RemindersCubit extends Cubit<RemindersState> {
 
     final result = await getReminderUsecase(resolvedFamilyId, type: type);
 
-    result.fold(
-      (err) => emit(ReminderError()),
-      (reminders) {
-        if (reminders.isEmpty) {
-          emit(EmptyReminders(type: type));
-        } else {
-          emit(LoadedReminders(reminders: reminders, type: type));
-        }
-      },
-    );
+    result.fold((err) => emit(ReminderError()), (reminders) {
+      if (reminders.isEmpty) {
+        emit(EmptyReminders(type: type));
+      } else {
+        emit(LoadedReminders(reminders: reminders, type: type));
+      }
+    });
   }
 
   Future<String?> _resolveFamilyId() async {
     final userId = authService.currentUserId;
-    if (userId.isEmpty) {
+    if (userId == null) {
       return null;
     }
     final familyIds = await peopleRepository.getFamilyIdsForUser(userId);

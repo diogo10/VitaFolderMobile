@@ -34,33 +34,32 @@ void main() {
     );
   }
 
+  AppLocalizations l10nOf(WidgetTester tester) =>
+      AppLocalizations.of(tester.element(find.byType(HomeView)))!;
+
   group('HomeView', () {
-    testWidgets('shows progress indicator when loading',
-        (tester) async {
-      await tester.pumpWidget(pumpApp(HomeLoading()));
+    testWidgets('shows progress indicator when loading', (tester) async {
+      await tester.pumpWidget(pumpApp(const HomeLoading()));
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
     testWidgets('shows error message when error occurs', (tester) async {
-      await tester.pumpWidget(pumpApp(HomeError()));
+      await tester.pumpWidget(pumpApp(const HomeError()));
+      final l = l10nOf(tester);
 
-      expect(find.text('Something went wrong.'), findsOneWidget);
+      expect(find.text(l.homeError), findsOneWidget);
     });
 
     testWidgets('shows HomeViewEmpty when state is empty', (tester) async {
-      await tester.pumpWidget(pumpApp(HomeEmpty()));
+      await tester.pumpWidget(pumpApp(const HomeEmpty()));
+      final l = l10nOf(tester);
 
-      expect(find.text('Welcome to FamilyAdmin'), findsOneWidget);
+      expect(find.text(l.homeEmptyHeaderTitle), findsOneWidget);
     });
 
     testWidgets('shows HomeViewSuccess when state is loaded', (tester) async {
-      final entity = HomeEntity(
-        greeting: 'Good morning!',
-        date: 'Monday, July 13',
-        message: 'You have 3 tasks remaining today.',
-        peopleInCircle: [],
-      );
+      final entity = HomeEntity(peopleInCircle: []);
 
       await tester.pumpWidget(pumpApp(HomeLoaded(data: entity)));
 

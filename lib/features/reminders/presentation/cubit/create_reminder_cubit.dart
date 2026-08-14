@@ -15,10 +15,10 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
     required CreateReminderUsecase createReminderUsecase,
     required AuthService authService,
     required PeopleRepository peopleRepository,
-  })  : _createReminderUsecase = createReminderUsecase,
-        _authService = authService,
-        _peopleRepository = peopleRepository,
-        super(CreateReminderInitial());
+  }) : _createReminderUsecase = createReminderUsecase,
+       _authService = authService,
+       _peopleRepository = peopleRepository,
+       super(CreateReminderInitial());
 
   Future<void> createReminder({
     required String title,
@@ -36,7 +36,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
     }
 
     final userId = _authService.currentUserId;
-    if (userId.isEmpty) {
+    if (userId == null) {
       emit(CreateReminderError(message: 'Authentication required'));
       return;
     }
@@ -63,7 +63,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
 
   Future<String?> _resolveFamilyId() async {
     final userId = _authService.currentUserId;
-    if (userId.isEmpty) {
+    if (userId == null) {
       return null;
     }
     final familyIds = await _peopleRepository.getFamilyIdsForUser(userId);

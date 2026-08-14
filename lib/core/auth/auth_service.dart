@@ -11,8 +11,7 @@ class AuthService {
     return Supabase.instance.client.auth.currentUser != null;
   }
 
-  String get currentUserId =>
-      Supabase.instance.client.auth.currentUser?.id ?? '';
+  String? get currentUserId => Supabase.instance.client.auth.currentUser?.id;
 
   Future<User?> signUp({
     required String email,
@@ -77,6 +76,9 @@ class AuthService {
 
   Future<void> updateName(String name) async {
     final userId = currentUserId;
+    if (userId == null) {
+      throw AuthException('Not signed in.');
+    }
     await Supabase.instance.client
         .from('profiles')
         .update({'full_name': name})
@@ -89,6 +91,9 @@ class AuthService {
   Future<String?> getProfileName() async {
     try {
       final userId = currentUserId;
+      if (userId == null) {
+        return null;
+      }
       final response = await Supabase.instance.client
           .from('profiles')
           .select('full_name')
