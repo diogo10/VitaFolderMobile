@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
+import 'package:vita_folder_mobile/features/home/domain/usecase/get_home_data_usecase.dart';
+import 'package:vita_folder_mobile/features/home/domain/usecase/has_reminders_usecase.dart';
+import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/home_view_success.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_circle_widget.dart';
 import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_success_header_widget.dart';
@@ -10,6 +16,10 @@ import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_e
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
+class _FakeGetHomeDataUsecase extends Mock implements GetHomeDataUsecase {}
+
+class _FakeHasRemindersUsecase extends Mock implements HasRemindersUsecase {}
+
 void main() {
   final tEntity = HomeEntity(
     peopleInCircle: [],
@@ -18,11 +28,29 @@ void main() {
     activeMembers: 4,
   );
 
+  late HomeCubit cubit;
+  late _FakeGetHomeDataUsecase getHomeDataUsecase;
+  late _FakeHasRemindersUsecase hasRemindersUsecase;
+
+  setUp(() {
+    getHomeDataUsecase = _FakeGetHomeDataUsecase();
+    hasRemindersUsecase = _FakeHasRemindersUsecase();
+    cubit = HomeCubit(
+      getHomeDataUsecase: getHomeDataUsecase,
+      hasRemindersUsecase: hasRemindersUsecase,
+    );
+  });
+
   Widget pumpApp(HomeEntity entity) {
     return MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(body: HomeViewSuccess(data: entity)),
+      home: Scaffold(
+        body: BlocProvider.value(
+          value: cubit,
+          child: HomeViewSuccess(data: entity),
+        ),
+      ),
     );
   }
 
@@ -126,6 +154,25 @@ void main() {
       )!;
 
       expect(find.text(l.homeEmptyRemindersSectionTitle), findsOneWidget);
+    });
+
+    testWidgets('shows RefreshIndicator and refreshes on pull', (tester) async {
+      when(() => getHomeDataUsecase()).thenAnswer((_) async => Right(tEntity));
+      when(
+        () => hasRemindersUsecase(),
+      ).thenAnswer((_) async => const Right(false));
+
+      await tester.pumpWidget(pumpApp(tEntity));
+      expect(find.byType(RefreshIndicator), findsOneWidget);
+
+      await tester.fling(
+        find.byType(SingleChildScrollView),
+        const Offset(0, 300),
+        1000,
+      );
+      await tester.pumpAndSettle();
+
+      verify(() => getHomeDataUsecase()).called(1);
     });
   });
 }

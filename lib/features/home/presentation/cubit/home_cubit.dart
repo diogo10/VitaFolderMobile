@@ -14,8 +14,10 @@ class HomeCubit extends Cubit<HomeState> {
     required this.hasRemindersUsecase,
   }) : super(const HomeInitial());
 
-  Future<void> getHomeData() async {
-    emit(const HomeLoading());
+  Future<void> getHomeData({bool isRefresh = false}) async {
+    if (!isRefresh) {
+      emit(const HomeLoading());
+    }
     final result = await getHomeDataUsecase();
 
     await result.fold((err) async => _handleError(err), (data) async {
