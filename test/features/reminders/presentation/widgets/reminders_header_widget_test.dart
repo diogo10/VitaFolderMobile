@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_view_mode.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_header_widget.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 void main() {
   group('RemindersHeaderWidget', () {
-    Widget pumpApp() {
+    Widget pumpApp({
+      RemindersViewMode? viewMode,
+      VoidCallback? onCalendarPressed,
+    }) {
       return MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: const Scaffold(body: RemindersHeaderWidget(title: 'Reminders')),
+        home: Scaffold(
+          body: RemindersHeaderWidget(
+            title: 'Reminders',
+            viewMode: viewMode,
+            onCalendarPressed: onCalendarPressed,
+          ),
+        ),
       );
     }
 
@@ -49,6 +59,23 @@ void main() {
         find.widgetWithText(ChoiceChip, l.remindersHeaderAll),
       );
       expect(allChip.selected, isTrue);
+    });
+
+    testWidgets('renders calendar toggle button', (tester) async {
+      await tester.pumpWidget(pumpApp());
+      expect(find.byIcon(Icons.calendar_month_rounded), findsOneWidget);
+    });
+
+    testWidgets('swaps to list icon in calendar view', (tester) async {
+      await tester.pumpWidget(pumpApp(viewMode: RemindersViewMode.calendar));
+      expect(find.byIcon(Icons.view_list_rounded), findsOneWidget);
+    });
+
+    testWidgets('fires onCalendarPressed when tapped', (tester) async {
+      var pressed = false;
+      await tester.pumpWidget(pumpApp(onCalendarPressed: () => pressed = true));
+      await tester.tap(find.byIcon(Icons.calendar_month_rounded));
+      expect(pressed, isTrue);
     });
   });
 }

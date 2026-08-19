@@ -1561,6 +1561,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove'**
   String get reminderDeleteDialogConfirm;
+
+  /// No description provided for @remindersCalendarViewCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'View as calendar'**
+  String get remindersCalendarViewCalendar;
+
+  /// No description provided for @remindersCalendarViewList.
+  ///
+  /// In en, this message translates to:
+  /// **'View as list'**
+  String get remindersCalendarViewList;
+
+  /// No description provided for @remindersCalendarEmptyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminders for this day'**
+  String get remindersCalendarEmptyDay;
 }
 
 class _AppLocalizationsDelegate

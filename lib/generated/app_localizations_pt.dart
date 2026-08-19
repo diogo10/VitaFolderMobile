@@ -796,4 +796,13 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get reminderDeleteDialogConfirm => 'Remover';
+
+  @override
+  String get remindersCalendarViewCalendar => 'Ver como calendário';
+
+  @override
+  String get remindersCalendarViewList => 'Ver como lista';
+
+  @override
+  String get remindersCalendarEmptyDay => 'Nenhum lembrete para este dia';
 }

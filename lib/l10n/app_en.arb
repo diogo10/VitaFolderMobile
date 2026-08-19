@@ -288,5 +288,8 @@
       }
     }
   },
-  "reminderDeleteDialogConfirm": "Remove"
+  "reminderDeleteDialogConfirm": "Remove",
+  "remindersCalendarViewCalendar": "View as calendar",
+  "remindersCalendarViewList": "View as list",
+  "remindersCalendarEmptyDay": "No reminders for this day"
 }

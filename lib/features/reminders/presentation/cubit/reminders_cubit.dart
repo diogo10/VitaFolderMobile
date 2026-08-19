@@ -5,6 +5,7 @@ import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_t
 import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/usecase/get_reminder_usecase.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_state.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_view_mode.dart';
 
 class RemindersCubit extends Cubit<RemindersState> {
   GetReminderUsecase getReminderUsecase;
@@ -17,6 +18,9 @@ class RemindersCubit extends Cubit<RemindersState> {
 
   String? _myRole;
   String? get myRole => _myRole;
+
+  RemindersViewMode _viewMode = RemindersViewMode.list;
+  RemindersViewMode get viewMode => _viewMode;
 
   RemindersCubit({
     required this.getReminderUsecase,
@@ -36,27 +40,34 @@ class RemindersCubit extends Cubit<RemindersState> {
           reminders: current.reminders,
           type: type,
           isLoading: true,
+          viewMode: _viewMode,
         ),
       );
     } else if (current is EmptyReminders) {
-      emit(EmptyReminders(type: type, isLoading: true));
+      emit(EmptyReminders(type: type, isLoading: true, viewMode: _viewMode));
     } else {
-      emit(RemindersLoading());
+      emit(RemindersLoading(viewMode: _viewMode));
     }
 
     final resolvedFamilyId = familyId ?? await _resolveFamilyId();
     if (resolvedFamilyId == null) {
-      emit(ReminderError());
+      emit(ReminderError(viewMode: _viewMode));
       return;
     }
 
     final result = await getReminderUsecase(resolvedFamilyId, type: type);
 
-    result.fold((err) => emit(ReminderError()), (reminders) {
+    result.fold((err) => emit(ReminderError(viewMode: _viewMode)), (reminders) {
       if (reminders.isEmpty) {
-        emit(EmptyReminders(type: type));
+        emit(EmptyReminders(type: type, viewMode: _viewMode));
       } else {
-        emit(LoadedReminders(reminders: reminders, type: type));
+        emit(
+          LoadedReminders(
+            reminders: reminders,
+            type: type,
+            viewMode: _viewMode,
+          ),
+        );
       }
     });
   }
@@ -86,6 +97,7 @@ class RemindersCubit extends Cubit<RemindersState> {
               reminders: current.reminders,
               type: currentType,
               isLoading: false,
+              viewMode: _viewMode,
             ),
           );
         }
@@ -97,12 +109,41 @@ class RemindersCubit extends Cubit<RemindersState> {
         }
         final updated = currentReminders.where((r) => r.id != id).toList();
         if (updated.isEmpty) {
-          emit(EmptyReminders(type: currentType));
+          emit(EmptyReminders(type: currentType, viewMode: _viewMode));
         } else {
-          emit(LoadedReminders(reminders: updated, type: currentType));
+          emit(
+            LoadedReminders(
+              reminders: updated,
+              type: currentType,
+              viewMode: _viewMode,
+            ),
+          );
         }
       },
     );
+  }
+
+  void toggleViewMode() {
+    _viewMode = _viewMode == RemindersViewMode.list
+        ? RemindersViewMode.calendar
+        : RemindersViewMode.list;
+    emit(switch (state) {
+      ReminderInitialState() => ReminderInitialState(viewMode: _viewMode),
+      RemindersLoading() => RemindersLoading(viewMode: _viewMode),
+      LoadedReminders(:final reminders, :final type, :final isLoading) =>
+        LoadedReminders(
+          reminders: reminders,
+          type: type,
+          isLoading: isLoading,
+          viewMode: _viewMode,
+        ),
+      EmptyReminders(:final type, :final isLoading) => EmptyReminders(
+        type: type,
+        isLoading: isLoading,
+        viewMode: _viewMode,
+      ),
+      ReminderError() => ReminderError(viewMode: _viewMode),
+    });
   }
 
   Future<void> _loadMyRole() async {

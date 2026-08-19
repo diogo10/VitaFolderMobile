@@ -45,7 +45,9 @@ class _ReminderWidgetState extends State<ReminderWidget> {
 
     return GestureDetector(
       onTap: _toggleActions,
-      child: Card(
+      child: SizedBox(
+        width: double.infinity,
+        child: Card(
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
@@ -166,6 +168,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
           ),
         ),
       ),
+      )
     );
   }
 

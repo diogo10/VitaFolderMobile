@@ -1,0 +1,1 @@
+enum RemindersViewMode { list, calendar }

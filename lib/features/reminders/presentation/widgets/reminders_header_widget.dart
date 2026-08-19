@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/family_header_widget.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_view_mode.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
@@ -8,8 +9,10 @@ class RemindersHeaderWidget extends StatefulWidget {
   final String title;
   final String? role;
   final ReminderType? selectedType;
+  final RemindersViewMode? viewMode;
   final ValueChanged<ReminderType?>? onCategoryChanged;
   final VoidCallback? onAddPressed;
+  final VoidCallback? onCalendarPressed;
   final VoidCallback? onNotificationsPressed;
   final VoidCallback? onProfilePressed;
 
@@ -18,8 +21,10 @@ class RemindersHeaderWidget extends StatefulWidget {
     required this.title,
     this.role,
     this.selectedType,
+    this.viewMode,
     this.onCategoryChanged,
     this.onAddPressed,
+    this.onCalendarPressed,
     this.onNotificationsPressed,
     this.onProfilePressed,
   });
@@ -60,6 +65,7 @@ class _RemindersHeaderWidgetState extends State<RemindersHeaderWidget> {
   @override
   Widget build(BuildContext context) {
     final categories = _categories(context);
+    final l = AppLocalizations.of(context)!;
     final textColor = context.colorScheme.onSurface;
     final background = context.colorScheme.surface;
     final highlight = context.colorScheme.primary;
@@ -93,6 +99,25 @@ class _RemindersHeaderWidgetState extends State<RemindersHeaderWidget> {
                             ),
                       ),
                     ),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: background,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: IconButton(
+                        onPressed: widget.onCalendarPressed,
+                        tooltip: widget.viewMode == RemindersViewMode.calendar
+                            ? l.remindersCalendarViewList
+                            : l.remindersCalendarViewCalendar,
+                        icon: Icon(
+                          widget.viewMode == RemindersViewMode.calendar
+                              ? Icons.view_list_rounded
+                              : Icons.calendar_month_rounded,
+                          color: textColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Container(
                       decoration: BoxDecoration(
                         color: background,
