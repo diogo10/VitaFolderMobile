@@ -134,11 +134,11 @@ abstract class AppLocalizations {
   /// **'Skip'**
   String get onboardingSkip;
 
-  /// No description provided for @onboardingNext.
+  /// No description provided for @onboardingNextStep.
   ///
   /// In en, this message translates to:
-  /// **'Next'**
-  String get onboardingNext;
+  /// **'Next Step'**
+  String get onboardingNextStep;
 
   /// No description provided for @onboardingGetStarted.
   ///
@@ -149,50 +149,80 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingTitle1.
   ///
   /// In en, this message translates to:
-  /// **'Bring your whole family together'**
+  /// **'Your Family,\nIn One Place'**
   String get onboardingTitle1;
 
   /// No description provided for @onboardingSubtitle1.
   ///
   /// In en, this message translates to:
-  /// **'Invite parents, children, and caregivers to join your private family circle and collaborate in real time.'**
+  /// **'Bring everyone together in a private, secure circle. Stay connected with real-time status and instant updates.'**
   String get onboardingSubtitle1;
 
   /// No description provided for @onboardingTitle2.
   ///
   /// In en, this message translates to:
-  /// **'Stay on top of every task'**
+  /// **'Smart Family\nReminders'**
   String get onboardingTitle2;
 
   /// No description provided for @onboardingSubtitle2.
   ///
   /// In en, this message translates to:
-  /// **'Share chores, appointments, and reminders with your circle so nothing gets overlooked.'**
+  /// **'Set tasks and appointments for anyone. Get notified together and never miss a family milestone.'**
   String get onboardingSubtitle2;
 
   /// No description provided for @onboardingTitle3.
   ///
   /// In en, this message translates to:
-  /// **'Celebrate every moment as a family'**
+  /// **'Secure & Private\nBy Design'**
   String get onboardingTitle3;
 
   /// No description provided for @onboardingSubtitle3.
   ///
   /// In en, this message translates to:
-  /// **'Keep everyone connected with simple reminders, shared plans, and family timelines.'**
+  /// **'Only your family circle can see your data. Manage admin roles and keep your home safe and organized.'**
   String get onboardingSubtitle3;
 
-  /// No description provided for @onboardingFamilyCircleLabel.
+  /// No description provided for @onboardingAtHome.
   ///
   /// In en, this message translates to:
-  /// **'Family Circle'**
-  String get onboardingFamilyCircleLabel;
+  /// **'At Home'**
+  String get onboardingAtHome;
 
-  /// No description provided for @onboardingInviteBadge.
+  /// No description provided for @onboardingAtWork.
   ///
   /// In en, this message translates to:
-  /// **'+ Invite'**
-  String get onboardingInviteBadge;
+  /// **'At Work'**
+  String get onboardingAtWork;
+
+  /// No description provided for @onboardingEndToEndEncryption.
+  ///
+  /// In en, this message translates to:
+  /// **'End-to-End Encryption'**
+  String get onboardingEndToEndEncryption;
+
+  /// No description provided for @onboardingReminderMedicineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lily\'s Medicine'**
+  String get onboardingReminderMedicineTitle;
+
+  /// No description provided for @onboardingReminderMedicineTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Today · 8:30 AM'**
+  String get onboardingReminderMedicineTime;
+
+  /// No description provided for @onboardingReminderGroceryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Grocery Run'**
+  String get onboardingReminderGroceryTitle;
+
+  /// No description provided for @onboardingReminderGroceryTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Today · 5:00 PM'**
+  String get onboardingReminderGroceryTime;
 
   /// No description provided for @homeError.
   ///

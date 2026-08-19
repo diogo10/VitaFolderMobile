@@ -27,37 +27,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingSkip => 'Skip';
 
   @override
-  String get onboardingNext => 'Next';
+  String get onboardingNextStep => 'Next Step';
 
   @override
   String get onboardingGetStarted => 'Get Started';
 
   @override
-  String get onboardingTitle1 => 'Bring your whole family together';
+  String get onboardingTitle1 => 'Your Family,\nIn One Place';
 
   @override
   String get onboardingSubtitle1 =>
-      'Invite parents, children, and caregivers to join your private family circle and collaborate in real time.';
+      'Bring everyone together in a private, secure circle. Stay connected with real-time status and instant updates.';
 
   @override
-  String get onboardingTitle2 => 'Stay on top of every task';
+  String get onboardingTitle2 => 'Smart Family\nReminders';
 
   @override
   String get onboardingSubtitle2 =>
-      'Share chores, appointments, and reminders with your circle so nothing gets overlooked.';
+      'Set tasks and appointments for anyone. Get notified together and never miss a family milestone.';
 
   @override
-  String get onboardingTitle3 => 'Celebrate every moment as a family';
+  String get onboardingTitle3 => 'Secure & Private\nBy Design';
 
   @override
   String get onboardingSubtitle3 =>
-      'Keep everyone connected with simple reminders, shared plans, and family timelines.';
+      'Only your family circle can see your data. Manage admin roles and keep your home safe and organized.';
 
   @override
-  String get onboardingFamilyCircleLabel => 'Family Circle';
+  String get onboardingAtHome => 'At Home';
 
   @override
-  String get onboardingInviteBadge => '+ Invite';
+  String get onboardingAtWork => 'At Work';
+
+  @override
+  String get onboardingEndToEndEncryption => 'End-to-End Encryption';
+
+  @override
+  String get onboardingReminderMedicineTitle => 'Lily\'s Medicine';
+
+  @override
+  String get onboardingReminderMedicineTime => 'Today · 8:30 AM';
+
+  @override
+  String get onboardingReminderGroceryTitle => 'Grocery Run';
+
+  @override
+  String get onboardingReminderGroceryTime => 'Today · 5:00 PM';
 
   @override
   String get homeError => 'Something went wrong.';

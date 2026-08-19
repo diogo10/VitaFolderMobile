@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
-import 'package:vita_folder_mobile/theme/theme_extensions.dart';
+import 'package:vita_folder_mobile/features/onboarding/presentation/onboarding_palette.dart';
 
 class OnboardingPageWidget extends StatelessWidget {
   final String title;
@@ -17,41 +16,33 @@ class OnboardingPageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            hero,
-            const SizedBox(height: 36),
-            Text(
-              AppLocalizations.of(context)!.onboardingFamilyCircleLabel,
-              style: context.textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: context.colorScheme.onSurface.withValues(alpha: 0.74),
-                letterSpacing: 1.2,
-              ),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          SizedBox(height: 320, child: Center(child: hero)),
+          const SizedBox(height: 24),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: OnboardingPalette.sand700,
+              fontSize: 30,
+              fontWeight: FontWeight.w700,
+              height: 1.15,
             ),
-            const SizedBox(height: 18),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: context.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: context.colorScheme.onSurface,
-              ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: OnboardingPalette.sand400,
+              fontSize: 16,
+              height: 1.6,
             ),
-            const SizedBox(height: 16),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.colorScheme.onSurface.withValues(alpha: 0.72),
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

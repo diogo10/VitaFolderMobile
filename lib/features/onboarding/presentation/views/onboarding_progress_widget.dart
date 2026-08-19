@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/theme/theme_extensions.dart';
+import 'package:vita_folder_mobile/features/onboarding/presentation/onboarding_palette.dart';
 
 class OnboardingProgressWidget extends StatelessWidget {
   final int currentPage;
@@ -14,25 +14,21 @@ class OnboardingProgressWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(
-        pageCount,
-        (index) {
-          final isActive = index == currentPage;
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: isActive ? 24 : 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: isActive
-                  ? context.colorScheme.primary
-                  : context.colorScheme.onSurface.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(4),
-            ),
-          );
-        },
-      ),
+      children: List.generate(pageCount, (index) {
+        final isActive = index == currentPage;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          width: isActive ? 24 : 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: isActive
+                ? OnboardingPalette.sand500
+                : OnboardingPalette.sand200,
+            borderRadius: BorderRadius.circular(999),
+          ),
+        );
+      }),
     );
   }
 }

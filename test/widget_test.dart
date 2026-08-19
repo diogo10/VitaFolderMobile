@@ -305,23 +305,25 @@ void main() {
       await tester.pump();
 
       expect(find.byType(OnboardingView), findsOneWidget);
-      expect(find.text('Bring your whole family together'), findsOneWidget);
+      expect(find.text('Your Family,\nIn One Place'), findsOneWidget);
     });
 
     testWidgets('displays 3 pages with navigation dots', (tester) async {
       await tester.pumpWidget(_pumpAppWithOnboarding());
       await tester.pump();
 
-      expect(find.text('Bring your whole family together'), findsOneWidget);
+      expect(find.text('Your Family,\nIn One Place'), findsOneWidget);
 
       final pageView = find.byType(PageView);
       await tester.drag(pageView, const Offset(-500, 0));
       await tester.pump();
-      expect(find.text('Stay on top of every task'), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('Smart Family\nReminders'), findsOneWidget);
 
       await tester.drag(pageView, const Offset(-500, 0));
       await tester.pump();
-      expect(find.text('Celebrate every moment as a family'), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('Secure & Private\nBy Design'), findsOneWidget);
     });
 
     testWidgets('shows skip and next buttons', (tester) async {
@@ -329,7 +331,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Skip'), findsOneWidget);
-      expect(find.text('Next'), findsOneWidget);
+      expect(find.text('Next Step'), findsOneWidget);
       expect(find.text('Get Started'), findsNothing);
     });
 
@@ -337,38 +339,47 @@ void main() {
       await tester.pumpWidget(_pumpAppWithOnboarding());
       await tester.pump();
 
-      expect(find.text('Next'), findsOneWidget);
-      await tester.tap(find.text('Next'));
-      await tester.pumpAndSettle(const Duration(seconds: 1));
-      expect(find.text('Stay on top of every task'), findsOneWidget);
-      expect(find.text('Next'), findsOneWidget);
-
-      await tester.tap(find.text('Next'));
-      await tester.pumpAndSettle(const Duration(seconds: 1));
+      expect(find.text('Next Step'), findsOneWidget);
+      await tester.tap(find.text('Next Step'));
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('Smart Family\nReminders'), findsOneWidget);
+      expect(find.text('Next Step'), findsOneWidget);
 
-      expect(find.text('Celebrate every moment as a family'), findsOneWidget);
+      await tester.tap(find.text('Next Step'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('Secure & Private\nBy Design'), findsOneWidget);
       expect(find.text('Get Started'), findsOneWidget);
     });
 
-    testWidgets('skip navigates to shell', (tester) async {
+    testWidgets('skip jumps to last page', (tester) async {
       await tester.pumpWidget(_pumpAppWithOnboarding());
       await tester.pump();
 
       await tester.tap(find.text('Skip'));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.byType(BottomNavigationBar), findsOneWidget);
+      expect(find.text('Secure & Private\nBy Design'), findsOneWidget);
+      expect(find.text('Get Started'), findsOneWidget);
+      expect(find.byType(BottomNavigationBar), findsNothing);
     });
 
-    testWidgets('marks onboarding as completed on skip', (tester) async {
+    testWidgets('completes onboarding on Get Started', (tester) async {
       await tester.pumpWidget(_pumpAppWithOnboarding());
       await tester.pump();
 
       await tester.tap(find.text('Skip'));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      await tester.tap(find.text('Get Started'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.byType(BottomNavigationBar), findsOneWidget);
 
       final datasource = GetIt.instance<OnboardingLocalDatasource>(
         instanceName: 'onboardingLocalDatasource',

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/features/onboarding/presentation/onboarding_palette.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
-import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class OnboardingHeaderWidget extends StatelessWidget {
   final VoidCallback onSkip;
@@ -10,52 +10,35 @@ class OnboardingHeaderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 16, top: 8),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
       child: Row(
         children: [
-          const _OnboardingAvatarCluster(),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: OnboardingPalette.sand500,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.home_rounded,
+              size: 20,
+              color: OnboardingPalette.sand50,
+            ),
+          ),
           const Spacer(),
           TextButton(
             onPressed: onSkip,
-            child: Text(AppLocalizations.of(context)!.onboardingSkip),
+            child: Text(
+              AppLocalizations.of(context)!.onboardingSkip,
+              style: const TextStyle(
+                color: OnboardingPalette.sand400,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _OnboardingAvatarCluster extends StatelessWidget {
-  const _OnboardingAvatarCluster();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _OnboardingAvatar(label: 'A'),
-        const SizedBox(width: 10),
-        _OnboardingAvatar(label: 'T'),
-      ],
-    );
-  }
-}
-
-class _OnboardingAvatar extends StatelessWidget {
-  final String label;
-
-  const _OnboardingAvatar({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: 18,
-      backgroundColor: context.colorScheme.surface,
-      child: Text(
-        label,
-        style: context.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: context.colorScheme.onSurface,
-        ),
       ),
     );
   }
