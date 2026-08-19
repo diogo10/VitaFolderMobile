@@ -1454,6 +1454,12 @@ abstract class AppLocalizations {
   /// **'Reminder created successfully'**
   String get createReminderSuccessMessage;
 
+  /// No description provided for @createReminderUpdatedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder updated successfully'**
+  String get createReminderUpdatedMessage;
+
   /// No description provided for @createReminderTypeRenewal.
   ///
   /// In en, this message translates to:
@@ -1579,6 +1585,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No reminders for this day'**
   String get remindersCalendarEmptyDay;
+
+  /// No description provided for @createReminderTitleEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Reminder'**
+  String get createReminderTitleEdit;
+
+  /// No description provided for @createReminderSaveButtonEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get createReminderSaveButtonEdit;
 }
 
 class _AppLocalizationsDelegate

@@ -264,6 +264,7 @@
   "createReminderRepeatMonthly": "Monthly",
   "createReminderSaveButton": "Create Reminder",
   "createReminderSuccessMessage": "Reminder created successfully",
+  "createReminderUpdatedMessage": "Reminder updated successfully",
   "createReminderTypeRenewal": "Renewal",
   "createReminderTypeAppointment": "Appointment",
   "createReminderTypeVaccine": "Vaccine",
@@ -291,5 +292,7 @@
   "reminderDeleteDialogConfirm": "Remove",
   "remindersCalendarViewCalendar": "View as calendar",
   "remindersCalendarViewList": "View as list",
-  "remindersCalendarEmptyDay": "No reminders for this day"
+  "remindersCalendarEmptyDay": "No reminders for this day",
+  "createReminderTitleEdit": "Edit Reminder",
+  "createReminderSaveButtonEdit": "Save Changes"
 }

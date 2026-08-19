@@ -742,6 +742,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get createReminderSuccessMessage => 'Lembrete criado com sucesso';
 
   @override
+  String get createReminderUpdatedMessage => 'Lembrete atualizado com sucesso';
+
+  @override
   String get createReminderTypeRenewal => 'Renovação';
 
   @override
@@ -805,4 +808,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get remindersCalendarEmptyDay => 'Nenhum lembrete para este dia';
+
+  @override
+  String get createReminderTitleEdit => 'Editar Lembrete';
+
+  @override
+  String get createReminderSaveButtonEdit => 'Salvar Alterações';
 }

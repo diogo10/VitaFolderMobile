@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_reminder_state.dart';
@@ -9,8 +11,9 @@ import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class CreateReminderScreen extends StatefulWidget {
   final ReminderType? initialType;
+  final ReminderEntity? reminder;
 
-  const CreateReminderScreen({super.key, this.initialType});
+  const CreateReminderScreen({super.key, this.initialType, this.reminder});
 
   @override
   State<CreateReminderScreen> createState() => _CreateReminderScreenState();
@@ -28,7 +31,27 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedType = widget.initialType ?? ReminderType.custom;
+    final reminder = widget.reminder;
+    if (reminder != null) {
+      _titleController.text = reminder.title;
+      _bodyController.text = reminder.body;
+      _selectedType = reminder.type;
+      _repeatRule = reminder.repeatRule;
+      final parsed = _parseDueDate(reminder.dueDate);
+      _dueDate = parsed;
+      _dueTime = parsed == null ? null : TimeOfDay.fromDateTime(parsed);
+    } else {
+      _selectedType = widget.initialType ?? ReminderType.custom;
+    }
+  }
+
+  bool get _isEditing => widget.reminder != null;
+
+  DateTime? _parseDueDate(String dueDate) {
+    final trimmed = dueDate.trim();
+    if (trimmed.isEmpty) return null;
+    return DateFormat('dd/MM/yyyy HH:mm').tryParse(trimmed) ??
+        DateFormat('dd/MM/yyyy').tryParse(trimmed);
   }
 
   @override
@@ -113,13 +136,26 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
 
   void _onSave() {
     if (_formKey.currentState?.validate() ?? false) {
-      context.read<CreateReminderCubit>().createReminder(
-        title: _titleController.text.trim(),
-        body: _bodyController.text.trim(),
-        type: _selectedType,
-        dueDate: _dueDate,
-        repeatRule: _repeatRule,
-      );
+      final cubit = context.read<CreateReminderCubit>();
+      final reminder = widget.reminder;
+      if (reminder != null) {
+        cubit.updateReminder(
+          reminder: reminder,
+          title: _titleController.text.trim(),
+          body: _bodyController.text.trim(),
+          type: _selectedType,
+          dueDate: _dueDate,
+          repeatRule: _repeatRule,
+        );
+      } else {
+        cubit.createReminder(
+          title: _titleController.text.trim(),
+          body: _bodyController.text.trim(),
+          type: _selectedType,
+          dueDate: _dueDate,
+          repeatRule: _repeatRule,
+        );
+      }
     }
   }
 
@@ -127,7 +163,11 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l.createReminderTitle)),
+      appBar: AppBar(
+        title: Text(
+          _isEditing ? l.createReminderTitleEdit : l.createReminderTitle,
+        ),
+      ),
       body: BlocConsumer<CreateReminderCubit, CreateReminderState>(
         listener: (context, state) {
           if (state is CreateReminderSuccess) {
@@ -136,6 +176,15 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
               ..hideCurrentSnackBar()
               ..showSnackBar(
                 SnackBar(content: Text(l.createReminderSuccessMessage)),
+              );
+            context.pop();
+          }
+          if (state is UpdatedReminderSuccess) {
+            context.read<RemindersCubit>().getReminders();
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(content: Text(l.createReminderUpdatedMessage)),
               );
             context.pop();
           }
@@ -248,7 +297,11 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : Text(l.createReminderSaveButton),
+                          : Text(
+                              _isEditing
+                                  ? l.createReminderSaveButtonEdit
+                                  : l.createReminderSaveButton,
+                            ),
                     ),
                   ),
                 ],

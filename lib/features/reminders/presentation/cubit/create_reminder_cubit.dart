@@ -2,20 +2,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
 import 'package:vita_folder_mobile/features/reminders/data/models/reminder_model.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/usecase/create_reminder_usecase.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/usecase/update_reminder_usecase.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_reminder_state.dart';
 
 class CreateReminderCubit extends Cubit<CreateReminderState> {
   final CreateReminderUsecase _createReminderUsecase;
+  final UpdateReminderUsecase _updateReminderUsecase;
   final AuthService _authService;
   final PeopleRepository _peopleRepository;
 
   CreateReminderCubit({
     required CreateReminderUsecase createReminderUsecase,
+    required UpdateReminderUsecase updateReminderUsecase,
     required AuthService authService,
     required PeopleRepository peopleRepository,
   }) : _createReminderUsecase = createReminderUsecase,
+       _updateReminderUsecase = updateReminderUsecase,
        _authService = authService,
        _peopleRepository = peopleRepository,
        super(CreateReminderInitial());
@@ -58,6 +63,36 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
     result.fold(
       (err) => emit(CreateReminderError(message: err.message)),
       (_) => emit(CreateReminderSuccess()),
+    );
+  }
+
+  Future<void> updateReminder({
+    required ReminderEntity reminder,
+    required String title,
+    required String body,
+    required ReminderType type,
+    required DateTime? dueDate,
+    required String repeatRule,
+  }) async {
+    emit(CreateReminderLoading());
+
+    final reminderModel = ReminderModel(
+      title: title,
+      body: body,
+      id: reminder.id,
+      type: type,
+      dueDate: dueDate?.toIso8601String() ?? '',
+      repeatRule: repeatRule,
+      status: reminder.status,
+      createdBy: reminder.createdBy,
+      createdAt: reminder.createdAt,
+    );
+
+    final result = await _updateReminderUsecase(reminderModel);
+
+    result.fold(
+      (err) => emit(CreateReminderError(message: err.message)),
+      (_) => emit(UpdatedReminderSuccess()),
     );
   }
 

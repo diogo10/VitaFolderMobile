@@ -48,132 +48,136 @@ class _ReminderWidgetState extends State<ReminderWidget> {
       child: SizedBox(
         width: double.infinity,
         child: Card(
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            width: 0.5,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+              width: 0.5,
+            ),
           ),
-        ),
-        elevation: 0,
-        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: typeColor.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(16),
+          elevation: 0,
+          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: typeColor.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(iconData, size: 24, color: typeColor),
                     ),
-                    child: Icon(iconData, size: 24, color: typeColor),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      reminder.title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface,
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        reminder.title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 250),
-                    switchInCurve: Curves.easeOut,
-                    switchOutCurve: Curves.easeIn,
-                    transitionBuilder: (child, animation) {
-                      return SlideTransition(
-                        position:
-                            Tween<Offset>(
-                              begin: const Offset(0.25, 0),
-                              end: Offset.zero,
-                            ).animate(
-                              CurvedAnimation(
-                                parent: animation,
-                                curve: Curves.easeOut,
+                    const SizedBox(width: 8),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      switchInCurve: Curves.easeOut,
+                      switchOutCurve: Curves.easeIn,
+                      transitionBuilder: (child, animation) {
+                        return SlideTransition(
+                          position:
+                              Tween<Offset>(
+                                begin: const Offset(0.25, 0),
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: animation,
+                                  curve: Curves.easeOut,
+                                ),
                               ),
-                            ),
-                        child: FadeTransition(opacity: animation, child: child),
-                      );
-                    },
-                    child: _actionsVisible || _alwaysShowActions
-                        ? _ActionButtons(
-                            key: const ValueKey('actions'),
-                            typeColor: typeColor,
-                            onEdit: () => _onEdit(context),
-                            onRemove: () => _onRemove(context),
-                          )
-                        : _TrailingChip(
-                            key: ValueKey(timeLabel ?? 'allday'),
-                            label: timeLabel ?? l.remindersLoadedSectionAllDay,
-                            typeColor: typeColor,
+                          child: FadeTransition(
+                            opacity: animation,
+                            child: child,
                           ),
+                        );
+                      },
+                      child: _actionsVisible || _alwaysShowActions
+                          ? _ActionButtons(
+                              key: const ValueKey('actions'),
+                              typeColor: typeColor,
+                              onEdit: () => _onEdit(context),
+                              onRemove: () => _onRemove(context),
+                            )
+                          : _TrailingChip(
+                              key: ValueKey(timeLabel ?? 'allday'),
+                              label:
+                                  timeLabel ?? l.remindersLoadedSectionAllDay,
+                              typeColor: typeColor,
+                            ),
+                    ),
+                  ],
+                ),
+                if (reminder.body.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    reminder.body,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
-              ),
-              if (reminder.body.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Text(
-                  reminder.body,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (dueDateLabel.isNotEmpty)
+                      _MetaItem(
+                        icon: Icons.event_rounded,
+                        label: dueDateLabel,
+                        textColor: colorScheme.onSurfaceVariant,
+                      ),
+                    if (reminder.repeatRule.isNotEmpty &&
+                        reminder.repeatRule != 'never')
+                      _MetaItem(
+                        icon: Icons.repeat_rounded,
+                        label: _repeatLabel(reminder.repeatRule, l),
+                        textColor: colorScheme.onSurfaceVariant,
+                      ),
+                    if (reminder.createdBy.isNotEmpty)
+                      _MetaItem(
+                        icon: Icons.person_rounded,
+                        label: reminder.createdBy,
+                        textColor: colorScheme.onSurfaceVariant,
+                      ),
+                    if (reminder.status.isNotEmpty &&
+                        reminder.status != 'pending')
+                      _StatusChip(
+                        status: reminder.status,
+                        colorScheme: colorScheme,
+                      ),
+                  ],
                 ),
               ],
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  if (dueDateLabel.isNotEmpty)
-                    _MetaItem(
-                      icon: Icons.event_rounded,
-                      label: dueDateLabel,
-                      textColor: colorScheme.onSurfaceVariant,
-                    ),
-                  if (reminder.repeatRule.isNotEmpty &&
-                      reminder.repeatRule != 'never')
-                    _MetaItem(
-                      icon: Icons.repeat_rounded,
-                      label: _repeatLabel(reminder.repeatRule, l),
-                      textColor: colorScheme.onSurfaceVariant,
-                    ),
-                  if (reminder.createdBy.isNotEmpty)
-                    _MetaItem(
-                      icon: Icons.person_rounded,
-                      label: reminder.createdBy,
-                      textColor: colorScheme.onSurfaceVariant,
-                    ),
-                  if (reminder.status.isNotEmpty &&
-                      reminder.status != 'pending')
-                    _StatusChip(
-                      status: reminder.status,
-                      colorScheme: colorScheme,
-                    ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),
-      )
     );
   }
 
   void _onEdit(BuildContext context) {
-    context.push('/create-reminder', extra: reminder.type);
+    context.push('/create-reminder', extra: reminder);
   }
 
   Future<void> _onRemove(BuildContext context) async {

@@ -5,6 +5,7 @@ import 'package:vita_folder_mobile/features/reminders/data/repository/reminder_r
 import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/usecase/create_reminder_usecase.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/usecase/get_reminder_usecase.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/usecase/update_reminder_usecase.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 
@@ -35,6 +36,13 @@ class ReminderServiceLocator {
       instanceName: 'createReminderUsecase',
     );
 
+    sl.registerSingleton<UpdateReminderUsecase>(
+      UpdateReminderUsecase(
+        repository: sl(instanceName: 'reminderRepositoryImpl'),
+      ),
+      instanceName: 'updateReminderUsecase',
+    );
+
     sl.registerSingleton<RemindersCubit>(
       RemindersCubit(
         getReminderUsecase: sl(instanceName: 'getReminderUsecase'),
@@ -50,6 +58,7 @@ class ReminderServiceLocator {
     sl.registerSingleton<CreateReminderCubit>(
       CreateReminderCubit(
         createReminderUsecase: sl(instanceName: 'createReminderUsecase'),
+        updateReminderUsecase: sl(instanceName: 'updateReminderUsecase'),
         authService: sl<AuthService>(instanceName: 'authService'),
         peopleRepository: sl<PeopleRepository>(
           instanceName: 'peopleRepositoryImpl',

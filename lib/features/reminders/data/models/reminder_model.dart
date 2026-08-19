@@ -43,6 +43,16 @@ class ReminderModel extends ReminderEntity {
     };
   }
 
+  Map<String, dynamic> toUpdate() {
+    return {
+      'title': title,
+      'type': type.value,
+      'body': body,
+      'due_at': dueDate.isEmpty ? null : dueDate,
+      'repeat_rule': repeatRule,
+    };
+  }
+
   factory ReminderModel.fromMap(Map<String, dynamic> map) {
     final rawDueDate = map['due_at'];
 
@@ -50,8 +60,12 @@ class ReminderModel extends ReminderEntity {
       title: map['title'] as String,
       body: map.containsKey('body') ? map['body'] as String : '',
       id: map['id'] is String ? map['id'] : int.parse(map['id'].toString()),
-      type: ReminderType.fromString(map['type'] as String?) ?? (throw FormatException('Invalid reminder type')),
-      dueDate: rawDueDate == null ? '' : _formatDueDateToDisplay(rawDueDate.toString()),
+      type:
+          ReminderType.fromString(map['type'] as String?) ??
+          (throw FormatException('Invalid reminder type')),
+      dueDate: rawDueDate == null
+          ? ''
+          : _formatDueDateToDisplay(rawDueDate.toString()),
       repeatRule: map['repeat_rule']?.toString() ?? '',
       status: map['status']?.toString() ?? '',
       createdBy: map['created_by']?.toString() ?? '',

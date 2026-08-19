@@ -243,6 +243,7 @@
   "createReminderRepeatMonthly": "Mensalmente",
   "createReminderSaveButton": "Criar Lembrete",
   "createReminderSuccessMessage": "Lembrete criado com sucesso",
+  "createReminderUpdatedMessage": "Lembrete atualizado com sucesso",
   "createReminderTypeRenewal": "Renovação",
   "createReminderTypeAppointment": "Compromisso",
   "createReminderTypeVaccine": "Vacina",
@@ -270,5 +271,7 @@
   "reminderDeleteDialogConfirm": "Remover",
   "remindersCalendarViewCalendar": "Ver como calendário",
   "remindersCalendarViewList": "Ver como lista",
-  "remindersCalendarEmptyDay": "Nenhum lembrete para este dia"
+  "remindersCalendarEmptyDay": "Nenhum lembrete para este dia",
+  "createReminderTitleEdit": "Editar Lembrete",
+  "createReminderSaveButtonEdit": "Salvar Alterações"
 }

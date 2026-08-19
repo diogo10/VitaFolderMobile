@@ -8,6 +8,7 @@ import 'package:vita_folder_mobile/features/login/presentation/views/sign_up_scr
 import 'package:vita_folder_mobile/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:vita_folder_mobile/features/people/presentation/views/invite_people_screen.dart';
 import 'package:vita_folder_mobile/features/people/presentation/views/people_view.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/screens/create_reminder_screen.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/screens/reminders_view.dart';
@@ -34,9 +35,15 @@ GoRouter createRouter({required bool onboardingCompleted}) {
       ),
       GoRoute(
         path: '/create-reminder',
-        builder: (context, state) => CreateReminderScreen(
-          initialType: state.extra is ReminderType ? state.extra as ReminderType : null,
-        ),
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is ReminderEntity) {
+            return CreateReminderScreen(reminder: extra);
+          }
+          return CreateReminderScreen(
+            initialType: extra is ReminderType ? extra : null,
+          );
+        },
       ),
       GoRoute(
         path: '/onboarding',

@@ -14,6 +14,10 @@ class CreateReminderSuccess extends CreateReminderState {
   CreateReminderSuccess();
 }
 
+class UpdatedReminderSuccess extends CreateReminderState {
+  UpdatedReminderSuccess();
+}
+
 class CreateReminderError extends CreateReminderState {
   final String message;
   CreateReminderError({required this.message});

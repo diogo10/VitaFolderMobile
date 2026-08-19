@@ -17,5 +17,7 @@ abstract interface class ReminderRepository {
     String familyId,
   );
 
+  Future<Either<Failure, bool>> updateReminder(ReminderModel reminder);
+
   Future<Either<Failure, bool>> removeReminder(String id);
 }

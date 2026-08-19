@@ -75,6 +75,20 @@ class ReminderRepositoryImpl implements ReminderRepository {
   }
 
   @override
+  Future<Either<Failure, bool>> updateReminder(ReminderModel reminder) async {
+    try {
+      final input = reminder.toUpdate();
+      await _client.from('reminders').update(input).eq('id', reminder.id);
+      return Right(true);
+    } on Failure catch (e) {
+      return Left(Failure(message: e.message));
+    } catch (e) {
+      debugPrint('Error updating reminder: $e');
+      return Left(Failure());
+    }
+  }
+
+  @override
   Future<Either<Failure, bool>> removeReminder(String id) async {
     try {
       await _client.from('reminders').delete().eq('id', id);
