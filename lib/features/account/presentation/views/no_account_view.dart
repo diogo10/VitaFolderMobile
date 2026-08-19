@@ -5,7 +5,7 @@ import 'package:vita_folder_mobile/features/account/presentation/cubit/account_s
 import 'package:vita_folder_mobile/features/account/presentation/views/account_no_account_auth_widget.dart';
 import 'package:vita_folder_mobile/features/account/presentation/views/account_no_account_footer_widget.dart';
 import 'package:vita_folder_mobile/features/account/presentation/views/account_no_account_header_widget.dart';
-import 'package:vita_folder_mobile/theme/theme_extensions.dart';
+import 'package:vita_folder_mobile/theme/sand_palette.dart';
 
 class NoAccountView extends StatefulWidget {
   const NoAccountView({super.key});
@@ -28,37 +28,46 @@ class _NoAccountViewState extends State<NoAccountView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.colorScheme.surface,
+      backgroundColor: SandPalette.sand50,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const AccountNoAccountHeaderWidget(),
-              const SizedBox(height: 28),
-              BlocBuilder<AccountCubit, AccountState>(
-                builder: (context, state) {
-                  return AccountNoAccountAuthWidget(
-                    emailController: _emailController,
-                    passwordController: _passwordController,
-                    isLoading: state is AccountLoading,
-                    onSignIn: () {
-                      context.read<AccountCubit>().signIn(
-                        _emailController.text,
-                        _passwordController.text,
-                      );
-                    },
-                    onForgotPassword: () {
-                      context
-                          .read<AccountCubit>()
-                          .forgotPassword(_emailController.text);
-                    },
-                  );
-                },
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: AccountNoAccountHeaderWidget(),
               ),
               const SizedBox(height: 28),
-              const AccountNoAccountFooterWidget(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: BlocBuilder<AccountCubit, AccountState>(
+                  builder: (context, state) {
+                    return AccountNoAccountAuthWidget(
+                      emailController: _emailController,
+                      passwordController: _passwordController,
+                      isLoading: state is AccountLoading,
+                      onSignIn: () {
+                        context.read<AccountCubit>().signIn(
+                          _emailController.text,
+                          _passwordController.text,
+                        );
+                      },
+                      onForgotPassword: () {
+                        context.read<AccountCubit>().forgotPassword(
+                          _emailController.text,
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 28),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: AccountNoAccountFooterWidget(),
+              ),
             ],
           ),
         ),

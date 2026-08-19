@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/onboarding_palette.dart';
+import 'package:vita_folder_mobile/theme/sand_palette.dart';
 
 class OnboardingPageWidget extends StatelessWidget {
   final String title;
@@ -26,7 +26,7 @@ class OnboardingPageWidget extends StatelessWidget {
             title,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: OnboardingPalette.sand700,
+              color: SandPalette.sand700,
               fontSize: 30,
               fontWeight: FontWeight.w700,
               height: 1.15,
@@ -37,7 +37,7 @@ class OnboardingPageWidget extends StatelessWidget {
             subtitle,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: OnboardingPalette.sand400,
+              color: SandPalette.sand400,
               fontSize: 16,
               height: 1.6,
             ),

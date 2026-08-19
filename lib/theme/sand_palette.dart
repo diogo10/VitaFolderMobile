@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-abstract final class OnboardingPalette {
+abstract final class SandPalette {
   static const Color sand50 = Color(0xFFFAF8F5);
   static const Color sand100 = Color(0xFFF0EBE3);
   static const Color sand200 = Color(0xFFE4DACE);

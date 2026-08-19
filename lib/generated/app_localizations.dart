@@ -1076,11 +1076,23 @@ abstract class AppLocalizations {
   /// **'Family plan'**
   String get accountNoAccountFamilyPlan;
 
-  /// No description provided for @accountNoAccountTitle.
+  /// No description provided for @accountNoAccountBrandName.
   ///
   /// In en, this message translates to:
-  /// **'Your family, organised together'**
-  String get accountNoAccountTitle;
+  /// **'FamilyAdmin'**
+  String get accountNoAccountBrandName;
+
+  /// No description provided for @accountNoAccountTitleTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Your family,'**
+  String get accountNoAccountTitleTop;
+
+  /// No description provided for @accountNoAccountTitleBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'organised together'**
+  String get accountNoAccountTitleBottom;
 
   /// No description provided for @accountNoAccountSubtitle.
   ///
@@ -1106,11 +1118,17 @@ abstract class AppLocalizations {
   /// **'Family Circle'**
   String get accountNoAccountChipFamilyCircle;
 
-  /// No description provided for @accountNoAccountFamilyAdmin.
+  /// No description provided for @accountNoAccountEmailPlaceholder.
   ///
   /// In en, this message translates to:
-  /// **'Family admin'**
-  String get accountNoAccountFamilyAdmin;
+  /// **'you@example.com'**
+  String get accountNoAccountEmailPlaceholder;
+
+  /// No description provided for @accountNoAccountPasswordPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'••••••••'**
+  String get accountNoAccountPasswordPlaceholder;
 
   /// No description provided for @signUpTitle.
   ///

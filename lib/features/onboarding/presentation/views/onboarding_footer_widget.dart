@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/onboarding_palette.dart';
+import 'package:vita_folder_mobile/theme/sand_palette.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class OnboardingFooterWidget extends StatelessWidget {
@@ -20,12 +20,12 @@ class OnboardingFooterWidget extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [OnboardingPalette.sand500, OnboardingPalette.sand600],
+          colors: [SandPalette.sand500, SandPalette.sand600],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: OnboardingPalette.sand500.withValues(alpha: 0.25),
+            color: SandPalette.sand500.withValues(alpha: 0.25),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),

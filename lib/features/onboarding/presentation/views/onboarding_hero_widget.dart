@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/onboarding_palette.dart';
+import 'package:vita_folder_mobile/theme/sand_palette.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class OnboardingFamilyHeroWidget extends StatelessWidget {
@@ -19,7 +19,7 @@ class OnboardingFamilyHeroWidget extends StatelessWidget {
               width: 256,
               height: 256,
               decoration: const BoxDecoration(
-                color: OnboardingPalette.sand200,
+                color: SandPalette.sand200,
                 shape: BoxShape.circle,
               ),
             ),
@@ -113,7 +113,7 @@ class OnboardingRemindersHeroWidget extends StatelessWidget {
               angle: 0.035,
               child: _ReminderCard(
                 icon: Icons.notifications_rounded,
-                iconBackground: OnboardingPalette.sand500,
+                iconBackground: SandPalette.sand500,
                 iconColor: Colors.white,
                 title: l.onboardingReminderGroceryTitle,
                 subtitle: l.onboardingReminderGroceryTime,
@@ -147,7 +147,7 @@ class OnboardingSecurityHeroWidget extends StatelessWidget {
               width: 160,
               height: 160,
               decoration: BoxDecoration(
-                color: OnboardingPalette.sand500,
+                color: SandPalette.sand500,
                 borderRadius: BorderRadius.circular(40),
                 boxShadow: [
                   BoxShadow(
@@ -160,7 +160,7 @@ class OnboardingSecurityHeroWidget extends StatelessWidget {
               child: const Icon(
                 Icons.shield_rounded,
                 size: 64,
-                color: OnboardingPalette.sand50,
+                color: SandPalette.sand50,
               ),
             ),
             const SizedBox(height: 24),
@@ -169,7 +169,7 @@ class OnboardingSecurityHeroWidget extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: OnboardingPalette.sand100),
+                border: Border.all(color: SandPalette.sand100),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.08),
@@ -184,7 +184,7 @@ class OnboardingSecurityHeroWidget extends StatelessWidget {
                   const Icon(
                     Icons.lock_rounded,
                     size: 14,
-                    color: OnboardingPalette.sand500,
+                    color: SandPalette.sand500,
                   ),
                   const SizedBox(width: 8),
                   Flexible(
@@ -192,7 +192,7 @@ class OnboardingSecurityHeroWidget extends StatelessWidget {
                       l.onboardingEndToEndEncryption,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        color: OnboardingPalette.sand600,
+                        color: SandPalette.sand600,
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
                       ),
@@ -272,7 +272,7 @@ class _ReminderCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: OnboardingPalette.sand100),
+        border: Border.all(color: SandPalette.sand100),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.12),
@@ -300,7 +300,7 @@ class _ReminderCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: OnboardingPalette.sand700,
+                    color: SandPalette.sand700,
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
@@ -309,7 +309,7 @@ class _ReminderCard extends StatelessWidget {
                 Text(
                   subtitle,
                   style: const TextStyle(
-                    color: OnboardingPalette.sand400,
+                    color: SandPalette.sand400,
                     fontSize: 12,
                   ),
                 ),

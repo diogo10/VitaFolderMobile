@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vita_folder_mobile/features/account/presentation/views/google_g_icon.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
-import 'package:vita_folder_mobile/theme/theme_extensions.dart';
+import 'package:vita_folder_mobile/theme/sand_palette.dart';
 
 class AccountNoAccountAuthWidget extends StatelessWidget {
   final TextEditingController emailController;
@@ -21,95 +23,143 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final onSurface = context.colorScheme.onSurface;
-    final surface = context.colorScheme.surface;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _AccountNoAccountSocialButton(
-          icon: Icons.g_mobiledata,
+          icon: const GoogleGIcon(),
           label: l.accountNoAccountContinueGoogle,
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         _AccountNoAccountSocialButton(
-          icon: Icons.apple,
+          icon: const Icon(Icons.apple, size: 18, color: SandPalette.sand700),
           label: l.accountNoAccountContinueApple,
         ),
         const SizedBox(height: 20),
-        Text(
-          l.accountNoAccountOrEmail,
-          textAlign: TextAlign.center,
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: onSurface.withValues(alpha: 0.68),
+        Row(
+          children: [
+            const Expanded(child: Divider(color: SandPalette.sand200)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                l.accountNoAccountOrEmail,
+                style: const TextStyle(
+                  color: SandPalette.sand400,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const Expanded(child: Divider(color: SandPalette.sand200)),
+          ],
+        ),
+        const SizedBox(height: 20),
+        _AccountNoAccountFieldLabel(
+          label: l.accountNoAccountEmailLabel,
+          trailing: null,
+        ),
+        TextField(
+          controller: emailController,
+          keyboardType: TextInputType.emailAddress,
+          style: const TextStyle(color: SandPalette.sand600, fontSize: 14),
+          decoration: _inputDecoration(
+            hint: l.accountNoAccountEmailPlaceholder,
+            prefixIcon: Icons.mail_outline_rounded,
           ),
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 16),
+        _AccountNoAccountFieldLabel(
+          label: l.accountNoAccountPasswordLabel,
+          trailing: TextButton(
+            onPressed: onForgotPassword,
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              l.accountNoAccountForgotPassword,
+              style: const TextStyle(
+                color: SandPalette.sand400,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+        _PasswordField(controller: passwordController),
+        const SizedBox(height: 20),
         Container(
-          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: surface,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                color: SandPalette.sand500.withValues(alpha: 0.30),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: l.accountNoAccountEmailLabel,
-                  prefixIcon: const Icon(Icons.mail_outline),
-                ),
-                keyboardType: TextInputType.emailAddress,
+          child: ElevatedButton(
+            onPressed: isLoading ? null : onSignIn,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: SandPalette.sand500,
+              foregroundColor: SandPalette.sand50,
+              disabledBackgroundColor: SandPalette.sand300,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              const SizedBox(height: 18),
-              TextFormField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  labelText: l.accountNoAccountPasswordLabel,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                ),
-                obscureText: true,
+              textStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
-              const SizedBox(height: 10),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: onForgotPassword,
-                  style: TextButton.styleFrom(
-                    foregroundColor: context.colorScheme.primary,
-                    textStyle: context.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            child: isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: SandPalette.sand50,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.login, size: 18),
+                      const SizedBox(width: 8),
+                      Text(l.accountNoAccountSignIn),
+                    ],
                   ),
-                  child: Text(l.accountNoAccountForgotPassword),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Center(
+          child: TextButton(
+            onPressed: () => context.push('/sign-up'),
+            child: Text.rich(
+              TextSpan(
+                style: const TextStyle(
+                  color: SandPalette.sand400,
+                  fontSize: 14,
                 ),
-              ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: isLoading ? null : onSignIn,
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                children: [
+                  TextSpan(text: l.accountNoAccountNewToApp),
+                  TextSpan(text: ' '),
+                  TextSpan(
+                    text: l.accountNoAccountCreateFreeAccount,
+                    style: const TextStyle(
+                      color: SandPalette.sand600,
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline,
+                      decorationColor: SandPalette.sand600,
+                    ),
                   ),
-                ),
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(l.accountNoAccountSignIn),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ],
@@ -117,28 +167,149 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
   }
 }
 
-class _AccountNoAccountSocialButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
+InputDecoration _inputDecoration({
+  required String hint,
+  required IconData prefixIcon,
+  Widget? suffixIcon,
+}) {
+  return InputDecoration(
+    hintText: hint,
+    hintStyle: const TextStyle(color: SandPalette.sand300, fontSize: 14),
+    prefixIcon: Icon(prefixIcon, size: 18, color: SandPalette.sand400),
+    suffixIcon: suffixIcon,
+    prefixIconConstraints: const BoxConstraints(minWidth: 48),
+    suffixIconConstraints: const BoxConstraints(minWidth: 48),
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: const BorderSide(color: SandPalette.sand200),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: const BorderSide(color: SandPalette.sand200),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: const BorderSide(color: SandPalette.sand500, width: 1.5),
+    ),
+  );
+}
 
-  const _AccountNoAccountSocialButton({required this.icon, required this.label});
+class _AccountNoAccountFieldLabel extends StatelessWidget {
+  final String label;
+  final Widget? trailing;
+
+  const _AccountNoAccountFieldLabel({
+    required this.label,
+    required this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: () {},
-      icon: Icon(icon, size: 20),
-      label: Text(
-        label,
-        style: context.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: context.colorScheme.onSurface,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: SandPalette.sand500,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          ?trailing,
+        ],
+      ),
+    );
+  }
+}
+
+class _PasswordField extends StatefulWidget {
+  final TextEditingController controller;
+
+  const _PasswordField({required this.controller});
+
+  @override
+  State<_PasswordField> createState() => _PasswordFieldState();
+}
+
+class _PasswordFieldState extends State<_PasswordField> {
+  bool _obscured = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return TextField(
+      controller: widget.controller,
+      obscureText: _obscured,
+      style: const TextStyle(color: SandPalette.sand600, fontSize: 14),
+      decoration: _inputDecoration(
+        hint: l.accountNoAccountPasswordPlaceholder,
+        prefixIcon: Icons.lock_outline_rounded,
+        suffixIcon: IconButton(
+          onPressed: () => setState(() => _obscured = !_obscured),
+          icon: Icon(
+            _obscured ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+            size: 18,
+            color: SandPalette.sand300,
+          ),
         ),
       ),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+    );
+  }
+}
+
+class _AccountNoAccountSocialButton extends StatelessWidget {
+  final Widget icon;
+  final String label;
+
+  const _AccountNoAccountSocialButton({
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: SandPalette.sand200),
+        boxShadow: [
+          BoxShadow(
+            color: SandPalette.sand500.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {},
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(width: 20, height: 20, child: Center(child: icon)),
+                const SizedBox(width: 12),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: SandPalette.sand600,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

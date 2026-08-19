@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
-import 'package:vita_folder_mobile/theme/theme_extensions.dart';
+import 'package:vita_folder_mobile/theme/sand_palette.dart';
 
 class AccountNoAccountFooterWidget extends StatelessWidget {
   const AccountNoAccountFooterWidget({super.key});
@@ -8,61 +8,65 @@ class AccountNoAccountFooterWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _AccountNoAccountTrustItem(
+            icon: Icons.shield_outlined,
+            label: l.accountNoAccountSecurePrivate,
+          ),
+          const _AccountNoAccountDot(),
+          _AccountNoAccountTrustItem(
+            icon: Icons.star_rounded,
+            label: l.accountNoAccountFreeToStart,
+          ),
+          const _AccountNoAccountDot(),
+          _AccountNoAccountTrustItem(
+            icon: Icons.groups_rounded,
+            label: l.accountNoAccountFamilyPlan,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AccountNoAccountTrustItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _AccountNoAccountTrustItem({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _AccountNoAccountFeatureItem(
-              icon: Icons.lock_outline_rounded,
-              label: l.accountNoAccountSecurePrivate,
-            ),
-            _AccountNoAccountFeatureItem(
-              icon: Icons.star_outline_rounded,
-              label: l.accountNoAccountFreeToStart,
-            ),
-            _AccountNoAccountFeatureItem(
-              icon: Icons.group_rounded,
-              label: l.accountNoAccountFamilyPlan,
-            ),
-          ],
+        Icon(icon, size: 14, color: SandPalette.sand400),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(color: SandPalette.sand400, fontSize: 12),
         ),
       ],
     );
   }
 }
 
-class _AccountNoAccountFeatureItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _AccountNoAccountFeatureItem({required this.icon, required this.label});
+class _AccountNoAccountDot extends StatelessWidget {
+  const _AccountNoAccountDot();
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: context.colorScheme.primary.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(icon, size: 20, color: context.colorScheme.primary),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: context.textTheme.bodySmall?.copyWith(
-              color: context.colorScheme.onSurface.withValues(alpha: 0.74),
-            ),
-          ),
-        ],
+    return Container(
+      width: 4,
+      height: 4,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: const BoxDecoration(
+        color: SandPalette.sand300,
+        shape: BoxShape.circle,
       ),
     );
   }

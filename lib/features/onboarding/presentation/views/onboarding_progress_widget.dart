@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/onboarding_palette.dart';
+import 'package:vita_folder_mobile/theme/sand_palette.dart';
 
 class OnboardingProgressWidget extends StatelessWidget {
   final int currentPage;
@@ -23,8 +23,8 @@ class OnboardingProgressWidget extends StatelessWidget {
           height: 8,
           decoration: BoxDecoration(
             color: isActive
-                ? OnboardingPalette.sand500
-                : OnboardingPalette.sand200,
+                ? SandPalette.sand500
+                : SandPalette.sand200,
             borderRadius: BorderRadius.circular(999),
           ),
         );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
-import 'package:vita_folder_mobile/theme/theme_extensions.dart';
+import 'package:vita_folder_mobile/theme/sand_palette.dart';
 
 class AccountNoAccountHeaderWidget extends StatelessWidget {
   const AccountNoAccountHeaderWidget({super.key});
@@ -8,65 +8,121 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final onSurface = context.colorScheme.onSurface;
-    final surface = context.colorScheme.surface;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: surface,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(Icons.home_rounded, size: 24),
-            ),
-          ],
-        ),
+        Center(child: _AccountNoAccountBrandMark()),
         const SizedBox(height: 24),
-        Center(child: _AccountNoAccountHeroWidget()),
-        const SizedBox(height: 32),
-        Text(
-          l.accountNoAccountTitle,
-          textAlign: TextAlign.center,
-          style: context.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: onSurface,
+        const Center(child: _AccountNoAccountHeroWidget()),
+        const SizedBox(height: 24),
+        Text.rich(
+          TextSpan(
+            style: const TextStyle(
+              fontSize: 28,
+              height: 1.18,
+              fontWeight: FontWeight.w700,
+            ),
+            children: [
+              TextSpan(
+                text: l.accountNoAccountTitleTop,
+                style: const TextStyle(color: SandPalette.sand700),
+              ),
+              const TextSpan(text: '\n'),
+              TextSpan(
+                text: l.accountNoAccountTitleBottom,
+                style: const TextStyle(color: SandPalette.sand500),
+              ),
+            ],
           ),
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
-        Text(
-          l.accountNoAccountSubtitle,
-          textAlign: TextAlign.center,
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: onSurface.withValues(alpha: 0.72),
-            height: 1.5,
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 270),
+          child: Text(
+            l.accountNoAccountSubtitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: SandPalette.sand400,
+              fontSize: 14,
+              height: 1.6,
+            ),
           ),
         ),
         const SizedBox(height: 24),
         Wrap(
-          spacing: 10,
-          runSpacing: 10,
+          spacing: 8,
+          runSpacing: 8,
           alignment: WrapAlignment.center,
           children: [
             _AccountNoAccountChip(
               label: l.accountNoAccountChipChores,
-              icon: Icons.checklist_rtl,
+              icon: Icons.cleaning_services_rounded,
+              background: const Color(0xFFFFFBEB),
+              foreground: const Color(0xFFB45309),
+              border: const Color(0xFFFDE68A),
+              iconColor: const Color(0xFFF59E0B),
             ),
             _AccountNoAccountChip(
               label: l.accountNoAccountChipAppointments,
-              icon: Icons.calendar_today_rounded,
+              icon: Icons.event_available_rounded,
+              background: const Color(0xFFEFF6FF),
+              foreground: const Color(0xFF1D4ED8),
+              border: const Color(0xFFBFDBFE),
+              iconColor: const Color(0xFF60A5FA),
             ),
             _AccountNoAccountChip(
               label: l.accountNoAccountChipFamilyCircle,
               icon: Icons.groups_rounded,
+              background: const Color(0xFFFFF1F2),
+              foreground: const Color(0xFFE11D48),
+              border: const Color(0xFFFECDD3),
+              iconColor: const Color(0xFFFB7185),
             ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+class _AccountNoAccountBrandMark extends StatelessWidget {
+  const _AccountNoAccountBrandMark();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: SandPalette.sand500,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.home_rounded,
+            size: 18,
+            color: SandPalette.sand50,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          AppLocalizations.of(context)!.accountNoAccountBrandName,
+          style: const TextStyle(
+            color: SandPalette.sand600,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.5,
+          ),
         ),
       ],
     );
@@ -78,114 +134,113 @@ class _AccountNoAccountHeroWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    final primary = colorScheme.primary;
-    final onPrimary = colorScheme.onPrimary;
-    final surface = colorScheme.surface;
-    final surfaceContainerHighest = colorScheme.surfaceContainerHighest;
-
     return SizedBox(
-      width: 260,
-      height: 260,
+      width: 160,
+      height: 160,
       child: Stack(
-        clipBehavior: Clip.none,
+        alignment: Alignment.center,
         children: [
-          Positioned.fill(
+          Container(
+            width: 160,
+            height: 160,
+            decoration: const BoxDecoration(
+              color: SandPalette.sand100,
+              shape: BoxShape.circle,
+            ),
+          ),
+          Container(
+            width: 112,
+            height: 112,
+            decoration: BoxDecoration(
+              color: SandPalette.sand200.withValues(alpha: 0.4),
+              shape: BoxShape.circle,
+            ),
+          ),
+          _FloatAnimation(
             child: Container(
+              width: 80,
+              height: 80,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [primary.withValues(alpha: 0.18), primary.withValues(alpha: 0.02)],
-                ),
+                color: SandPalette.sand500,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: SandPalette.sand500.withValues(alpha: 0.32),
+                    blurRadius: 32,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.family_restroom_rounded,
+                size: 32,
+                color: SandPalette.sand50,
               ),
             ),
           ),
-          Center(
+          Positioned(
+            top: 8,
+            right: 12,
+            child: SizedBox(
+              width: 80,
+              height: 32,
+              child: Stack(
+                children: [
+                  _HeroAvatar(
+                    image: 'assets/images/onboarding/avatar_1.jpg',
+                    left: 0,
+                  ),
+                  _HeroAvatar(
+                    image: 'assets/images/onboarding/avatar_2.jpg',
+                    left: 24,
+                  ),
+                  Positioned(
+                    left: 48,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: SandPalette.sand400,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: SandPalette.sand50, width: 2),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        '+3',
+                        style: TextStyle(
+                          color: SandPalette.sand50,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 8,
+            left: 8,
             child: Container(
-              width: 190,
-              height: 190,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
-                color: surface,
-                borderRadius: BorderRadius.circular(48),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: SandPalette.sand100),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 24,
-                    offset: const Offset(0, 18),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: Center(
-                child: Icon(
-                  Icons.family_restroom_rounded,
-                  size: 72,
-                  color: primary,
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            right: 18,
-            top: 18,
-            child: Container(
-              width: 58,
-              height: 58,
-              decoration: BoxDecoration(
-                color: surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(Icons.notifications_rounded, size: 28),
-            ),
-          ),
-          Positioned(
-            left: 18,
-            top: 26,
-            child: Row(
-              children: [
-                const _AccountNoAccountAvatar(label: 'A'),
-                const SizedBox(width: 8),
-                const _AccountNoAccountAvatar(label: 'T'),
-                const SizedBox(width: 8),
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: primary,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: surface, width: 2),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '+3',
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: onPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: 18,
-            left: 28,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.flare_rounded, size: 18, color: primary),
-                  const SizedBox(width: 6),
-                  Text(
-                    AppLocalizations.of(context)!.accountNoAccountFamilyAdmin,
-                    style: context.textTheme.bodySmall?.copyWith(
-                      color: context.colorScheme.onSurface.withValues(alpha: 0.75),
-                    ),
-                  ),
-                ],
+              child: const Icon(
+                Icons.notifications_rounded,
+                size: 18,
+                color: SandPalette.sand500,
               ),
             ),
           ),
@@ -195,22 +250,25 @@ class _AccountNoAccountHeroWidget extends StatelessWidget {
   }
 }
 
-class _AccountNoAccountAvatar extends StatelessWidget {
-  final String label;
+class _HeroAvatar extends StatelessWidget {
+  final String image;
+  final double left;
 
-  const _AccountNoAccountAvatar({required this.label});
+  const _HeroAvatar({required this.image, required this.left});
 
   @override
   Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: 18,
-      backgroundColor: context.colorScheme.primary.withValues(alpha: 0.14),
-      child: Text(
-        label,
-        style: context.textTheme.bodyMedium?.copyWith(
-          color: context.colorScheme.primary,
-          fontWeight: FontWeight.bold,
+    return Positioned(
+      left: left,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: SandPalette.sand50, width: 2),
         ),
+        clipBehavior: Clip.antiAlias,
+        child: Image.asset(image, fit: BoxFit.cover),
       ),
     );
   }
@@ -219,32 +277,82 @@ class _AccountNoAccountAvatar extends StatelessWidget {
 class _AccountNoAccountChip extends StatelessWidget {
   final String label;
   final IconData icon;
+  final Color background;
+  final Color foreground;
+  final Color border;
+  final Color iconColor;
 
-  const _AccountNoAccountChip({required this.label, required this.icon});
+  const _AccountNoAccountChip({
+    required this.label,
+    required this.icon,
+    required this.background,
+    required this.foreground,
+    required this.border,
+    required this.iconColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: context.colorScheme.surface,
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.6)),
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: context.colorScheme.primary),
-          const SizedBox(width: 8),
+          Icon(icon, size: 12, color: iconColor),
+          const SizedBox(width: 6),
           Text(
             label,
-            style: context.textTheme.bodySmall?.copyWith(
+            style: TextStyle(
+              fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: context.colorScheme.onSurface,
+              color: foreground,
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _FloatAnimation extends StatefulWidget {
+  final Widget child;
+
+  const _FloatAnimation({required this.child});
+
+  @override
+  State<_FloatAnimation> createState() => _FloatAnimationState();
+}
+
+class _FloatAnimationState extends State<_FloatAnimation>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 4),
+  )..repeat(reverse: true);
+
+  late final Animation<double> _offset = Tween<double>(
+    begin: 0,
+    end: -8,
+  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) =>
+          Transform.translate(offset: Offset(0, _offset.value), child: child),
+      child: widget.child,
     );
   }
 }

@@ -540,7 +540,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountNoAccountFamilyPlan => 'Plano familiar';
 
   @override
-  String get accountNoAccountTitle => 'Sua família, organizada em conjunto';
+  String get accountNoAccountBrandName => 'FamilyAdmin';
+
+  @override
+  String get accountNoAccountTitleTop => 'Sua família,';
+
+  @override
+  String get accountNoAccountTitleBottom => 'organizada em conjunto';
 
   @override
   String get accountNoAccountSubtitle =>
@@ -556,7 +562,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountNoAccountChipFamilyCircle => 'Círculo da Família';
 
   @override
-  String get accountNoAccountFamilyAdmin => 'Admin da família';
+  String get accountNoAccountEmailPlaceholder => 'voce@exemplo.com';
+
+  @override
+  String get accountNoAccountPasswordPlaceholder => '••••••••';
 
   @override
   String get signUpTitle => 'Cadastre-se';

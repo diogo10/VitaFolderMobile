@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/onboarding_palette.dart';
+import 'package:vita_folder_mobile/theme/sand_palette.dart';
 import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_footer_widget.dart';
 import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_header_widget.dart';
 import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_hero_widget.dart';
@@ -71,7 +71,7 @@ class _OnboardingViewState extends State<OnboardingView> {
     final l = AppLocalizations.of(context)!;
     final pages = _pages(l);
     return Scaffold(
-      backgroundColor: OnboardingPalette.sand50,
+      backgroundColor: SandPalette.sand50,
       body: SafeArea(
         child: Column(
           children: [

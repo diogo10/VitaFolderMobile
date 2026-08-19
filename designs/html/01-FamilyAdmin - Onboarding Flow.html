@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FamilyAdmin - Onboarding</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; box-sizing: border-box; }
+
+        .slide-container {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 300%;
+            height: 100%;
+        }
+        .slide {
+            width: 33.333333%;
+            height: 100%;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: relative;
+        }
+
+        .dot {
+            transition: all 0.3s ease;
+        }
+        .dot.active {
+            width: 24px;
+            background-color: #8b7355;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        .animate-pulse-soft { animation: pulse-soft 3s ease-in-out infinite; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b7355 0%, #7a6348 100%);
+            transition: all 0.2s ease;
+        }
+        .btn-primary:active { transform: scale(0.96); }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                        figtree: ['Figtree', 'sans-serif'],
+                    },
+                    colors: {
+                        sand: {
+                            50: '#faf8f5',
+                            100: '#f0ebe3',
+                            200: '#e4dace',
+                            300: '#c9b99a',
+                            400: '#b8a080',
+                            500: '#8b7355',
+                            600: '#7a6348',
+                            700: '#634f39',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sand-50 font-figtree overflow-hidden" style="max-width: 375px; margin: 0 auto; height: 840px;">
+
+    <!-- TOP BAR (Fixed) -->
+    <div class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6 pt-6 bg-sand-50/80 backdrop-blur-sm">
+        <div class="w-10 h-10 rounded-xl bg-sand-500 flex items-center justify-center">
+            <i class="fa-solid fa-house-chimney text-sand-50 text-base"></i>
+        </div>
+        <button id="skip-btn" class="text-sand-400 font-semibold text-sm hover:text-sand-600 transition-colors">Skip</button>
+    </div>
+
+    <!-- MAIN CAROUSEL -->
+    <div id="slider" class="slide-container h-full">
+        
+        <!-- STEP 1: Family Circle -->
+        <div class="slide pt-32">
+            <div class="relative h-[340px] w-full flex items-center justify-center mb-12">
+                <div class="absolute w-64 h-64 bg-sand-200/50 rounded-full animate-pulse-soft"></div>
+                <div class="relative z-10 animate-float">
+                    <div class="w-48 h-48 bg-white rounded-3xl shadow-2xl flex items-center justify-center overflow-hidden border-4 border-white">
+                         <img class="w-full h-full object-cover" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/gen_967c5d9ffb_dd0a8fd0d097205d.png" alt="A happy multi-generational family portrait, warm lighting, minimalist illustrative style with soft c" />
+                    </div>
+                    <!-- Decorative Tags -->
+                    <div class="absolute -top-4 -right-4 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-200 shadow-sm">At Home</div>
+                    <div class="absolute -bottom-4 -left-4 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-200 shadow-sm">At Work</div>
+                </div>
+            </div>
+            <div class="text-center px-4">
+                <h2 class="font-outfit font-bold text-3xl text-sand-700 mb-4 leading-tight">Your Family,<br>In One Place</h2>
+                <p class="text-sand-400 text-base leading-relaxed">Bring everyone together in a private, secure circle. Stay connected with real-time status and instant updates.</p>
+            </div>
+        </div>
+
+        <!-- STEP 2: Smart Reminders -->
+        <div class="slide pt-32">
+            <div class="relative h-[340px] w-full flex items-center justify-center mb-12">
+                <div class="absolute w-64 h-64 bg-sand-200/50 rounded-full animate-pulse-soft"></div>
+                <div class="relative z-10 w-full px-8">
+                    <div class="flex flex-col gap-4">
+                        <!-- Reminder Card 1 -->
+                        <div class="bg-white rounded-2xl p-4 shadow-xl border border-sand-100 transform -rotate-3 translate-y-4 animate-float">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">
+                                    <i class="fa-solid fa-pills text-red-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sand-700 font-bold text-sm">Lily's Medicine</p>
+                                    <p class="text-sand-400 text-xs">Today · 8:30 AM</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Reminder Card 2 -->
+                        <div class="bg-white rounded-2xl p-4 shadow-xl border border-sand-100 transform rotate-2 z-20">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-sand-500 rounded-xl flex items-center justify-center">
+                                    <i class="fa-solid fa-bell text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sand-700 font-bold text-sm">Grocery Run</p>
+                                    <p class="text-sand-400 text-xs">Today · 5:00 PM</p>
+                                </div>
+                                <div class="ml-auto flex -space-x-2">
+                                    <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" class="w-6 h-6 rounded-full border-2 border-white object-cover">
+                                    <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg" class="w-6 h-6 rounded-full border-2 border-white object-cover">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center px-4">
+                <h2 class="font-outfit font-bold text-3xl text-sand-700 mb-4 leading-tight">Smart Family<br>Reminders</h2>
+                <p class="text-sand-400 text-base leading-relaxed">Set tasks and appointments for anyone. Get notified together and never miss a family milestone.</p>
+            </div>
+        </div>
+
+        <!-- STEP 3: Secure Admin -->
+        <div class="slide pt-32">
+            <div class="relative h-[340px] w-full flex items-center justify-center mb-12">
+                <div class="absolute w-64 h-64 bg-sand-200/50 rounded-full animate-pulse-soft"></div>
+                <div class="relative z-10 animate-float flex flex-col items-center">
+                    <div class="w-40 h-40 bg-sand-500 rounded-[2.5rem] shadow-2xl flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-shield-halved text-sand-50 text-6xl"></i>
+                    </div>
+                    <div class="bg-white rounded-2xl px-4 py-2 shadow-lg border border-sand-100 flex items-center gap-2">
+                        <i class="fa-solid fa-lock text-sand-500 text-xs"></i>
+                        <span class="text-sand-600 font-bold text-sm">End-to-End Encryption</span>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center px-4">
+                <h2 class="font-outfit font-bold text-3xl text-sand-700 mb-4 leading-tight">Secure & Private<br>By Design</h2>
+                <p class="text-sand-400 text-base leading-relaxed">Only your family circle can see your data. Manage admin roles and keep your home safe and organized.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BOTTOM CONTROLS (Fixed) -->
+    <div class="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-sand-50 via-sand-50 to-transparent">
+        <div class="flex items-center justify-between">
+            <!-- Pagination Dots -->
+            <div class="flex gap-2">
+                <div id="dot-0" class="dot active h-2 w-2 rounded-full bg-sand-200"></div>
+                <div id="dot-1" class="dot h-2 w-2 rounded-full bg-sand-200"></div>
+                <div id="dot-2" class="dot h-2 w-2 rounded-full bg-sand-200"></div>
+            </div>
+
+            <!-- CTA Button -->
+            <button id="next-btn" class="btn-primary flex items-center gap-2 px-8 py-4 rounded-2xl text-white font-bold shadow-lg shadow-sand-500/20">
+                <span id="btn-text">Next Step</span>
+                <i id="btn-icon" class="fa-solid fa-chevron-right text-sm"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const slider = document.getElementById('slider');
+        const nextBtn = document.getElementById('next-btn');
+        const skipBtn = document.getElementById('skip-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnIcon = document.getElementById('btn-icon');
+        const dots = [
+            document.getElementById('dot-0'),
+            document.getElementById('dot-1'),
+            document.getElementById('dot-2')
+        ];
+
+        let currentStep = 0;
+        const totalSteps = 3;
+
+        function updateSlider() {
+            slider.style.transform = `translateX(-${currentStep * 33.333333}%)`;
+            
+            // Update dots
+            dots.forEach((dot, idx) => {
+                if (idx === currentStep) {
+                    dot.classList.add('active', 'bg-sand-500');
+                    dot.classList.remove('bg-sand-200');
+                } else {
+                    dot.classList.remove('active', 'bg-sand-500');
+                    dot.classList.add('bg-sand-200');
+                }
+            });
+
+            // Update button
+            if (currentStep === totalSteps - 1) {
+                btnText.textContent = "Get Started";
+                btnIcon.className = "fa-solid fa-sparkles text-sm";
+            } else {
+                btnText.textContent = "Next Step";
+                btnIcon.className = "fa-solid fa-chevron-right text-sm";
+            }
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateSlider();
+            } else {
+                // Final action (simulation)
+                console.log("Onboarding completed");
+            }
+        });
+
+        skipBtn.addEventListener('click', () => {
+            currentStep = totalSteps - 1;
+            updateSlider();
+        });
+
+        // Initialize
+        updateSlider();
+    </script>
+</body>
+</html>

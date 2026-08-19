@@ -23,7 +23,10 @@ class _RemindersViewState extends State<RemindersView> {
   @override
   void initState() {
     super.initState();
-    context.read<RemindersCubit>().getReminders();
+    final cubit = context.read<RemindersCubit>();
+    if (cubit.authService.isLoggedIn()) {
+      cubit.getReminders();
+    }
   }
 
   @override
@@ -67,6 +70,9 @@ class _RemindersViewState extends State<RemindersView> {
 
   List<Widget> _contentSlivers(BuildContext context, RemindersState state) {
     final cubit = context.read<RemindersCubit>();
+    if (!cubit.authService.isLoggedIn()) {
+      return const [SliverToBoxAdapter(child: RemindersEmptyWidget())];
+    }
     if (state.viewMode == RemindersViewMode.calendar) {
       return switch (state) {
         LoadedReminders(:final reminders, :final isLoading) => [

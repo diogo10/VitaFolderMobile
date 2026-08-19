@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reminders</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes fabPulse {
+            0%, 100% { box-shadow: 0 8px 32px rgba(139,115,85,0.38); }
+            50% { box-shadow: 0 8px 40px rgba(139,115,85,0.55); }
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(139,115,85,0.25); }
+            70% { transform: scale(1); box-shadow: 0 0 0 18px rgba(139,115,85,0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(139,115,85,0); }
+        }
+
+        .card-slide { animation: slideInUp 0.45s ease both; }
+        .card-slide:nth-child(1) { animation-delay: 0.08s; }
+        .card-slide:nth-child(2) { animation-delay: 0.16s; }
+        .card-slide:nth-child(3) { animation-delay: 0.24s; }
+
+        .fade-in { animation: fadeIn 0.5s ease both; }
+        .scale-in { animation: scaleIn 0.5s ease both; }
+        .float-anim { animation: float 3.8s ease-in-out infinite; }
+        .pulse-cta { animation: pulse-ring 2.4s ease-in-out infinite; }
+
+        .nav-item { transition: transform 0.18s ease, color 0.18s ease; }
+        .nav-item.active { transform: scale(1.12); }
+
+        .action-btn { transition: transform 0.15s ease; }
+        .action-btn:active { transform: scale(0.94); }
+
+        .fab-btn {
+            animation: fabPulse 3s ease-in-out infinite;
+            transition: transform 0.15s ease;
+        }
+        .fab-btn:active { transform: scale(0.93); }
+
+        .type-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .type-card:active { transform: scale(0.97); }
+
+        .filter-chip { transition: all 0.2s ease; }
+        .filter-chip.active { background: #8b7355; color: #faf8f5; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                        figtree: ['Figtree', 'sans-serif'],
+                    },
+                    colors: {
+                        sand: {
+                            50: '#faf8f5',
+                            100: '#f0ebe3',
+                            200: '#e4dace',
+                            300: '#c9b99a',
+                            400: '#b8a080',
+                            500: '#8b7355',
+                            600: '#7a6348',
+                            700: '#634f39',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sand-50 font-figtree" style="max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative;">
+
+    <!-- STATUS BAR -->
+    <div id="status-bar" class="bg-sand-50 px-5 pt-3 pb-1 flex justify-between items-center">
+        <span class="text-sand-500 text-xs font-outfit font-medium">9:41 AM</span>
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-wifi text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-signal text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-battery-three-quarters text-sand-500 text-xs"></i>
+        </div>
+    </div>
+
+    <!-- TOP NAV -->
+    <header id="header" class="bg-sand-50 px-5 pt-2 pb-3 flex justify-between items-center fade-in sticky top-0 z-30">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-sand-500 flex items-center justify-center">
+                <i class="fa-solid fa-house-chimney text-sand-50 text-sm"></i>
+            </div>
+            <span class="font-outfit font-semibold text-sand-600 text-base tracking-tight">FamilyAdmin</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="action-btn w-10 h-10 rounded-full bg-sand-100 flex items-center justify-center relative">
+                <i class="fa-solid fa-bell text-sand-500 text-base"></i>
+            </button>
+            <button class="action-btn w-10 h-10 rounded-full overflow-hidden border-2 border-sand-300">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" class="w-full h-full object-cover" alt="Admin">
+            </button>
+        </div>
+    </header>
+
+    <!-- SCROLLABLE CONTENT -->
+    <main id="main-content" class="pb-36 overflow-y-auto">
+
+        <!-- PAGE HEADING -->
+        <section id="page-heading" class="px-5 pt-1 pb-4 fade-in">
+            <div class="flex items-end justify-between">
+                <div>
+                    <h1 class="font-outfit font-bold text-sand-700 leading-tight" style="font-size: 1.85rem; line-height: 1.15;">Reminders</h1>
+                    <p class="font-figtree text-sand-400 text-sm mt-1">Nothing scheduled yet</p>
+                </div>
+                <button class="action-btn w-11 h-11 rounded-2xl bg-sand-100 border border-sand-200 flex items-center justify-center">
+                    <i class="fa-solid fa-sliders text-sand-400 text-base"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- FILTER CHIPS (greyed out) -->
+        <section id="filter-chips" class="px-5 mb-6 fade-in">
+            <div class="flex gap-2 overflow-x-auto pb-1">
+                <button class="filter-chip active font-figtree font-semibold text-xs px-4 py-2 rounded-full whitespace-nowrap border border-sand-200" style="min-height: 36px;">All</button>
+                <button class="filter-chip bg-sand-100 text-sand-300 border border-sand-200 font-figtree font-semibold text-xs px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-1.5" style="min-height: 36px;">
+                    <i class="fa-solid fa-broom text-sand-300" style="font-size: 10px;"></i> Chores
+                </button>
+                <button class="filter-chip bg-sand-100 text-sand-300 border border-sand-200 font-figtree font-semibold text-xs px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-1.5" style="min-height: 36px;">
+                    <i class="fa-solid fa-calendar-check text-sand-300" style="font-size: 10px;"></i> Appointments
+                </button>
+                <button class="filter-chip bg-sand-100 text-sand-300 border border-sand-200 font-figtree font-semibold text-xs px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-1.5" style="min-height: 36px;">
+                    <i class="fa-solid fa-cake-candles text-sand-300" style="font-size: 10px;"></i> Birthdays
+                </button>
+            </div>
+        </section>
+
+        <!-- HERO EMPTY STATE -->
+        <section id="empty-hero" class="px-5 flex flex-col items-center pt-2 pb-6 scale-in">
+            <div class="relative w-44 h-44 flex items-center justify-center mb-2">
+                <!-- Decorative rings -->
+                <div class="absolute w-44 h-44 rounded-full border-2 border-dashed border-sand-200 opacity-50"></div>
+                <div class="absolute w-32 h-32 rounded-full border border-sand-200 opacity-35"></div>
+                <!-- Center icon -->
+                <div class="float-anim pulse-cta w-22 h-22 bg-sand-500 rounded-3xl flex items-center justify-center shadow-xl" style="width: 5.5rem; height: 5.5rem; box-shadow: 0 12px 36px rgba(139,115,85,0.32);">
+                    <i class="fa-solid fa-bell text-sand-50" style="font-size: 2.25rem;"></i>
+                </div>
+                <!-- Orbiting dots -->
+                <div class="absolute top-3 right-6 w-8 h-8 bg-amber-100 rounded-2xl flex items-center justify-center">
+                    <i class="fa-solid fa-broom text-amber-500 text-xs"></i>
+                </div>
+                <div class="absolute bottom-4 left-5 w-8 h-8 bg-blue-100 rounded-2xl flex items-center justify-center">
+                    <i class="fa-solid fa-calendar-check text-blue-400 text-xs"></i>
+                </div>
+                <div class="absolute top-9 left-3 w-7 h-7 bg-rose-100 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-cake-candles text-rose-400 text-xs"></i>
+                </div>
+            </div>
+
+            <h2 class="font-outfit font-bold text-sand-600 text-xl text-center mt-2">No reminders yet</h2>
+            <p class="font-figtree text-sand-400 text-sm text-center mt-2 max-w-[260px] leading-relaxed">
+                Keep your family on track — set up chores, appointments and birthday reminders in one place.
+            </p>
+
+            <!-- Primary CTA -->
+            <button class="action-btn mt-6 bg-sand-500 text-sand-50 font-outfit font-semibold text-sm px-8 py-4 rounded-2xl flex items-center gap-2.5 shadow-lg" style="box-shadow: 0 8px 24px rgba(139,115,85,0.30);">
+                <i class="fa-solid fa-plus text-base"></i>
+                Create First Reminder
+            </button>
+            <button class="action-btn mt-3 text-sand-400 font-figtree font-medium text-sm px-6 py-2 rounded-xl">
+                Browse reminder types
+            </button>
+        </section>
+
+        <!-- REMINDER TYPE CARDS -->
+        <section id="reminder-types" class="px-5 mb-6">
+            <p class="font-outfit text-sand-400 text-xs font-semibold uppercase tracking-widest mb-4">What can you set up?</p>
+
+            <div class="type-card card-slide bg-white rounded-3xl p-4 mb-3 border border-sand-100 flex items-center gap-4" style="box-shadow: 0 4px 18px rgba(139,115,85,0.08);">
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-broom text-amber-500 text-lg"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-outfit font-semibold text-sand-600 text-sm">Chores</p>
+                    <p class="font-figtree text-sand-400 text-xs mt-0.5 leading-relaxed">Assign recurring tasks to family members</p>
+                </div>
+                <button class="action-btn flex-shrink-0 bg-sand-100 text-sand-500 font-outfit font-semibold text-xs px-3.5 py-2 rounded-xl border border-sand-200">
+                    Add
+                </button>
+            </div>
+
+            <div class="type-card card-slide bg-white rounded-3xl p-4 mb-3 border border-sand-100 flex items-center gap-4" style="box-shadow: 0 4px 18px rgba(139,115,85,0.08);">
+                <div class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-calendar-check text-blue-400 text-lg"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-outfit font-semibold text-sand-600 text-sm">Appointments</p>
+                    <p class="font-figtree text-sand-400 text-xs mt-0.5 leading-relaxed">Doctor visits, school events and more</p>
+                </div>
+                <button class="action-btn flex-shrink-0 bg-sand-100 text-sand-500 font-outfit font-semibold text-xs px-3.5 py-2 rounded-xl border border-sand-200">
+                    Add
+                </button>
+            </div>
+
+            <div class="type-card card-slide bg-white rounded-3xl p-4 mb-3 border border-sand-100 flex items-center gap-4" style="box-shadow: 0 4px 18px rgba(139,115,85,0.08);">
+                <div class="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-cake-candles text-rose-400 text-lg"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-outfit font-semibold text-sand-600 text-sm">Birthdays</p>
+                    <p class="font-figtree text-sand-400 text-xs mt-0.5 leading-relaxed">Never miss a family member's special day</p>
+                </div>
+                <button class="action-btn flex-shrink-0 bg-sand-100 text-sand-500 font-outfit font-semibold text-xs px-3.5 py-2 rounded-xl border border-sand-200">
+                    Add
+                </button>
+            </div>
+
+        </section>
+
+        <!-- TIP CARD -->
+        <section id="tip-section" class="px-5 mb-6">
+            <div class="bg-sand-500 rounded-3xl p-5 flex items-start gap-4" style="box-shadow: 0 8px 28px rgba(139,115,85,0.22);">
+                <div class="w-10 h-10 rounded-2xl bg-sand-400 bg-opacity-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <i class="fa-solid fa-lightbulb text-sand-100 text-base"></i>
+                </div>
+                <div>
+                    <p class="font-outfit font-semibold text-sand-50 text-sm">Pro tip</p>
+                    <p class="font-figtree text-sand-200 text-xs mt-1 leading-relaxed">Invite family members first so you can assign reminders directly to them.</p>
+                    <button class="action-btn mt-3 bg-sand-50 text-sand-600 font-outfit font-semibold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5">
+                        <i class="fa-solid fa-people-group text-xs"></i> Invite People
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FAB -->
+    <button id="fab-btn" class="fab-btn fixed z-40 w-14 h-14 rounded-2xl bg-sand-500 flex items-center justify-center border-2 border-sand-400" style="bottom: 86px; right: calc(50% - 207px);">
+        <i class="fa-solid fa-plus text-sand-50 text-xl"></i>
+    </button>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav id="bottom-nav" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full bg-sand-50 border-t border-sand-200 flex items-center justify-around px-2 pt-3 pb-6 z-30" style="max-width: 430px; box-shadow: 0 -8px 32px rgba(139,115,85,0.12);">
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[56px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-house text-sand-400 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Home</span>
+        </button>
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[56px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-people-group text-sand-400 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">People</span>
+        </button>
+
+        <button class="nav-item active flex flex-col items-center gap-1 min-w-[56px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl bg-sand-500 flex items-center justify-center">
+                <i class="fa-solid fa-bell text-sand-50 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-600 font-semibold" style="font-size: 10px;">Reminders</span>
+        </button>
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[56px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-circle-user text-sand-400 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Account</span>
+        </button>
+
+    </nav>
+
+    <script>
+        function positionFab() {
+            const fab = document.getElementById('fab-btn');
+            const bodyMaxW = 430;
+            const windowW = window.innerWidth;
+            const containerW = Math.min(windowW, bodyMaxW);
+            const rightEdge = (windowW - containerW) / 2 + 16;
+            fab.style.right = rightEdge + 'px';
+        }
+        positionFab();
+        window.addEventListener('resize', positionFab);
+    </script>
+
+</body>
+</html>
