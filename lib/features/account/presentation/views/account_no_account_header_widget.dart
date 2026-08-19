@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vita_folder_mobile/core/widgets/sand/sand_brand_mark.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/sand_palette.dart';
 
@@ -11,7 +12,7 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Center(child: _AccountNoAccountBrandMark()),
+        Center(child: const SandBrandMark()),
         const SizedBox(height: 24),
         const Center(child: _AccountNoAccountHeroWidget()),
         const SizedBox(height: 24),
@@ -80,49 +81,6 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
               iconColor: const Color(0xFFFB7185),
             ),
           ],
-        ),
-      ],
-    );
-  }
-}
-
-class _AccountNoAccountBrandMark extends StatelessWidget {
-  const _AccountNoAccountBrandMark();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: SandPalette.sand500,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.home_rounded,
-            size: 18,
-            color: SandPalette.sand50,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Text(
-          AppLocalizations.of(context)!.accountNoAccountBrandName,
-          style: const TextStyle(
-            color: SandPalette.sand600,
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
-          ),
         ),
       ],
     );

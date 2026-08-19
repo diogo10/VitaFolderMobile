@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vita_folder_mobile/core/widgets/sand/google_g_icon.dart';
+import 'package:vita_folder_mobile/core/widgets/sand/sand_brand_mark.dart';
+import 'package:vita_folder_mobile/core/widgets/sand/sand_primary_button.dart';
+import 'package:vita_folder_mobile/core/widgets/sand/sand_social_button.dart';
+import 'package:vita_folder_mobile/core/widgets/sand/sand_text_field.dart';
 import 'package:vita_folder_mobile/features/login/presentation/cubit/sign_up_cubit.dart';
 import 'package:vita_folder_mobile/features/login/presentation/cubit/sign_up_state.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:vita_folder_mobile/theme/sand_palette.dart';
 
 class SignUpView extends StatefulWidget {
   const SignUpView({super.key});
@@ -40,105 +46,223 @@ class _SignUpViewState extends State<SignUpView> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
+      backgroundColor: SandPalette.sand50,
       appBar: AppBar(
-        leading: const BackButton(),
-        title: Text(l.signUpTitle),
+        backgroundColor: SandPalette.sand50,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        leading: const BackButton(color: SandPalette.sand600),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: BlocConsumer<SignUpCubit, SignUpState>(
-          listener: (context, state) {
-            if (state is SignUpSuccess) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l.signUpSuccessMessage)),
-              );
-              context.go('/home');
-            }
-            if (state is SignUpError) {
-              final message = state.code == SignUpErrorCode.unexpected
-                  ? l.signUpUnexpectedError
-                  : state.message ?? '';
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(message)),
-              );
-            }
-          },
-          builder: (context, state) {
-            final isLoading = state is SignUpLoading;
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: BlocConsumer<SignUpCubit, SignUpState>(
+            listener: (context, state) {
+              if (state is SignUpSuccess) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(l.signUpSuccessMessage)));
+                context.go('/home');
+              }
+              if (state is SignUpError) {
+                final message = state.code == SignUpErrorCode.unexpected
+                    ? l.signUpUnexpectedError
+                    : state.message ?? '';
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(message)));
+              }
+            },
+            builder: (context, state) {
+              final isLoading = state is SignUpLoading;
 
-            return Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextFormField(
-                    controller: _nameController,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      labelText: l.signUpNameLabel,
-                      border: const OutlineInputBorder(),
+              return Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 32),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: SandBrandMark(),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return l.signUpNameRequired;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: l.signUpEmailLabel,
-                      border: const OutlineInputBorder(),
+                    const SizedBox(height: 32),
+                    Text.rich(
+                      TextSpan(
+                        style: const TextStyle(
+                          fontSize: 30,
+                          height: 1.2,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: l.signUpTitleTop,
+                            style: const TextStyle(color: SandPalette.sand700),
+                          ),
+                          const TextSpan(text: '\n'),
+                          TextSpan(
+                            text: l.signUpTitleBottom,
+                            style: const TextStyle(color: SandPalette.sand500),
+                          ),
+                        ],
+                      ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return l.signUpEmailRequired;
-                      }
-                      if (!value.contains('@')) {
-                        return l.signUpEmailInvalid;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: l.signUpPasswordLabel,
-                      border: const OutlineInputBorder(),
+                    const SizedBox(height: 12),
+                    Text(
+                      l.signUpSubtitle,
+                      style: const TextStyle(
+                        color: SandPalette.sand400,
+                        fontSize: 14,
+                        height: 1.625,
+                      ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return l.signUpPasswordRequired;
-                      }
-                      if (value.length < 6) {
-                        return l.signUpPasswordTooShort;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: isLoading ? null : _onSignUp,
-                    child: isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
+                    const SizedBox(height: 24),
+                    SandSocialButton(
+                      icon: const GoogleGIcon(),
+                      label: l.signUpContinueGoogle,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Divider(color: SandPalette.sand200),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            l.signUpOrEmail.toUpperCase(),
+                            style: const TextStyle(
+                              color: SandPalette.sand400,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 1.5,
                             ),
-                          )
-                        : Text(l.signUpTitle),
-                  ),
-                ],
-              ),
-            );
-          },
+                          ),
+                        ),
+                        const Expanded(
+                          child: Divider(color: SandPalette.sand200),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    SandLabeledField(
+                      controller: _nameController,
+                      label: l.signUpNameLabel,
+                      hint: l.signUpNamePlaceholder,
+                      prefixIcon: Icons.person_outline_rounded,
+                      textCapitalization: TextCapitalization.words,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return l.signUpNameRequired;
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    SandLabeledField(
+                      controller: _emailController,
+                      label: l.signUpEmailLabel,
+                      hint: l.signUpEmailPlaceholder,
+                      prefixIcon: Icons.mail_outline_rounded,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return l.signUpEmailRequired;
+                        }
+                        if (!value.contains('@')) {
+                          return l.signUpEmailInvalid;
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    SandLabeledField(
+                      controller: _passwordController,
+                      label: l.signUpPasswordLabel,
+                      hint: l.signUpPasswordPlaceholder,
+                      prefixIcon: Icons.lock_outline_rounded,
+                      obscureText: true,
+                      helperText: l.signUpPasswordHint,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return l.signUpPasswordRequired;
+                        }
+                        if (value.length < 8) {
+                          return l.signUpPasswordTooShort;
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 32),
+                    SandPrimaryButton(
+                      label: l.signUpCreateAccount,
+                      icon: Icons.arrow_circle_right_rounded,
+                      isLoading: isLoading,
+                      onPressed: isLoading ? null : _onSignUp,
+                    ),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: TextButton(
+                        onPressed: () => context.go('/account'),
+                        child: Text.rich(
+                          TextSpan(
+                            style: const TextStyle(
+                              color: SandPalette.sand400,
+                              fontSize: 14,
+                            ),
+                            children: [
+                              TextSpan(text: l.signUpAlreadyHaveAccount),
+                              TextSpan(text: ' '),
+                              TextSpan(
+                                text: l.signUpSignInLink,
+                                style: const TextStyle(
+                                  color: SandPalette.sand600,
+                                  fontWeight: FontWeight.w700,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: SandPalette.sand600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                    Center(
+                      child: Text.rich(
+                        TextSpan(
+                          style: const TextStyle(
+                            color: SandPalette.sand400,
+                            fontSize: 10,
+                            height: 1.5,
+                          ),
+                          children: [
+                            TextSpan(text: l.signUpAgreePrefix),
+                            TextSpan(
+                              text: l.signUpTermsOfService,
+                              style: const TextStyle(
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                            TextSpan(text: l.signUpAgreeAnd),
+                            TextSpan(
+                              text: l.signUpPrivacyPolicy,
+                              style: const TextStyle(
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                            TextSpan(text: l.signUpAgreeSuffix),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

@@ -1076,11 +1076,11 @@ abstract class AppLocalizations {
   /// **'Family plan'**
   String get accountNoAccountFamilyPlan;
 
-  /// No description provided for @accountNoAccountBrandName.
+  /// No description provided for @appBrandName.
   ///
   /// In en, this message translates to:
   /// **'FamilyAdmin'**
-  String get accountNoAccountBrandName;
+  String get appBrandName;
 
   /// No description provided for @accountNoAccountTitleTop.
   ///
@@ -1136,23 +1136,125 @@ abstract class AppLocalizations {
   /// **'Sign Up'**
   String get signUpTitle;
 
+  /// No description provided for @signUpTitleTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Join the circle,'**
+  String get signUpTitleTop;
+
+  /// No description provided for @signUpTitleBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'start organizing.'**
+  String get signUpTitleBottom;
+
+  /// No description provided for @signUpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your account and invite your family members to start collaborating today.'**
+  String get signUpSubtitle;
+
+  /// No description provided for @signUpContinueGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up with Google'**
+  String get signUpContinueGoogle;
+
+  /// No description provided for @signUpOrEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'or email'**
+  String get signUpOrEmail;
+
   /// No description provided for @signUpNameLabel.
   ///
   /// In en, this message translates to:
-  /// **'Name'**
+  /// **'Full Name'**
   String get signUpNameLabel;
+
+  /// No description provided for @signUpNamePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'John Doe'**
+  String get signUpNamePlaceholder;
 
   /// No description provided for @signUpEmailLabel.
   ///
   /// In en, this message translates to:
-  /// **'Email'**
+  /// **'Email address'**
   String get signUpEmailLabel;
+
+  /// No description provided for @signUpEmailPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'you@example.com'**
+  String get signUpEmailPlaceholder;
 
   /// No description provided for @signUpPasswordLabel.
   ///
   /// In en, this message translates to:
   /// **'Password'**
   String get signUpPasswordLabel;
+
+  /// No description provided for @signUpPasswordPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a strong password'**
+  String get signUpPasswordPlaceholder;
+
+  /// No description provided for @signUpPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Must be at least 8 characters long with a mix of letters and numbers.'**
+  String get signUpPasswordHint;
+
+  /// No description provided for @signUpCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get signUpCreateAccount;
+
+  /// No description provided for @signUpAlreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get signUpAlreadyHaveAccount;
+
+  /// No description provided for @signUpSignInLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get signUpSignInLink;
+
+  /// No description provided for @signUpAgreePrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'By creating an account, you agree to our '**
+  String get signUpAgreePrefix;
+
+  /// No description provided for @signUpTermsOfService.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get signUpTermsOfService;
+
+  /// No description provided for @signUpAgreeAnd.
+  ///
+  /// In en, this message translates to:
+  /// **' and '**
+  String get signUpAgreeAnd;
+
+  /// No description provided for @signUpPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get signUpPrivacyPolicy;
+
+  /// No description provided for @signUpAgreeSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'.'**
+  String get signUpAgreeSuffix;
 
   /// No description provided for @signUpSuccessMessage.
   ///
@@ -1187,7 +1289,7 @@ abstract class AppLocalizations {
   /// No description provided for @signUpPasswordTooShort.
   ///
   /// In en, this message translates to:
-  /// **'Password must be at least 6 characters'**
+  /// **'Password must be at least 8 characters'**
   String get signUpPasswordTooShort;
 
   /// No description provided for @signUpUnexpectedError.

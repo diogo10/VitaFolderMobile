@@ -540,7 +540,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountNoAccountFamilyPlan => 'Plano familiar';
 
   @override
-  String get accountNoAccountBrandName => 'FamilyAdmin';
+  String get appBrandName => 'FamilyAdmin';
 
   @override
   String get accountNoAccountTitleTop => 'Sua família,';
@@ -571,13 +571,67 @@ class AppLocalizationsPt extends AppLocalizations {
   String get signUpTitle => 'Cadastre-se';
 
   @override
-  String get signUpNameLabel => 'Nome';
+  String get signUpTitleTop => 'Entre para o círculo,';
 
   @override
-  String get signUpEmailLabel => 'Email';
+  String get signUpTitleBottom => 'comece a organizar.';
+
+  @override
+  String get signUpSubtitle =>
+      'Crie sua conta e convide os membros da sua família para começar a colaborar hoje.';
+
+  @override
+  String get signUpContinueGoogle => 'Cadastre-se com Google';
+
+  @override
+  String get signUpOrEmail => 'ou email';
+
+  @override
+  String get signUpNameLabel => 'Nome completo';
+
+  @override
+  String get signUpNamePlaceholder => 'João Silva';
+
+  @override
+  String get signUpEmailLabel => 'Endereço de email';
+
+  @override
+  String get signUpEmailPlaceholder => 'voce@exemplo.com';
 
   @override
   String get signUpPasswordLabel => 'Senha';
+
+  @override
+  String get signUpPasswordPlaceholder => 'Crie uma senha forte';
+
+  @override
+  String get signUpPasswordHint =>
+      'Deve ter pelo menos 8 caracteres com uma mistura de letras e números.';
+
+  @override
+  String get signUpCreateAccount => 'Criar Conta';
+
+  @override
+  String get signUpAlreadyHaveAccount => 'Já tem uma conta?';
+
+  @override
+  String get signUpSignInLink => 'Entrar';
+
+  @override
+  String get signUpAgreePrefix =>
+      'Ao criar uma conta, você concorda com os nossos ';
+
+  @override
+  String get signUpTermsOfService => 'Termos de Serviço';
+
+  @override
+  String get signUpAgreeAnd => ' e ';
+
+  @override
+  String get signUpPrivacyPolicy => 'Política de Privacidade';
+
+  @override
+  String get signUpAgreeSuffix => '.';
 
   @override
   String get signUpSuccessMessage => 'Obrigado, você concluiu o cadastro.';
@@ -596,7 +650,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get signUpPasswordTooShort =>
-      'A senha deve ter pelo menos 6 caracteres';
+      'A senha deve ter pelo menos 8 caracteres';
 
   @override
   String get signUpUnexpectedError => 'Ocorreu um erro inesperado.';

@@ -531,7 +531,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountNoAccountFamilyPlan => 'Family plan';
 
   @override
-  String get accountNoAccountBrandName => 'FamilyAdmin';
+  String get appBrandName => 'FamilyAdmin';
 
   @override
   String get accountNoAccountTitleTop => 'Your family,';
@@ -562,13 +562,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signUpTitle => 'Sign Up';
 
   @override
-  String get signUpNameLabel => 'Name';
+  String get signUpTitleTop => 'Join the circle,';
 
   @override
-  String get signUpEmailLabel => 'Email';
+  String get signUpTitleBottom => 'start organizing.';
+
+  @override
+  String get signUpSubtitle =>
+      'Create your account and invite your family members to start collaborating today.';
+
+  @override
+  String get signUpContinueGoogle => 'Sign up with Google';
+
+  @override
+  String get signUpOrEmail => 'or email';
+
+  @override
+  String get signUpNameLabel => 'Full Name';
+
+  @override
+  String get signUpNamePlaceholder => 'John Doe';
+
+  @override
+  String get signUpEmailLabel => 'Email address';
+
+  @override
+  String get signUpEmailPlaceholder => 'you@example.com';
 
   @override
   String get signUpPasswordLabel => 'Password';
+
+  @override
+  String get signUpPasswordPlaceholder => 'Create a strong password';
+
+  @override
+  String get signUpPasswordHint =>
+      'Must be at least 8 characters long with a mix of letters and numbers.';
+
+  @override
+  String get signUpCreateAccount => 'Create Account';
+
+  @override
+  String get signUpAlreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get signUpSignInLink => 'Sign In';
+
+  @override
+  String get signUpAgreePrefix => 'By creating an account, you agree to our ';
+
+  @override
+  String get signUpTermsOfService => 'Terms of Service';
+
+  @override
+  String get signUpAgreeAnd => ' and ';
+
+  @override
+  String get signUpPrivacyPolicy => 'Privacy Policy';
+
+  @override
+  String get signUpAgreeSuffix => '.';
 
   @override
   String get signUpSuccessMessage =>
@@ -587,7 +640,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signUpPasswordRequired => 'Please enter a password';
 
   @override
-  String get signUpPasswordTooShort => 'Password must be at least 6 characters';
+  String get signUpPasswordTooShort => 'Password must be at least 8 characters';
 
   @override
   String get signUpUnexpectedError => 'An unexpected error occurred.';
