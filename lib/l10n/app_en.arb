@@ -319,5 +319,14 @@
   "remindersCalendarViewList": "View as list",
   "remindersCalendarEmptyDay": "No reminders for this day",
   "createReminderTitleEdit": "Edit Reminder",
-  "createReminderSaveButtonEdit": "Save Changes"
+  "createReminderSaveButtonEdit": "Save Changes",
+  "remindersFilterChores": "Chores",
+  "remindersFilterAppointments": "Appointments",
+  "remindersFilterBirthdays": "Birthdays",
+  "remindersFilterRenewal": "Renewal",
+  "remindersFilterVaccine": "Vaccine",
+  "remindersFilterReimbursement": "Reimbursement",
+  "remindersFilterCustom": "Custom",
+  "remindersFilterTitle": "Filter Reminders",
+  "remindersFilterApply": "Apply Filters"
 }

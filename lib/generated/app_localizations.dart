@@ -1747,6 +1747,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save Changes'**
   String get createReminderSaveButtonEdit;
+
+  /// No description provided for @remindersFilterChores.
+  ///
+  /// In en, this message translates to:
+  /// **'Chores'**
+  String get remindersFilterChores;
+
+  /// No description provided for @remindersFilterAppointments.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointments'**
+  String get remindersFilterAppointments;
+
+  /// No description provided for @remindersFilterBirthdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Birthdays'**
+  String get remindersFilterBirthdays;
+
+  /// No description provided for @remindersFilterRenewal.
+  ///
+  /// In en, this message translates to:
+  /// **'Renewal'**
+  String get remindersFilterRenewal;
+
+  /// No description provided for @remindersFilterVaccine.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccine'**
+  String get remindersFilterVaccine;
+
+  /// No description provided for @remindersFilterReimbursement.
+  ///
+  /// In en, this message translates to:
+  /// **'Reimbursement'**
+  String get remindersFilterReimbursement;
+
+  /// No description provided for @remindersFilterCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get remindersFilterCustom;
+
+  /// No description provided for @remindersFilterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter Reminders'**
+  String get remindersFilterTitle;
+
+  /// No description provided for @remindersFilterApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Filters'**
+  String get remindersFilterApply;
 }
 
 class _AppLocalizationsDelegate

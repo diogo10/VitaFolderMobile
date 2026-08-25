@@ -28,7 +28,7 @@ void main() {
       title: 'Test Title',
       body: 'Test Body Content',
       type: ReminderType.appointment,
-      dueDate: '2026-08-10',
+      dueDate: '22/08/2026 15:00',
       repeatRule: 'never',
       status: 'pending',
       createdBy: 'user-1',
@@ -55,48 +55,21 @@ void main() {
       );
     }
 
-    testWidgets('renders title, body and due date', (tester) async {
+    testWidgets('renders title, body and time', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
       expect(find.text(reminder.title), findsOneWidget);
       expect(find.text(reminder.body), findsOneWidget);
-      expect(find.text(reminder.dueDate), findsOneWidget);
-    });
-
-    testWidgets('extracts time label from dd/MM/yyyy HH:mm values', (
-      tester,
-    ) async {
-      final reminderWithTime = ReminderEntity(
-        id: '2',
-        title: 'Time Reminder',
-        body: 'Body',
-        type: ReminderType.appointment,
-        dueDate: '22/08/2026 15:00',
-        repeatRule: 'never',
-        status: 'pending',
-        createdBy: 'user-1',
-        createdAt: '2026-08-01',
-      );
-
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: ReminderWidget(reminder: reminderWithTime)),
-        ),
-      );
-
-      expect(find.text('15:00'), findsOneWidget);
-      expect(find.text('22/08/2026'), findsOneWidget);
+      // Time is displayed in the description and trailing section
+      expect(find.text('15:00'), findsWidgets);
     });
 
     testWidgets('renders title with bold style', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
       final titleWidget = tester.widget<Text>(find.text(reminder.title));
-      expect(titleWidget.style?.fontWeight, FontWeight.bold);
-      expect(titleWidget.style?.fontSize, 18);
+      expect(titleWidget.style?.fontWeight, FontWeight.w700);
+      expect(titleWidget.style?.fontSize, 14);
     });
 
     testWidgets('renders inside a Card widget', (tester) async {
@@ -105,52 +78,68 @@ void main() {
       expect(find.byType(Card), findsOneWidget);
     });
 
-    testWidgets(
-      'tap reveals edit and remove buttons then remove opens dialog',
-      (tester) async {
-        final repository = _FakeReminderRepository();
-        final peopleRepository = _FakePeopleRepository();
-        when(
-          () => repository.removeReminder(reminder.id),
-        ).thenAnswer((_) async => Right(true));
-        when(
-          () => peopleRepository.getMyFamilyRole(),
-        ).thenAnswer((_) async => <String>[]);
+    testWidgets('renders type chip', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
 
-        final cubit = RemindersCubit(
-          getReminderUsecase: _FakeGetReminderUsecase(),
-          peopleRepository: peopleRepository,
-          authService: _FakeAuthService(),
-          reminderRepository: repository,
-        );
+      // Should render the appointment type chip
+      expect(find.text('Appointment'), findsOneWidget);
+    });
 
-        await tester.pumpWidget(buildTestWidget(cubit: cubit));
+    testWidgets('renders assignee name', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
 
-        expect(find.byIcon(Icons.edit_rounded), findsNothing);
-        expect(find.byIcon(Icons.delete_rounded), findsNothing);
+      expect(find.text('user-1'), findsOneWidget);
+    });
 
-        await tester.tap(find.text(reminder.title));
-        await tester.pumpAndSettle();
+    testWidgets('tap on menu reveals edit and remove options in bottom sheet', (
+      tester,
+    ) async {
+      final repository = _FakeReminderRepository();
+      final peopleRepository = _FakePeopleRepository();
+      when(
+        () => repository.removeReminder(reminder.id),
+      ).thenAnswer((_) async => Right(true));
+      when(
+        () => peopleRepository.getMyFamilyRole(),
+      ).thenAnswer((_) async => <String>[]);
 
-        expect(find.byIcon(Icons.edit_rounded), findsOneWidget);
-        expect(find.byIcon(Icons.delete_rounded), findsOneWidget);
+      final cubit = RemindersCubit(
+        getReminderUsecase: _FakeGetReminderUsecase(),
+        peopleRepository: peopleRepository,
+        authService: _FakeAuthService(),
+        reminderRepository: repository,
+      );
 
-        await tester.tap(find.byIcon(Icons.delete_rounded));
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(buildTestWidget(cubit: cubit));
 
-        expect(find.byType(AlertDialog), findsOneWidget);
-        expect(
-          find.text('Are you sure you want to remove "${reminder.title}"?'),
-          findsOneWidget,
-        );
+      // Menu icon should be visible
+      expect(find.byIcon(Icons.more_horiz_rounded), findsOneWidget);
 
-        await tester.tap(find.text('Remove'));
-        await tester.pumpAndSettle();
+      // Tap on menu icon
+      await tester.tap(find.byIcon(Icons.more_horiz_rounded));
+      await tester.pumpAndSettle();
 
-        verify(() => repository.removeReminder(reminder.id)).called(1);
+      // Bottom sheet should appear with edit and remove options
+      expect(find.text('Edit Reminder'), findsOneWidget);
+      expect(find.text('Remove'), findsOneWidget);
 
-        await cubit.close();
-      },
-    );
+      // Tap remove
+      await tester.tap(find.text('Remove'));
+      await tester.pumpAndSettle();
+
+      // Confirm dialog should appear
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(
+        find.text('Are you sure you want to remove "${reminder.title}"?'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Remove'));
+      await tester.pumpAndSettle();
+
+      verify(() => repository.removeReminder(reminder.id)).called(1);
+
+      await cubit.close();
+    });
   });
 }

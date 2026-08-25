@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/usecase/get_reminder_usecase.dart';
@@ -15,6 +16,9 @@ class RemindersCubit extends Cubit<RemindersState> {
 
   ReminderType? _selectedType;
   ReminderType? get selectedType => _selectedType;
+
+  Set<ReminderType> _filterTypes = {};
+  Set<ReminderType> get filterTypes => _filterTypes;
 
   String? _myRole;
   String? get myRole => _myRole;
@@ -149,5 +153,51 @@ class RemindersCubit extends Cubit<RemindersState> {
   Future<void> _loadMyRole() async {
     final roles = await peopleRepository.getMyFamilyRole();
     _myRole = roles.isEmpty ? null : roles.first;
+  }
+
+  void setFilterTypes(Set<ReminderType> types) {
+    _filterTypes = types;
+    // Re-emit current state to notify listeners of filter change
+    final current = state;
+    if (current is LoadedReminders) {
+      emit(
+        LoadedReminders(
+          reminders: current.reminders,
+          type: current.type,
+          isLoading: current.isLoading,
+          viewMode: current.viewMode,
+          filterTypes: _filterTypes,
+        ),
+      );
+    } else if (current is EmptyReminders) {
+      emit(
+        EmptyReminders(
+          type: current.type,
+          isLoading: current.isLoading,
+          viewMode: current.viewMode,
+          filterTypes: _filterTypes,
+        ),
+      );
+    } else if (current is RemindersLoading) {
+      emit(
+        RemindersLoading(viewMode: current.viewMode, filterTypes: _filterTypes),
+      );
+    } else if (current is ReminderError) {
+      emit(
+        ReminderError(viewMode: current.viewMode, filterTypes: _filterTypes),
+      );
+    } else if (current is ReminderInitialState) {
+      emit(
+        ReminderInitialState(
+          viewMode: current.viewMode,
+          filterTypes: _filterTypes,
+        ),
+      );
+    }
+  }
+
+  List<ReminderEntity> getFilteredReminders(List<ReminderEntity> reminders) {
+    if (_filterTypes.isEmpty) return reminders;
+    return reminders.where((r) => _filterTypes.contains(r.type)).toList();
   }
 }

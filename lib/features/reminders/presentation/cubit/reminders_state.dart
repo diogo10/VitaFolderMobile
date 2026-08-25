@@ -4,15 +4,19 @@ import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminde
 
 sealed class RemindersState {
   final RemindersViewMode viewMode;
-  RemindersState({this.viewMode = RemindersViewMode.list});
+  final Set<ReminderType> filterTypes;
+  RemindersState({
+    this.viewMode = RemindersViewMode.list,
+    this.filterTypes = const {},
+  });
 }
 
 class ReminderInitialState extends RemindersState {
-  ReminderInitialState({super.viewMode});
+  ReminderInitialState({super.viewMode, super.filterTypes});
 }
 
 class RemindersLoading extends RemindersState {
-  RemindersLoading({super.viewMode});
+  RemindersLoading({super.viewMode, super.filterTypes});
 }
 
 class LoadedReminders extends RemindersState {
@@ -25,6 +29,7 @@ class LoadedReminders extends RemindersState {
     this.type,
     this.isLoading = false,
     super.viewMode,
+    super.filterTypes,
   });
 }
 
@@ -32,9 +37,14 @@ class EmptyReminders extends RemindersState {
   final ReminderType? type;
   final bool isLoading;
 
-  EmptyReminders({this.type, this.isLoading = false, super.viewMode});
+  EmptyReminders({
+    this.type,
+    this.isLoading = false,
+    super.viewMode,
+    super.filterTypes,
+  });
 }
 
 class ReminderError extends RemindersState {
-  ReminderError({super.viewMode});
+  ReminderError({super.viewMode, super.filterTypes});
 }

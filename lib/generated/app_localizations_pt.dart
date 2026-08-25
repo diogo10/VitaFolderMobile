@@ -892,4 +892,31 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get createReminderSaveButtonEdit => 'Salvar Alterações';
+
+  @override
+  String get remindersFilterChores => 'Tarefas';
+
+  @override
+  String get remindersFilterAppointments => 'Compromissos';
+
+  @override
+  String get remindersFilterBirthdays => 'Aniversários';
+
+  @override
+  String get remindersFilterRenewal => 'Renovação';
+
+  @override
+  String get remindersFilterVaccine => 'Vacina';
+
+  @override
+  String get remindersFilterReimbursement => 'Reembolso';
+
+  @override
+  String get remindersFilterCustom => 'Personalizado';
+
+  @override
+  String get remindersFilterTitle => 'Filtrar Lembretes';
+
+  @override
+  String get remindersFilterApply => 'Aplicar Filtros';
 }

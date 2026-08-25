@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reminders</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes fabPulse {
+            0%, 100% { box-shadow: 0 8px 32px rgba(139,115,85,0.38); }
+            50% { box-shadow: 0 8px 40px rgba(139,115,85,0.55); }
+        }
+
+        .card-slide { animation: slideInUp 0.45s ease both; }
+        .card-slide:nth-child(1) { animation-delay: 0.04s; }
+        .card-slide:nth-child(2) { animation-delay: 0.10s; }
+        .card-slide:nth-child(3) { animation-delay: 0.16s; }
+        .card-slide:nth-child(4) { animation-delay: 0.22s; }
+        .card-slide:nth-child(5) { animation-delay: 0.28s; }
+        .card-slide:nth-child(6) { animation-delay: 0.34s; }
+        .card-slide:nth-child(7) { animation-delay: 0.40s; }
+        .card-slide:nth-child(8) { animation-delay: 0.46s; }
+        .card-slide:nth-child(9) { animation-delay: 0.52s; }
+
+        .fade-in { animation: fadeIn 0.5s ease both; }
+        .scale-in { animation: scaleIn 0.4s ease both; }
+
+        .nav-item { transition: transform 0.18s ease, color 0.18s ease; }
+        .nav-item.active { transform: scale(1.12); }
+
+        .action-btn { transition: transform 0.15s ease; }
+        .action-btn:active { transform: scale(0.94); }
+
+        .reminder-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .reminder-card:active { transform: scale(0.985); }
+
+        .fab-btn {
+            animation: fabPulse 3s ease-in-out infinite;
+            transition: transform 0.15s ease;
+        }
+        .fab-btn:active { transform: scale(0.93); }
+
+        .filter-chip { transition: all 0.2s ease; }
+        .filter-chip.active { background: #8b7355; color: #faf8f5; }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #e4dace, #f0ebe3);
+            transform: translateX(-50%);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                        figtree: ['Figtree', 'sans-serif'],
+                    },
+                    colors: {
+                        sand: {
+                            50: '#faf8f5',
+                            100: '#f0ebe3',
+                            200: '#e4dace',
+                            300: '#c9b99a',
+                            400: '#b8a080',
+                            500: '#8b7355',
+                            600: '#7a6348',
+                            700: '#634f39',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sand-50 font-figtree" style="max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative;">
+
+    <!-- STATUS BAR -->
+    <div id="status-bar" class="bg-sand-50 px-5 pt-3 pb-1 flex justify-between items-center">
+        <span class="text-sand-500 text-xs font-outfit font-medium">9:41 AM</span>
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-wifi text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-signal text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-battery-three-quarters text-sand-500 text-xs"></i>
+        </div>
+    </div>
+
+    <!-- TOP NAV -->
+    <header id="header" class="bg-sand-50 px-5 pt-2 pb-3 flex justify-between items-center fade-in sticky top-0 z-30">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-sand-500 flex items-center justify-center">
+                <i class="fa-solid fa-house-chimney text-sand-50 text-sm"></i>
+            </div>
+            <span class="font-outfit font-semibold text-sand-600 text-base tracking-tight">FamilyAdmin</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="action-btn w-10 h-10 rounded-full bg-sand-100 flex items-center justify-center relative">
+                <i class="fa-solid fa-bell text-sand-500 text-base"></i>
+                <span class="absolute top-2 right-2 w-2 h-2 bg-sand-400 rounded-full border border-sand-50"></span>
+            </button>
+            <button class="action-btn w-10 h-10 rounded-full overflow-hidden border-2 border-sand-300">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" class="w-full h-full object-cover" alt="Admin">
+            </button>
+        </div>
+    </header>
+
+    <!-- SCROLLABLE CONTENT -->
+    <main id="main-content" class="pb-36 overflow-y-auto">
+
+        <!-- PAGE HEADING -->
+        <section id="page-heading" class="px-5 pt-1 pb-4 fade-in">
+            <div class="flex items-end justify-between">
+                <div>
+                    <h1 class="font-outfit font-bold text-sand-700 leading-tight" style="font-size: 1.85rem; line-height: 1.15;">Reminders</h1>
+                    <p class="font-figtree text-sand-400 text-sm mt-1">8 upcoming · Smith Family</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="action-btn w-11 h-11 rounded-2xl bg-sand-100 border border-sand-200 flex items-center justify-center">
+                        <i class="fa-regular fa-calendar text-sand-500 text-base"></i>
+                    </button>
+                    <button class="action-btn w-11 h-11 rounded-2xl bg-sand-100 border border-sand-200 flex items-center justify-center">
+                        <i class="fa-solid fa-plus text-sand-500 text-base"></i>
+                    </button>
+                    <button id="filter-toggle" class="action-btn w-11 h-11 rounded-2xl bg-sand-100 border border-sand-200 flex items-center justify-center relative">
+                        <i class="fa-solid fa-sliders text-sand-500 text-base"></i>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-sand-500 rounded-full border border-sand-50"></span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- FILTER CHIPS -->
+        <section id="filter-chips" class="px-5 mb-6 fade-in">
+            <div class="flex gap-2 overflow-x-auto pb-1">
+                <button class="filter-chip active font-figtree font-semibold text-xs px-4 py-2 rounded-full whitespace-nowrap border border-sand-200" style="min-height: 36px;" data-filter="all">
+                    All
+                </button>
+                <button class="filter-chip bg-amber-50 text-amber-700 border border-amber-200 font-figtree font-semibold text-xs px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-1.5" style="min-height: 36px;" data-filter="chores">
+                    <i class="fa-solid fa-broom text-amber-500" style="font-size: 10px;"></i> Chores
+                </button>
+                <button class="filter-chip bg-blue-50 text-blue-700 border border-blue-200 font-figtree font-semibold text-xs px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-1.5" style="min-height: 36px;" data-filter="appointments">
+                    <i class="fa-solid fa-calendar-check text-blue-500" style="font-size: 10px;"></i> Appointments
+                </button>
+                <button class="filter-chip bg-rose-50 text-rose-700 border border-rose-200 font-figtree font-semibold text-xs px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-1.5" style="min-height: 36px;" data-filter="birthdays">
+                    <i class="fa-solid fa-cake-candles text-rose-400" style="font-size: 10px;"></i> Birthdays
+                </button>
+            </div>
+        </section>
+
+        <!-- TIMELINE -->
+        <section id="timeline" class="px-5">
+
+            <!-- ── TODAY ── -->
+            <div id="day-today" class="mb-2">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="h-px flex-1 bg-sand-200"></div>
+                    <div class="flex items-center gap-2 bg-sand-500 px-3 py-1.5 rounded-full">
+                        <i class="fa-solid fa-circle-dot text-sand-200" style="font-size: 8px;"></i>
+                        <span class="font-outfit font-semibold text-sand-50 text-xs tracking-wide">Today · Dec 12</span>
+                    </div>
+                    <div class="h-px flex-1 bg-sand-200"></div>
+                </div>
+
+                <!-- Reminder: Chore — Take out trash -->
+                <div id="rem-1" class="reminder-card card-slide bg-white rounded-3xl p-4 mb-3 border border-sand-100 flex items-center gap-4" style="box-shadow: 0 4px 18px rgba(139,115,85,0.10);">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0 relative">
+                        <i class="fa-solid fa-trash-can text-amber-500 text-xl"></i>
+                        <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center border-2 border-white">
+                            <i class="fa-solid fa-broom text-white" style="font-size: 7px;"></i>
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                            <p class="font-outfit font-semibold text-sand-700 text-sm">Take out trash</p>
+                            <span class="bg-amber-100 text-amber-700 font-figtree font-semibold px-2 py-0.5 rounded-full" style="font-size: 9px;">Chore</span>
+                        </div>
+                        <p class="font-figtree text-sand-400 text-xs">Every Wednesday · 7:00 PM</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" class="w-5 h-5 rounded-full object-cover border border-sand-200" alt="Max">
+                            <span class="font-figtree text-sand-400" style="font-size: 10px;"><span class="text-sand-600 font-semibold">Max</span></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 flex-shrink-0">
+                        <div class="bg-amber-50 border border-amber-100 rounded-xl px-2 py-1.5 text-center">
+                            <span class="font-outfit font-bold text-amber-600 text-xs">7 PM</span>
+                        </div>
+                        <button class="action-btn w-8 h-8 rounded-xl bg-sand-100 flex items-center justify-center">
+                            <i class="fa-solid fa-ellipsis text-sand-400 text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reminder: Appointment — Dentist -->
+                <div id="rem-2" class="reminder-card card-slide bg-white rounded-3xl p-4 mb-3 border border-sand-100 flex items-center gap-4" style="box-shadow: 0 4px 18px rgba(139,115,85,0.10);">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0 relative">
+                        <i class="fa-solid fa-tooth text-blue-400 text-xl"></i>
+                        <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center border-2 border-white">
+                            <i class="fa-solid fa-calendar-check text-white" style="font-size: 7px;"></i>
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                            <p class="font-outfit font-semibold text-sand-700 text-sm">Dentist Checkup</p>
+                            <span class="bg-blue-100 text-blue-700 font-figtree font-semibold px-2 py-0.5 rounded-full" style="font-size: 9px;">Appt</span>
+                        </div>
+                        <p class="font-figtree text-sand-400 text-xs">Dr. Miller · 3:30 PM</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg" class="w-5 h-5 rounded-full object-cover border border-sand-200" alt="Lily">
+                            <span class="font-figtree text-sand-400" style="font-size: 10px;"><span class="text-sand-600 font-semibold">Lily</span></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 flex-shrink-0">
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl px-2 py-1.5 text-center">
+                            <span class="font-outfit font-bold text-blue-600 text-xs">3:30 PM</span>
+                        </div>
+                        <button class="action-btn w-8 h-8 rounded-xl bg-sand-100 flex items-center justify-center">
+                            <i class="fa-solid fa-ellipsis text-sand-400 text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reminder: Birthday — Rose -->
+                <div id="rem-3" class="reminder-card card-slide bg-white rounded-3xl p-4 mb-3 border border-rose-100 flex items-center gap-4" style="box-shadow: 0 4px 18px rgba(244,114,182,0.10);">
+                    <div class="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center flex-shrink-0 relative">
+                        <i class="fa-solid fa-cake-candles text-rose-400 text-xl"></i>
+                        <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-400 rounded-full flex items-center justify-center border-2 border-white">
+                            <i class="fa-solid fa-gift text-white" style="font-size: 7px;"></i>
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                            <p class="font-outfit font-semibold text-sand-700 text-sm">Rose's Birthday 🎂</p>
+                            <span class="bg-rose-100 text-rose-600 font-figtree font-semibold px-2 py-0.5 rounded-full" style="font-size: 9px;">Birthday</span>
+                        </div>
+                        <p class="font-figtree text-sand-400 text-xs">Grandma turns 68 today!</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg" class="w-5 h-5 rounded-full object-cover border border-sand-200" alt="Rose">
+                            <span class="font-figtree text-sand-400" style="font-size: 10px;"><span class="text-rose-500 font-semibold">Rose Smith</span></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 flex-shrink-0">
+                        <div class="bg-rose-50 border border-rose-100 rounded-xl px-2 py-1.5 text-center">
+                            <span class="font-outfit font-bold text-rose-500 text-xs">All day</span>
+                        </div>
+                        <button class="action-btn w-8 h-8 rounded-xl bg-sand-100 flex items-center justify-center">
+                            <i class="fa-solid fa-ellipsis text-sand-400 text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── TOMORROW ── -->
+            <div id="day-tomorrow" class="mb-2">
+                <div class="flex items-center gap-3 mb-4 mt-2">
+                    <div class="h-px flex-1 bg-sand-200"></div>
+                    <div class="flex items-center gap-2 bg-sand-100 border border-sand-200 px-3 py-1.5 rounded-full">
+                        <i class="fa-regular fa-clock text-sand-400" style="font-size: 9px;"></i>
+                        <span class="font-outfit font-semibold text-sand-500 text-xs tracking-wide">Tomorrow · Dec 13</span>
+                    </div>
+                    <div class="h-px flex-1 bg-sand-200"></div>
+                </div>
+
+                <!-- Reminder: Chore — Vacuum -->
+                <div id="rem-4" class="reminder-card card-slide bg-sand-100 rounded-3xl p-4 mb-3 border border-sand-200 flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0 relative">
+                        <i class="fa-solid fa-wind text-amber-400 text-xl"></i>
+                        <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center border-2 border-sand-100">
+                            <i class="fa-solid fa-broom text-white" style="font-size: 7px;"></i>
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                            <p class="font-outfit font-semibold text-sand-700 text-sm">Vacuum Living Room</p>
+                            <span class="bg-amber-100 text-amber-700 font-figtree font-semibold px-2 py-0.5 rounded-full" style="font-size: 9px;">Chore</span>
+                        </div>
+                        <p class="font-figtree text-sand-400 text-xs">Weekly · 10:00 AM</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg" class="w-5 h-5 rounded-full object-cover border border-sand-200" alt="Lily">
+                            <span class="font-figtree text-sand-400" style="font-size: 10px;"><span class="text-sand-600 font-semibold">Lily</span></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 flex-shrink-0">
+                        <div class="bg-amber-50 border border-amber-100 rounded-xl px-2 py-1.5 text-center">
+                            <span class="font-outfit font-bold text-amber-600 text-xs">10 AM</span>
+                        </div>
+                        <button class="action-btn w-8 h-8 rounded-xl bg-sand-200 flex items-center justify-center">
+                            <i class="fa-solid fa-ellipsis text-sand-400 text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reminder: Appointment — Vet -->
+                <div id="rem-5" class="reminder-card card-slide bg-sand-100 rounded-3xl p-4 mb-3 border border-sand-200 flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0 relative">
+                        <i class="fa-solid fa-paw text-blue-400 text-xl"></i>
+                        <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center border-2 border-sand-100">
+                            <i class="fa-solid fa-calendar-check text-white" style="font-size: 7px;"></i>
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                            <p class="font-outfit font-semibold text-sand-700 text-sm">Vet Appointment</p>
+                            <span class="bg-blue-100 text-blue-700 font-figtree font-semibold px-2 py-0.5 rounded-full" style="font-size: 9px;">Appt</span>
+                        </div>
+                        <p class="font-figtree text-sand-400 text-xs">Buddy's check-up · 2:00 PM</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg" class="w-5 h-5 rounded-full object-cover border border-sand-200" alt="James">
+                            <span class="font-figtree text-sand-400" style="font-size: 10px;"><span class="text-sand-600 font-semibold">James</span></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 flex-shrink-0">
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl px-2 py-1.5 text-center">
+                            <span class="font-outfit font-bold text-blue-600 text-xs">2 PM</span>
+                        </div>
+                        <button class="action-btn w-8 h-8 rounded-xl bg-sand-200 flex items-center justify-center">
+                            <i class="fa-solid fa-ellipsis text-sand-400 text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── DEC 14 ── -->
+            <div id="day-dec14" class="mb-2">
+                <div class="flex items-center gap-3 mb-4 mt-2">
+                    <div class="h-px flex-1 bg-sand-200"></div>
+                    <div class="flex items-center gap-2 bg-sand-100 border border-sand-200 px-3 py-1.5 rounded-full">
+                        <i class="fa-regular fa-calendar text-sand-400" style="font-size: 9px;"></i>
+                        <span class="font-outfit font-semibold text-sand-500 text-xs tracking-wide">Saturday · Dec 14</span>
+                    </div>
+                    <div class="h-px flex-1 bg-sand-200"></div>
+                </div>
+
+                <!-- Reminder: Chore — Grocery -->
+                <div id="rem-6" class="reminder-card card-slide bg-sand-100 rounded-3xl p-4 mb-3 border border-sand-200 flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0 relative">
+                        <i class="fa-solid fa-basket-shopping text-amber-500 text-xl"></i>
+                        <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center border-2 border-sand-100">
+                            <i class="fa-solid fa-broom text-white" style="font-size: 7px;"></i>
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                            <p class="font-outfit font-semibold text-sand-700 text-sm">Grocery Run</p>
+                            <span class="bg-amber-100 text-amber-700 font-figtree font-semibold px-2 py-0.5 rounded-full" style="font-size: 9px;">Chore</span>
+                        </div>
+                        <p class="font-figtree text-sand-400 text-xs">Weekly shop · 11:00 AM</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" class="w-5 h-5 rounded-full object-cover border border-sand-200" alt="Sarah">
+                            <span class="font-figtree text-sand-400" style="font-size: 10px;"><span class="text-sand-600 font-semibold">Sarah</span></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 flex-shrink-0">
+                        <div class="bg-amber-50 border border-amber-100 rounded-xl px-2 py-1.5 text-center">
+                            <span class="font-outfit font-bold text-amber-600 text-xs">11 AM</span>
+                        </div>
+                        <button class="action-btn w-8 h-8 rounded-xl bg-sand-200 flex items-center justify-center">
+                            <i class="fa-solid fa-ellipsis text-sand-400 text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reminder: Appointment — School Event -->
+                <div id="rem-7" class="reminder-card card-slide bg-sand-100 rounded-3xl p-4 mb-3 border border-sand-200 flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0 relative">
+                        <i class="fa-solid fa-school text-blue-400 text-xl"></i>
+                        <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center border-2 border-sand-100">
+                            <i class="fa-solid fa-calendar-check text-white" style="font-size: 7px;"></i>
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                            <p class="font-outfit font-semibold text-sand-700 text-sm">School Play</p>
+                            <span class="bg-blue-100 text-blue-700 font-figtree font-semibold px-2 py-0.5 rounded-full" style="font-size: 9px;">Appt</span>
+                        </div>
+                        <p class="font-figtree text-sand-400 text-xs">Winter Show · 5:00 PM</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <div class="flex -space-x-1">
+                                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg" class="w-5 h-5 rounded-full object-cover border border-sand-200" alt="Lily">
+                                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" class="w-5 h-5 rounded-full object-cover border border-sand-200" alt="Max">
+                            </div>
+                            <span class="font-figtree text-sand-400" style="font-size: 10px;"><span class="text-sand-600 font-semibold">Lily & Max</span></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 flex-shrink-0">
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl px-2 py-1.5 text-center">
+                            <span class="font-outfit font-bold text-blue-600 text-xs">5 PM</span>
+                        </div>
+                        <button class="action-btn w-8 h-8 rounded-xl bg-sand-200 flex items-center justify-center">
+                            <i class="fa-solid fa-ellipsis text-sand-400 text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reminder: Birthday — James -->
+                <div id="rem-8" class="reminder-card card-slide bg-sand-100 rounded-3xl p-4 mb-3 border border-rose-100 flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center flex-shrink-0 relative">
+                        <i class="fa-solid fa-champagne-glasses text-purple-400 text-xl"></i>
+                        <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-purple-400 rounded-full flex items-center justify-center border-2 border-sand-100">
+                            <i class="fa-solid fa-gift text-white" style="font-size: 7px;"></i>
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                            <p class="font-outfit font-semibold text-sand-700 text-sm">James's Birthday 🎉</p>
+                            <span class="bg-purple-100 text-purple-700 font-figtree font-semibold px-2 py-0.5 rounded-full" style="font-size: 9px;">Birthday</span>
+                        </div>
+                        <p class="font-figtree text-sand-400 text-xs">Dad turns 42!</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg" class="w-5 h-5 rounded-full object-cover border border-sand-200" alt="James">
+                            <span class="font-figtree text-sand-400" style="font-size: 10px;"><span class="text-purple-600 font-semibold">James Smith</span></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 flex-shrink-0">
+                        <div class="bg-purple-50 border border-purple-100 rounded-xl px-2 py-1.5 text-center">
+                            <span class="font-outfit font-bold text-purple-600 text-xs">All day</span>
+                        </div>
+                        <button class="action-btn w-8 h-8 rounded-xl bg-sand-200 flex items-center justify-center">
+                            <i class="fa-solid fa-ellipsis text-sand-400 text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- END OF VISIBLE REMINDERS NOTE -->
+            <div id="end-note" class="fade-in flex items-center gap-3 mt-2 mb-4">
+                <div class="h-px flex-1 bg-sand-200"></div>
+                <span class="font-figtree text-sand-300 text-xs">You're all caught up 🎉</span>
+                <div class="h-px flex-1 bg-sand-200"></div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FILTER PANEL (hidden by default) -->
+    <div id="filter-panel" class="fixed inset-0 z-50 pointer-events-none">
+        <div id="filter-overlay" class="absolute inset-0 bg-black bg-opacity-0 transition-all duration-300"></div>
+        <div id="filter-drawer" class="absolute bottom-0 left-1/2 -translate-x-1/2 w-full bg-sand-50 rounded-t-3xl p-6 translate-y-full transition-transform duration-300 shadow-2xl" style="max-width: 430px;">
+            <div class="w-10 h-1 bg-sand-300 rounded-full mx-auto mb-6"></div>
+            <h3 class="font-outfit font-bold text-sand-700 text-lg mb-5">Filter Reminders</h3>
+            <div class="space-y-3 mb-6">
+                <label class="flex items-center gap-3 p-3 rounded-2xl bg-sand-100 border border-sand-200 cursor-pointer">
+                    <input type="checkbox" checked class="w-5 h-5 accent-amber-500 rounded" id="filter-chores-check">
+                    <div class="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center">
+                        <i class="fa-solid fa-broom text-amber-500 text-sm"></i>
+                    </div>
+                    <span class="font-figtree font-semibold text-sand-700 text-sm flex-1">Chores</span>
+                    <span class="bg-amber-100 text-amber-700 font-figtree font-semibold px-2.5 py-1 rounded-full text-xs">3</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-2xl bg-sand-100 border border-sand-200 cursor-pointer">
+                    <input type="checkbox" checked class="w-5 h-5 accent-blue-500 rounded" id="filter-appts-check">
+                    <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
+                        <i class="fa-solid fa-calendar-check text-blue-500 text-sm"></i>
+                    </div>
+                    <span class="font-figtree font-semibold text-sand-700 text-sm flex-1">Appointments</span>
+                    <span class="bg-blue-100 text-blue-700 font-figtree font-semibold px-2.5 py-1 rounded-full text-xs">3</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-2xl bg-sand-100 border border-sand-200 cursor-pointer">
+                    <input type="checkbox" checked class="w-5 h-5 accent-rose-500 rounded" id="filter-bdays-check">
+                    <div class="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center">
+                        <i class="fa-solid fa-cake-candles text-rose-400 text-sm"></i>
+                    </div>
+                    <span class="font-figtree font-semibold text-sand-700 text-sm flex-1">Birthdays</span>
+                    <span class="bg-rose-100 text-rose-600 font-figtree font-semibold px-2.5 py-1 rounded-full text-xs">2</span>
+                </label>
+            </div>
+            <button id="apply-filter" class="w-full bg-sand-500 text-sand-50 font-outfit font-semibold py-4 rounded-2xl text-sm">Apply Filters</button>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav id="bottom-nav" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full bg-sand-50 border-t border-sand-200 flex items-center justify-around px-2 pt-3 pb-6 z-30" style="max-width: 430px; box-shadow: 0 -8px 32px rgba(139,115,85,0.12);">
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[56px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-house text-sand-400 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Home</span>
+        </button>
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[56px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-people-group text-sand-400 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">People</span>
+        </button>
+
+        <button class="nav-item active flex flex-col items-center gap-1 min-w-[56px] min-h-[44px] relative">
+            <div class="w-10 h-10 rounded-2xl bg-sand-500 flex items-center justify-center relative">
+                <i class="fa-solid fa-bell text-sand-50 text-base"></i>
+                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-400 rounded-full border border-sand-50"></span>
+            </div>
+            <span class="font-figtree text-sand-600 font-semibold" style="font-size: 10px;">Reminders</span>
+        </button>
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[56px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-circle-user text-sand-400 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Account</span>
+        </button>
+
+    </nav>
+
+    <script>
+        // Bottom nav tab switching
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach((item, index) => {
+            item.addEventListener('click', () => {
+                navItems.forEach((nav, i) => {
+                    const iconWrap = nav.querySelector('div');
+                    const label = nav.querySelector('span');
+                    if (i === index) {
+                        nav.classList.add('active');
+                        iconWrap.classList.add('bg-sand-500');
+                        const fa = iconWrap.querySelector('i');
+                        if (fa) { fa.classList.remove('text-sand-400'); fa.classList.add('text-sand-50'); }
+                        label.classList.remove('text-sand-400', 'font-medium');
+                        label.classList.add('text-sand-600', 'font-semibold');
+                    } else {
+                        nav.classList.remove('active');
+                        iconWrap.classList.remove('bg-sand-500');
+                        const fa = iconWrap.querySelector('i');
+                        if (fa) { fa.classList.add('text-sand-400'); fa.classList.remove('text-sand-50'); }
+                        label.classList.add('text-sand-400', 'font-medium');
+                        label.classList.remove('text-sand-600', 'font-semibold');
+                    }
+                });
+            });
+        });
+
+        // Filter chips
+        const filterChips = document.querySelectorAll('.filter-chip');
+        filterChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                filterChips.forEach(c => {
+                    c.classList.remove('active');
+                    if (!c.dataset.filter || c.dataset.filter !== 'all') {
+                        // restore original coloring
+                    }
+                });
+                chip.classList.add('active');
+            });
+        });
+
+        // Filter panel toggle
+        const filterToggle = document.getElementById('filter-toggle');
+        const filterPanel = document.getElementById('filter-panel');
+        const filterOverlay = document.getElementById('filter-overlay');
+        const filterDrawer = document.getElementById('filter-drawer');
+        const applyFilter = document.getElementById('apply-filter');
+
+        function openFilter() {
+            filterPanel.classList.remove('pointer-events-none');
+            filterOverlay.classList.add('bg-opacity-30');
+            filterOverlay.classList.remove('bg-opacity-0');
+            filterDrawer.classList.remove('translate-y-full');
+        }
+        function closeFilter() {
+            filterPanel.classList.add('pointer-events-none');
+            filterOverlay.classList.remove('bg-opacity-30');
+            filterOverlay.classList.add('bg-opacity-0');
+            filterDrawer.classList.add('translate-y-full');
+        }
+
+        filterToggle.addEventListener('click', openFilter);
+        filterOverlay.addEventListener('click', closeFilter);
+        applyFilter.addEventListener('click', closeFilter);
+
+        // FAB responsive positioning
+        function positionFab() {
+            const fab = document.getElementById('fab-btn');
+            const bodyMaxW = 430;
+            const windowW = window.innerWidth;
+            const containerW = Math.min(windowW, bodyMaxW);
+            const rightEdge = (windowW - containerW) / 2 + 16;
+            fab.style.right = rightEdge + 'px';
+        }
+        positionFab();
+        window.addEventListener('resize', positionFab);
+    </script>
+
+</body>
+</html>

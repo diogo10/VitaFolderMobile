@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_state.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_view_mode.dart';
@@ -10,6 +12,8 @@ import 'package:vita_folder_mobile/features/reminders/presentation/widgets/remin
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_header_widget.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_loaded_widget.dart';
 import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_loading_widget.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/widgets/filter_chips_widget.dart';
+import 'package:vita_folder_mobile/features/reminders/presentation/widgets/filter_bottom_sheet.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class RemindersView extends StatefulWidget {
@@ -39,6 +43,9 @@ class _RemindersViewState extends State<RemindersView> {
       body: SafeArea(
         child: BlocBuilder<RemindersCubit, RemindersState>(
           builder: (context, state) {
+            final hasActiveFilters = state.filterTypes.isNotEmpty;
+            final filteredReminders = _getFilteredReminders(state, cubit);
+
             return RefreshIndicator(
               onRefresh: () => cubit.getReminders(type: cubit.selectedType),
               child: CustomScrollView(
@@ -56,9 +63,20 @@ class _RemindersViewState extends State<RemindersView> {
                       onNotificationsPressed: () => context.go('/account'),
                       onProfilePressed: () => context.go('/account'),
                       onAddPressed: () => context.push('/create-reminder'),
+                      onFilterPressed: () => _showFilterSheet(context),
+                      hasActiveFilters: hasActiveFilters,
                     ),
                   ),
-                  ..._contentSlivers(context, state),
+                  if (state.viewMode == RemindersViewMode.list) ...[
+                    SliverToBoxAdapter(
+                      child: FilterChipsWidget(
+                        selectedType: cubit.selectedType,
+                        onFilterChanged: (type) =>
+                            cubit.getReminders(type: type),
+                      ),
+                    ),
+                  ],
+                  ..._contentSlivers(context, state, filteredReminders, cubit),
                 ],
               ),
             );
@@ -68,8 +86,43 @@ class _RemindersViewState extends State<RemindersView> {
     );
   }
 
-  List<Widget> _contentSlivers(BuildContext context, RemindersState state) {
+  List<ReminderEntity> _getFilteredReminders(
+    RemindersState state,
+    RemindersCubit cubit,
+  ) {
+    if (state is LoadedReminders) {
+      return cubit.getFilteredReminders(state.reminders);
+    }
+    return const [];
+  }
+
+  void _showFilterSheet(BuildContext context) {
     final cubit = context.read<RemindersCubit>();
+    final state = cubit.state;
+
+    Map<ReminderType, int> typeCounts = {};
+    if (state is LoadedReminders) {
+      for (final reminder in state.reminders) {
+        typeCounts[reminder.type] = (typeCounts[reminder.type] ?? 0) + 1;
+      }
+    }
+
+    showFilterBottomSheet(
+      context: context,
+      selectedTypes: state.filterTypes,
+      typeCounts: typeCounts,
+      onApply: (types) {
+        cubit.setFilterTypes(types);
+      },
+    );
+  }
+
+  List<Widget> _contentSlivers(
+    BuildContext context,
+    RemindersState state,
+    List<ReminderEntity> filteredReminders,
+    RemindersCubit cubit,
+  ) {
     if (!cubit.authService.isLoggedIn()) {
       return const [SliverToBoxAdapter(child: RemindersEmptyWidget())];
     }
@@ -79,21 +132,24 @@ class _RemindersViewState extends State<RemindersView> {
           if (isLoading)
             const SliverToBoxAdapter(child: LinearProgressIndicator()),
           SliverToBoxAdapter(
-            child: RemindersCalendarWidget(reminders: reminders),
+            child: RemindersCalendarWidget(
+              reminders: cubit.getFilteredReminders(reminders),
+            ),
           ),
         ],
         EmptyReminders() => const [
           SliverToBoxAdapter(child: RemindersCalendarWidget(reminders: [])),
         ],
-        _ => _listContentSlivers(context, state, cubit),
+        _ => _listContentSlivers(context, state, filteredReminders, cubit),
       };
     }
-    return _listContentSlivers(context, state, cubit);
+    return _listContentSlivers(context, state, filteredReminders, cubit);
   }
 
   List<Widget> _listContentSlivers(
     BuildContext context,
     RemindersState state,
+    List<ReminderEntity> filteredReminders,
     RemindersCubit cubit,
   ) {
     return switch (state) {
@@ -112,10 +168,13 @@ class _RemindersViewState extends State<RemindersView> {
           child: RemindersErrorWidget(onRetry: () => cubit.getReminders()),
         ),
       ],
-      LoadedReminders(:final reminders, :final isLoading) => [
+      LoadedReminders(:final isLoading) => [
         if (isLoading)
           const SliverToBoxAdapter(child: LinearProgressIndicator()),
-        RemindersLoadedWidget(reminders: reminders),
+        if (filteredReminders.isEmpty)
+          SliverToBoxAdapter(child: RemindersEmptyWidget(isLoading: false))
+        else
+          RemindersLoadedWidget(reminders: filteredReminders),
       ],
       _ => const [
         SliverFillRemaining(
