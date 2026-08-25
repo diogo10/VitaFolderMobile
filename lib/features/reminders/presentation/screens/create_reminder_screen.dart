@@ -28,6 +28,35 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   DateTime? _dueDate;
   TimeOfDay? _dueTime;
 
+  static const _sand50 = Color(0xFFF5F0EB);
+  static const _sand100 = Color(0xFFE4DACE);
+  static const _sand200 = Color(0xFFC9B99A);
+  static const _sand300 = Color(0xFFB8A080);
+  static const _sand400 = Color(0xFF8B7355);
+  static const _sand500 = Color(0xFF8B7355);
+  static const _sand600 = Color(0xFF7A6348);
+  static const _sand700 = Color(0xFF634F39);
+
+  final _typeIcons = {
+    ReminderType.renewal: Icons.refresh_rounded,
+    ReminderType.appointment: Icons.calendar_month_rounded,
+    ReminderType.vaccine: Icons.vaccines_rounded,
+    ReminderType.reimbursement: Icons.receipt_long_rounded,
+    ReminderType.birthday: Icons.cake_rounded,
+    ReminderType.chores: Icons.cleaning_services_rounded,
+    ReminderType.custom: Icons.star_rounded,
+  };
+
+  final _typeColors = {
+    ReminderType.renewal: Colors.teal,
+    ReminderType.appointment: Colors.blue,
+    ReminderType.vaccine: Colors.red,
+    ReminderType.reimbursement: Colors.green,
+    ReminderType.birthday: Colors.pink,
+    ReminderType.chores: Colors.amber,
+    ReminderType.custom: Colors.purple,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -77,20 +106,6 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
         return l.createReminderTypeChores;
       case ReminderType.custom:
         return l.createReminderTypeCustom;
-    }
-  }
-
-  String _repeatLabel(String repeatRule, AppLocalizations l) {
-    switch (repeatRule) {
-      case 'daily':
-        return l.createReminderRepeatDaily;
-      case 'weekly':
-        return l.createReminderRepeatWeekly;
-      case 'monthly':
-        return l.createReminderRepeatMonthly;
-      case 'never':
-      default:
-        return l.createReminderRepeatNever;
     }
   }
 
@@ -162,12 +177,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _isEditing ? l.createReminderTitleEdit : l.createReminderTitle,
-        ),
-      ),
+      backgroundColor: _sand50,
       body: BlocConsumer<CreateReminderCubit, CreateReminderState>(
         listener: (context, state) {
           if (state is CreateReminderSuccess) {
@@ -197,118 +209,525 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
         builder: (context, state) {
           final isLoading = state is CreateReminderLoading;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+          return SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(l),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+                          _buildTitleField(l),
+                          const SizedBox(height: 24),
+                          _buildDescriptionField(l),
+                          const SizedBox(height: 24),
+                          _buildTypeChips(l),
+                          const SizedBox(height: 24),
+                          _buildDateTimeFields(l),
+                          const SizedBox(height: 24),
+                          _buildRepeatSelector(l),
+                          const SizedBox(height: 100),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                _buildSaveButton(l, isLoading),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildHeader(AppLocalizations l) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: _sand50,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => context.pop(),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _sand200),
+                ),
+                child: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: _sand600,
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              _isEditing ? l.createReminderTitleEdit : l.createReminderTitle,
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: _sand700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 56),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTitleField(AppLocalizations l) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l.createReminderTitleLabel,
+          style: TextStyle(
+            color: _sand400,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _titleController,
+          textCapitalization: TextCapitalization.sentences,
+          style: TextStyle(
+            color: _sand700,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+          decoration: InputDecoration(
+            hintText: 'e.g. Weekly Grocery Run',
+            hintStyle: TextStyle(
+              color: _sand300,
+              fontWeight: FontWeight.normal,
+            ),
+            filled: true,
+            fillColor: _sand100,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 16,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: _sand200),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: _sand200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: const BorderSide(color: _sand400, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: const BorderSide(color: Colors.red, width: 2),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: const BorderSide(color: Colors.red, width: 2),
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return l.createReminderTitleRequired;
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDescriptionField(AppLocalizations l) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${l.createReminderBodyLabel} (Optional)',
+          style: TextStyle(
+            color: _sand400,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _bodyController,
+          maxLines: 3,
+          textCapitalization: TextCapitalization.sentences,
+          style: TextStyle(color: _sand600, fontSize: 16),
+          decoration: InputDecoration(
+            hintText: 'Add some notes about this reminder...',
+            hintStyle: TextStyle(color: _sand300),
+            filled: true,
+            fillColor: _sand100,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 16,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: _sand200),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: _sand200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: const BorderSide(color: _sand400, width: 2),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTypeChips(AppLocalizations l) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l.createReminderTypeLabel,
+          style: TextStyle(
+            color: _sand400,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: ReminderType.values.map((type) {
+            final isSelected = _selectedType == type;
+            final color = _typeColors[type] ?? _sand400;
+            return InkWell(
+              onTap: () => setState(() => _selectedType = type),
+              borderRadius: BorderRadius.circular(20),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected ? color : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected ? color : _sand200,
+                    width: 2,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _typeIcons[type] ?? Icons.star_rounded,
+                      size: 16,
+                      color: isSelected ? Colors.white : color,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _typeLabel(type, l),
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : _sand600,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDateTimeFields(AppLocalizations l) {
+    return Row(
+      children: [
+        Expanded(child: _buildDateField(l)),
+        const SizedBox(width: 16),
+        Expanded(child: _buildTimeField(l)),
+      ],
+    );
+  }
+
+  Widget _buildDateField(AppLocalizations l) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Due Date',
+          style: TextStyle(
+            color: _sand400,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _pickDueDate,
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              decoration: BoxDecoration(
+                color: _sand100,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _sand200),
+              ),
+              child: Row(
                 children: [
-                  TextFormField(
-                    controller: _titleController,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      labelText: l.createReminderTitleLabel,
-                      border: const OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return l.createReminderTitleRequired;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _bodyController,
-                    maxLines: 3,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      labelText: l.createReminderBodyLabel,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  DropdownButtonFormField<ReminderType>(
-                    initialValue: _selectedType,
-                    decoration: InputDecoration(
-                      labelText: l.createReminderTypeLabel,
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: ReminderType.values.map((type) {
-                      return DropdownMenuItem(
-                        value: type,
-                        child: Text(_typeLabel(type, l)),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _selectedType = value);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  DropdownButtonFormField<String>(
-                    initialValue: _repeatRule,
-                    decoration: InputDecoration(
-                      labelText: l.createReminderRepeatRuleLabel,
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: ['never', 'daily', 'weekly', 'monthly'].map((rule) {
-                      return DropdownMenuItem(
-                        value: rule,
-                        child: Text(_repeatLabel(rule, l)),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _repeatRule = value);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  OutlinedButton.icon(
-                    onPressed: isLoading ? null : _pickDueDate,
-                    icon: const Icon(Icons.event_rounded),
-                    label: Text(
+                  Icon(Icons.calendar_today_rounded, size: 20, color: _sand300),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
                       _dueDate == null
-                          ? l.createReminderDueDateLabel
+                          ? 'Due Date'
                           : '${l.createReminderDueDateLabel}: ${_dueDate!.day}/${_dueDate!.month}/${_dueDate!.year}',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: isLoading ? null : _pickDueTime,
-                    icon: const Icon(Icons.schedule_rounded),
-                    label: Text(
-                      _dueTime == null
-                          ? l.createReminderTimeLabel
-                          : '${l.createReminderTimeLabel}: ${_formatTime(_dueTime!)}',
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: isLoading ? null : _onSave,
-                      child: isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(
-                              _isEditing
-                                  ? l.createReminderSaveButtonEdit
-                                  : l.createReminderSaveButton,
-                            ),
+                      style: TextStyle(
+                        color: _dueDate == null ? _sand300 : _sand700,
+                        fontSize: 14,
+                        fontWeight: _dueDate == null
+                            ? FontWeight.normal
+                            : FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          );
-        },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeField(AppLocalizations l) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Time',
+          style: TextStyle(
+            color: _sand400,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _pickDueTime,
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              decoration: BoxDecoration(
+                color: _sand100,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _sand200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.access_time_rounded, size: 20, color: _sand300),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _dueTime == null
+                          ? 'Time'
+                          : '${l.createReminderTimeLabel}: ${_formatTime(_dueTime!)}',
+                      style: TextStyle(
+                        color: _dueTime == null ? _sand300 : _sand700,
+                        fontSize: 14,
+                        fontWeight: _dueTime == null
+                            ? FontWeight.normal
+                            : FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRepeatSelector(AppLocalizations l) {
+    const repeatOptions = [
+      ('never', 'Never'),
+      ('daily', 'Daily'),
+      ('weekly', 'Weekly'),
+      ('monthly', 'Monthly'),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Repeat',
+          style: TextStyle(
+            color: _sand400,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: _sand100,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            children: repeatOptions.map((option) {
+              final isSelected = _repeatRule == option.$1;
+              return Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => setState(() => _repeatRule = option.$1),
+                    borderRadius: BorderRadius.circular(16),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isSelected ? _sand400 : Colors.transparent,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: Text(
+                          option.$2,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : _sand400,
+                            fontSize: 13,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSaveButton(AppLocalizations l, bool isLoading) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [_sand50.withValues(alpha: 0), _sand50, _sand50],
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: isLoading ? null : _onSave,
+            borderRadius: BorderRadius.circular(28),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              decoration: BoxDecoration(
+                color: isLoading ? _sand400.withValues(alpha: 0.7) : _sand500,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: isLoading
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: _sand500.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (isLoading)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  else ...[
+                    const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      _isEditing
+                          ? l.createReminderSaveButtonEdit
+                          : l.createReminderSaveButton,
+                      style: const TextStyle(
+                        fontFamily: 'Outfit',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

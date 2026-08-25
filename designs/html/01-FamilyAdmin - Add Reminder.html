@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Reminder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-up { animation: slideInUp 0.4s ease both; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+
+        .input-field {
+            transition: all 0.2s ease;
+        }
+        .input-field:focus {
+            border-color: #8b7355;
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(139,115,85,0.08);
+        }
+
+        .type-chip { transition: all 0.2s ease; }
+        .type-chip.active {
+            border-color: #8b7355;
+            background-color: #8b7355;
+            color: white;
+        }
+
+        .repeat-btn { transition: all 0.2s ease; }
+        .repeat-btn.active {
+            background-color: #8b7355;
+            color: white;
+            font-weight: 600;
+        }
+
+        .action-btn:active { transform: scale(0.96); }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                        figtree: ['Figtree', 'sans-serif'],
+                    },
+                    colors: {
+                        sand: {
+                            50: '#faf8f5',
+                            100: '#f0ebe3',
+                            200: '#e4dace',
+                            300: '#c9b99a',
+                            400: '#b8a080',
+                            500: '#8b7355',
+                            600: '#7a6348',
+                            700: '#634f39',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sand-50 font-figtree" style="max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative;">
+
+    <!-- STATUS BAR -->
+    <div id="status-bar" class="bg-sand-50 px-5 pt-3 pb-1 flex justify-between items-center">
+        <span class="text-sand-500 text-xs font-outfit font-medium">9:41 AM</span>
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-wifi text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-signal text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-battery-three-quarters text-sand-500 text-xs"></i>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="px-5 py-4 flex items-center justify-between sticky top-0 bg-sand-50/80 backdrop-blur-md z-30">
+        <button class="action-btn w-10 h-10 rounded-2xl bg-white border border-sand-200 flex items-center justify-center text-sand-600">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <h1 class="font-outfit font-bold text-sand-700 text-lg">New Reminder</h1>
+        <div class="w-10"></div> <!-- Spacer -->
+    </header>
+
+    <!-- FORM CONTENT -->
+    <main class="px-6 pb-32">
+        <div class="space-y-6 pt-2">
+            
+            <!-- Title -->
+            <div class="animate-up">
+                <label class="block text-sand-500 text-xs font-bold uppercase tracking-wider mb-2 ml-1">Title</label>
+                <input type="text" placeholder="e.g. Weekly Grocery Run" 
+                    class="input-field w-full bg-sand-100 border border-sand-200 rounded-2xl px-5 py-4 text-sand-700 font-semibold focus:outline-none placeholder:text-sand-300 placeholder:font-normal">
+            </div>
+
+            <!-- Description -->
+            <div class="animate-up delay-1">
+                <label class="block text-sand-500 text-xs font-bold uppercase tracking-wider mb-2 ml-1">Description (Optional)</label>
+                <textarea rows="3" placeholder="Add some notes about this reminder..." 
+                    class="input-field w-full bg-sand-100 border border-sand-200 rounded-2xl px-5 py-4 text-sand-600 focus:outline-none placeholder:text-sand-300 resize-none"></textarea>
+            </div>
+
+            <!-- Reminder Type -->
+            <div class="animate-up delay-2">
+                <label class="block text-sand-500 text-xs font-bold uppercase tracking-wider mb-3 ml-1">Reminder Type</label>
+                <div class="flex flex-wrap gap-3">
+                    <button class="type-chip active border border-sand-200 px-4 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-semibold">
+                        <i class="fa-solid fa-broom text-amber-500"></i> Chore
+                    </button>
+                    <button class="type-chip bg-white border border-sand-200 px-4 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-semibold text-sand-600">
+                        <i class="fa-solid fa-calendar-check text-blue-500"></i> Appt
+                    </button>
+                    <button class="type-chip bg-white border border-sand-200 px-4 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-semibold text-sand-600">
+                        <i class="fa-solid fa-cake-candles text-rose-400"></i> Birthday
+                    </button>
+                    <button class="type-chip bg-white border border-sand-200 px-4 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-semibold text-sand-600">
+                        <i class="fa-solid fa-star text-purple-400"></i> Other
+                    </button>
+                </div>
+            </div>
+
+            <!-- Due Date & Time -->
+            <div class="grid grid-cols-2 gap-4 animate-up delay-3">
+                <div>
+                    <label class="block text-sand-500 text-xs font-bold uppercase tracking-wider mb-2 ml-1">Due Date</label>
+                    <div class="relative">
+                        <i class="fa-regular fa-calendar absolute left-4 top-1/2 -translate-y-1/2 text-sand-400"></i>
+                        <input type="date" class="input-field w-full bg-sand-100 border border-sand-200 rounded-2xl pl-11 pr-4 py-4 text-sand-700 text-sm focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sand-500 text-xs font-bold uppercase tracking-wider mb-2 ml-1">Time</label>
+                    <div class="relative">
+                        <i class="fa-regular fa-clock absolute left-4 top-1/2 -translate-y-1/2 text-sand-400"></i>
+                        <input type="time" class="input-field w-full bg-sand-100 border border-sand-200 rounded-2xl pl-11 pr-4 py-4 text-sand-700 text-sm focus:outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Repeat -->
+            <div class="animate-up delay-3">
+                <label class="block text-sand-500 text-xs font-bold uppercase tracking-wider mb-3 ml-1">Repeat</label>
+                <div class="bg-sand-100 p-1.5 rounded-2xl flex gap-1">
+                    <button class="repeat-btn active flex-1 py-3 text-sm rounded-xl text-sand-500">Never</button>
+                    <button class="repeat-btn flex-1 py-3 text-sm rounded-xl text-sand-500">Daily</button>
+                    <button class="repeat-btn flex-1 py-3 text-sm rounded-xl text-sand-500">Weekly</button>
+                    <button class="repeat-btn flex-1 py-3 text-sm rounded-xl text-sand-500">Monthly</button>
+                </div>
+            </div>
+
+            <!-- Assignment (bonus, based on previous screen's context) -->
+            <div class="animate-up delay-3">
+                <label class="block text-sand-500 text-xs font-bold uppercase tracking-wider mb-3 ml-1">Assign To</label>
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full border-2 border-sand-500 p-0.5">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    <div class="w-10 h-10 rounded-full border border-sand-200 grayscale opacity-40">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    <div class="w-10 h-10 rounded-full border border-sand-200 grayscale opacity-40">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    <button class="w-10 h-10 rounded-full border border-dashed border-sand-300 flex items-center justify-center text-sand-400">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- SAVE BUTTON -->
+    <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full p-6 bg-gradient-to-t from-sand-50 via-sand-50 to-transparent z-40" style="max-width: 430px;">
+        <button class="action-btn w-full bg-sand-500 text-sand-50 font-outfit font-bold py-5 rounded-3xl shadow-xl shadow-sand-500/30 flex items-center justify-center gap-3">
+            <i class="fa-solid fa-check"></i>
+            Create Reminder
+        </button>
+    </div>
+
+    <script>
+        // Simple UI interaction logic
+        const typeChips = document.querySelectorAll('.type-chip');
+        typeChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                typeChips.forEach(c => {
+                    c.classList.remove('active', 'bg-sand-500', 'text-white');
+                    c.classList.add('bg-white', 'text-sand-600');
+                });
+                chip.classList.add('active', 'bg-sand-500', 'text-white');
+                chip.classList.remove('bg-white', 'text-sand-600');
+            });
+        });
+
+        const repeatBtns = document.querySelectorAll('.repeat-btn');
+        repeatBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                repeatBtns.forEach(b => {
+                    b.classList.remove('active', 'bg-sand-500', 'text-white', 'font-semibold');
+                    b.classList.add('text-sand-500');
+                });
+                btn.classList.add('active', 'bg-sand-500', 'text-white', 'font-semibold');
+                btn.classList.remove('text-sand-500');
+            });
+        });
+    </script>
+
+</body>
+</html>
