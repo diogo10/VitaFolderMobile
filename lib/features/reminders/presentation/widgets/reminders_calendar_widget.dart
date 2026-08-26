@@ -26,26 +26,53 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
   );
   DateTime? _selectedDate;
 
-  DateTime? _tryParseDate(String dueDate) {
-    final trimmed = dueDate.trim();
-    if (trimmed.isEmpty) return null;
-    return _dateFormat.tryParse(trimmed);
+  static bool _occursOnDate(
+    ReminderEntity reminder,
+    DateTime date,
+    DateFormat dateFormat,
+  ) {
+    final dueDate = dateFormat.tryParse(reminder.dueDate.trim());
+    if (dueDate == null) return false;
+    if (date.isBefore(dueDate)) return false;
+
+    switch (reminder.repeatRule) {
+      case 'never':
+        return dateFormat.format(date) == dateFormat.format(dueDate);
+      case 'daily':
+        return true;
+      case 'weekly':
+        return date.weekday == dueDate.weekday;
+      case 'monthly':
+        return date.day == dueDate.day;
+      default:
+        return false;
+    }
   }
 
-  Set<String> get _reminderDayKeys => {
-    for (final reminder in widget.reminders)
-      if (_tryParseDate(reminder.dueDate) case final date?)
-        _dateFormat.format(date),
-  };
+  Set<String> get _reminderDayKeys {
+    final keys = <String>{};
+    final daysInMonth = DateTime(
+      _visibleMonth.year,
+      _visibleMonth.month + 1,
+      0,
+    ).day;
+
+    for (var day = 1; day <= daysInMonth; day++) {
+      final date = DateTime(_visibleMonth.year, _visibleMonth.month, day);
+      for (final reminder in widget.reminders) {
+        if (_occursOnDate(reminder, date, _dateFormat)) {
+          keys.add(_dateFormat.format(date));
+          break;
+        }
+      }
+    }
+    return keys;
+  }
 
   List<ReminderEntity> get _selectedDayReminders {
-    final selectedKey = _selectedDate == null
-        ? null
-        : _dateFormat.format(_selectedDate!);
-    if (selectedKey == null) return const [];
+    if (_selectedDate == null) return const [];
     return widget.reminders.where((r) {
-      final date = _tryParseDate(r.dueDate);
-      return date != null && _dateFormat.format(date) == selectedKey;
+      return _occursOnDate(r, _selectedDate!, _dateFormat);
     }).toList();
   }
 
