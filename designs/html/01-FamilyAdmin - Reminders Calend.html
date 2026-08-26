@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reminders - Calendar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        .fade-in { animation: fadeIn 0.5s ease both; }
+        .slide-up { animation: slideUp 0.4s ease both; }
+
+        .calendar-day { transition: all 0.2s ease; aspect-ratio: 1; }
+        .calendar-day.active { background: #8b7355; color: white; border-radius: 12px; }
+        .calendar-day.today { color: #8b7355; font-weight: 800; position: relative; }
+        .calendar-day.today::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: #8b7355; rounded-full; }
+        .calendar-day.has-event::before { content: ''; position: absolute; top: 6px; right: 6px; width: 4px; height: 4px; background: #c9b99a; border-radius: 50%; }
+
+        .action-btn { transition: transform 0.15s ease; }
+        .action-btn:active { transform: scale(0.94); }
+        
+        .filter-chip.active { background: #8b7355; color: #faf8f5; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                        figtree: ['Figtree', 'sans-serif'],
+                    },
+                    colors: {
+                        sand: {
+                            50: '#faf8f5',
+                            100: '#f0ebe3',
+                            200: '#e4dace',
+                            300: '#c9b99a',
+                            400: '#b8a080',
+                            500: '#8b7355',
+                            600: '#7a6348',
+                            700: '#634f39',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sand-50 font-figtree" style="max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative;">
+
+    <!-- STATUS BAR -->
+    <div id="status-bar" class="bg-sand-50 px-5 pt-3 pb-1 flex justify-between items-center">
+        <span class="text-sand-500 text-xs font-outfit font-medium">9:41 AM</span>
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-wifi text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-signal text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-battery-three-quarters text-sand-500 text-xs"></i>
+        </div>
+    </div>
+
+    <!-- TOP NAV -->
+    <header id="header" class="bg-sand-50 px-5 pt-2 pb-3 flex justify-between items-center fade-in sticky top-0 z-30">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-sand-500 flex items-center justify-center">
+                <i class="fa-solid fa-house-chimney text-sand-50 text-sm"></i>
+            </div>
+            <span class="font-outfit font-semibold text-sand-600 text-base tracking-tight">FamilyAdmin</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="action-btn w-10 h-10 rounded-full bg-sand-100 flex items-center justify-center relative">
+                <i class="fa-solid fa-bell text-sand-500 text-base"></i>
+                <span class="absolute top-2 right-2 w-2 h-2 bg-sand-400 rounded-full border border-sand-50"></span>
+            </button>
+            <button class="action-btn w-10 h-10 rounded-full overflow-hidden border-2 border-sand-300">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" class="w-full h-full object-cover" alt="Admin">
+            </button>
+        </div>
+    </header>
+
+    <!-- SCROLLABLE CONTENT -->
+    <main id="main-content" class="pb-36 overflow-y-auto">
+
+        <!-- PAGE HEADING -->
+        <section id="page-heading" class="px-5 pt-1 pb-4 fade-in">
+            <div class="flex items-end justify-between">
+                <div>
+                    <h1 class="font-outfit font-bold text-sand-700 leading-tight" style="font-size: 1.85rem; line-height: 1.15;">Reminders</h1>
+                    <p class="font-figtree text-sand-400 text-sm mt-1">December 2024</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="action-btn w-11 h-11 rounded-2xl bg-sand-500 flex items-center justify-center shadow-lg shadow-sand-500/20">
+                        <i class="fa-solid fa-list-ul text-sand-50 text-base"></i>
+                    </button>
+                    <button class="action-btn w-11 h-11 rounded-2xl bg-sand-100 border border-sand-200 flex items-center justify-center">
+                        <i class="fa-solid fa-plus text-sand-500 text-base"></i>
+                    </button>
+                    <button id="filter-toggle" class="action-btn w-11 h-11 rounded-2xl bg-sand-100 border border-sand-200 flex items-center justify-center relative">
+                        <i class="fa-solid fa-sliders text-sand-500 text-base"></i>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-sand-500 rounded-full border border-sand-50"></span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- FILTER CHIPS -->
+        <section id="filter-chips" class="px-5 mb-6 fade-in">
+            <div class="flex gap-2 overflow-x-auto pb-1">
+                <button class="filter-chip active font-figtree font-semibold text-xs px-4 py-2 rounded-full whitespace-nowrap border border-sand-200" style="min-height: 36px;">
+                    All
+                </button>
+                <button class="filter-chip bg-amber-50 text-amber-700 border border-amber-200 font-figtree font-semibold text-xs px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-1.5" style="min-height: 36px;">
+                    <i class="fa-solid fa-broom text-amber-500" style="font-size: 10px;"></i> Chores
+                </button>
+                <button class="filter-chip bg-blue-50 text-blue-700 border border-blue-200 font-figtree font-semibold text-xs px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-1.5" style="min-height: 36px;">
+                    <i class="fa-solid fa-calendar-check text-blue-500" style="font-size: 10px;"></i> Appointments
+                </button>
+                <button class="filter-chip bg-rose-50 text-rose-700 border border-rose-200 font-figtree font-semibold text-xs px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-1.5" style="min-height: 36px;">
+                    <i class="fa-solid fa-cake-candles text-rose-400" style="font-size: 10px;"></i> Birthdays
+                </button>
+            </div>
+        </section>
+
+        <!-- CALENDAR WIDGET -->
+        <section id="calendar-widget" class="px-5 mb-8 fade-in">
+            <div class="bg-white rounded-[32px] p-6 border border-sand-100 shadow-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <button class="action-btn text-sand-400 hover:text-sand-600"><i class="fa-solid fa-chevron-left"></i></button>
+                    <h3 class="font-outfit font-bold text-sand-700">December 2024</h3>
+                    <button class="action-btn text-sand-400 hover:text-sand-600"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div class="grid grid-cols-7 text-center mb-4">
+                    <span class="text-sand-300 font-bold text-[10px] uppercase tracking-widest">Su</span>
+                    <span class="text-sand-300 font-bold text-[10px] uppercase tracking-widest">Mo</span>
+                    <span class="text-sand-300 font-bold text-[10px] uppercase tracking-widest">Tu</span>
+                    <span class="text-sand-300 font-bold text-[10px] uppercase tracking-widest">We</span>
+                    <span class="text-sand-300 font-bold text-[10px] uppercase tracking-widest">Th</span>
+                    <span class="text-sand-300 font-bold text-[10px] uppercase tracking-widest">Fr</span>
+                    <span class="text-sand-300 font-bold text-[10px] uppercase tracking-widest">Sa</span>
+                </div>
+                <div class="grid grid-cols-7 gap-y-2">
+                    <button class="calendar-day text-sand-300 text-sm flex items-center justify-center">1</button>
+                    <button class="calendar-day text-sand-300 text-sm flex items-center justify-center">2</button>
+                    <button class="calendar-day text-sand-300 text-sm flex items-center justify-center">3</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">4</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">5</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">6</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">7</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">8</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">9</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">10</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">11</button>
+                    <button class="calendar-day today active text-sm flex items-center justify-center">12</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center has-event">13</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center has-event">14</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">15</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">16</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">17</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">18</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">19</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">20</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">21</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">22</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">23</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">24</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">25</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">26</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">27</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">28</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">29</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">30</button>
+                    <button class="calendar-day text-sand-700 text-sm flex items-center justify-center">31</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- DAY DETAIL LIST -->
+        <section id="day-details" class="px-5 slide-up">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="font-outfit font-bold text-sand-600 text-base">Schedule for Dec 12</h4>
+                <span class="text-sand-400 text-xs font-semibold">3 Tasks</span>
+            </div>
+
+            <!-- Reminder: Chore — Take out trash -->
+            <div class="bg-white rounded-3xl p-4 mb-3 border border-sand-100 flex items-center gap-4 shadow-sm">
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-trash-can text-amber-500 text-base"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-outfit font-semibold text-sand-700 text-sm">Take out trash</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" class="w-4 h-4 rounded-full object-cover">
+                        <span class="text-sand-400 text-[10px]">Max</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="font-outfit font-bold text-amber-600 text-xs">7:00 PM</span>
+                </div>
+            </div>
+
+            <!-- Reminder: Appointment — Dentist -->
+            <div class="bg-white rounded-3xl p-4 mb-3 border border-sand-100 flex items-center gap-4 shadow-sm">
+                <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-tooth text-blue-400 text-base"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-outfit font-semibold text-sand-700 text-sm">Dentist Checkup</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg" class="w-4 h-4 rounded-full object-cover">
+                        <span class="text-sand-400 text-[10px]">Lily</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="font-outfit font-bold text-blue-600 text-xs">3:30 PM</span>
+                </div>
+            </div>
+
+            <!-- Reminder: Birthday — Rose -->
+            <div class="bg-white rounded-3xl p-4 mb-3 border border-rose-100 flex items-center gap-4 shadow-sm">
+                <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-cake-candles text-rose-400 text-base"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-outfit font-semibold text-sand-700 text-sm">Rose's Birthday 🎂</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg" class="w-4 h-4 rounded-full object-cover">
+                        <span class="text-sand-400 text-[10px]">Rose Smith</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="font-outfit font-bold text-rose-500 text-xs">All day</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav id="bottom-nav" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full bg-sand-50 border-t border-sand-200 flex items-center justify-around px-2 pt-3 pb-6 z-30" style="max-width: 430px; box-shadow: 0 -8px 32px rgba(139,115,85,0.12);">
+        <button class="flex flex-col items-center gap-1 min-w-[56px]">
+            <i class="fa-solid fa-house text-sand-400 text-lg"></i>
+            <span class="text-sand-400 text-[10px] font-medium">Home</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 min-w-[56px]">
+            <i class="fa-solid fa-people-group text-sand-400 text-lg"></i>
+            <span class="text-sand-400 text-[10px] font-medium">People</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 min-w-[56px]">
+            <div class="bg-sand-500 w-10 h-10 rounded-2xl flex items-center justify-center relative">
+                <i class="fa-solid fa-bell text-sand-50 text-lg"></i>
+                <span class="absolute top-1 right-1 w-2 h-2 bg-amber-400 rounded-full border border-sand-50"></span>
+            </div>
+            <span class="text-sand-600 text-[10px] font-semibold">Reminders</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 min-w-[56px]">
+            <i class="fa-solid fa-circle-user text-sand-400 text-lg"></i>
+            <span class="text-sand-400 text-[10px] font-medium">Account</span>
+        </button>
+    </nav>
+
+</body>
+</html>
