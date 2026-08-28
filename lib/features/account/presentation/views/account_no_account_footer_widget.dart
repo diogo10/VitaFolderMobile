@@ -48,7 +48,9 @@ class _AccountNoAccountTrustItem extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(color: SandPalette.sand400, fontSize: 12),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: SandPalette.sand400),
         ),
       ],
     );

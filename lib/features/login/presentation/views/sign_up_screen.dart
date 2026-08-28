@@ -89,20 +89,20 @@ class _SignUpViewState extends State<SignUpView> {
                     const SizedBox(height: 32),
                     Text.rich(
                       TextSpan(
-                        style: const TextStyle(
-                          fontSize: 30,
-                          height: 1.2,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              height: 1.2,
+                              fontWeight: FontWeight.w700,
+                            ),
                         children: [
                           TextSpan(
                             text: l.signUpTitleTop,
-                            style: const TextStyle(color: SandPalette.sand700),
+                            style: TextStyle(color: SandPalette.sand700),
                           ),
                           const TextSpan(text: '\n'),
                           TextSpan(
                             text: l.signUpTitleBottom,
-                            style: const TextStyle(color: SandPalette.sand500),
+                            style: TextStyle(color: SandPalette.sand500),
                           ),
                         ],
                       ),
@@ -110,9 +110,8 @@ class _SignUpViewState extends State<SignUpView> {
                     const SizedBox(height: 12),
                     Text(
                       l.signUpSubtitle,
-                      style: const TextStyle(
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: SandPalette.sand400,
-                        fontSize: 14,
                         height: 1.625,
                       ),
                     ),
@@ -131,12 +130,12 @@ class _SignUpViewState extends State<SignUpView> {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Text(
                             l.signUpOrEmail.toUpperCase(),
-                            style: const TextStyle(
-                              color: SandPalette.sand400,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 1.5,
-                            ),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: SandPalette.sand400,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 1.5,
+                                ),
                           ),
                         ),
                         const Expanded(
@@ -206,16 +205,14 @@ class _SignUpViewState extends State<SignUpView> {
                         onPressed: () => context.go('/account'),
                         child: Text.rich(
                           TextSpan(
-                            style: const TextStyle(
-                              color: SandPalette.sand400,
-                              fontSize: 14,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: SandPalette.sand400),
                             children: [
                               TextSpan(text: l.signUpAlreadyHaveAccount),
                               TextSpan(text: ' '),
                               TextSpan(
                                 text: l.signUpSignInLink,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: SandPalette.sand600,
                                   fontWeight: FontWeight.w700,
                                   decoration: TextDecoration.underline,
@@ -231,11 +228,12 @@ class _SignUpViewState extends State<SignUpView> {
                     Center(
                       child: Text.rich(
                         TextSpan(
-                          style: const TextStyle(
-                            color: SandPalette.sand400,
-                            fontSize: 10,
-                            height: 1.5,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: SandPalette.sand400,
+                                fontSize: 10,
+                                height: 1.5,
+                              ),
                           children: [
                             TextSpan(text: l.signUpAgreePrefix),
                             TextSpan(

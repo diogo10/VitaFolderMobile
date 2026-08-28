@@ -46,9 +46,8 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
                 l.accountNoAccountOrEmail,
-                style: const TextStyle(
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: SandPalette.sand400,
-                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -80,9 +79,8 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
             ),
             child: Text(
               l.accountNoAccountForgotPassword,
-              style: const TextStyle(
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: SandPalette.sand400,
-                fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -101,16 +99,15 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
             onPressed: () => context.push('/sign-up'),
             child: Text.rich(
               TextSpan(
-                style: const TextStyle(
-                  color: SandPalette.sand400,
-                  fontSize: 14,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: SandPalette.sand400),
                 children: [
                   TextSpan(text: l.accountNoAccountNewToApp),
                   TextSpan(text: ' '),
                   TextSpan(
                     text: l.accountNoAccountCreateFreeAccount,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: SandPalette.sand600,
                       fontWeight: FontWeight.w600,
                       decoration: TextDecoration.underline,

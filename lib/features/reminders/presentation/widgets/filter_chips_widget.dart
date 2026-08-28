@@ -191,7 +191,6 @@ class _FilterChip extends StatelessWidget {
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: isSelected ? data.activeTextColor : data.textColor,
-                    fontFamily: 'Figtree',
                   ),
                 ),
               ],

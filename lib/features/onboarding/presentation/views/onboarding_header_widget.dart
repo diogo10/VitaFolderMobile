@@ -31,10 +31,9 @@ class OnboardingHeaderWidget extends StatelessWidget {
             onPressed: onSkip,
             child: Text(
               AppLocalizations.of(context)!.onboardingSkip,
-              style: const TextStyle(
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 color: SandPalette.sand400,
                 fontWeight: FontWeight.w600,
-                fontSize: 14,
               ),
             ),
           ),

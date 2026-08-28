@@ -35,7 +35,7 @@ class PersonCardWidget extends StatelessWidget {
                 backgroundColor: Colors.deepPurple.shade100,
                 child: Text(
                   name[0].toUpperCase(),
-                  style: const TextStyle(
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.deepPurple,
                   ),
@@ -48,16 +48,23 @@ class PersonCardWidget extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       email,
-                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                     ),
                     Text(
                       phone,
-                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
                     ),
                   ],
                 ),

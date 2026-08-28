@@ -18,7 +18,7 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
         const SizedBox(height: 24),
         Text.rich(
           TextSpan(
-            style: const TextStyle(
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontSize: 28,
               height: 1.18,
               fontWeight: FontWeight.w700,
@@ -26,12 +26,12 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
             children: [
               TextSpan(
                 text: l.accountNoAccountTitleTop,
-                style: const TextStyle(color: SandPalette.sand700),
+                style: TextStyle(color: SandPalette.sand700),
               ),
               const TextSpan(text: '\n'),
               TextSpan(
                 text: l.accountNoAccountTitleBottom,
-                style: const TextStyle(color: SandPalette.sand500),
+                style: TextStyle(color: SandPalette.sand500),
               ),
             ],
           ),
@@ -43,9 +43,8 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
           child: Text(
             l.accountNoAccountSubtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: SandPalette.sand400,
-              fontSize: 14,
               height: 1.6,
             ),
           ),
@@ -163,11 +162,10 @@ class _AccountNoAccountHeroWidget extends StatelessWidget {
                         border: Border.all(color: SandPalette.sand50, width: 2),
                       ),
                       alignment: Alignment.center,
-                      child: const Text(
+                      child: Text(
                         '+3',
-                        style: TextStyle(
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: SandPalette.sand50,
-                          fontSize: 12,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -265,8 +263,7 @@ class _AccountNoAccountChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.w600,
               color: foreground,
             ),

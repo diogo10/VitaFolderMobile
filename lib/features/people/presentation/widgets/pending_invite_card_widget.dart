@@ -73,7 +73,7 @@ class PendingInviteCardWidget extends StatelessWidget {
             ),
             child: Text(
               l.peopleWidgetsPendingInviteResendButton,
-              style: const TextStyle(
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
                 decoration: TextDecoration.underline,

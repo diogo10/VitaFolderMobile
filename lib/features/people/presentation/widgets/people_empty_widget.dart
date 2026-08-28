@@ -70,7 +70,9 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                   Text(
                     // subtitle / description (localized)
                     l.peopleEmptyDescription,
-                    style: const TextStyle(fontSize: 14, color: accent),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: accent),
                     textAlign: TextAlign.center,
                   ),
 
@@ -115,7 +117,8 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                         children: [
                           Text(
                             l.peopleEmptyEnterCode,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 8),
                           Row(
@@ -132,10 +135,13 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                                   ),
                                   child: TextField(
                                     controller: _inviteCodeController,
-                                    style: const TextStyle(
-                                      letterSpacing: 4,
-                                      fontSize: 18,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          letterSpacing: 4,
+                                          fontSize: 18,
+                                        ),
                                     decoration: const InputDecoration(
                                       border: InputBorder.none,
                                       hintText: 'XX-0000',
@@ -155,7 +161,8 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                                 ),
                                 child: Text(
                                   l.peopleEmptyJoinFamily,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(color: Colors.white),
                                 ),
                               ),
                             ],
@@ -163,10 +170,8 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                           const SizedBox(height: 10),
                           Text(
                             l.peopleEmptyAskAdmin,
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 12,
-                            ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: Colors.grey.shade600),
                           ),
                         ],
                       ),

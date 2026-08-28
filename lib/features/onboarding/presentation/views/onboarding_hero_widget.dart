@@ -191,10 +191,9 @@ class OnboardingSecurityHeroWidget extends StatelessWidget {
                     child: Text(
                       l.onboardingEndToEndEncryption,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         color: SandPalette.sand600,
                         fontWeight: FontWeight.w700,
-                        fontSize: 14,
                       ),
                     ),
                   ),
@@ -299,19 +298,17 @@ class _ReminderCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: SandPalette.sand700,
                     fontWeight: FontWeight.w700,
-                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    color: SandPalette.sand400,
-                    fontSize: 12,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: SandPalette.sand400),
                 ),
               ],
             ),

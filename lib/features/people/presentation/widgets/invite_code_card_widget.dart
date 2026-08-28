@@ -51,9 +51,15 @@ class InviteCodeCardWidget extends StatelessWidget {
                   height: 28,
                   child: IconButton(
                     padding: EdgeInsets.zero,
-                    icon: const Icon(Icons.close_rounded, color: Colors.white, size: 18),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                     onPressed: onClose,
-                    tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).closeButtonTooltip,
                   ),
                 ),
             ],
@@ -123,9 +129,11 @@ class InviteCodeCardWidget extends StatelessWidget {
           const SizedBox(height: 14),
           Center(
             child: Text(
-                    l.peopleWidgetsInviteCodeExpiresSuffix,
-                    style: const TextStyle(fontSize: 10, color: _softWhite),
-                  ),
+              l.peopleWidgetsInviteCodeExpiresSuffix,
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(fontSize: 10, color: _softWhite),
+            ),
           ),
         ],
       ),
@@ -197,8 +205,13 @@ class _InviteActionButton extends StatelessWidget {
       icon: Icon(icon, size: 17, color: textColor),
       label: FittedBox(
         fit: BoxFit.scaleDown,
-        child: Text(label, style: TextStyle(fontWeight: FontWeight.w700, 
-        color: textColor)),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: textColor,
+          ),
+        ),
       ),
     );
   }

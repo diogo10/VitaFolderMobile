@@ -65,8 +65,6 @@ class MainShell extends StatelessWidget {
           unselectedItemColor: const Color(0xFFC2B299),
           selectedFontSize: 12,
           unselectedFontSize: 12,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
           currentIndex: navigationShell.currentIndex,
           onTap: (index) => navigationShell.goBranch(
             index,

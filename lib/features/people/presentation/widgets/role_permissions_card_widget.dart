@@ -56,7 +56,7 @@ class RolePermissionsCardWidget extends StatelessWidget {
                   ),
                   child: Text(
                     l.peopleWidgetsRolePermissionsLearnMore,
-                    style: const TextStyle(
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       decoration: TextDecoration.underline,

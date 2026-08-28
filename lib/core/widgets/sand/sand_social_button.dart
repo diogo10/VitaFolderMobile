@@ -42,9 +42,8 @@ class SandSocialButton extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: SandPalette.sand600,
-                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

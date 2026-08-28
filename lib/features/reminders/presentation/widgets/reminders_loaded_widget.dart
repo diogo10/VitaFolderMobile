@@ -207,7 +207,6 @@ class _DayHeader extends StatelessWidget {
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: textColor,
-                    fontFamily: 'Outfit',
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -235,11 +234,7 @@ class _EndNoteWidget extends StatelessWidget {
           const SizedBox(width: 12),
           Text(
             'You\'re all caught up 🎉',
-            style: TextStyle(
-              fontSize: 11,
-              color: SandPalette.sand300,
-              fontFamily: 'Figtree',
-            ),
+            style: TextStyle(fontSize: 11, color: SandPalette.sand300),
           ),
           const SizedBox(width: 12),
           Expanded(child: Container(height: 1, color: SandPalette.sand200)),

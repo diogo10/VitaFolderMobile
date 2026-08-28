@@ -39,7 +39,6 @@ class SandPrimaryButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         child: isLoading
             ? const SizedBox(

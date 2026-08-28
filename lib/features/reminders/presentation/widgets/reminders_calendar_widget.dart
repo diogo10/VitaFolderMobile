@@ -151,10 +151,8 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
           child: Text(
             _monthFormat.format(_visibleMonth),
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontFamily: 'Outfit',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
-              fontSize: 18,
               color: SandPalette.sand700,
             ),
           ),
@@ -201,10 +199,8 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
         return Center(
           child: Text(
             names[index].toUpperCase(),
-            style: const TextStyle(
-              fontFamily: 'Figtree',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.w700,
-              fontSize: 10,
               letterSpacing: 2.0,
               color: SandPalette.sand300,
             ),
@@ -282,10 +278,8 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
                 padding: const EdgeInsets.only(left: 12.0),
                 child: Text(
                   _dayDetailFormat.format(_selectedDate!),
-                  style: const TextStyle(
-                    fontFamily: 'Outfit',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    fontSize: 16,
                     color: SandPalette.sand600,
                   ),
                 ),
@@ -294,10 +288,8 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
                 padding: const EdgeInsets.only(right: 12.0),
                 child: Text(
                   '${reminders.length} ${l.homeTasks}',
-                  style: const TextStyle(
-                    fontFamily: 'Figtree',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    fontSize: 11,
                     color: SandPalette.sand400,
                   ),
                 ),
@@ -309,12 +301,13 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
         if (reminders.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              l.remindersCalendarEmptyDay,
-              style: TextStyle(
-                fontFamily: 'Figtree',
-                fontSize: 14,
-                color: SandPalette.sand400,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 18.0, right: 8.0),
+              child: Text(
+                l.remindersCalendarEmptyDay,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: SandPalette.sand400),
               ),
             ),
           )
@@ -397,11 +390,10 @@ class _DayCell extends StatelessWidget {
             Center(
               child: Text(
                 '$day',
-                style: TextStyle(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: textColor,
                   fontWeight: fontWeight,
                   fontSize: 14,
-                  fontFamily: 'Figtree',
                 ),
               ),
             ),

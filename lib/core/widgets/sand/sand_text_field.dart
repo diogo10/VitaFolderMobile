@@ -5,10 +5,14 @@ InputDecoration sandInputDecoration({
   required String hint,
   required IconData prefixIcon,
   Widget? suffixIcon,
+  BuildContext? context,
 }) {
+  final theme = context != null ? Theme.of(context).textTheme : null;
   return InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: SandPalette.sand300, fontSize: 14),
+    hintStyle:
+        theme?.bodyMedium?.copyWith(color: SandPalette.sand300) ??
+        const TextStyle(color: SandPalette.sand300, fontSize: 14),
     prefixIcon: Icon(prefixIcon, size: 18, color: SandPalette.sand400),
     suffixIcon: suffixIcon,
     prefixIconConstraints: const BoxConstraints(minWidth: 48),
@@ -64,6 +68,7 @@ class _SandLabeledFieldState extends State<SandLabeledField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -74,13 +79,12 @@ class _SandLabeledFieldState extends State<SandLabeledField> {
             children: [
               Text(
                 widget.label,
-                style: const TextStyle(
+                style: theme.labelSmall?.copyWith(
                   color: SandPalette.sand500,
-                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              ?widget.labelTrailing,
+              widget.labelTrailing ?? const SizedBox.shrink(),
             ],
           ),
         ),
@@ -89,7 +93,7 @@ class _SandLabeledFieldState extends State<SandLabeledField> {
           obscureText: widget.obscureText && _obscured,
           keyboardType: widget.keyboardType,
           textCapitalization: widget.textCapitalization,
-          style: const TextStyle(color: SandPalette.sand600, fontSize: 14),
+          style: theme.bodyMedium?.copyWith(color: SandPalette.sand600),
           decoration: sandInputDecoration(
             hint: widget.hint,
             prefixIcon: widget.prefixIcon,
@@ -105,6 +109,7 @@ class _SandLabeledFieldState extends State<SandLabeledField> {
                     ),
                   )
                 : null,
+            context: context,
           ),
           validator: widget.validator,
         ),
@@ -113,7 +118,10 @@ class _SandLabeledFieldState extends State<SandLabeledField> {
             padding: const EdgeInsets.only(top: 8, left: 4),
             child: Text(
               widget.helperText!,
-              style: const TextStyle(color: SandPalette.sand400, fontSize: 10),
+              style: theme.bodySmall?.copyWith(
+                color: SandPalette.sand400,
+                fontSize: 10,
+              ),
             ),
           ),
       ],

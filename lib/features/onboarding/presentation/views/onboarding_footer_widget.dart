@@ -43,10 +43,9 @@ class OnboardingFooterWidget extends StatelessWidget {
               children: [
                 Text(
                   isLastPage ? l.onboardingGetStarted : l.onboardingNextStep,
-                  style: const TextStyle(
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
-                    fontSize: 16,
                   ),
                 ),
                 const SizedBox(width: 8),

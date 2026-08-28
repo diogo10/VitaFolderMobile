@@ -23,6 +23,16 @@ class _AccountViewState extends State<AccountView> {
     context.read<AccountCubit>().loadAccount();
   }
 
+  void _refreshTabsAfterLogout() {
+    context.read<HomeCubit>().getHomeData(isRefresh: true);
+    context.read<PeopleCubit>().getPeople(isRefresh: true);
+
+    final remindersCubit = context.read<RemindersCubit>();
+    remindersCubit.getReminders(
+      type: remindersCubit.selectedType,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AccountCubit, AccountState>(
@@ -34,10 +44,7 @@ class _AccountViewState extends State<AccountView> {
             SnackBar(content: Text(l.accountSignedOut)),
           );
 
-           // Reaload tabs 
-           context.read<HomeCubit>().getHomeData();
-           context.read<PeopleCubit>().getPeople();
-           context.read<RemindersCubit>().getReminders();
+          _refreshTabsAfterLogout();
         }
 
         if (state is LoginFailed) {

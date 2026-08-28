@@ -33,9 +33,8 @@ class SandBrandMark extends StatelessWidget {
         const SizedBox(width: 10),
         Text(
           AppLocalizations.of(context)!.appBrandName,
-          style: const TextStyle(
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: SandPalette.sand600,
-            fontSize: 20,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.5,
           ),

@@ -287,7 +287,6 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             child: Text(
               _isEditing ? l.createReminderTitleEdit : l.createReminderTitle,
               style: TextStyle(
-                fontFamily: 'Outfit',
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
                 color: _sand700,
@@ -384,7 +383,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           controller: _bodyController,
           maxLines: 3,
           textCapitalization: TextCapitalization.sentences,
-          style: TextStyle(color: _sand600, fontSize: 16),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: _sand600, fontSize: 16),
           decoration: InputDecoration(
             hintText: 'Add some notes about this reminder...',
             hintStyle: TextStyle(color: _sand300),
@@ -716,7 +717,6 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                           ? l.createReminderSaveButtonEdit
                           : l.createReminderSaveButton,
                       style: const TextStyle(
-                        fontFamily: 'Outfit',
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: Colors.white,
