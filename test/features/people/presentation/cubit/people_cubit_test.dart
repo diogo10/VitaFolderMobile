@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/features/people/domain/entities/family_entity.dart';
 import 'package:vita_folder_mobile/features/people/domain/entities/people_data.dart';
 import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
@@ -17,10 +18,13 @@ class _MockCreateFamilyUsecase extends Mock implements CreateFamilyUsecase {}
 
 class _MockJoinFamilyUsecase extends Mock implements JoinFamilyUsecase {}
 
+class _MockAuthService extends Mock implements AuthService {}
+
 void main() {
   late GetPeopleUsecase getPeopleUsecase;
   late CreateFamilyUsecase createFamilyUsecase;
   late JoinFamilyUsecase joinFamilyUsecase;
+  late AuthService authService;
   late PeopleCubit cubit;
 
   final family = FamilyEntity(name: 'The Smiths', inviteCode: 'ABC123');
@@ -44,11 +48,13 @@ void main() {
     getPeopleUsecase = _MockGetPeopleUsecase();
     createFamilyUsecase = _MockCreateFamilyUsecase();
     joinFamilyUsecase = _MockJoinFamilyUsecase();
+    authService = _MockAuthService();
 
     cubit = PeopleCubit(
       getPeopleUsecase: getPeopleUsecase,
       createFamilyUsecase: createFamilyUsecase,
       joinFamilyUsecase: joinFamilyUsecase,
+      authService: authService,
     );
   });
 

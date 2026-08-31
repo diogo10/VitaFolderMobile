@@ -307,5 +307,6 @@
   "remindersFilterReimbursement": "Reembolso",
   "remindersFilterCustom": "Personalizado",
   "remindersFilterTitle": "Filtrar Lembretes",
-  "remindersFilterApply": "Aplicar Filtros"
+  "remindersFilterApply": "Aplicar Filtros",
+  "needToBeLoggedIn": "Você precisa estar logado para realizar esta ação"
 }

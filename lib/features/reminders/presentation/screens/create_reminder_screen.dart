@@ -150,8 +150,15 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   }
 
   void _onSave() {
+    final cubit = context.read<CreateReminderCubit>();
+    if (!cubit.authService.isLoggedIn()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.needToBeLoggedIn)),
+      );
+      return;
+    }
+
     if (_formKey.currentState?.validate() ?? false) {
-      final cubit = context.read<CreateReminderCubit>();
       final reminder = widget.reminder;
       if (reminder != null) {
         cubit.updateReminder(

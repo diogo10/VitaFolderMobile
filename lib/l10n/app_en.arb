@@ -328,5 +328,6 @@
   "remindersFilterReimbursement": "Reimbursement",
   "remindersFilterCustom": "Custom",
   "remindersFilterTitle": "Filter Reminders",
-  "remindersFilterApply": "Apply Filters"
+  "remindersFilterApply": "Apply Filters",
+  "needToBeLoggedIn": "You need to be logged in to perform this action"
 }

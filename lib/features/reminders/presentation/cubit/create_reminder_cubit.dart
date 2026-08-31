@@ -11,17 +11,16 @@ import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_
 class CreateReminderCubit extends Cubit<CreateReminderState> {
   final CreateReminderUsecase _createReminderUsecase;
   final UpdateReminderUsecase _updateReminderUsecase;
-  final AuthService _authService;
+  final AuthService authService;
   final PeopleRepository _peopleRepository;
 
   CreateReminderCubit({
     required CreateReminderUsecase createReminderUsecase,
     required UpdateReminderUsecase updateReminderUsecase,
-    required AuthService authService,
+    required this.authService,
     required PeopleRepository peopleRepository,
   }) : _createReminderUsecase = createReminderUsecase,
        _updateReminderUsecase = updateReminderUsecase,
-       _authService = authService,
        _peopleRepository = peopleRepository,
        super(CreateReminderInitial());
 
@@ -40,7 +39,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
       return;
     }
 
-    final userId = _authService.currentUserId;
+    final userId = authService.currentUserId;
     if (userId == null) {
       emit(CreateReminderError(message: 'Authentication required'));
       return;
@@ -97,7 +96,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
   }
 
   Future<String?> _resolveFamilyId() async {
-    final userId = _authService.currentUserId;
+    final userId = authService.currentUserId;
     if (userId == null) {
       return null;
     }

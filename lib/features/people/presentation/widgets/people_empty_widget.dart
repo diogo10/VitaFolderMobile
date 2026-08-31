@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 
 class PeopleEmptyWidget extends StatefulWidget {
@@ -25,6 +27,28 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
   void dispose() {
     _inviteCodeController.dispose();
     super.dispose();
+  }
+
+  void _handleCreateFamilyPressed() {
+    final authService = context.read<AuthService>();
+    if (!authService.isLoggedIn()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.needToBeLoggedIn)),
+      );
+      return;
+    }
+    widget.onCreateFamilyPressed?.call();
+  }
+
+  void _handleJoinFamilyPressed(String code) {
+    final authService = context.read<AuthService>();
+    if (!authService.isLoggedIn()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.needToBeLoggedIn)),
+      );
+      return;
+    }
+    widget.onJoinFamilyPressed?.call(code);
   }
 
   @override
@@ -83,7 +107,7 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                     children: [
                       const SizedBox(width: 12),
                       OutlinedButton(
-                        onPressed: widget.onCreateFamilyPressed,
+                        onPressed: _handleCreateFamilyPressed,
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: accent),
                           shape: RoundedRectangleBorder(
@@ -151,8 +175,9 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                               ),
                               const SizedBox(width: 12),
                               ElevatedButton(
-                                onPressed: () => widget.onJoinFamilyPressed
-                                    ?.call(_inviteCodeController.text),
+                                onPressed: () => _handleJoinFamilyPressed(
+                                  _inviteCodeController.text,
+                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: primary,
                                   shape: RoundedRectangleBorder(

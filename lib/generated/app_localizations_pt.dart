@@ -919,4 +919,8 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get remindersFilterApply => 'Aplicar Filtros';
+
+  @override
+  String get needToBeLoggedIn =>
+      'Você precisa estar logado para realizar esta ação';
 }

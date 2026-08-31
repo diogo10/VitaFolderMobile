@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/core/functions/edget_functions.dart';
 import 'package:vita_folder_mobile/core/injections/service_locator.dart';
@@ -37,6 +38,9 @@ void main() async {
   runApp(
     MultiBlocProvider(
       providers: [
+        Provider(
+          create: (_) => slInstance<AuthService>(instanceName: 'authService'),
+        ),
         BlocProvider(
           create: (_) =>
               slInstance<RemindersCubit>(instanceName: 'remindersCubit'),
@@ -66,15 +70,16 @@ void main() async {
           ),
         ),
         BlocProvider(
-          create: (_) => SignUpCubit(
-            slInstance<AuthService>(instanceName: 'authService'),
-          ),
+          create: (_) =>
+              SignUpCubit(slInstance<AuthService>(instanceName: 'authService')),
         ),
         BlocProvider(
           create: (_) => InvitePeopleCubit(
-            edgetFunctions: slInstance<EdgetFunctions>(instanceName: 'edgetFunctions'),
+            edgetFunctions: slInstance<EdgetFunctions>(
+              instanceName: 'edgetFunctions',
+            ),
           ),
-        )
+        ),
       ],
       child: MyApp(onboardingCompleted: onboardingCompleted),
     ),
@@ -127,7 +132,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       title: 'VitaFolder',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      routerConfig: createRouter(onboardingCompleted: widget.onboardingCompleted),
+      routerConfig: createRouter(
+        onboardingCompleted: widget.onboardingCompleted,
+      ),
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

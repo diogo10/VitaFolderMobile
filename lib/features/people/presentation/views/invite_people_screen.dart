@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/invite_people_cubit.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/invite_people_state.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
@@ -37,13 +38,34 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
     }
   }
 
+  void _handleSendInvite(AppLocalizations l) {
+    final authService = context.read<AuthService>();
+    if (!authService.isLoggedIn()) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l.needToBeLoggedIn)));
+      return;
+    }
+
+    final email = _emailController.text.trim();
+    if (email.isEmpty) return;
+    context.read<InvitePeopleCubit>().sendInvite(
+      email: email,
+      relationship: _selectedRelationship,
+      subject: l.invitePeopleEmailSubject(
+        _relationshipLabel(_selectedRelationship, l),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final authService = context.read<AuthService>();
+    final isLoggedIn = authService.isLoggedIn();
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l.invitePeopleTitle),
-      ),
+      appBar: AppBar(title: Text(l.invitePeopleTitle)),
       body: BlocListener<InvitePeopleCubit, InvitePeopleState>(
         listener: (context, state) {
           if (state is InvitePeopleSuccess) {
@@ -73,6 +95,7 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
                   labelText: l.invitePeopleEmailLabel,
                   border: const OutlineInputBorder(),
                 ),
+                enabled: isLoggedIn,
               ),
               const SizedBox(height: 20),
               DropdownButtonFormField<InviteRelationship>(
@@ -87,30 +110,22 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
                     child: Text(_relationshipLabel(rel, l)),
                   );
                 }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _selectedRelationship = value);
-                  }
-                },
+                onChanged: isLoggedIn
+                    ? (value) {
+                        if (value != null) {
+                          setState(() => _selectedRelationship = value);
+                        }
+                      }
+                    : null,
               ),
               const SizedBox(height: 32),
               BlocBuilder<InvitePeopleCubit, InvitePeopleState>(
                 builder: (context, state) {
                   final isLoading = state is InvitePeopleLoading;
                   return FilledButton(
-                    onPressed: isLoading
+                    onPressed: isLoading || !isLoggedIn
                         ? null
-                        : () {
-                            final email = _emailController.text.trim();
-                            if (email.isEmpty) return;
-                            context.read<InvitePeopleCubit>().sendInvite(
-                                  email: email,
-                                  relationship: _selectedRelationship,
-                                  subject: l.invitePeopleEmailSubject(
-                                    _relationshipLabel(_selectedRelationship, l),
-                                  ),
-                                );
-                          },
+                        : () => _handleSendInvite(l),
                     child: isLoading
                         ? const SizedBox(
                             width: 20,

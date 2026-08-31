@@ -33,6 +33,17 @@ class _RemindersViewState extends State<RemindersView> {
     }
   }
 
+  void _handleAddPressed() {
+    final cubit = context.read<RemindersCubit>();
+    if (!cubit.authService.isLoggedIn()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.needToBeLoggedIn)),
+      );
+      return;
+    }
+    context.push('/create-reminder');
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -62,7 +73,7 @@ class _RemindersViewState extends State<RemindersView> {
                       onCalendarPressed: cubit.toggleViewMode,
                       onNotificationsPressed: () => context.go('/account'),
                       onProfilePressed: () => context.go('/account'),
-                      onAddPressed: () => context.push('/create-reminder'),
+                      onAddPressed: _handleAddPressed,
                       onFilterPressed: () => _showFilterSheet(context),
                       hasActiveFilters: hasActiveFilters,
                     ),

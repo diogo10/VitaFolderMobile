@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
 import 'package:vita_folder_mobile/features/people/presentation/cubit/people_state.dart';
 import 'package:vita_folder_mobile/features/people/presentation/widgets/people_empty_widget.dart';
@@ -17,6 +18,14 @@ class _PeopleViewState extends State<PeopleView> {
   final _familyNameController = TextEditingController();
 
   void _onCreateFamilyPressed() {
+    final authService = context.read<AuthService>();
+    if (!authService.isLoggedIn()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.needToBeLoggedIn)),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(

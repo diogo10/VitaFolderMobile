@@ -137,6 +137,7 @@ Widget _pumpApp() {
           joinFamilyUsecase: GetIt.instance<JoinFamilyUsecase>(
             instanceName: 'joinFamilyUsecase',
           ),
+          authService: GetIt.instance<AuthService>(instanceName: 'authService'),
         ),
       ),
       BlocProvider<AccountCubit>(
@@ -185,6 +186,7 @@ Widget _pumpAppWithOnboarding() {
           joinFamilyUsecase: GetIt.instance<JoinFamilyUsecase>(
             instanceName: 'joinFamilyUsecase',
           ),
+          authService: GetIt.instance<AuthService>(instanceName: 'authService'),
         ),
       ),
       BlocProvider<AccountCubit>(

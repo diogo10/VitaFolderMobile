@@ -13,30 +13,22 @@ class PeopleServiceLocator {
 
   void init() {
     sl.registerSingleton<PeopleRepository>(
-      PeopleRepositoryImpl(
-        
-      ),
+      PeopleRepositoryImpl(),
       instanceName: 'peopleRepositoryImpl',
     );
 
     sl.registerSingleton<GetPeopleUsecase>(
-      GetPeopleUsecase(
-        repository: sl(instanceName: 'peopleRepositoryImpl'),
-      ),
+      GetPeopleUsecase(repository: sl(instanceName: 'peopleRepositoryImpl')),
       instanceName: 'getPeopleUsecase',
     );
 
     sl.registerSingleton<CreateFamilyUsecase>(
-      CreateFamilyUsecase(
-        repository: sl(instanceName: 'peopleRepositoryImpl'),
-      ),
+      CreateFamilyUsecase(repository: sl(instanceName: 'peopleRepositoryImpl')),
       instanceName: 'createFamilyUsecase',
     );
 
     sl.registerSingleton<JoinFamilyUsecase>(
-      JoinFamilyUsecase(
-        repository: sl(instanceName: 'peopleRepositoryImpl'),
-      ),
+      JoinFamilyUsecase(repository: sl(instanceName: 'peopleRepositoryImpl')),
       instanceName: 'joinFamilyUsecase',
     );
 
@@ -45,14 +37,13 @@ class PeopleServiceLocator {
         getPeopleUsecase: sl(instanceName: 'getPeopleUsecase'),
         createFamilyUsecase: sl(instanceName: 'createFamilyUsecase'),
         joinFamilyUsecase: sl(instanceName: 'joinFamilyUsecase'),
+        authService: sl(instanceName: 'authService'),
       ),
       instanceName: 'peopleCubit',
     );
 
     sl.registerSingleton<InvitePeopleCubit>(
-      InvitePeopleCubit(
-        edgetFunctions: sl(instanceName: 'edgetFunctions'),
-      ),
+      InvitePeopleCubit(edgetFunctions: sl(instanceName: 'edgetFunctions')),
       instanceName: 'invitePeopleCubit',
     );
   }

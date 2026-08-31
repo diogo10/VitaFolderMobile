@@ -1,11 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:vita_folder_mobile/core/auth/auth_service.dart';
 import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
 import 'package:vita_folder_mobile/generated/app_localizations.dart';
 import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 
 class RemindersSuggestionsCardsWidget extends StatelessWidget {
   const RemindersSuggestionsCardsWidget({super.key});
+
+  void _handleSuggestionPressed(
+    BuildContext context,
+    ReminderType reminderType,
+  ) {
+    final authService = context.read<AuthService>();
+    if (!authService.isLoggedIn()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.needToBeLoggedIn)),
+      );
+      return;
+    }
+    context.push('/create-reminder', extra: reminderType);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +39,8 @@ class RemindersSuggestionsCardsWidget extends StatelessWidget {
             buttonColor: const Color(0xFFB68C3B),
             buttonLabel: l.remindersSuggestionsAddButton,
             reminderType: ReminderType.chores,
+            onPressed: () =>
+                _handleSuggestionPressed(context, ReminderType.chores),
           ),
           const SizedBox(height: 12),
           _ReminderSuggestionCard(
@@ -34,6 +52,8 @@ class RemindersSuggestionsCardsWidget extends StatelessWidget {
             buttonColor: const Color(0xFF4076C3),
             buttonLabel: l.remindersSuggestionsAddButton,
             reminderType: ReminderType.appointment,
+            onPressed: () =>
+                _handleSuggestionPressed(context, ReminderType.appointment),
           ),
           const SizedBox(height: 12),
           _ReminderSuggestionCard(
@@ -45,6 +65,8 @@ class RemindersSuggestionsCardsWidget extends StatelessWidget {
             buttonColor: const Color(0xFFD46D8B),
             buttonLabel: l.remindersSuggestionsAddButton,
             reminderType: ReminderType.birthday,
+            onPressed: () =>
+                _handleSuggestionPressed(context, ReminderType.birthday),
           ),
         ],
       ),
@@ -61,6 +83,7 @@ class _ReminderSuggestionCard extends StatelessWidget {
   final Color buttonColor;
   final String buttonLabel;
   final ReminderType reminderType;
+  final VoidCallback onPressed;
 
   const _ReminderSuggestionCard({
     required this.icon,
@@ -71,6 +94,7 @@ class _ReminderSuggestionCard extends StatelessWidget {
     required this.buttonColor,
     required this.buttonLabel,
     required this.reminderType,
+    required this.onPressed,
   });
 
   @override
@@ -129,12 +153,12 @@ class _ReminderSuggestionCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: TextButton(
-              onPressed: () => context.push(
-                '/create-reminder',
-                extra: reminderType,
-              ),
+              onPressed: onPressed,
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
                 foregroundColor: buttonColor,
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,

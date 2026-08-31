@@ -1801,6 +1801,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Apply Filters'**
   String get remindersFilterApply;
+
+  /// No description provided for @needToBeLoggedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You need to be logged in to perform this action'**
+  String get needToBeLoggedIn;
 }
 
 class _AppLocalizationsDelegate

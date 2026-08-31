@@ -332,11 +332,15 @@ class AppTheme {
       ElevatedButtonThemeData(
         style: ButtonStyle(
           elevation: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.disabled)) return 0;
-            if (states.contains(WidgetState.hovered))
+            if (states.contains(WidgetState.disabled)) {
+              return 0;
+            }
+            if (states.contains(WidgetState.hovered)) {
               return AppConstants.elevationLevel3;
-            if (states.contains(WidgetState.pressed))
+            }
+            if (states.contains(WidgetState.pressed)) {
               return AppConstants.elevationLevel1;
+            }
             return AppConstants.elevationLevel2;
           }),
           padding: WidgetStateProperty.all(
