@@ -8,7 +8,11 @@ import 'package:vita_folder_mobile/theme/theme_extensions.dart';
 class AccountSettingsWidget extends StatelessWidget {
   final String familyCode;
   final bool isAdmin;
-  const AccountSettingsWidget({super.key, required this.familyCode, required this.isAdmin});
+  const AccountSettingsWidget({
+    super.key,
+    required this.familyCode,
+    required this.isAdmin,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,22 +43,17 @@ class AccountSettingsWidget extends StatelessWidget {
           _AccountSettingsSection(
             title: l.accountSettingsFamilySection,
             items: [
-              if(isAdmin)
-              _AccountSettingsItemData(
-                icon: Icons.house_rounded,
-                title: l.accountSettingsFamilySettings,
-                subtitle: l.accountSettingsFamilySettingsSubtitle,
-              ),
               if (isAdmin)
-              _AccountSettingsItemData(
-                icon: Icons.person_search_rounded,
-                title: l.accountSettingsRolesPermissions,
-                subtitle: l.accountSettingsRolesPermissionsSubtitle,
-              ),
+                _AccountSettingsItemData(
+                  icon: Icons.house_rounded,
+                  title: l.accountSettingsFamilySettings,
+                  subtitle: l.accountSettingsFamilySettingsSubtitle,
+                ),
               _AccountSettingsItemData(
                 icon: Icons.person_add_alt_1_rounded,
                 title: l.accountSettingsInviteMembers,
-                subtitle: "$familyCode - ${l.accountSettingsInviteMembersSubtitle}",
+                subtitle:
+                    "$familyCode - ${l.accountSettingsInviteMembersSubtitle}",
                 onTap: () => context.go('/people'),
               ),
             ],
@@ -94,10 +93,7 @@ class _AccountSettingsSection extends StatelessWidget {
   final String title;
   final List<_AccountSettingsItemData> items;
 
-  const _AccountSettingsSection({
-    required this.title,
-    required this.items,
-  });
+  const _AccountSettingsSection({required this.title, required this.items});
 
   @override
   Widget build(BuildContext context) {
@@ -129,10 +125,12 @@ class _AccountSettingsSection extends StatelessWidget {
             children: items
                 .asMap()
                 .entries
-                .map((entry) => _AccountSettingsItem(
-                      data: entry.value,
-                      isLast: entry.key == items.length - 1,
-                    ))
+                .map(
+                  (entry) => _AccountSettingsItem(
+                    data: entry.value,
+                    isLast: entry.key == items.length - 1,
+                  ),
+                )
                 .toList(growable: false),
           ),
         ),
@@ -161,23 +159,27 @@ class _AccountSettingsItem extends StatelessWidget {
   final _AccountSettingsItemData data;
   final bool isLast;
 
-  const _AccountSettingsItem({
-    required this.data,
-    required this.isLast,
-  });
+  const _AccountSettingsItem({required this.data, required this.isLast});
 
   @override
   Widget build(BuildContext context) {
     final iconBackground = data.accent
         ? context.colorScheme.error.withValues(alpha: 0.16)
         : context.colorScheme.primary.withValues(alpha: 0.12);
-    final iconColor = data.accent ? context.colorScheme.error : context.colorScheme.primary;
-    final titleColor = data.accent ? context.colorScheme.error : context.colorScheme.onSurface;
+    final iconColor = data.accent
+        ? context.colorScheme.error
+        : context.colorScheme.primary;
+    final titleColor = data.accent
+        ? context.colorScheme.error
+        : context.colorScheme.onSurface;
 
     return Column(
       children: [
         ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 8,
+          ),
           leading: Container(
             width: 48,
             height: 48,
