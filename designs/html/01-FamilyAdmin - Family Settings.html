@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in { animation: fadeIn 0.45s ease both; }
+        .slide-up { animation: slideInUp 0.45s ease both; }
+        .slide-up:nth-child(2) { animation-delay: 0.08s; }
+        .slide-up:nth-child(3) { animation-delay: 0.16s; }
+        .slide-up:nth-child(4) { animation-delay: 0.24s; }
+        .slide-up:nth-child(5) { animation-delay: 0.32s; }
+
+        .action-btn { transition: transform 0.15s ease, background-color 0.15s ease; }
+        .action-btn:active { transform: scale(0.94); }
+        .member-row { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .member-row:active { transform: scale(0.985); }
+        .input-field {
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .input-field:focus {
+            border-color: #8b7355;
+            box-shadow: 0 0 0 3px rgba(139,115,85,0.12);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                        figtree: ['Figtree', 'sans-serif'],
+                    },
+                    colors: {
+                        sand: {
+                            50: '#faf8f5',
+                            100: '#f0ebe3',
+                            200: '#e4dace',
+                            300: '#c9b99a',
+                            400: '#b8a080',
+                            500: '#8b7355',
+                            600: '#7a6348',
+                            700: '#634f39',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sand-50 font-figtree" style="max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative; overflow-x: hidden;">
+
+    <!-- STATUS BAR -->
+    <div id="status-bar" class="bg-sand-50 px-5 pt-3 pb-1 flex justify-between items-center">
+        <span class="text-sand-500 text-xs font-outfit font-medium">9:41 AM</span>
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-wifi text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-signal text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-battery-three-quarters text-sand-500 text-xs"></i>
+        </div>
+    </div>
+
+    <!-- TOP NAV -->
+    <header id="header" class="px-5 pt-2 pb-4 flex items-center justify-between fade-in">
+        <button id="back-button" class="action-btn w-10 h-10 rounded-xl bg-white border border-sand-100 flex items-center justify-center" aria-label="Go back">
+            <i class="fa-solid fa-chevron-left text-sand-500 text-sm"></i>
+        </button>
+        <h1 class="font-outfit font-bold text-sand-700 text-base">Family Settings</h1>
+        <button id="save-button" class="action-btn font-outfit font-semibold text-sand-500 text-xs px-2 py-2" aria-label="Save family settings">Save</button>
+    </header>
+
+    <main id="main-content" class="px-5 pb-10 overflow-y-auto">
+
+        <!-- FAMILY NAME -->
+        <section id="family-name-section" class="mb-4 fade-in">
+            <label for="family-name" class="font-outfit font-semibold text-sand-500 uppercase tracking-wider text-[10px] block mb-2">Family name</label>
+            <input id="family-name" type="text" value="Smith Family" class="input-field w-full bg-white border border-sand-200 rounded-2xl px-4 py-3 font-figtree text-sand-700 text-sm" style="box-shadow: 0 2px 10px rgba(139,115,85,0.06);">
+        </section>
+
+        <div class="h-px bg-sand-100 mb-4"></div>
+
+        <!-- MANAGE MEMBERS -->
+        <section id="members-section">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="font-outfit font-bold text-sand-700 text-sm">Manage Members</h2>
+                <span id="member-count" class="font-figtree font-medium text-sand-300 text-[10px]">5 Total</span>
+            </div>
+
+            <div id="member-list" class="flex flex-col gap-1.5">
+                <div class="member-row slide-up bg-white rounded-xl border border-sand-100 p-3 flex items-center gap-2.5" style="box-shadow: 0 2px 8px rgba(139,115,85,0.07);">
+                    <div class="w-9 h-9 rounded-xl bg-sand-500 flex items-center justify-center flex-shrink-0"><span class="font-outfit font-bold text-sand-50 text-xs">SS</span></div>
+                    <div class="flex-1 min-w-0"><p class="font-outfit font-semibold text-sand-700 text-xs">Sarah Smith</p><p class="font-figtree text-sand-400 text-[10px]">Admin · Owner</p></div>
+                    <span class="bg-sand-100 text-sand-400 font-figtree font-semibold text-[9px] px-2 py-1 rounded-full">YOU</span>
+                </div>
+
+                <div class="member-row slide-up bg-white rounded-xl border border-sand-100 p-3 flex items-center gap-2.5" style="box-shadow: 0 2px 8px rgba(139,115,85,0.07);">
+                    <div class="w-9 h-9 rounded-xl bg-blue-400 flex items-center justify-center flex-shrink-0"><span class="font-outfit font-bold text-white text-xs">JS</span></div>
+                    <div class="flex-1 min-w-0"><p class="font-outfit font-semibold text-sand-700 text-xs">James Smith</p><p class="font-figtree text-sand-400 text-[10px]">Parent</p></div>
+                    <button class="remove-member action-btn w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center" aria-label="Remove James Smith"><i class="fa-solid fa-user-minus text-rose-400 text-[10px]"></i></button>
+                </div>
+
+                <div class="member-row slide-up bg-white rounded-xl border border-sand-100 p-3 flex items-center gap-2.5" style="box-shadow: 0 2px 8px rgba(139,115,85,0.07);">
+                    <div class="w-9 h-9 rounded-xl bg-rose-400 flex items-center justify-center flex-shrink-0"><span class="font-outfit font-bold text-white text-xs">LS</span></div>
+                    <div class="flex-1 min-w-0"><p class="font-outfit font-semibold text-sand-700 text-xs">Lily Smith</p><p class="font-figtree text-sand-400 text-[10px]">Child</p></div>
+                    <button class="remove-member action-btn w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center" aria-label="Remove Lily Smith"><i class="fa-solid fa-user-minus text-rose-400 text-[10px]"></i></button>
+                </div>
+
+                <div class="member-row slide-up bg-white rounded-xl border border-sand-100 p-3 flex items-center gap-2.5" style="box-shadow: 0 2px 8px rgba(139,115,85,0.07);">
+                    <div class="w-9 h-9 rounded-xl bg-amber-400 flex items-center justify-center flex-shrink-0"><span class="font-outfit font-bold text-white text-xs">MS</span></div>
+                    <div class="flex-1 min-w-0"><p class="font-outfit font-semibold text-sand-700 text-xs">Max Smith</p><p class="font-figtree text-sand-400 text-[10px]">Child</p></div>
+                    <button class="remove-member action-btn w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center" aria-label="Remove Max Smith"><i class="fa-solid fa-user-minus text-rose-400 text-[10px]"></i></button>
+                </div>
+
+                <div class="member-row slide-up bg-white rounded-xl border border-sand-100 p-3 flex items-center gap-2.5" style="box-shadow: 0 2px 8px rgba(139,115,85,0.07);">
+                    <div class="w-9 h-9 rounded-xl bg-purple-400 flex items-center justify-center flex-shrink-0"><span class="font-outfit font-bold text-white text-xs">RS</span></div>
+                    <div class="flex-1 min-w-0"><p class="font-outfit font-semibold text-sand-700 text-xs">Rose Smith</p><p class="font-figtree text-sand-400 text-[10px]">Member</p></div>
+                    <button class="remove-member action-btn w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center" aria-label="Remove Rose Smith"><i class="fa-solid fa-user-minus text-rose-400 text-[10px]"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- DANGER ZONE -->
+        <section id="danger-zone" class="mt-8 slide-up">
+            <h2 class="font-outfit font-bold text-red-500 text-xs mb-2">Danger Zone</h2>
+            <div class="bg-rose-50 border border-rose-100 rounded-2xl p-3.5">
+                <h3 class="font-outfit font-bold text-red-500 text-xs">Delete Family Circle</h3>
+                <p class="font-figtree text-red-400 text-[10px] leading-relaxed mt-1">This action cannot be undone. All data, tasks, and members will be permanently removed.</p>
+                <button id="delete-button" class="action-btn w-full bg-white border border-rose-200 rounded-xl py-2.5 mt-3 font-outfit font-semibold text-red-500 text-[10px]">Delete Circle</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const memberCount = document.getElementById('member-count');
+        const memberList = document.getElementById('member-list');
+        const familyName = document.getElementById('family-name');
+
+        document.getElementById('back-button').addEventListener('click', () => window.history.back());
+        document.getElementById('save-button').addEventListener('click', (event) => {
+            const button = event.currentTarget;
+            button.textContent = 'Saved';
+            button.classList.add('text-emerald-600');
+            window.setTimeout(() => {
+                button.textContent = 'Save';
+                button.classList.remove('text-emerald-600');
+            }, 1400);
+        });
+
+        memberList.addEventListener('click', (event) => {
+            const button = event.target.closest('.remove-member');
+            if (!button) return;
+            const row = button.closest('.member-row');
+            const name = row.querySelector('p').textContent;
+            if (window.confirm(`Remove ${name} from ${familyName.value}?`)) {
+                row.remove();
+                memberCount.textContent = `${memberList.children.length} Total`;
+            }
+        });
+
+        document.getElementById('delete-button').addEventListener('click', () => {
+            if (window.confirm(`Delete ${familyName.value} permanently?`)) {
+                window.alert('Family circle deleted.');
+            }
+        });
+    </script>
+</body>
+</html>

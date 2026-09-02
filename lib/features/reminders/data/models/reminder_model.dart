@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 
 class ReminderModel extends ReminderEntity {
   ReminderModel({

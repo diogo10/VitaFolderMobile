@@ -2,12 +2,12 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vita_folder_mobile/core/errors/failure.dart';
-import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
-import 'package:vita_folder_mobile/features/home/domain/usecase/get_home_data_usecase.dart';
-import 'package:vita_folder_mobile/features/home/domain/usecase/has_reminders_usecase.dart';
-import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
-import 'package:vita_folder_mobile/features/home/presentation/cubit/home_state.dart';
+import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/features/home/domain/entities/home_entity.dart';
+import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
+import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_state.dart';
 
 class _MockGetHomeDataUsecase extends Mock implements GetHomeDataUsecase {}
 

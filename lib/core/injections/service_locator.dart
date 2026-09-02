@@ -1,12 +1,12 @@
 import 'package:get_it/get_it.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/core/functions/edget_functions.dart';
-import 'package:vita_folder_mobile/core/injections/account/account_service_locator.dart';
-import 'package:vita_folder_mobile/core/injections/home/home_service_locator.dart';
-import 'package:vita_folder_mobile/core/injections/people/people_service_locator.dart';
-import 'package:vita_folder_mobile/core/injections/reminders/reminder_service_locator.dart';
-import 'package:vita_folder_mobile/core/local_storage/local_storage_datasource.dart';
-import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/functions/edget_functions.dart';
+import 'package:house_mira/core/injections/account/account_service_locator.dart';
+import 'package:house_mira/core/injections/home/home_service_locator.dart';
+import 'package:house_mira/core/injections/people/people_service_locator.dart';
+import 'package:house_mira/core/injections/reminders/reminder_service_locator.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 
 final GetIt slInstance = GetIt.instance;
 

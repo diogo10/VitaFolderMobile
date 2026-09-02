@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vita_folder_mobile/core/errors/failure.dart';
-import 'package:vita_folder_mobile/features/home/domain/usecase/get_home_data_usecase.dart';
-import 'package:vita_folder_mobile/features/home/domain/usecase/has_reminders_usecase.dart';
-import 'package:vita_folder_mobile/features/home/presentation/cubit/home_state.dart';
+import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
+import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
   final GetHomeDataUsecase getHomeDataUsecase;

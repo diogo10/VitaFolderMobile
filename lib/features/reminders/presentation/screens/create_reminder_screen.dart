@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_reminder_cubit.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_reminder_state.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_state.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class CreateReminderScreen extends StatefulWidget {
   final ReminderType? initialType;

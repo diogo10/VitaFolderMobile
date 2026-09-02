@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
-import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_circle_widget.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_action_card_widget.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_footer_widget.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_invite_card_widget.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_reminders_widget.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_success_header_widget.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_upcoming_reminders_widget.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/features/home/domain/entities/home_entity.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_circle_widget.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_empty_action_card_widget.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_empty_footer_widget.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_empty_invite_card_widget.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_empty_reminders_widget.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_success_header_widget.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_upcoming_reminders_widget.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class HomeViewSuccess extends StatelessWidget {
   final HomeEntity data;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vita_folder_mobile/core/injections/service_locator.dart';
-import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_view.dart';
+import 'package:house_mira/core/injections/service_locator.dart';
+import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
+import 'package:house_mira/features/onboarding/presentation/views/onboarding_view.dart';
 
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({super.key});

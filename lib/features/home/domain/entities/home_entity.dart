@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/people/domain/entities/person_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 
 class HomeEntity {
   final List<PersonEntity> peopleInCircle;

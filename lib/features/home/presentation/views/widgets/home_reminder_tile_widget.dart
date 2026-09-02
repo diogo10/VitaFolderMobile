@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 
 class HomeReminderTileWidget extends StatelessWidget {
   final ReminderEntity reminder;

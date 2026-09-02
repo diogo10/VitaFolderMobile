@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/account_state.dart';
-import 'package:vita_folder_mobile/features/account/presentation/views/account_header_widget.dart';
-import 'package:vita_folder_mobile/features/account/presentation/views/account_settings_widget.dart';
+import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
+import 'package:house_mira/features/account/presentation/views/account_header_widget.dart';
+import 'package:house_mira/features/account/presentation/views/account_settings_widget.dart';
 
 class AccountLoadedWidget extends StatelessWidget {
   const AccountLoadedWidget({super.key});

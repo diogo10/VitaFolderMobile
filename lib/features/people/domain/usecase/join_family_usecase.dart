@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 
 class JoinFamilyUsecase {
   final PeopleRepository repository;

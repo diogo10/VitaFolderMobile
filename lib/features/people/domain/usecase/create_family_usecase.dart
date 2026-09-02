@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:fpdart/fpdart.dart';
-import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 
 class CreateFamilyUsecase {
   final PeopleRepository repository;

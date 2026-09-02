@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
-import 'package:vita_folder_mobile/features/people/presentation/widgets/family_member_card_widget.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/features/people/domain/entities/person_entity.dart';
+import 'package:house_mira/features/people/presentation/widgets/family_member_card_widget.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class HomeCircleWidget extends StatelessWidget {
   final List<PersonEntity> people;

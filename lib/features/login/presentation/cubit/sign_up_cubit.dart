@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/features/login/presentation/cubit/sign_up_state.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/login/presentation/cubit/sign_up_state.dart';
 
 class SignUpCubit extends Cubit<SignUpState> {
   final AuthService _authService;

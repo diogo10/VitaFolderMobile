@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/theme/theme_extensions.dart';
+import 'package:house_mira/theme/theme_extensions.dart';
 
 class AccountHeaderWidget extends StatelessWidget {
   final String userName;

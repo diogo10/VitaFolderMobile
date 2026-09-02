@@ -1,10 +1,10 @@
 import 'package:get_it/get_it.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/features/home/domain/usecase/get_home_data_usecase.dart';
-import 'package:vita_folder_mobile/features/home/domain/usecase/has_reminders_usecase.dart';
-import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
-import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
+import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
+import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 
 class HomeServiceLocator {
   final GetIt sl;

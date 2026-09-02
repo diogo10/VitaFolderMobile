@@ -1,12 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
-import 'package:vita_folder_mobile/features/reminders/data/models/reminder_model.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/usecase/create_reminder_usecase.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/usecase/update_reminder_usecase.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_reminder_state.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
+import 'package:house_mira/features/reminders/domain/usecase/update_reminder_usecase.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_state.dart';
 
 class CreateReminderCubit extends Cubit<CreateReminderState> {
   final CreateReminderUsecase _createReminderUsecase;

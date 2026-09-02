@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/features/people/domain/usecase/get_people_usecase.dart';
-import 'package:vita_folder_mobile/features/people/domain/usecase/create_family_usecase.dart';
-import 'package:vita_folder_mobile/features/people/domain/usecase/join_family_usecase.dart';
-import 'package:vita_folder_mobile/features/people/presentation/cubit/people_state.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/people/domain/usecase/get_people_usecase.dart';
+import 'package:house_mira/features/people/domain/usecase/create_family_usecase.dart';
+import 'package:house_mira/features/people/domain/usecase/join_family_usecase.dart';
+import 'package:house_mira/features/people/presentation/cubit/people_state.dart';
 
 class PeopleCubit extends Cubit<PeopleState> {
   GetPeopleUsecase getPeopleUsecase;

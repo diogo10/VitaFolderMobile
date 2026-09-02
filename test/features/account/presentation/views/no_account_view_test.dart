@@ -5,14 +5,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/core/widgets/sand/google_g_icon.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
-import 'package:vita_folder_mobile/features/account/presentation/views/no_account_view.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/family_entity.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
-import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/widgets/sand/google_g_icon.dart';
+import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira/features/account/presentation/views/no_account_view.dart';
+import 'package:house_mira/features/people/domain/entities/family_entity.dart';
+import 'package:house_mira/features/people/domain/entities/person_entity.dart';
+import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class _FakeAuthService extends AuthService {
   final Completer<PersonEntity?> getAsPersonEntityCompleter = Completer();
@@ -106,7 +106,7 @@ void main() {
     testWidgets('renders hero, auth and trust content', (tester) async {
       await pumpNoAccount(tester, buildCubit());
 
-      expect(find.text('FamilyAdmin'), findsOneWidget);
+      expect(find.text('HouseMira'), findsOneWidget);
       expect(
         find.textContaining('Your family,', findRichText: true),
         findsOneWidget,

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/account_state.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/manage_profile_cubit.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/manage_profile_state.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
+import 'package:house_mira/features/account/presentation/cubit/manage_profile_cubit.dart';
+import 'package:house_mira/features/account/presentation/cubit/manage_profile_state.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class ManageProfileScreen extends StatefulWidget {
   const ManageProfileScreen({super.key});

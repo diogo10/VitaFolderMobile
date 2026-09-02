@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:vita_folder_mobile/features/people/presentation/widgets/family_header_widget.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/features/people/presentation/widgets/family_header_widget.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class HomeSuccessHeaderWidget extends StatelessWidget {
   final String role;

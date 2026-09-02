@@ -56,20 +56,20 @@
             ]
         },
         {
-            "name": "VitaFolderMobile",
+            "name": "HouseMira",
             "request": "launch",
             "type": "dart",
             "program": "${workspaceFolder}/lib/main.dart",
             "flutterMode": "debug"
         },
         {
-            "name": "VitaFolderMobile (profile mode)",
+            "name": "HouseMira (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "VitaFolderMobile (release mode)",
+            "name": "HouseMira (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

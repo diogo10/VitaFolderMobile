@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/features/people/presentation/widgets/family_header_widget.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_view_mode.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
-import 'package:vita_folder_mobile/theme/sand_palette.dart';
-import 'package:vita_folder_mobile/theme/theme_extensions.dart';
+import 'package:house_mira/features/people/presentation/widgets/family_header_widget.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_view_mode.dart';
+import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira/theme/sand_palette.dart';
+import 'package:house_mira/theme/theme_extensions.dart';
 
 class RemindersHeaderWidget extends StatefulWidget {
   final String title;

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vita_folder_mobile/core/widgets/sand/google_g_icon.dart';
-import 'package:vita_folder_mobile/core/widgets/sand/sand_primary_button.dart';
-import 'package:vita_folder_mobile/core/widgets/sand/sand_social_button.dart';
-import 'package:vita_folder_mobile/core/widgets/sand/sand_text_field.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
-import 'package:vita_folder_mobile/theme/sand_palette.dart';
+import 'package:house_mira/core/widgets/sand/google_g_icon.dart';
+import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
+import 'package:house_mira/core/widgets/sand/sand_social_button.dart';
+import 'package:house_mira/core/widgets/sand/sand_text_field.dart';
+import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira/theme/sand_palette.dart';
 
 class AccountNoAccountAuthWidget extends StatelessWidget {
   final TextEditingController emailController;

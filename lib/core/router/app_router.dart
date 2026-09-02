@@ -1,17 +1,17 @@
 import 'package:go_router/go_router.dart';
-import 'package:vita_folder_mobile/core/router/main_shell.dart';
-import 'package:vita_folder_mobile/features/account/presentation/views/account_view.dart';
-import 'package:vita_folder_mobile/features/account/presentation/views/manage_profile_screen.dart';
-import 'package:vita_folder_mobile/features/account/presentation/views/notification_settings_screen.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/home_view.dart';
-import 'package:vita_folder_mobile/features/login/presentation/views/sign_up_screen.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/pages/onboarding_page.dart';
-import 'package:vita_folder_mobile/features/people/presentation/views/invite_people_screen.dart';
-import 'package:vita_folder_mobile/features/people/presentation/views/people_view.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/screens/create_reminder_screen.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/screens/reminders_view.dart';
+import 'package:house_mira/core/router/main_shell.dart';
+import 'package:house_mira/features/account/presentation/views/account_view.dart';
+import 'package:house_mira/features/account/presentation/views/manage_profile_screen.dart';
+import 'package:house_mira/features/account/presentation/views/notification_settings_screen.dart';
+import 'package:house_mira/features/home/presentation/views/home_view.dart';
+import 'package:house_mira/features/login/presentation/views/sign_up_screen.dart';
+import 'package:house_mira/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:house_mira/features/people/presentation/views/invite_people_screen.dart';
+import 'package:house_mira/features/people/presentation/views/people_view.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/presentation/screens/create_reminder_screen.dart';
+import 'package:house_mira/features/reminders/presentation/screens/reminders_view.dart';
 
 GoRouter createRouter({required bool onboardingCompleted}) {
   return GoRouter(

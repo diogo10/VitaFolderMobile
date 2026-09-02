@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:vita_folder_mobile/core/errors/failure.dart';
-import 'package:vita_folder_mobile/features/reminders/data/models/reminder_model.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
+import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
+import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 
 class UpdateReminderUsecase {
   final ReminderRepository repository;

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
-import 'package:vita_folder_mobile/features/people/presentation/cubit/people_state.dart';
-import 'package:vita_folder_mobile/features/people/presentation/widgets/people_empty_widget.dart';
-import 'package:vita_folder_mobile/features/people/presentation/widgets/people_loaded_widget.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
+import 'package:house_mira/features/people/presentation/cubit/people_state.dart';
+import 'package:house_mira/features/people/presentation/widgets/people_empty_widget.dart';
+import 'package:house_mira/features/people/presentation/widgets/people_loaded_widget.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class PeopleView extends StatefulWidget {
   const PeopleView({super.key});

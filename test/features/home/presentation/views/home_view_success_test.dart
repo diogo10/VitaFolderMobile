@@ -3,18 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
-import 'package:vita_folder_mobile/features/home/domain/usecase/get_home_data_usecase.dart';
-import 'package:vita_folder_mobile/features/home/domain/usecase/has_reminders_usecase.dart';
-import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/home_view_success.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_circle_widget.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_success_header_widget.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_upcoming_reminders_widget.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/features/home/domain/entities/home_entity.dart';
+import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
+import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
+import 'package:house_mira/features/home/presentation/views/home_view_success.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_circle_widget.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_success_header_widget.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_upcoming_reminders_widget.dart';
+import 'package:house_mira/features/people/domain/entities/person_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class _FakeGetHomeDataUsecase extends Mock implements GetHomeDataUsecase {}
 

@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'VitaFolder';
+  String get appTitle => 'HouseMira';
 
   @override
   String get navHome => 'Home';
@@ -157,7 +157,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeEmptyInviteShareMessage =>
-      'Join my family circle on VitaFolder.';
+      'Join my family circle on HouseMira.';
 
   @override
   String get homeEmptyRemindersSectionTitle => 'Upcoming Reminders';
@@ -531,7 +531,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountNoAccountFamilyPlan => 'Family plan';
 
   @override
-  String get appBrandName => 'FamilyAdmin';
+  String get appBrandName => 'HouseMira';
 
   @override
   String get accountNoAccountTitleTop => 'Your family,';
@@ -684,7 +684,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String invitePeopleEmailSubject(String relationship) {
-    return 'You have been invited as a $relationship for VitaFolder';
+    return 'You have been invited as a $relationship for HouseMira';
   }
 
   @override

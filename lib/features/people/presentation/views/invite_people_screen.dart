@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/features/people/presentation/cubit/invite_people_cubit.dart';
-import 'package:vita_folder_mobile/features/people/presentation/cubit/invite_people_state.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/people/presentation/cubit/invite_people_cubit.dart';
+import 'package:house_mira/features/people/presentation/cubit/invite_people_state.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class InvitePeopleScreen extends StatefulWidget {
   const InvitePeopleScreen({super.key});

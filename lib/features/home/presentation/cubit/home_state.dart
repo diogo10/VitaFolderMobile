@@ -1,4 +1,4 @@
-import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
+import 'package:house_mira/features/home/domain/entities/home_entity.dart';
 
 sealed class HomeState {
   const HomeState();

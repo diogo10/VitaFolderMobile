@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
-import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
-import 'package:vita_folder_mobile/features/home/presentation/cubit/home_state.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/home_view.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/home_view_success.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/features/home/domain/entities/home_entity.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_state.dart';
+import 'package:house_mira/features/home/presentation/views/home_view.dart';
+import 'package:house_mira/features/home/presentation/views/home_view_success.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class _MockHomeCubit extends MockCubit<HomeState> implements HomeCubit {}
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_footer_widget.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_progress_widget.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_view.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/features/onboarding/presentation/views/onboarding_footer_widget.dart';
+import 'package:house_mira/features/onboarding/presentation/views/onboarding_progress_widget.dart';
+import 'package:house_mira/features/onboarding/presentation/views/onboarding_view.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 void main() {
   Future<void> pumpOnboardingView(

@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/manage_profile_state.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/account/presentation/cubit/manage_profile_state.dart';
 
 class ManageProfileCubit extends Cubit<ManageProfileState> {
   final AuthService _authService;

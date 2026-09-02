@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class PeopleEmptyWidget extends StatefulWidget {
   final VoidCallback? onCreateFamilyPressed;

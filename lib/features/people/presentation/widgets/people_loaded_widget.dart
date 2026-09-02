@@ -3,14 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vita_folder_mobile/core/local_storage/local_storage_datasource.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
-import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
-import 'package:vita_folder_mobile/features/people/presentation/widgets/add_family_member_card_widget.dart';
-import 'package:vita_folder_mobile/features/people/presentation/widgets/family_member_card_widget.dart';
-import 'package:vita_folder_mobile/features/people/presentation/widgets/family_header_widget.dart';
-import 'package:vita_folder_mobile/features/people/presentation/widgets/invite_code_card_widget.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/features/people/domain/entities/person_entity.dart';
+import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
+import 'package:house_mira/features/people/presentation/widgets/add_family_member_card_widget.dart';
+import 'package:house_mira/features/people/presentation/widgets/family_member_card_widget.dart';
+import 'package:house_mira/features/people/presentation/widgets/family_header_widget.dart';
+import 'package:house_mira/features/people/presentation/widgets/invite_code_card_widget.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class PeopleLoadedWidget extends StatefulWidget {
   final List<PersonEntity> people;

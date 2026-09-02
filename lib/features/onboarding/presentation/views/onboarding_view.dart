@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/theme/sand_palette.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_footer_widget.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_header_widget.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_hero_widget.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_page_widget.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_progress_widget.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/theme/sand_palette.dart';
+import 'package:house_mira/features/onboarding/presentation/views/onboarding_footer_widget.dart';
+import 'package:house_mira/features/onboarding/presentation/views/onboarding_header_widget.dart';
+import 'package:house_mira/features/onboarding/presentation/views/onboarding_hero_widget.dart';
+import 'package:house_mira/features/onboarding/presentation/views/onboarding_page_widget.dart';
+import 'package:house_mira/features/onboarding/presentation/views/onboarding_progress_widget.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class OnboardingView extends StatefulWidget {
   final VoidCallback onComplete;

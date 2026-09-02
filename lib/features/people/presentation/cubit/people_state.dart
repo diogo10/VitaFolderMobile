@@ -1,4 +1,4 @@
-import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
+import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 
 sealed class PeopleState {
   PeopleState();

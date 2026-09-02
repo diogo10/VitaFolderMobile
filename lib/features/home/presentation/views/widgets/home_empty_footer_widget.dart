@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
-import 'package:vita_folder_mobile/theme/theme_extensions.dart';
+import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira/theme/theme_extensions.dart';
 
 class HomeEmptyFooterWidget extends StatelessWidget {
   const HomeEmptyFooterWidget({super.key});

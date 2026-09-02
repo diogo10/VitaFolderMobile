@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'VitaFolder'**
+  /// **'HouseMira'**
   String get appTitle;
 
   /// No description provided for @navHome.
@@ -377,7 +377,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeEmptyInviteShareMessage.
   ///
   /// In en, this message translates to:
-  /// **'Join my family circle on VitaFolder.'**
+  /// **'Join my family circle on HouseMira.'**
   String get homeEmptyInviteShareMessage;
 
   /// No description provided for @homeEmptyRemindersSectionTitle.
@@ -1079,7 +1079,7 @@ abstract class AppLocalizations {
   /// No description provided for @appBrandName.
   ///
   /// In en, this message translates to:
-  /// **'FamilyAdmin'**
+  /// **'HouseMira'**
   String get appBrandName;
 
   /// No description provided for @accountNoAccountTitleTop.
@@ -1373,7 +1373,7 @@ abstract class AppLocalizations {
   /// No description provided for @invitePeopleEmailSubject.
   ///
   /// In en, this message translates to:
-  /// **'You have been invited as a {relationship} for VitaFolder'**
+  /// **'You have been invited as a {relationship} for HouseMira'**
   String invitePeopleEmailSubject(String relationship);
 
   /// No description provided for @peopleEmptyCreateFamily.

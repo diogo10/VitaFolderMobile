@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vita_folder_mobile/theme/theme_extensions.dart';
+import 'package:house_mira/theme/theme_extensions.dart';
 
 class AccountSettingsWidget extends StatelessWidget {
   final String familyCode;

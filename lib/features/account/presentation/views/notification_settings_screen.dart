@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/notification_settings_cubit.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/notification_settings_state.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
-import 'package:vita_folder_mobile/theme/theme_extensions.dart';
+import 'package:house_mira/features/account/presentation/cubit/notification_settings_cubit.dart';
+import 'package:house_mira/features/account/presentation/cubit/notification_settings_state.dart';
+import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira/theme/theme_extensions.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});

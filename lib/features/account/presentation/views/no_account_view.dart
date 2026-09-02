@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/account_state.dart';
-import 'package:vita_folder_mobile/features/account/presentation/views/account_no_account_auth_widget.dart';
-import 'package:vita_folder_mobile/features/account/presentation/views/account_no_account_footer_widget.dart';
-import 'package:vita_folder_mobile/features/account/presentation/views/account_no_account_header_widget.dart';
-import 'package:vita_folder_mobile/theme/sand_palette.dart';
+import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
+import 'package:house_mira/features/account/presentation/views/account_no_account_auth_widget.dart';
+import 'package:house_mira/features/account/presentation/views/account_no_account_footer_widget.dart';
+import 'package:house_mira/features/account/presentation/views/account_no_account_header_widget.dart';
+import 'package:house_mira/theme/sand_palette.dart';
 
 class NoAccountView extends StatefulWidget {
   const NoAccountView({super.key});

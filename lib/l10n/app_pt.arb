@@ -1,6 +1,6 @@
 {
   "@@locale": "pt",
-  "appTitle": "VitaFolder",
+  "appTitle": "HouseMira",
   "navHome": "Início",
   "navPeople": "Pessoas",
   "navReminders": "Lembretes",
@@ -46,7 +46,7 @@
   "homeEmptyInviteInviteParentTitle": "Convide um Pai/Mãe",
   "homeEmptyInviteInviteParentSubtitle": "Colabore no seu hub familiar",
   "homeEmptyInviteShareButton": "Compartilhar",
-  "homeEmptyInviteShareMessage": "Junte-se ao meu círculo familiar no VitaFolder.",
+  "homeEmptyInviteShareMessage": "Junte-se ao meu círculo familiar no HouseMira.",
   "homeEmptyRemindersSectionTitle": "Próximos Lembretes",
   "homeEmptyRemindersEmptyTitle": "Nenhum lembrete ainda",
   "homeEmptyRemindersEmptyDescription": "Crie seu primeiro lembrete para manter a família organizada.",
@@ -173,7 +173,7 @@
   "accountNoAccountSecurePrivate": "Seguro e privado",
   "accountNoAccountFreeToStart": "Grátis para começar",
   "accountNoAccountFamilyPlan": "Plano familiar",
-  "appBrandName": "FamilyAdmin",
+  "appBrandName": "HouseMira",
   "accountNoAccountTitleTop": "Sua família,",
   "accountNoAccountTitleBottom": "organizada em conjunto",
   "accountNoAccountSubtitle": "Gerencie seu círculo, defina lembretes e colabore em família — tudo em um só lugar.",
@@ -222,7 +222,7 @@
   "invitePeopleRelationshipParent": "Pai/Mãe",
   "invitePeopleRelationshipOther": "Outro",
   "invitePeopleError": "Falha ao enviar o email de convite.",
-  "invitePeopleEmailSubject": "Você foi convidado(a) como {relationship} para o VitaFolder",
+  "invitePeopleEmailSubject": "Você foi convidado(a) como {relationship} para o HouseMira",
   "@invitePeopleEmailSubject": {
     "placeholders": {
       "relationship": {

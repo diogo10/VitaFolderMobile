@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
-import 'package:vita_folder_mobile/features/home/presentation/cubit/home_state.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/home_view_empty.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/home_view_success.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_state.dart';
+import 'package:house_mira/features/home/presentation/views/home_view_empty.dart';
+import 'package:house_mira/features/home/presentation/views/home_view_success.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});

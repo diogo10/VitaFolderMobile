@@ -1,6 +1,6 @@
-# VitaFolderMobile
+# HouseMira
 
-Home of the VitaFolder mobile application. A family management plaftform. 
+Home of the HouseMira mobile application. A family management platform. 
 
 
 ## How to Contribute

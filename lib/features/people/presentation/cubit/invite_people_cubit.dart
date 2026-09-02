@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vita_folder_mobile/core/functions/edget_functions.dart';
-import 'package:vita_folder_mobile/features/people/presentation/cubit/invite_people_state.dart';
+import 'package:house_mira/core/functions/edget_functions.dart';
+import 'package:house_mira/features/people/presentation/cubit/invite_people_state.dart';
 
 class InvitePeopleCubit extends Cubit<InvitePeopleState> {
   EdgetFunctions edgetFunctions;

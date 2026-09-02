@@ -5,29 +5,29 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/core/errors/failure.dart';
-import 'package:vita_folder_mobile/core/injections/service_locator.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/account_cubit.dart';
-import 'package:vita_folder_mobile/features/home/domain/usecase/get_home_data_usecase.dart';
-import 'package:vita_folder_mobile/features/home/domain/usecase/has_reminders_usecase.dart';
-import 'package:vita_folder_mobile/features/home/presentation/cubit/home_cubit.dart';
-import 'package:vita_folder_mobile/features/onboarding/data/datasource/onboarding_local_datasource.dart';
-import 'package:vita_folder_mobile/features/onboarding/presentation/views/onboarding_view.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/family_entity.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
-import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
-import 'package:vita_folder_mobile/features/people/domain/usecase/create_family_usecase.dart';
-import 'package:vita_folder_mobile/features/people/domain/usecase/get_people_usecase.dart';
-import 'package:vita_folder_mobile/features/people/domain/usecase/join_family_usecase.dart';
-import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
-import 'package:vita_folder_mobile/features/reminders/data/models/reminder_model.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/usecase/get_reminder_usecase.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
-import 'package:vita_folder_mobile/main.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/injections/service_locator.dart';
+import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
+import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
+import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
+import 'package:house_mira/features/onboarding/presentation/views/onboarding_view.dart';
+import 'package:house_mira/features/people/domain/entities/family_entity.dart';
+import 'package:house_mira/features/people/domain/entities/person_entity.dart';
+import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/people/domain/usecase/create_family_usecase.dart';
+import 'package:house_mira/features/people/domain/usecase/get_people_usecase.dart';
+import 'package:house_mira/features/people/domain/usecase/join_family_usecase.dart';
+import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
+import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
+import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecase.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
+import 'package:house_mira/main.dart';
 
 class _FakeAuthService extends AuthService {
   @override
@@ -289,7 +289,7 @@ void main() {
 
       final title = tester.widget<MaterialApp>(find.byType(MaterialApp)).title;
       await tester.pump(const Duration(seconds: 11));
-      expect(title, 'VitaFolder');
+      expect(title, 'HouseMira');
     });
 
     testWidgets('renders shell when onboarding completed', (tester) async {

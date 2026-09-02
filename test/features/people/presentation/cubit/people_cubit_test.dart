@@ -2,15 +2,15 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/family_entity.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/people_data.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
-import 'package:vita_folder_mobile/features/people/domain/usecase/create_family_usecase.dart';
-import 'package:vita_folder_mobile/features/people/domain/usecase/get_people_usecase.dart';
-import 'package:vita_folder_mobile/features/people/domain/usecase/join_family_usecase.dart';
-import 'package:vita_folder_mobile/features/people/presentation/cubit/people_cubit.dart';
-import 'package:vita_folder_mobile/features/people/presentation/cubit/people_state.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/people/domain/entities/family_entity.dart';
+import 'package:house_mira/features/people/domain/entities/people_data.dart';
+import 'package:house_mira/features/people/domain/entities/person_entity.dart';
+import 'package:house_mira/features/people/domain/usecase/create_family_usecase.dart';
+import 'package:house_mira/features/people/domain/usecase/get_people_usecase.dart';
+import 'package:house_mira/features/people/domain/usecase/join_family_usecase.dart';
+import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
+import 'package:house_mira/features/people/presentation/cubit/people_state.dart';
 
 class _MockGetPeopleUsecase extends Mock implements GetPeopleUsecase {}
 

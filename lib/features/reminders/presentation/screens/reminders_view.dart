@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_state.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_view_mode.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_calendar_widget.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_empty_widget.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_error_widget.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_header_widget.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_loaded_widget.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_loading_widget.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/widgets/filter_chips_widget.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/widgets/filter_bottom_sheet.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_state.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_view_mode.dart';
+import 'package:house_mira/features/reminders/presentation/widgets/reminders_calendar_widget.dart';
+import 'package:house_mira/features/reminders/presentation/widgets/reminders_empty_widget.dart';
+import 'package:house_mira/features/reminders/presentation/widgets/reminders_error_widget.dart';
+import 'package:house_mira/features/reminders/presentation/widgets/reminders_header_widget.dart';
+import 'package:house_mira/features/reminders/presentation/widgets/reminders_loaded_widget.dart';
+import 'package:house_mira/features/reminders/presentation/widgets/reminders_loading_widget.dart';
+import 'package:house_mira/features/reminders/presentation/widgets/filter_chips_widget.dart';
+import 'package:house_mira/features/reminders/presentation/widgets/filter_bottom_sheet.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class RemindersView extends StatefulWidget {
   const RemindersView({super.key});

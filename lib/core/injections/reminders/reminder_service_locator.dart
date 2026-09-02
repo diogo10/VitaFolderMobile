@@ -1,13 +1,13 @@
 import 'package:get_it/get_it.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
-import 'package:vita_folder_mobile/features/reminders/data/repository/reminder_repository_impl.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/usecase/create_reminder_usecase.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/usecase/get_reminder_usecase.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/usecase/update_reminder_usecase.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/create_reminder_cubit.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/data/repository/reminder_repository_impl.dart';
+import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
+import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
+import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecase.dart';
+import 'package:house_mira/features/reminders/domain/usecase/update_reminder_usecase.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 
 class ReminderServiceLocator {
   final GetIt sl;

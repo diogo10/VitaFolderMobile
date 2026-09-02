@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/theme/sand_palette.dart';
+import 'package:house_mira/theme/sand_palette.dart';
 
 class OnboardingPageWidget extends StatelessWidget {
   final String title;

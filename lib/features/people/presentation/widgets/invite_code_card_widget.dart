@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class InviteCodeCardWidget extends StatelessWidget {
   final String code;

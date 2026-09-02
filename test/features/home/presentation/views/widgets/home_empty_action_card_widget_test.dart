@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_empty_action_card_widget.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_empty_action_card_widget.dart';
 
 void main() {
   group('HomeEmptyActionCardWidget', () {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
-import 'package:vita_folder_mobile/theme/sand_palette.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira/theme/sand_palette.dart';
 
 class FilterBottomSheet extends StatefulWidget {
   final Set<ReminderType> selectedTypes;

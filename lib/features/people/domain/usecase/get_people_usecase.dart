@@ -1,8 +1,8 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/person_entity.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/family_entity.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/people_data.dart';
-import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/people/domain/entities/person_entity.dart';
+import 'package:house_mira/features/people/domain/entities/family_entity.dart';
+import 'package:house_mira/features/people/domain/entities/people_data.dart';
+import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 
 class GetPeopleUsecase {
   final PeopleRepository repository;

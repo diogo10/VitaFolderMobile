@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_view_mode.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/widgets/reminders_header_widget.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_view_mode.dart';
+import 'package:house_mira/features/reminders/presentation/widgets/reminders_header_widget.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 void main() {
   group('RemindersHeaderWidget', () {

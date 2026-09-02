@@ -1,6 +1,6 @@
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_view_mode.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_view_mode.dart';
 
 sealed class RemindersState {
   final RemindersViewMode viewMode;

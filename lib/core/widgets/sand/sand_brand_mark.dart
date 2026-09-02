@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
-import 'package:vita_folder_mobile/theme/sand_palette.dart';
+import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira/theme/sand_palette.dart';
 
 class SandBrandMark extends StatelessWidget {
   const SandBrandMark({super.key});

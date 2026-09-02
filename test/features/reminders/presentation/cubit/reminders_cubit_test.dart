@@ -2,15 +2,15 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_type.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/usecase/get_reminder_usecase.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_cubit.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_state.dart';
-import 'package:vita_folder_mobile/features/reminders/presentation/cubit/reminders_view_mode.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
+import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecase.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_state.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_view_mode.dart';
 
 class _FakePeopleRepository extends Mock implements PeopleRepository {}
 

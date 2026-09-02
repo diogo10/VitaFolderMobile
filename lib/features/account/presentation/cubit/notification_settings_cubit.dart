@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vita_folder_mobile/core/local_storage/local_storage_datasource.dart';
-import 'package:vita_folder_mobile/features/account/application/notification_permission_service.dart';
-import 'package:vita_folder_mobile/features/account/presentation/cubit/notification_settings_state.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/features/account/application/notification_permission_service.dart';
+import 'package:house_mira/features/account/presentation/cubit/notification_settings_state.dart';
 
 class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
   final NotificationPermissionService _permissionService;

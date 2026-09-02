@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:vita_folder_mobile/features/home/presentation/views/widgets/home_reminder_tile_widget.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/generated/app_localizations.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_reminder_tile_widget.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class HomeUpcomingRemindersWidget extends StatelessWidget {
   final List<ReminderEntity> reminders;

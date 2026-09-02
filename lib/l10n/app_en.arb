@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "VitaFolder",
+  "appTitle": "HouseMira",
   "navHome": "Home",
   "navPeople": "People",
   "navReminders": "Reminders",
@@ -46,7 +46,7 @@
   "homeEmptyInviteInviteParentTitle": "Invite a Parent",
   "homeEmptyInviteInviteParentSubtitle": "Collaborate in your family hub",
   "homeEmptyInviteShareButton": "Share",
-  "homeEmptyInviteShareMessage": "Join my family circle on VitaFolder.",
+  "homeEmptyInviteShareMessage": "Join my family circle on HouseMira.",
   "homeEmptyRemindersSectionTitle": "Upcoming Reminders",
   "homeEmptyRemindersEmptyTitle": "No reminders yet",
   "homeEmptyRemindersEmptyDescription": "Create your first reminder to keep the family on track.",
@@ -194,7 +194,7 @@
   "accountNoAccountSecurePrivate": "Secure & private",
   "accountNoAccountFreeToStart": "Free to start",
   "accountNoAccountFamilyPlan": "Family plan",
-  "appBrandName": "FamilyAdmin",
+  "appBrandName": "HouseMira",
   "accountNoAccountTitleTop": "Your family,",
   "accountNoAccountTitleBottom": "organised together",
   "accountNoAccountSubtitle": "Manage your circle, set reminders and collaborate as a family — all in one place.",
@@ -243,7 +243,7 @@
   "invitePeopleRelationshipParent": "Parent",
   "invitePeopleRelationshipOther": "Other",
   "invitePeopleError": "Failed to send invite email.",
-  "invitePeopleEmailSubject": "You have been invited as a {relationship} for VitaFolder",
+  "invitePeopleEmailSubject": "You have been invited as a {relationship} for HouseMira",
   "@invitePeopleEmailSubject": {
     "placeholders": {
       "relationship": {

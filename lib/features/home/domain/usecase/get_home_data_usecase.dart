@@ -1,11 +1,11 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:vita_folder_mobile/core/auth/auth_service.dart';
-import 'package:vita_folder_mobile/core/errors/failure.dart';
-import 'package:vita_folder_mobile/features/home/domain/entities/home_entity.dart';
-import 'package:vita_folder_mobile/features/people/domain/entities/family_entity.dart';
-import 'package:vita_folder_mobile/features/people/domain/repository/people_repository.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:vita_folder_mobile/features/reminders/domain/repository/reminder_repository.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/features/home/domain/entities/home_entity.dart';
+import 'package:house_mira/features/people/domain/entities/family_entity.dart';
+import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 
 class GetHomeDataUsecase {
   final PeopleRepository peopleRepository;
