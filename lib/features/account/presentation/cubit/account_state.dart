@@ -46,3 +46,7 @@ class PasswordResetError extends AccountState {
   final PasswordResetErrorCode code;
   PasswordResetError({required this.code});
 }
+
+class AccountLoginSuccess extends AccountState {
+  AccountLoginSuccess();
+}

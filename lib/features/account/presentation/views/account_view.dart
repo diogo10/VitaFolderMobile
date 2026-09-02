@@ -23,14 +23,12 @@ class _AccountViewState extends State<AccountView> {
     context.read<AccountCubit>().loadAccount();
   }
 
-  void _refreshTabsAfterLogout() {
+  void _refreshAllTabs() {
     context.read<HomeCubit>().getHomeData(isRefresh: true);
     context.read<PeopleCubit>().getPeople(isRefresh: true);
 
     final remindersCubit = context.read<RemindersCubit>();
-    remindersCubit.getReminders(
-      type: remindersCubit.selectedType,
-    );
+    remindersCubit.getReminders(type: remindersCubit.selectedType);
   }
 
   @override
@@ -40,33 +38,38 @@ class _AccountViewState extends State<AccountView> {
         final l = AppLocalizations.of(context)!;
 
         if (state is AccountLogoutSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l.accountSignedOut)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l.accountSignedOut)));
 
-          _refreshTabsAfterLogout();
+          _refreshAllTabs();
+        }
+
+        if (state is AccountLoginSuccess) {
+          _refreshAllTabs();
         }
 
         if (state is LoginFailed) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l.accountLoginFailed)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l.accountLoginFailed)));
         }
 
         if (state is PasswordResetSent) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l.accountPasswordResetSent)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l.accountPasswordResetSent)));
         }
 
         if (state is PasswordResetError) {
           final message = switch (state.code) {
-            PasswordResetErrorCode.emptyEmail => l.accountPasswordResetEnterEmail,
+            PasswordResetErrorCode.emptyEmail =>
+              l.accountPasswordResetEnterEmail,
             PasswordResetErrorCode.sendFailed => l.accountPasswordResetFailed,
           };
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
         }
       },
       builder: (context, state) {

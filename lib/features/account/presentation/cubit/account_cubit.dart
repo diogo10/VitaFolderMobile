@@ -29,7 +29,7 @@ class AccountCubit extends Cubit<AccountState> {
             userName: user.name ?? "------",
             email: user.email ?? '',
             familyCode: familyCode,
-            myRole: myRole.first
+            myRole: myRole.first,
           ),
         );
 
@@ -53,6 +53,7 @@ class AccountCubit extends Cubit<AccountState> {
 
       final user = _authService.currentUser;
       if (user != null) {
+        emit(AccountLoginSuccess());
         await loadAccount();
       } else {
         emit(LoginFailed());
