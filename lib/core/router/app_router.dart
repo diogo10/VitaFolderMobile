@@ -6,6 +6,7 @@ import 'package:house_mira/features/account/presentation/views/notification_sett
 import 'package:house_mira/features/home/presentation/views/home_view.dart';
 import 'package:house_mira/features/login/presentation/views/sign_up_screen.dart';
 import 'package:house_mira/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:house_mira/features/people/presentation/views/family_settings_screen.dart';
 import 'package:house_mira/features/people/presentation/views/invite_people_screen.dart';
 import 'package:house_mira/features/people/presentation/views/people_view.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -32,6 +33,10 @@ GoRouter createRouter({required bool onboardingCompleted}) {
       GoRoute(
         path: '/notification-settings',
         builder: (context, state) => const NotificationSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/family-settings',
+        builder: (context, state) => const FamilySettingsScreen(),
       ),
       GoRoute(
         path: '/create-reminder',

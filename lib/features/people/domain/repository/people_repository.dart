@@ -4,11 +4,24 @@ import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 
 abstract interface class PeopleRepository {
   Future<Either<Exception, List<PersonEntity>>> getPeople();
-  Future<Either<Exception, bool>> createFamily({required String name, required String inviteCode});
+  Future<Either<Exception, bool>> createFamily({
+    required String name,
+    required String inviteCode,
+  });
   Future<Either<Exception, bool>> joinFamily({required String inviteCode});
   Future<Either<Exception, FamilyEntity>> getMyFamily();
   Future<FamilyEntity?> getFamilyBy(String id);
   Future<List<String>> getFamilyIdsForUser(String userId);
   Future<List<PersonEntity>> getProfilesWithRoleForFamily(String familyId);
   Future<List<String>> getMyFamilyRole();
+  Future<Either<Exception, bool>> updateFamilyName({
+    required String familyId,
+    required String name,
+  });
+  Future<Either<Exception, bool>> removeMember({
+    required String familyId,
+    required String userId,
+  });
+  Future<Either<Exception, bool>> deleteFamily({required String familyId});
+  Future<Either<Exception, String?>> getMyFamilyId();
 }

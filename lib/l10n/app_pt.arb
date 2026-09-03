@@ -308,5 +308,42 @@
   "remindersFilterCustom": "Personalizado",
   "remindersFilterTitle": "Filtrar Lembretes",
   "remindersFilterApply": "Aplicar Filtros",
-  "needToBeLoggedIn": "Você precisa estar logado para realizar esta ação"
+  "needToBeLoggedIn": "Você precisa estar logado para realizar esta ação",
+  "familySettingsTitle": "Configurações da Família",
+  "familyNameLabel": "Nome da família",
+  "familyNameHint": "Digite o nome da família",
+  "manageMembersTitle": "Gerenciar Membros",
+  "memberCount": "{count} Total",
+  "@memberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "roleAdmin": "Admin",
+  "roleParent": "Responsável",
+  "roleChild": "Criança",
+  "roleMember": "Membro",
+  "youBadge": "VOCÊ",
+  "removeMemberConfirm": "Remover {name} de {familyName}?",
+  "@removeMemberConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "familyName": {
+        "type": "String"
+      }
+    }
+  },
+  "dangerZoneTitle": "Zona de Perigo",
+  "deleteFamilyTitle": "Excluir Círculo Familiar",
+  "deleteFamilyDescription": "Esta ação não pode ser desfeita. Todos os dados, tarefas e membros serão removidos permanentemente.",
+  "deleteFamilyButton": "Excluir Círculo",
+  "saveButton": "Salvar",
+  "savedButton": "Salvo",
+  "saveSuccess": "Configurações da família salvas com sucesso",
+  "deleteSuccess": "Círculo familiar excluído",
+  "onlyAdminCanAccess": "Apenas administradores da família podem acessar as configurações da família."
 }

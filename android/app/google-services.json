@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "140355243144",
+    "firebase_url": "https://diogoprojects-617e2.firebaseio.com",
+    "project_id": "diogoprojects-617e2",
+    "storage_bucket": "diogoprojects-617e2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:140355243144:android:a6ac1f14183172f272633d",
+        "android_client_info": {
+          "package_name": "com.housemira.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "140355243144-q85g6alo5injsn28tiuotoqvmbckrql8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2X6dHf8QrfNURNvZ4tYeHpTzf5K6wy-0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "140355243144-q85g6alo5injsn28tiuotoqvmbckrql8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "140355243144-5qrkdsd7rkovrqjkfm9u6qcrqrjgqp4b.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.myapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

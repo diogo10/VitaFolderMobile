@@ -329,5 +329,42 @@
   "remindersFilterCustom": "Custom",
   "remindersFilterTitle": "Filter Reminders",
   "remindersFilterApply": "Apply Filters",
-  "needToBeLoggedIn": "You need to be logged in to perform this action"
+  "needToBeLoggedIn": "You need to be logged in to perform this action",
+  "familySettingsTitle": "Family Settings",
+  "familyNameLabel": "Family name",
+  "familyNameHint": "Enter family name",
+  "manageMembersTitle": "Manage Members",
+  "memberCount": "{count} Total",
+  "@memberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "roleAdmin": "Admin",
+  "roleParent": "Parent",
+  "roleChild": "Child",
+  "roleMember": "Member",
+  "youBadge": "YOU",
+  "removeMemberConfirm": "Remove {name} from {familyName}?",
+  "@removeMemberConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "familyName": {
+        "type": "String"
+      }
+    }
+  },
+  "dangerZoneTitle": "Danger Zone",
+  "deleteFamilyTitle": "Delete Family Circle",
+  "deleteFamilyDescription": "This action cannot be undone. All data, tasks, and members will be permanently removed.",
+  "deleteFamilyButton": "Delete Circle",
+  "saveButton": "Save",
+  "savedButton": "Saved",
+  "saveSuccess": "Family settings saved successfully",
+  "deleteSuccess": "Family circle deleted",
+  "onlyAdminCanAccess": "Only family admins can access family settings."
 }

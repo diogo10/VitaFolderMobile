@@ -72,6 +72,27 @@ class _FakePeopleRepository implements PeopleRepository {
 
   @override
   Future<List<String>> getMyFamilyRole() async => ['member'];
+
+  @override
+  Future<Either<Exception, bool>> updateFamilyName({
+    required String familyId,
+    required String name,
+  }) async => Right(true);
+
+  @override
+  Future<Either<Exception, bool>> removeMember({
+    required String familyId,
+    required String userId,
+  }) async => Right(true);
+
+  @override
+  Future<Either<Exception, bool>> deleteFamily({
+    required String familyId,
+  }) async => Right(true);
+
+  @override
+  Future<Either<Exception, String?>> getMyFamilyId() async =>
+      Right('fake-family');
 }
 
 class _FakeReminderRepository implements ReminderRepository {

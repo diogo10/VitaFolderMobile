@@ -12,6 +12,7 @@ import 'package:house_mira/features/account/presentation/cubit/notification_sett
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/login/presentation/cubit/sign_up_cubit.dart';
 import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
+import 'package:house_mira/features/people/presentation/cubit/family_settings_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/invite_people_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
@@ -19,6 +20,8 @@ import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +29,8 @@ void main() async {
     url: 'https://jheqalwrnztavzxjsdcj.supabase.co',
     publishableKey: 'sb_publishable_CD4bacDoKowxJ4QLLn7y-A_0ftYBnHb',
   );
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final serviceLocator = ServiceLocator();
   await serviceLocator.init();
@@ -67,6 +72,11 @@ void main() async {
         BlocProvider(
           create: (_) => slInstance<NotificationSettingsCubit>(
             instanceName: 'notificationSettingsCubit',
+          ),
+        ),
+        BlocProvider(
+          create: (_) => slInstance<FamilySettingsCubit>(
+            instanceName: 'familySettingsCubit',
           ),
         ),
         BlocProvider(

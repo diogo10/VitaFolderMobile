@@ -1807,6 +1807,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You need to be logged in to perform this action'**
   String get needToBeLoggedIn;
+
+  /// No description provided for @familySettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Family Settings'**
+  String get familySettingsTitle;
+
+  /// No description provided for @familyNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Family name'**
+  String get familyNameLabel;
+
+  /// No description provided for @familyNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter family name'**
+  String get familyNameHint;
+
+  /// No description provided for @manageMembersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Members'**
+  String get manageMembersTitle;
+
+  /// No description provided for @memberCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Total'**
+  String memberCount(int count);
+
+  /// No description provided for @roleAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get roleAdmin;
+
+  /// No description provided for @roleParent.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent'**
+  String get roleParent;
+
+  /// No description provided for @roleChild.
+  ///
+  /// In en, this message translates to:
+  /// **'Child'**
+  String get roleChild;
+
+  /// No description provided for @roleMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get roleMember;
+
+  /// No description provided for @youBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'YOU'**
+  String get youBadge;
+
+  /// No description provided for @removeMemberConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from {familyName}?'**
+  String removeMemberConfirm(String name, String familyName);
+
+  /// No description provided for @dangerZoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Danger Zone'**
+  String get dangerZoneTitle;
+
+  /// No description provided for @deleteFamilyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Family Circle'**
+  String get deleteFamilyTitle;
+
+  /// No description provided for @deleteFamilyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone. All data, tasks, and members will be permanently removed.'**
+  String get deleteFamilyDescription;
+
+  /// No description provided for @deleteFamilyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Circle'**
+  String get deleteFamilyButton;
+
+  /// No description provided for @saveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveButton;
+
+  /// No description provided for @savedButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get savedButton;
+
+  /// No description provided for @saveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Family settings saved successfully'**
+  String get saveSuccess;
+
+  /// No description provided for @deleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Family circle deleted'**
+  String get deleteSuccess;
+
+  /// No description provided for @onlyAdminCanAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Only family admins can access family settings.'**
+  String get onlyAdminCanAccess;
 }
 
 class _AppLocalizationsDelegate

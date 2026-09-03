@@ -923,4 +923,70 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get needToBeLoggedIn =>
       'Você precisa estar logado para realizar esta ação';
+
+  @override
+  String get familySettingsTitle => 'Configurações da Família';
+
+  @override
+  String get familyNameLabel => 'Nome da família';
+
+  @override
+  String get familyNameHint => 'Digite o nome da família';
+
+  @override
+  String get manageMembersTitle => 'Gerenciar Membros';
+
+  @override
+  String memberCount(int count) {
+    return '$count Total';
+  }
+
+  @override
+  String get roleAdmin => 'Admin';
+
+  @override
+  String get roleParent => 'Responsável';
+
+  @override
+  String get roleChild => 'Criança';
+
+  @override
+  String get roleMember => 'Membro';
+
+  @override
+  String get youBadge => 'VOCÊ';
+
+  @override
+  String removeMemberConfirm(String name, String familyName) {
+    return 'Remover $name de $familyName?';
+  }
+
+  @override
+  String get dangerZoneTitle => 'Zona de Perigo';
+
+  @override
+  String get deleteFamilyTitle => 'Excluir Círculo Familiar';
+
+  @override
+  String get deleteFamilyDescription =>
+      'Esta ação não pode ser desfeita. Todos os dados, tarefas e membros serão removidos permanentemente.';
+
+  @override
+  String get deleteFamilyButton => 'Excluir Círculo';
+
+  @override
+  String get saveButton => 'Salvar';
+
+  @override
+  String get savedButton => 'Salvo';
+
+  @override
+  String get saveSuccess => 'Configurações da família salvas com sucesso';
+
+  @override
+  String get deleteSuccess => 'Círculo familiar excluído';
+
+  @override
+  String get onlyAdminCanAccess =>
+      'Apenas administradores da família podem acessar as configurações da família.';
 }

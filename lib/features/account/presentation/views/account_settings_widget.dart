@@ -48,6 +48,7 @@ class AccountSettingsWidget extends StatelessWidget {
                   icon: Icons.house_rounded,
                   title: l.accountSettingsFamilySettings,
                   subtitle: l.accountSettingsFamilySettingsSubtitle,
+                  onTap: () => context.push('/family-settings'),
                 ),
               _AccountSettingsItemData(
                 icon: Icons.person_add_alt_1_rounded,

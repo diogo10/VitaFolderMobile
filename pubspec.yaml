@@ -71,6 +71,8 @@ dependencies:
 
   # Provider for dependency injection
   provider: ^6.1.2
+  firebase_core: ^4.14.0
+  firebase_analytics: ^12.5.0
 
 dev_dependencies:
   flutter_test:

@@ -10,20 +10,18 @@ import 'package:house_mira/features/people/domain/repository/people_repository.d
 
 class FakeAuthService extends AuthService {
   @override
-  Future<void> signIn({required String email, required String password}) async {}
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) async {}
 
   @override
-  User? get currentUser => User.fromJson({
-        'id': 'user-id',
-        'email': 'user@example.com',
-      });
+  User? get currentUser =>
+      User.fromJson({'id': 'user-id', 'email': 'user@example.com'});
 
   @override
-  Future<PersonEntity?> getAsPersonEntity() async => PersonEntity(
-        id: 'user-id',
-        name: 'Test User',
-        email: 'user@example.com',
-      );
+  Future<PersonEntity?> getAsPersonEntity() async =>
+      PersonEntity(id: 'user-id', name: 'Test User', email: 'user@example.com');
 }
 
 class FakePeopleRepository implements PeopleRepository {
@@ -31,27 +29,55 @@ class FakePeopleRepository implements PeopleRepository {
   Future<Either<Exception, List<PersonEntity>>> getPeople() async => Right([]);
 
   @override
-  Future<Either<Exception, bool>> createFamily({required String name, required String inviteCode}) async => Right(true);
+  Future<Either<Exception, bool>> createFamily({
+    required String name,
+    required String inviteCode,
+  }) async => Right(true);
 
   @override
-  Future<Either<Exception, FamilyEntity>> getMyFamily() async => Right(
-        FamilyEntity(name: 'Test', inviteCode: 'ABC123'),
-      );
+  Future<Either<Exception, FamilyEntity>> getMyFamily() async =>
+      Right(FamilyEntity(name: 'Test', inviteCode: 'ABC123'));
 
   @override
-  Future<Either<Exception, bool>> joinFamily({required String inviteCode}) async => Right(true);
+  Future<Either<Exception, bool>> joinFamily({
+    required String inviteCode,
+  }) async => Right(true);
 
   @override
-  Future<FamilyEntity?> getFamilyBy(String id) async => FamilyEntity(name: 'Test', inviteCode: 'ABC123');
+  Future<FamilyEntity?> getFamilyBy(String id) async =>
+      FamilyEntity(name: 'Test', inviteCode: 'ABC123');
 
   @override
   Future<List<String>> getFamilyIdsForUser(String userId) async => [];
 
   @override
-  Future<List<PersonEntity>> getProfilesWithRoleForFamily(String familyId) async => [];
+  Future<List<PersonEntity>> getProfilesWithRoleForFamily(
+    String familyId,
+  ) async => [];
 
   @override
   Future<List<String>> getMyFamilyRole() async => ['member'];
+
+  @override
+  Future<Either<Exception, bool>> updateFamilyName({
+    required String familyId,
+    required String name,
+  }) async => Right(true);
+
+  @override
+  Future<Either<Exception, bool>> removeMember({
+    required String familyId,
+    required String userId,
+  }) async => Right(true);
+
+  @override
+  Future<Either<Exception, bool>> deleteFamily({
+    required String familyId,
+  }) async => Right(true);
+
+  @override
+  Future<Either<Exception, String?>> getMyFamilyId() async =>
+      Right('fake-family');
 }
 
 void main() {

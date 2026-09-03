@@ -911,4 +911,70 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get needToBeLoggedIn =>
       'You need to be logged in to perform this action';
+
+  @override
+  String get familySettingsTitle => 'Family Settings';
+
+  @override
+  String get familyNameLabel => 'Family name';
+
+  @override
+  String get familyNameHint => 'Enter family name';
+
+  @override
+  String get manageMembersTitle => 'Manage Members';
+
+  @override
+  String memberCount(int count) {
+    return '$count Total';
+  }
+
+  @override
+  String get roleAdmin => 'Admin';
+
+  @override
+  String get roleParent => 'Parent';
+
+  @override
+  String get roleChild => 'Child';
+
+  @override
+  String get roleMember => 'Member';
+
+  @override
+  String get youBadge => 'YOU';
+
+  @override
+  String removeMemberConfirm(String name, String familyName) {
+    return 'Remove $name from $familyName?';
+  }
+
+  @override
+  String get dangerZoneTitle => 'Danger Zone';
+
+  @override
+  String get deleteFamilyTitle => 'Delete Family Circle';
+
+  @override
+  String get deleteFamilyDescription =>
+      'This action cannot be undone. All data, tasks, and members will be permanently removed.';
+
+  @override
+  String get deleteFamilyButton => 'Delete Circle';
+
+  @override
+  String get saveButton => 'Save';
+
+  @override
+  String get savedButton => 'Saved';
+
+  @override
+  String get saveSuccess => 'Family settings saved successfully';
+
+  @override
+  String get deleteSuccess => 'Family circle deleted';
+
+  @override
+  String get onlyAdminCanAccess =>
+      'Only family admins can access family settings.';
 }

@@ -215,4 +215,85 @@ class PeopleRepositoryImpl implements PeopleRepository {
         .nonNulls
         .toList();
   }
+
+  @override
+  Future<Either<Exception, bool>> updateFamilyName({
+    required String familyId,
+    required String name,
+  }) async {
+    try {
+      await _client.from('families').update({'name': name}).eq('id', familyId);
+      return Right(true);
+    } catch (e) {
+      debugPrint('Error updating family name: $e');
+      return Left(Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Exception, bool>> removeMember({
+    required String familyId,
+    required String userId,
+  }) async {
+    try {
+      await _client
+          .from('family_memberships')
+          .delete()
+          .eq('family_id', familyId)
+          .eq('user_id', userId);
+      return Right(true);
+    } catch (e) {
+      debugPrint('Error removing member: $e');
+      return Left(Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Exception, bool>> deleteFamily({
+    required String familyId,
+  }) async {
+    try {
+      // Delete family memberships first (foreign key constraint)
+      await _client
+          .from('family_memberships')
+          .delete()
+          .eq('family_id', familyId);
+
+      // Delete people records
+      await _client.from('people').delete().eq('family_id', familyId);
+
+      // Delete the family
+      await _client.from('families').delete().eq('id', familyId);
+
+      return Right(true);
+    } catch (e) {
+      debugPrint('Error deleting family: $e');
+      return Left(Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Exception, String?>> getMyFamilyId() async {
+    try {
+      final userId = _authService.currentUserId;
+      if (userId == null) {
+        return Left(Exception('Not signed in.'));
+      }
+      final response = await _client
+          .from('family_memberships')
+          .select('family_id')
+          .eq('user_id', userId)
+          .limit(1);
+
+      if (response.isEmpty) {
+        return const Right(null);
+      }
+
+      final familyId = response.first['family_id'] as String;
+      return Right(familyId);
+    } catch (e) {
+      debugPrint('Error getting family ID: $e');
+      return Left(Exception(e.toString()));
+    }
+  }
 }
