@@ -58,7 +58,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
         if (state is FamilySettingsError) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(state.message)));
+            ..showSnackBar(SnackBar(content: Text(_errorMessage(state, l))));
         }
       },
       builder: (context, state) {
@@ -78,7 +78,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            state.message,
+                            _errorMessage(state, l),
                             style: const TextStyle(color: SandPalette.sand500),
                           ),
                           const SizedBox(height: 16),
@@ -209,6 +209,14 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
         );
       },
     );
+  }
+
+  String _errorMessage(FamilySettingsError state, AppLocalizations l) {
+    return switch (state.code) {
+      FamilySettingsErrorCode.notAdmin => l.onlyAdminCanAccess,
+      FamilySettingsErrorCode.notFound => l.familySettingsErrorNotFound,
+      _ => state.message ?? l.familySettingsErrorNotFound,
+    };
   }
 
   void _showRemoveMemberDialog(

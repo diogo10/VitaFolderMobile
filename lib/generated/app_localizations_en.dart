@@ -977,4 +977,30 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onlyAdminCanAccess =>
       'Only family admins can access family settings.';
+
+  @override
+  String get createReminderTitleHint => 'e.g. Weekly Grocery Run';
+
+  @override
+  String get createReminderBodyHint => 'Add some notes about this reminder...';
+
+  @override
+  String get createReminderOptional => 'Optional';
+
+  @override
+  String get remindersAllCaughtUp => 'You\'re all caught up 🎉';
+
+  @override
+  String peopleWidgetsPendingInviteSent(String email, String sentAt) {
+    return '$email · sent $sentAt';
+  }
+
+  @override
+  String get createReminderErrorNoFamily => 'No family found';
+
+  @override
+  String get createReminderErrorAuthRequired => 'Authentication required';
+
+  @override
+  String get familySettingsErrorNotFound => 'Family not found';
 }

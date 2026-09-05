@@ -35,13 +35,13 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
 
     final familyId = await _resolveFamilyId();
     if (familyId == null) {
-      emit(CreateReminderError(message: 'No family found'));
+      emit(CreateReminderError(code: CreateReminderErrorCode.noFamily));
       return;
     }
 
     final userId = authService.currentUserId;
     if (userId == null) {
-      emit(CreateReminderError(message: 'Authentication required'));
+      emit(CreateReminderError(code: CreateReminderErrorCode.authRequired));
       return;
     }
 

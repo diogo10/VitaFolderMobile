@@ -8,26 +8,21 @@ class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
   final LocalStorageDatasource _storage;
 
   static const _notificationsEnabledKey = 'notifications_enabled';
-  static const _emailUpdatesEnabledKey = 'email_updates_enabled';
 
   NotificationSettingsCubit({
     required NotificationPermissionService permissionService,
     required LocalStorageDatasource storage,
-  })  : _permissionService = permissionService,
-        _storage = storage,
-        super(NotificationSettingsLoading());
+  }) : _permissionService = permissionService,
+       _storage = storage,
+       super(NotificationSettingsLoading());
 
   Future<void> loadSettings() async {
     try {
-      final notificationsEnabled =
-          await _storage.getBool(_notificationsEnabledKey);
-      final emailUpdatesEnabled =
-          await _storage.getBool(_emailUpdatesEnabledKey);
+      final notificationsEnabled = await _storage.getBool(
+        _notificationsEnabledKey,
+      );
       emit(
-        NotificationSettingsLoaded(
-          notificationsEnabled: notificationsEnabled,
-          emailUpdatesEnabled: emailUpdatesEnabled,
-        ),
+        NotificationSettingsLoaded(notificationsEnabled: notificationsEnabled),
       );
     } catch (_) {
       emit(NotificationSettingsError());
@@ -63,14 +58,8 @@ class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
     emit(_currentLoaded(notificationsEnabled: false));
   }
 
-  Future<void> setEmailUpdatesEnabled(bool enabled) async {
-    await _storage.setBool(_emailUpdatesEnabledKey, enabled);
-    emit(_currentLoaded(emailUpdatesEnabled: enabled));
-  }
-
   NotificationSettingsLoaded _currentLoaded({
     bool? notificationsEnabled,
-    bool? emailUpdatesEnabled,
     NotificationPermissionDenied? permissionDenied,
   }) {
     if (state is NotificationSettingsLoaded) {
@@ -78,13 +67,11 @@ class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
       return NotificationSettingsLoaded(
         notificationsEnabled:
             notificationsEnabled ?? current.notificationsEnabled,
-        emailUpdatesEnabled: emailUpdatesEnabled ?? current.emailUpdatesEnabled,
         permissionDenied: permissionDenied,
       );
     }
     return NotificationSettingsLoaded(
       notificationsEnabled: notificationsEnabled ?? false,
-      emailUpdatesEnabled: emailUpdatesEnabled ?? false,
       permissionDenied: permissionDenied,
     );
   }

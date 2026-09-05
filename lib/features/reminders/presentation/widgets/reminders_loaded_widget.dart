@@ -226,18 +226,29 @@ class _EndNoteWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
       child: Row(
         children: [
-          Expanded(child: Container(height: 1, color: SandPalette.sand200)),
-          const SizedBox(width: 12),
-          Text(
-            'You\'re all caught up 🎉',
-            style: TextStyle(fontSize: 11, color: SandPalette.sand300),
+          const Expanded(
+            child: ColoredBox(
+              color: SandPalette.sand200,
+              child: SizedBox(height: 1),
+            ),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Container(height: 1, color: SandPalette.sand200)),
+          Text(
+            l.remindersAllCaughtUp,
+            style: const TextStyle(fontSize: 11, color: SandPalette.sand300),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: ColoredBox(
+              color: SandPalette.sand200,
+              child: SizedBox(height: 1),
+            ),
+          ),
         ],
       ),
     );

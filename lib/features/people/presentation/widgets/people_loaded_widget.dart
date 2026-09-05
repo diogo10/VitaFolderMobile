@@ -78,7 +78,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
         FamilyMemberCardWidget(
           key: ValueKey(person.id ?? i),
           name: person.name ?? '',
-          relationship: _relationshipFromRole(person.role),
+          relationship: _relationshipFromRole(person.role, l),
           detail: person.email ?? person.phone ?? '',
           role: role,
           avatarColor: colors[role]!,
@@ -103,16 +103,16 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
     }
   }
 
-  String _relationshipFromRole(String? role) {
+  String _relationshipFromRole(String? role, AppLocalizations l) {
     switch (role?.toLowerCase()) {
       case 'admin':
-        return 'Admin';
+        return l.roleAdmin;
       case 'parent':
-        return 'Parent';
+        return l.roleParent;
       case 'child':
-        return 'Child';
+        return l.roleChild;
       default:
-        return 'Member';
+        return l.roleMember;
     }
   }
 

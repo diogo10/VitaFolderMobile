@@ -345,5 +345,23 @@
   "savedButton": "Salvo",
   "saveSuccess": "Configurações da família salvas com sucesso",
   "deleteSuccess": "Círculo familiar excluído",
-  "onlyAdminCanAccess": "Apenas administradores da família podem acessar as configurações da família."
+  "onlyAdminCanAccess": "Apenas administradores da família podem acessar as configurações da família.",
+  "createReminderTitleHint": "ex.: Compras da semana",
+  "createReminderBodyHint": "Adicione notas sobre este lembrete...",
+  "createReminderOptional": "Opcional",
+  "remindersAllCaughtUp": "Você está em dia 🎉",
+  "peopleWidgetsPendingInviteSent": "{email} · enviado {sentAt}",
+  "@peopleWidgetsPendingInviteSent": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      },
+      "sentAt": {
+        "type": "String"
+      }
+    }
+  },
+  "createReminderErrorNoFamily": "Nenhuma família encontrada",
+  "createReminderErrorAuthRequired": "Autenticação necessária",
+  "familySettingsErrorNotFound": "Família não encontrada"
 }

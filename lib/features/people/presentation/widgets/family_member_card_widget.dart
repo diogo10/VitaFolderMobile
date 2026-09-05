@@ -1,20 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 enum FamilyMemberRole {
-  admin('Admin', Color(0xFFF6D584), Color(0xFF9B6500)),
-  parent('Parent', Color(0xFFD9E8FF), Color(0xFF3974C9)),
-  child('Child', Color(0xFFE8DFFF), Color(0xFF6D4BD2)),
-  member('Member', Color(0xFFD9F5EA), Color(0xFF27835F));
+  admin(Color(0xFFF6D584), Color(0xFF9B6500)),
+  parent(Color(0xFFD9E8FF), Color(0xFF3974C9)),
+  child(Color(0xFFE8DFFF), Color(0xFF6D4BD2)),
+  member(Color(0xFFD9F5EA), Color(0xFF27835F));
 
-  final String label;
   final Color backgroundColor;
   final Color foregroundColor;
 
-  const FamilyMemberRole(
-    this.label,
-    this.backgroundColor,
-    this.foregroundColor,
-  );
+  const FamilyMemberRole(this.backgroundColor, this.foregroundColor);
+
+  String localizedLabel(AppLocalizations l) {
+    switch (this) {
+      case FamilyMemberRole.admin:
+        return l.roleAdmin;
+      case FamilyMemberRole.parent:
+        return l.roleParent;
+      case FamilyMemberRole.child:
+        return l.roleChild;
+      case FamilyMemberRole.member:
+        return l.roleMember;
+    }
+  }
 }
 
 class FamilyMemberCardWidget extends StatelessWidget {
@@ -38,6 +47,7 @@ class FamilyMemberCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const brown = Color(0xFF604B38);
+    final l = AppLocalizations.of(context)!;
 
     return Material(
       color: const Color(0xFFF4EFE7),
@@ -98,7 +108,7 @@ class FamilyMemberCardWidget extends StatelessWidget {
                             borderRadius: BorderRadius.circular(99),
                           ),
                           child: Text(
-                            role.label,
+                            role.localizedLabel(l),
                             style: TextStyle(
                               color: role.foregroundColor,
                               fontSize: 9,

@@ -366,5 +366,23 @@
   "savedButton": "Saved",
   "saveSuccess": "Family settings saved successfully",
   "deleteSuccess": "Family circle deleted",
-  "onlyAdminCanAccess": "Only family admins can access family settings."
+  "onlyAdminCanAccess": "Only family admins can access family settings.",
+  "createReminderTitleHint": "e.g. Weekly Grocery Run",
+  "createReminderBodyHint": "Add some notes about this reminder...",
+  "createReminderOptional": "Optional",
+  "remindersAllCaughtUp": "You're all caught up 🎉",
+  "peopleWidgetsPendingInviteSent": "{email} · sent {sentAt}",
+  "@peopleWidgetsPendingInviteSent": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      },
+      "sentAt": {
+        "type": "String"
+      }
+    }
+  },
+  "createReminderErrorNoFamily": "No family found",
+  "createReminderErrorAuthRequired": "Authentication required",
+  "familySettingsErrorNotFound": "Family not found"
 }

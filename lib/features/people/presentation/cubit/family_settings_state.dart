@@ -64,8 +64,11 @@ class FamilySettingsDeleteSuccess extends FamilySettingsState {
   const FamilySettingsDeleteSuccess();
 }
 
-class FamilySettingsError extends FamilySettingsState {
-  final String message;
+enum FamilySettingsErrorCode { notAdmin, notFound }
 
-  const FamilySettingsError({required this.message});
+class FamilySettingsError extends FamilySettingsState {
+  final String? message;
+  final FamilySettingsErrorCode? code;
+
+  const FamilySettingsError({this.message, this.code});
 }

@@ -52,9 +52,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
 
           if (currentUserRole?.toLowerCase() != 'admin') {
             emit(
-              const FamilySettingsError(
-                message: 'Only family admins can access family settings.',
-              ),
+              const FamilySettingsError(code: FamilySettingsErrorCode.notAdmin),
             );
             return;
           }
@@ -115,7 +113,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
       );
 
       if (familyId == null) {
-        emit(const FamilySettingsError(message: 'Family not found'));
+        emit(const FamilySettingsError(code: FamilySettingsErrorCode.notFound));
         return;
       }
 
@@ -161,7 +159,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
       );
 
       if (familyId == null) {
-        emit(const FamilySettingsError(message: 'Family not found'));
+        emit(const FamilySettingsError(code: FamilySettingsErrorCode.notFound));
         return;
       }
 

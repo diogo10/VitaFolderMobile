@@ -110,10 +110,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   }
 
   String _formatTime(TimeOfDay time) {
-    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
-    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute $period';
+    return MaterialLocalizations.of(context).formatTimeOfDay(time);
   }
 
   Future<void> _pickDueDate() async {
@@ -208,9 +205,15 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             context.pop();
           }
           if (state is CreateReminderError) {
+            final message = switch (state.code) {
+              CreateReminderErrorCode.noFamily => l.createReminderErrorNoFamily,
+              CreateReminderErrorCode.authRequired =>
+                l.createReminderErrorAuthRequired,
+              _ => state.message ?? l.createReminderErrorNoFamily,
+            };
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(state.message)));
+              ..showSnackBar(SnackBar(content: Text(message)));
           }
         },
         builder: (context, state) {
@@ -329,7 +332,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             fontSize: 16,
           ),
           decoration: InputDecoration(
-            hintText: 'e.g. Weekly Grocery Run',
+            hintText: l.createReminderTitleHint,
             hintStyle: TextStyle(
               color: _sand300,
               fontWeight: FontWeight.normal,
@@ -377,7 +380,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '${l.createReminderBodyLabel} (Optional)',
+          '${l.createReminderBodyLabel} (${l.createReminderOptional})',
           style: TextStyle(
             color: _sand400,
             fontSize: 12,
@@ -394,7 +397,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             context,
           ).textTheme.bodyMedium?.copyWith(color: _sand600, fontSize: 16),
           decoration: InputDecoration(
-            hintText: 'Add some notes about this reminder...',
+            hintText: l.createReminderBodyHint,
             hintStyle: TextStyle(color: _sand300),
             filled: true,
             fillColor: _sand100,
@@ -499,7 +502,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Due Date',
+          l.createReminderDueDateLabel,
           style: TextStyle(
             color: _sand400,
             fontSize: 12,
@@ -527,7 +530,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                   Expanded(
                     child: Text(
                       _dueDate == null
-                          ? 'Due Date'
+                          ? l.createReminderDueDateLabel
                           : '${l.createReminderDueDateLabel}: ${_dueDate!.day}/${_dueDate!.month}/${_dueDate!.year}',
                       style: TextStyle(
                         color: _dueDate == null ? _sand300 : _sand700,
@@ -552,7 +555,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Time',
+          l.createReminderTimeLabel,
           style: TextStyle(
             color: _sand400,
             fontSize: 12,
@@ -580,7 +583,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                   Expanded(
                     child: Text(
                       _dueTime == null
-                          ? 'Time'
+                          ? l.createReminderTimeLabel
                           : '${l.createReminderTimeLabel}: ${_formatTime(_dueTime!)}',
                       style: TextStyle(
                         color: _dueTime == null ? _sand300 : _sand700,
@@ -601,18 +604,18 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   }
 
   Widget _buildRepeatSelector(AppLocalizations l) {
-    const repeatOptions = [
-      ('never', 'Never'),
-      ('daily', 'Daily'),
-      ('weekly', 'Weekly'),
-      ('monthly', 'Monthly'),
+    final repeatOptions = [
+      ('never', l.createReminderRepeatNever),
+      ('daily', l.createReminderRepeatDaily),
+      ('weekly', l.createReminderRepeatWeekly),
+      ('monthly', l.createReminderRepeatMonthly),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Repeat',
+          l.createReminderRepeatRuleLabel,
           style: TextStyle(
             color: _sand400,
             fontSize: 12,

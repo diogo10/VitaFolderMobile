@@ -1927,6 +1927,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Only family admins can access family settings.'**
   String get onlyAdminCanAccess;
+
+  /// No description provided for @createReminderTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Weekly Grocery Run'**
+  String get createReminderTitleHint;
+
+  /// No description provided for @createReminderBodyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add some notes about this reminder...'**
+  String get createReminderBodyHint;
+
+  /// No description provided for @createReminderOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get createReminderOptional;
+
+  /// No description provided for @remindersAllCaughtUp.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re all caught up 🎉'**
+  String get remindersAllCaughtUp;
+
+  /// No description provided for @peopleWidgetsPendingInviteSent.
+  ///
+  /// In en, this message translates to:
+  /// **'{email} · sent {sentAt}'**
+  String peopleWidgetsPendingInviteSent(String email, String sentAt);
+
+  /// No description provided for @createReminderErrorNoFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'No family found'**
+  String get createReminderErrorNoFamily;
+
+  /// No description provided for @createReminderErrorAuthRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication required'**
+  String get createReminderErrorAuthRequired;
+
+  /// No description provided for @familySettingsErrorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Family not found'**
+  String get familySettingsErrorNotFound;
 }
 
 class _AppLocalizationsDelegate

@@ -106,9 +106,12 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     ];
 
     return Container(
-      decoration: BoxDecoration(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.5,
+      ),
+      decoration: const BoxDecoration(
         color: SandPalette.sand50,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: SafeArea(
         top: false,
@@ -135,30 +138,32 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
               ),
             ),
             const SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  for (int i = 0; i < filterOptions.length; i++) ...[
-                    _FilterCheckboxTile(
-                      option: filterOptions[i],
-                      isSelected: _selectedTypes.contains(
-                        filterOptions[i].type,
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    for (int i = 0; i < filterOptions.length; i++) ...[
+                      _FilterCheckboxTile(
+                        option: filterOptions[i],
+                        isSelected: _selectedTypes.contains(
+                          filterOptions[i].type,
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            if (value == true) {
+                              _selectedTypes.add(filterOptions[i].type);
+                            } else {
+                              _selectedTypes.remove(filterOptions[i].type);
+                            }
+                          });
+                        },
                       ),
-                      onChanged: (value) {
-                        setState(() {
-                          if (value == true) {
-                            _selectedTypes.add(filterOptions[i].type);
-                          } else {
-                            _selectedTypes.remove(filterOptions[i].type);
-                          }
-                        });
-                      },
-                    ),
-                    if (i < filterOptions.length - 1)
-                      const SizedBox(height: 12),
+                      if (i < filterOptions.length - 1)
+                        const SizedBox(height: 12),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
             const SizedBox(height: 24),

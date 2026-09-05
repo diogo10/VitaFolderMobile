@@ -55,7 +55,7 @@ class PendingInviteCardWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '$email · sent $sentAtLabel',
+                  l.peopleWidgetsPendingInviteSent(email, sentAtLabel),
                   style: Theme.of(
                     context,
                   ).textTheme.bodySmall?.copyWith(color: orange, fontSize: 11),
