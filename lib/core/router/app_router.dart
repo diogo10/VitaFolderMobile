@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/router/main_shell.dart';
 import 'package:house_mira/features/account/presentation/views/account_view.dart';
@@ -14,9 +15,13 @@ import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart
 import 'package:house_mira/features/reminders/presentation/screens/create_reminder_screen.dart';
 import 'package:house_mira/features/reminders/presentation/screens/reminders_view.dart';
 
-GoRouter createRouter({required bool onboardingCompleted}) {
+GoRouter createRouter({
+  required bool onboardingCompleted,
+  List<NavigatorObserver>? observers,
+}) {
   return GoRouter(
     initialLocation: onboardingCompleted ? '/home' : '/onboarding',
+    observers: observers ?? [],
     routes: [
       GoRoute(
         path: '/sign-up',

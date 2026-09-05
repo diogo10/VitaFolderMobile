@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/core/injections/account/account_service_locator.dart';
@@ -12,6 +13,11 @@ final GetIt slInstance = GetIt.instance;
 
 class ServiceLocator {
   Future<void> init() async {
+    slInstance.registerSingleton<AnalyticsService>(
+      AnalyticsService(),
+      instanceName: 'analyticsService',
+    );
+
     slInstance.registerSingleton<AuthService>(
       AuthService(),
       instanceName: 'authService',

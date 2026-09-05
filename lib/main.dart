@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
@@ -34,6 +35,11 @@ void main() async {
 
   final serviceLocator = ServiceLocator();
   await serviceLocator.init();
+
+  final analyticsService = slInstance<AnalyticsService>(
+    instanceName: 'analyticsService',
+  );
+  await analyticsService.initialize();
 
   final datasource = slInstance<OnboardingLocalDatasource>(
     instanceName: 'onboardingLocalDatasource',
@@ -138,12 +144,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final analyticsService = slInstance<AnalyticsService>(
+      instanceName: 'analyticsService',
+    );
     return MaterialApp.router(
       title: 'HouseMira',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       routerConfig: createRouter(
         onboardingCompleted: widget.onboardingCompleted,
+        observers: [analyticsService.observer],
       ),
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
@@ -28,6 +29,8 @@ import 'package:house_mira/features/reminders/domain/repository/reminder_reposit
 import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/main.dart';
+import 'mock_firebase.dart';
+import 'mock_analytics.dart';
 
 class _FakeAuthService extends AuthService {
   @override
@@ -222,6 +225,9 @@ Widget _pumpAppWithOnboarding() {
 void main() {
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({'onboarding_completed': true});
+    TestWidgetsFlutterBinding.ensureInitialized();
+    setupFirebaseMock();
+    await Firebase.initializeApp();
     await Supabase.initialize(
       url: 'https://mock.supabase.co',
       publishableKey: 'mock-anon-key',
