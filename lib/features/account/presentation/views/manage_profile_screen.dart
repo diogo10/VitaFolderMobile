@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/widgets/sand/sand_header.dart';
+import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
+import 'package:house_mira/theme/sand_palette.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
 import 'package:house_mira/features/account/presentation/cubit/manage_profile_cubit.dart';
@@ -35,9 +38,7 @@ class _ManageProfileScreenState extends State<ManageProfileScreen> {
 
   void _onSave() {
     if (_formKey.currentState?.validate() ?? false) {
-      context
-          .read<ManageProfileCubit>()
-          .saveName(_nameController.text);
+      context.read<ManageProfileCubit>().saveName(_nameController.text);
     }
   }
 
@@ -45,9 +46,7 @@ class _ManageProfileScreenState extends State<ManageProfileScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l.manageProfileTitle),
-      ),
+      backgroundColor: SandPalette.sand50,
       body: BlocConsumer<ManageProfileCubit, ManageProfileState>(
         listener: (context, state) {
           if (state is ManageProfileSuccess) {
@@ -68,43 +67,63 @@ class _ManageProfileScreenState extends State<ManageProfileScreen> {
         builder: (context, state) {
           final isLoading = state is ManageProfileLoading;
 
-          return Padding(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextFormField(
-                    controller: _nameController,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      labelText: l.manageProfileNameLabel,
-                      border: const OutlineInputBorder(),
+          return SafeArea(
+            child: Column(
+              children: [
+                SandHeader(title: l.manageProfileTitle),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _nameController,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: InputDecoration(
+                              labelText: l.manageProfileNameLabel,
+                              border: const OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return l.manageProfileNameRequired;
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 100),
+                        ],
+                      ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return l.manageProfileNameRequired;
-                      }
-                      return null;
-                    },
                   ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
+                ),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        SandPalette.sand50.withValues(alpha: 0),
+                        SandPalette.sand50,
+                        SandPalette.sand50,
+                      ],
+                    ),
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: SandPrimaryButton(
+                      label: l.manageProfileSaveButton,
+                      icon: Icons.check_rounded,
+                      isLoading: isLoading,
                       onPressed: isLoading ? null : _onSave,
-                      child: isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(l.manageProfileSaveButton),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },

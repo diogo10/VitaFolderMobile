@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/widgets/sand/sand_header.dart';
+import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/core/widgets/sand/sand_text_field.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/presentation/cubit/family_settings_cubit.dart';
@@ -66,39 +68,29 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
         if (state is FamilySettingsError) {
           return Scaffold(
             backgroundColor: SandPalette.sand50,
-            appBar: AppBar(
-              backgroundColor: SandPalette.sand50,
-              elevation: 0,
-              leading: IconButton(
-                icon: Icon(
-                  Icons.chevron_left_rounded,
-                  color: SandPalette.sand500,
-                ),
-                onPressed: () => context.pop(),
-              ),
-              title: Text(
-                l.familySettingsTitle,
-                style: TextStyle(
-                  fontFamily: 'Outfit',
-                  fontWeight: FontWeight.bold,
-                  color: SandPalette.sand700,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-            body: Center(
+            body: SafeArea(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    state.message,
-                    style: TextStyle(color: SandPalette.sand500),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () =>
-                        context.read<FamilySettingsCubit>().loadSettings(),
-                    child: Text(l.ok),
+                  SandHeader(title: l.familySettingsTitle),
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            state.message,
+                            style: const TextStyle(color: SandPalette.sand500),
+                          ),
+                          const SizedBox(height: 16),
+                          TextButton(
+                            onPressed: () => context
+                                .read<FamilySettingsCubit>()
+                                .loadSettings(),
+                            child: Text(l.ok),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -109,27 +101,16 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
         if (state is! FamilySettingsLoaded) {
           return Scaffold(
             backgroundColor: SandPalette.sand50,
-            appBar: AppBar(
-              backgroundColor: SandPalette.sand50,
-              elevation: 0,
-              leading: IconButton(
-                icon: Icon(
-                  Icons.chevron_left_rounded,
-                  color: SandPalette.sand500,
-                ),
-                onPressed: () => context.pop(),
-              ),
-              title: Text(
-                l.familySettingsTitle,
-                style: TextStyle(
-                  fontFamily: 'Outfit',
-                  fontWeight: FontWeight.bold,
-                  color: SandPalette.sand700,
-                  fontSize: 16,
-                ),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  SandHeader(title: l.familySettingsTitle),
+                  const Expanded(
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ],
               ),
             ),
-            body: const Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -139,107 +120,88 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
 
         return Scaffold(
           backgroundColor: SandPalette.sand50,
-          appBar: AppBar(
-            backgroundColor: SandPalette.sand50,
-            elevation: 0,
-            leadingWidth: 56,
-            leading: Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: IconButton(
-                icon: Icon(
-                  Icons.chevron_left_rounded,
-                  color: SandPalette.sand500,
-                  size: 24,
-                ),
-                onPressed: () => context.pop(),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: SandPalette.sand100),
-                  ),
-                  padding: EdgeInsets.zero,
-                ),
-              ),
-            ),
-            title: Text(
-              l.familySettingsTitle,
-              style: TextStyle(
-                fontFamily: 'Outfit',
-                fontWeight: FontWeight.bold,
-                color: SandPalette.sand700,
-                fontSize: 16,
-              ),
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: TextButton(
-                  onPressed: hasPendingChanges && !isLoading
-                      ? () => context.read<FamilySettingsCubit>().saveChanges()
-                      : null,
-                  style: TextButton.styleFrom(
-                    foregroundColor: SandPalette.sand500,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 8,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    isLoading ? l.savedButton : l.saveButton,
-                    style: const TextStyle(
-                      fontFamily: 'Outfit',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          body: SafeArea(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Family Name Section
-                _FamilyNameSection(
-                  controller: _familyNameController,
-                  label: l.familyNameLabel,
-                  hint: l.familyNameHint,
-                  onChanged: (value) => context
-                      .read<FamilySettingsCubit>()
-                      .queueFamilyNameChange(value),
+                SandHeader(title: l.familySettingsTitle),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Family Name Section
+                        _FamilyNameSection(
+                          controller: _familyNameController,
+                          label: l.familyNameLabel,
+                          hint: l.familyNameHint,
+                          onChanged: (value) => context
+                              .read<FamilySettingsCubit>()
+                              .queueFamilyNameChange(value),
+                        ),
+
+                        const SizedBox(height: 24),
+                        Divider(height: 1, color: SandPalette.sand100),
+                        const SizedBox(height: 24),
+
+                        // Manage Members Section
+                        _ManageMembersSection(
+                          members: displayMembers,
+                          currentUserId: loaded.currentUserId,
+                          familyName: loaded.familyName,
+                          memberCount: displayMembers.length,
+                          onRemoveMember: (memberId, memberName) =>
+                              _showRemoveMemberDialog(
+                                context,
+                                memberId,
+                                memberName,
+                              ),
+                          isRemoving: isLoading,
+                          l: l,
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // Danger Zone
+                        _DangerZoneSection(
+                          familyName: loaded.familyName,
+                          onDeletePressed: () => _showDeleteFamilyDialog(
+                            context,
+                            loaded.familyName,
+                          ),
+                          isDeleting: isLoading,
+                          l: l,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-
-                const SizedBox(height: 24),
-                Divider(height: 1, color: SandPalette.sand100),
-                const SizedBox(height: 24),
-
-                // Manage Members Section
-                _ManageMembersSection(
-                  members: displayMembers,
-                  currentUserId: loaded.currentUserId,
-                  familyName: loaded.familyName,
-                  memberCount: displayMembers.length,
-                  onRemoveMember: (memberId, memberName) =>
-                      _showRemoveMemberDialog(context, memberId, memberName),
-                  isRemoving: isLoading,
-                  l: l,
-                ),
-
-                const SizedBox(height: 32),
-
-                // Danger Zone
-                _DangerZoneSection(
-                  familyName: loaded.familyName,
-                  onDeletePressed: () =>
-                      _showDeleteFamilyDialog(context, loaded.familyName),
-                  isDeleting: isLoading,
-                  l: l,
+                Container(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        SandPalette.sand50.withValues(alpha: 0),
+                        SandPalette.sand50,
+                        SandPalette.sand50,
+                      ],
+                    ),
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: SandPrimaryButton(
+                      label: isLoading ? l.savedButton : l.saveButton,
+                      icon: Icons.check_rounded,
+                      isLoading: isLoading,
+                      onPressed: hasPendingChanges && !isLoading
+                          ? () => context
+                                .read<FamilySettingsCubit>()
+                                .saveChanges()
+                          : null,
+                    ),
+                  ),
                 ),
               ],
             ),
