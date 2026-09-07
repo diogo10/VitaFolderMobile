@@ -1,8 +1,48 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockFirebaseAnalytics extends Fake implements FirebaseAnalytics {
+  @override
+  Future<void> logEvent({
+    required String name,
+    Map<String, Object>? parameters,
+    List<AnalyticsEventItem>? items,
+    AnalyticsCallOptions? callOptions,
+  }) async {}
+
+  @override
+  Future<void> setUserId({
+    String? id,
+    AnalyticsCallOptions? callOptions,
+  }) async {}
+
+  @override
+  Future<void> setUserProperty({
+    required String name,
+    required String? value,
+    AnalyticsCallOptions? callOptions,
+  }) async {}
+
+  @override
+  Future<void> setAnalyticsCollectionEnabled(bool enabled) async {}
+
+  @override
+  Future<void> logScreenView({
+    String? screenClass,
+    String? screenName,
+    Map<String, Object>? parameters,
+    AnalyticsCallOptions? callOptions,
+  }) async {}
+
+  @override
+  Future<void> resetAnalyticsData() async {}
+}
 
 class MockAnalyticsService {
-  final FirebaseAnalyticsObserver observer = FirebaseAnalyticsObserver(
-    analytics: MockFirebaseAnalytics(),
+  final MockFirebaseAnalytics mockAnalytics = MockFirebaseAnalytics();
+
+  late final FirebaseAnalyticsObserver observer = FirebaseAnalyticsObserver(
+    analytics: mockAnalytics,
   );
 
   Future<void> initialize() async {}
@@ -64,33 +104,5 @@ class MockAnalyticsService {
     required String errorMessage,
   }) async {}
 
-  Future<void> resetAnalyticsData() async {}
-}
-
-class MockFirebaseAnalytics extends FirebaseAnalytics {
-  const MockFirebaseAnalytics();
-
-  @override
-  Future<void> logEvent({
-    required String name,
-    Map<String, Object>? parameters,
-  }) async {}
-
-  @override
-  Future<void> setUserId({required String id}) async {}
-
-  @override
-  Future<void> setUserProperty({
-    required String name,
-    required String value,
-  }) async {}
-
-  @override
-  Future<void> setAnalyticsCollectionEnabled(bool enabled) async {}
-
-  @override
-  Future<void> logScreenView({String? screenName, String? screenClass}) async {}
-
-  @override
   Future<void> resetAnalyticsData() async {}
 }

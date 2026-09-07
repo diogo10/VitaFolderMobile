@@ -20,7 +20,7 @@ class PersonModel extends PersonEntity {
 
   factory PersonModel.fromMap(Map<String, dynamic> map) {
     return PersonModel(
-      id: map['id'] is int ? map['id'] : int.parse(map['id'].toString()),
+      id: map['id'].toString(),
       name: map['name'] as String,
       email: map['email'] as String,
       phone: map['phone'] as String,

@@ -5,10 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
-import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -22,46 +20,12 @@ import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit
 import 'package:house_mira/features/reminders/presentation/screens/create_reminder_screen.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
-class _FakeAuthService implements AuthService {
-  @override
-  User? get currentUser => null;
-
+class _FakeAuthService extends Mock implements AuthService {
   @override
   bool isLoggedIn() => true;
 
   @override
   String? get currentUserId => 'fake-user-id';
-
-  @override
-  Future<User?> signUp({
-    required String email,
-    required String password,
-    required String name,
-  }) async => null;
-
-  @override
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) async {}
-
-  @override
-  Future<void> triggerForgetPassword({required String email}) async {}
-
-  @override
-  Future<void> signOut() async {}
-
-  @override
-  Future<void> resetPassword(String email) async {}
-
-  @override
-  Future<void> updateName(String name) async {}
-
-  @override
-  Future<String?> getProfileName() async => null;
-
-  @override
-  Future<PersonEntity?> getAsPersonEntity() async => null;
 }
 
 class _FakePeopleRepository extends Mock implements PeopleRepository {}
@@ -181,6 +145,9 @@ void main() {
       when(
         () => updateReminderUsecase.call(any()),
       ).thenAnswer((_) => completer.future);
+      addTearDown(() {
+        if (!completer.isCompleted) completer.complete(Right(true));
+      });
 
       await tester.pumpWidget(pumpApp(reminder: reminder));
       final l = AppLocalizations.of(

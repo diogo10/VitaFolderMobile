@@ -6,9 +6,12 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
@@ -30,7 +33,6 @@ import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecas
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/main.dart';
 import 'mock_firebase.dart';
-import 'mock_analytics.dart';
 
 class _FakeAuthService extends AuthService {
   @override
@@ -41,6 +43,13 @@ class _FakeAuthService extends AuthService {
 }
 
 class _FakePeopleRepository implements PeopleRepository {
+  /// Empty name/inviteCode drives PeopleCubit to [PeopleEmpty], which is what
+  /// the People tab test asserts. Home keeps its own fake with 'Fam'.
+  final String familyName;
+  final String inviteCode;
+
+  _FakePeopleRepository({this.familyName = 'Fam', this.inviteCode = 'ABC'});
+
   @override
   Future<Either<Exception, List<PersonEntity>>> getPeople() async => Right([]);
 
@@ -52,7 +61,7 @@ class _FakePeopleRepository implements PeopleRepository {
 
   @override
   Future<Either<Exception, FamilyEntity>> getMyFamily() async =>
-      Right(FamilyEntity(name: 'Fam', inviteCode: 'ABC'));
+      Right(FamilyEntity(name: familyName, inviteCode: inviteCode));
 
   @override
   Future<Either<Exception, bool>> joinFamily({
@@ -61,7 +70,7 @@ class _FakePeopleRepository implements PeopleRepository {
 
   @override
   Future<FamilyEntity?> getFamilyBy(String id) async =>
-      FamilyEntity(name: 'Fam', inviteCode: 'ABC');
+      FamilyEntity(name: familyName, inviteCode: inviteCode);
 
   @override
   Future<List<String>> getFamilyIdsForUser(String userId) async => [
@@ -124,7 +133,61 @@ class _FakeReminderRepository implements ReminderRepository {
   Future<Either<Failure, bool>> removeReminder(String id) async => Right(true);
 }
 
+class _FakeFirebaseAnalytics extends Fake implements FirebaseAnalytics {
+  @override
+  Future<void> logScreenView({
+    String? screenClass,
+    String? screenName,
+    Map<String, Object>? parameters,
+    AnalyticsCallOptions? callOptions,
+  }) async {}
+
+  @override
+  Future<void> logEvent({
+    required String name,
+    Map<String, Object>? parameters,
+    List<AnalyticsEventItem>? items,
+    AnalyticsCallOptions? callOptions,
+  }) async {}
+
+  @override
+  Future<void> setUserId({
+    String? id,
+    AnalyticsCallOptions? callOptions,
+  }) async {}
+
+  @override
+  Future<void> setUserProperty({
+    required String name,
+    required String? value,
+    AnalyticsCallOptions? callOptions,
+  }) async {}
+
+  @override
+  Future<void> setAnalyticsCollectionEnabled(bool enabled) async {}
+
+  @override
+  Future<void> resetAnalyticsData() async {}
+}
+
+class _FakeAnalyticsService extends Fake implements AnalyticsService {
+  final _analytics = _FakeFirebaseAnalytics();
+  late final FirebaseAnalyticsObserver _observer = FirebaseAnalyticsObserver(
+    analytics: _analytics,
+  );
+
+  @override
+  FirebaseAnalyticsObserver get observer => _observer;
+}
+
 Widget _pumpApp() {
+  final fakeAuth = _FakeAuthService();
+  final fakePeople = _FakePeopleRepository();
+  final fakeReminders = _FakeReminderRepository();
+  final emptyFamilyPeople = _FakePeopleRepository(
+    familyName: '',
+    inviteCode: '',
+  );
   return MultiBlocProvider(
     providers: [
       BlocProvider<HomeCubit>(
@@ -133,40 +196,36 @@ Widget _pumpApp() {
             instanceName: 'getHomeDataUsecase',
           ),
           hasRemindersUsecase: HasRemindersUsecase(
-            authService: _FakeAuthService(),
-            peopleRepository: _FakePeopleRepository(),
-            reminderRepository: _FakeReminderRepository(),
+            authService: fakeAuth,
+            peopleRepository: fakePeople,
+            reminderRepository: fakeReminders,
           ),
         ),
       ),
       BlocProvider<RemindersCubit>(
         create: (_) => RemindersCubit(
           getReminderUsecase: GetReminderUsecase(
-            repository: _FakeReminderRepository(),
-            peopleRepository: _FakePeopleRepository(),
+            repository: fakeReminders,
+            peopleRepository: fakePeople,
           ),
-          peopleRepository: _FakePeopleRepository(),
-          authService: _FakeAuthService(),
-          reminderRepository: _FakeReminderRepository(),
+          peopleRepository: fakePeople,
+          authService: fakeAuth,
+          reminderRepository: fakeReminders,
         ),
       ),
       BlocProvider<PeopleCubit>(
         create: (_) => PeopleCubit(
-          getPeopleUsecase: GetIt.instance<GetPeopleUsecase>(
-            instanceName: 'getPeopleUsecase',
+          getPeopleUsecase: GetPeopleUsecase(repository: emptyFamilyPeople),
+          createFamilyUsecase: CreateFamilyUsecase(
+            repository: emptyFamilyPeople,
           ),
-          createFamilyUsecase: GetIt.instance<CreateFamilyUsecase>(
-            instanceName: 'createFamilyUsecase',
-          ),
-          joinFamilyUsecase: GetIt.instance<JoinFamilyUsecase>(
-            instanceName: 'joinFamilyUsecase',
-          ),
-          authService: GetIt.instance<AuthService>(instanceName: 'authService'),
+          joinFamilyUsecase: JoinFamilyUsecase(repository: emptyFamilyPeople),
+          authService: fakeAuth,
         ),
       ),
       BlocProvider<AccountCubit>(
         create: (_) =>
-            GetIt.instance<AccountCubit>(instanceName: 'accountCubit'),
+            AccountCubit(authService: fakeAuth, peopleRepository: fakePeople),
       ),
     ],
     child: const MyApp(onboardingCompleted: true),
@@ -174,6 +233,9 @@ Widget _pumpApp() {
 }
 
 Widget _pumpAppWithOnboarding() {
+  final fakeAuth = _FakeAuthService();
+  final fakePeople = _FakePeopleRepository();
+  final fakeReminders = _FakeReminderRepository();
   return MultiBlocProvider(
     providers: [
       BlocProvider<HomeCubit>(
@@ -182,40 +244,34 @@ Widget _pumpAppWithOnboarding() {
             instanceName: 'getHomeDataUsecase',
           ),
           hasRemindersUsecase: HasRemindersUsecase(
-            authService: _FakeAuthService(),
-            peopleRepository: _FakePeopleRepository(),
-            reminderRepository: _FakeReminderRepository(),
+            authService: fakeAuth,
+            peopleRepository: fakePeople,
+            reminderRepository: fakeReminders,
           ),
         ),
       ),
       BlocProvider<RemindersCubit>(
         create: (_) => RemindersCubit(
           getReminderUsecase: GetReminderUsecase(
-            repository: _FakeReminderRepository(),
-            peopleRepository: _FakePeopleRepository(),
+            repository: fakeReminders,
+            peopleRepository: fakePeople,
           ),
-          peopleRepository: _FakePeopleRepository(),
-          authService: _FakeAuthService(),
-          reminderRepository: _FakeReminderRepository(),
+          peopleRepository: fakePeople,
+          authService: fakeAuth,
+          reminderRepository: fakeReminders,
         ),
       ),
       BlocProvider<PeopleCubit>(
         create: (_) => PeopleCubit(
-          getPeopleUsecase: GetIt.instance<GetPeopleUsecase>(
-            instanceName: 'getPeopleUsecase',
-          ),
-          createFamilyUsecase: GetIt.instance<CreateFamilyUsecase>(
-            instanceName: 'createFamilyUsecase',
-          ),
-          joinFamilyUsecase: GetIt.instance<JoinFamilyUsecase>(
-            instanceName: 'joinFamilyUsecase',
-          ),
-          authService: GetIt.instance<AuthService>(instanceName: 'authService'),
+          getPeopleUsecase: GetPeopleUsecase(repository: fakePeople),
+          createFamilyUsecase: CreateFamilyUsecase(repository: fakePeople),
+          joinFamilyUsecase: JoinFamilyUsecase(repository: fakePeople),
+          authService: fakeAuth,
         ),
       ),
       BlocProvider<AccountCubit>(
         create: (_) =>
-            GetIt.instance<AccountCubit>(instanceName: 'accountCubit'),
+            AccountCubit(authService: fakeAuth, peopleRepository: fakePeople),
       ),
     ],
     child: const MyApp(onboardingCompleted: false),
@@ -232,12 +288,21 @@ void main() {
       url: 'https://mock.supabase.co',
       publishableKey: 'mock-anon-key',
     );
-    final serviceLocator = ServiceLocator();
-    await serviceLocator.init();
-
-    await slInstance.unregister<HomeCubit>(instanceName: 'homeCubit');
-    await slInstance.unregister<GetHomeDataUsecase>(
-      instanceName: 'getHomeDataUsecase',
+    // Register only what MyApp / views resolve via GetIt. The production
+    // ServiceLocator creates a real AnalyticsService backed by
+    // FirebaseAnalytics.instance, which throws in tests, so register a fake.
+    await GetIt.instance.reset();
+    slInstance.registerSingleton<AnalyticsService>(
+      _FakeAnalyticsService(),
+      instanceName: 'analyticsService',
+    );
+    slInstance.registerSingleton<OnboardingLocalDatasource>(
+      OnboardingLocalDatasource(),
+      instanceName: 'onboardingLocalDatasource',
+    );
+    slInstance.registerSingleton<LocalStorageDatasource>(
+      LocalStorageDatasource(),
+      instanceName: 'localStorageDatasource',
     );
     slInstance.registerSingleton<GetHomeDataUsecase>(
       GetHomeDataUsecase(
@@ -286,7 +351,7 @@ void main() {
 
       await tester.tap(find.text('Reminders'));
       await tester.pump();
-      await tester.pump(const Duration(seconds: 15));
+      await tester.pump(const Duration(seconds: 2));
       expect(find.text('No reminders yet'), findsOneWidget);
 
       await tester.tap(find.text('People'));

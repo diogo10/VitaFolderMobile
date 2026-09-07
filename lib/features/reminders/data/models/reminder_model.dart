@@ -59,7 +59,7 @@ class ReminderModel extends ReminderEntity {
     return ReminderModel(
       title: map['title'] as String,
       body: map.containsKey('body') ? map['body'] as String : '',
-      id: map['id'] is String ? map['id'] : int.parse(map['id'].toString()),
+      id: map['id'].toString(),
       type:
           ReminderType.fromString(map['type'] as String?) ??
           (throw FormatException('Invalid reminder type')),

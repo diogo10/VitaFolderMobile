@@ -71,6 +71,110 @@ void main() {
     createdAt: '2026-08-01',
   );
 
+  group('CreateReminderCubit.createReminder', () {
+    void stubFamily(String? familyId, {String userId = 'u1'}) {
+      when(() => authService.currentUserId).thenReturn(userId);
+      when(
+        () => peopleRepository.getFamilyIdsForUser(userId),
+      ).thenAnswer((_) async => familyId == null ? [] : [familyId]);
+    }
+
+    blocTest<CreateReminderCubit, CreateReminderState>(
+      'emits loading then success when create succeeds',
+      build: buildCubit,
+      setUp: () {
+        stubFamily('f1');
+        when(
+          () => createReminderUsecase.call(any(), any()),
+        ).thenAnswer((_) async => Right(true));
+      },
+      act: (cubit) => cubit.createReminder(
+        title: 'T',
+        body: 'B',
+        type: ReminderType.chores,
+        dueDate: DateTime(2026, 9, 1, 10, 30),
+        repeatRule: 'never',
+      ),
+      expect: () => [
+        isA<CreateReminderLoading>(),
+        isA<CreateReminderSuccess>(),
+      ],
+      verify: (_) {
+        final captured = verify(
+          () => createReminderUsecase.call(captureAny(), captureAny()),
+        ).captured;
+        expect((captured[0] as ReminderModel).title, 'T');
+        expect(captured[1] as String, 'f1');
+      },
+    );
+
+    blocTest<CreateReminderCubit, CreateReminderState>(
+      'emits noFamily when user has no family',
+      build: buildCubit,
+      setUp: () => stubFamily(null),
+      act: (cubit) => cubit.createReminder(
+        title: 'T',
+        body: 'B',
+        type: ReminderType.chores,
+        dueDate: null,
+        repeatRule: 'never',
+      ),
+      expect: () => [
+        isA<CreateReminderLoading>(),
+        isA<CreateReminderError>().having(
+          (e) => e.code,
+          'code',
+          CreateReminderErrorCode.noFamily,
+        ),
+      ],
+    );
+
+    blocTest<CreateReminderCubit, CreateReminderState>(
+      'emits noFamily when there is no logged-in user',
+      build: buildCubit,
+      setUp: () {
+        when(() => authService.currentUserId).thenReturn(null);
+      },
+      act: (cubit) => cubit.createReminder(
+        title: 'T',
+        body: 'B',
+        type: ReminderType.chores,
+        dueDate: null,
+        repeatRule: 'never',
+      ),
+      expect: () => [
+        isA<CreateReminderLoading>(),
+        isA<CreateReminderError>().having(
+          (e) => e.code,
+          'code',
+          CreateReminderErrorCode.noFamily,
+        ),
+      ],
+    );
+
+    blocTest<CreateReminderCubit, CreateReminderState>(
+      'emits error message when create fails',
+      build: buildCubit,
+      setUp: () {
+        stubFamily('f1');
+        when(
+          () => createReminderUsecase.call(any(), any()),
+        ).thenAnswer((_) async => Left(Failure(message: 'boom')));
+      },
+      act: (cubit) => cubit.createReminder(
+        title: 'T',
+        body: 'B',
+        type: ReminderType.chores,
+        dueDate: null,
+        repeatRule: 'never',
+      ),
+      expect: () => [
+        isA<CreateReminderLoading>(),
+        isA<CreateReminderError>().having((e) => e.message, 'message', 'boom'),
+      ],
+    );
+  });
+
   group('CreateReminderCubit.updateReminder', () {
     blocTest<CreateReminderCubit, CreateReminderState>(
       'emits loading then success when update succeeds',

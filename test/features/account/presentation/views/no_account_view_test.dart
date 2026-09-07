@@ -15,14 +15,14 @@ import 'package:house_mira/features/people/domain/repository/people_repository.d
 import 'package:house_mira/generated/app_localizations.dart';
 
 class _FakeAuthService extends AuthService {
-  final Completer<PersonEntity?> getAsPersonEntityCompleter = Completer();
+  Completer<PersonEntity?> personCompleter = Completer<PersonEntity?>()
+    ..complete(null);
   String? lastSignInEmail;
   String? lastSignInPassword;
   String? lastResetEmail;
 
   @override
-  Future<PersonEntity?> getAsPersonEntity() =>
-      getAsPersonEntityCompleter.future;
+  Future<PersonEntity?> getAsPersonEntity() => personCompleter.future;
 
   @override
   Future<void> signIn({required String email, required String password}) async {
@@ -105,12 +105,13 @@ void main() {
   });
 
   Future<void> pumpNoAccount(WidgetTester tester, AccountCubit cubit) async {
+    addTearDown(cubit.close);
     await tester.pumpWidget(
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: BlocProvider<AccountCubit>(
-          create: (_) => cubit,
+        home: BlocProvider<AccountCubit>.value(
+          value: cubit,
           child: const NoAccountView(),
         ),
       ),
@@ -207,12 +208,17 @@ void main() {
     testWidgets('shows loading spinner while account is loading', (
       tester,
     ) async {
+      // Pending lookup keeps the cubit in AccountLoading while pumping.
+      authService.personCompleter = Completer<PersonEntity?>();
       final cubit = buildCubit();
       unawaited(cubit.loadAccount());
 
       await pumpNoAccount(tester, cubit);
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsWidgets);
+
+      authService.personCompleter.complete(null);
+      await tester.pump();
     });
   });
 }

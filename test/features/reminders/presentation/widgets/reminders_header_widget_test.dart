@@ -44,6 +44,7 @@ void main() {
       var pressed = false;
       await tester.pumpWidget(pumpApp(onCalendarPressed: () => pressed = true));
       await tester.tap(find.byIcon(Icons.calendar_month_rounded));
+      await tester.pump();
       expect(pressed, isTrue);
     });
 
@@ -53,18 +54,36 @@ void main() {
       var pressed = false;
       await tester.pumpWidget(pumpApp(onFilterPressed: () => pressed = true));
       await tester.tap(find.byIcon(Icons.tune_rounded));
+      await tester.pump();
       expect(pressed, isTrue);
     });
 
     testWidgets('shows notification dot when hasActiveFilters is true', (
       tester,
     ) async {
-      await tester.pumpWidget(pumpApp());
-      // Default hasActiveFilters is false
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(
+            body: RemindersHeaderWidget(
+              title: 'Reminders',
+              hasActiveFilters: true,
+            ),
+          ),
+        ),
+      );
       expect(find.byIcon(Icons.tune_rounded), findsOneWidget);
+      // The active-filter dot is the only Positioned widget in the header.
+      expect(find.byType(Positioned), findsOneWidget);
+    });
 
-      // We can't easily test the dot without rebuilding with hasActiveFilters: true
-      // The dot is rendered as a Positioned widget, not an icon
+    testWidgets('hides notification dot when hasActiveFilters is false', (
+      tester,
+    ) async {
+      await tester.pumpWidget(pumpApp());
+      expect(find.byIcon(Icons.tune_rounded), findsOneWidget);
+      expect(find.byType(Positioned), findsNothing);
     });
   });
 }
