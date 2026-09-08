@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminder_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
@@ -26,27 +27,8 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
   );
   DateTime? _selectedDate;
 
-  static bool _occursOnDate(
-    ReminderEntity reminder,
-    DateTime date,
-    DateFormat dateFormat,
-  ) {
-    final dueDate = dateFormat.tryParse(reminder.dueDate.trim());
-    if (dueDate == null) return false;
-    if (date.isBefore(dueDate)) return false;
-
-    switch (reminder.repeatRule) {
-      case 'never':
-        return dateFormat.format(date) == dateFormat.format(dueDate);
-      case 'daily':
-        return true;
-      case 'weekly':
-        return date.weekday == dueDate.weekday;
-      case 'monthly':
-        return date.day == dueDate.day;
-      default:
-        return false;
-    }
+  static bool _occursOnDate(ReminderEntity reminder, DateTime date) {
+    return ReminderDateUtils.occursOnDate(reminder, date);
   }
 
   Set<String> get _reminderDayKeys {
@@ -60,7 +42,7 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
     for (var day = 1; day <= daysInMonth; day++) {
       final date = DateTime(_visibleMonth.year, _visibleMonth.month, day);
       for (final reminder in widget.reminders) {
-        if (_occursOnDate(reminder, date, _dateFormat)) {
+        if (_occursOnDate(reminder, date)) {
           keys.add(_dateFormat.format(date));
           break;
         }
@@ -72,7 +54,7 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
   List<ReminderEntity> get _selectedDayReminders {
     if (_selectedDate == null) return const [];
     return widget.reminders.where((r) {
-      return _occursOnDate(r, _selectedDate!, _dateFormat);
+      return _occursOnDate(r, _selectedDate!);
     }).toList();
   }
 

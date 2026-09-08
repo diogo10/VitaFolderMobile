@@ -114,6 +114,68 @@ void main() {
       expect(find.textContaining(weekday), findsOneWidget);
       expect(find.text('Reminder 1'), findsOneWidget);
     });
+
+    testWidgets('shows dateless reminders under No date header on top', (
+      tester,
+    ) async {
+      final nowDt = DateTime.now();
+      final today = fmt(nowDt);
+
+      await tester.pumpWidget(
+        pumpApp([makeReminder('1', today), makeReminder('2', '')]),
+      );
+      final l = AppLocalizations.of(
+        tester.element(find.byType(RemindersLoadedWidget)),
+      )!;
+
+      // Header + trailing No-date chip share the same label.
+      expect(find.text(l.remindersLoadedSectionNoDate), findsNWidgets(2));
+      expect(find.text('Reminder 2'), findsOneWidget);
+      expect(find.text('Reminder 1'), findsOneWidget);
+
+      // No-date section renders before Today section: dateless
+      // reminder sits above the dated one.
+      final datelessOffset = tester.getTopLeft(find.text('Reminder 2'));
+      final datedOffset = tester.getTopLeft(find.text('Reminder 1'));
+      expect(datelessOffset.dy, lessThan(datedOffset.dy));
+      expect(
+        find.text('${l.remindersLoadedSectionToday} · ${_monthDay(nowDt)}'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('shows only dateless reminder with No date chip', (
+      tester,
+    ) async {
+      await tester.pumpWidget(pumpApp([makeReminder('1', '')]));
+      final l = AppLocalizations.of(
+        tester.element(find.byType(RemindersLoadedWidget)),
+      )!;
+
+      expect(find.text('Reminder 1'), findsOneWidget);
+      // Trailing chip + header both show the No date label.
+      expect(find.text(l.remindersLoadedSectionNoDate), findsNWidgets(2));
+    });
+
+    testWidgets('parses display format with time into Today group', (
+      tester,
+    ) async {
+      final nowDt = DateTime.now();
+      final day = nowDt.day.toString().padLeft(2, '0');
+      final month = nowDt.month.toString().padLeft(2, '0');
+      final withTime = '$day/$month/${nowDt.year} 09:30';
+
+      await tester.pumpWidget(pumpApp([makeReminder('1', withTime)]));
+      final l = AppLocalizations.of(
+        tester.element(find.byType(RemindersLoadedWidget)),
+      )!;
+
+      expect(
+        find.text('${l.remindersLoadedSectionToday} · ${_monthDay(nowDt)}'),
+        findsOneWidget,
+      );
+      expect(find.text('Reminder 1'), findsOneWidget);
+    });
   });
 }
 

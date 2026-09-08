@@ -22,13 +22,17 @@ void main() {
       return '$day/$month/${d.year}';
     }
 
-    ReminderEntity makeReminder(String id, String dueDate) => ReminderEntity(
+    ReminderEntity makeReminder(
+      String id,
+      String dueDate, {
+      String repeatRule = 'never',
+    }) => ReminderEntity(
       title: 'Reminder $id',
       body: '',
       id: id,
       type: ReminderType.appointment,
       dueDate: dueDate,
-      repeatRule: 'never',
+      repeatRule: repeatRule,
       status: 'pending',
       createdBy: '',
       createdAt: '',
@@ -45,6 +49,34 @@ void main() {
     ) async {
       final now = DateTime.now();
       await tester.pumpWidget(pumpApp([makeReminder('1', fmt(now))]));
+
+      await tester.tap(find.text('${now.day}'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Reminder 1'), findsOneWidget);
+    });
+
+    testWidgets('tapping a day lists a reminder that has a time set', (
+      tester,
+    ) async {
+      final now = DateTime.now();
+      await tester.pumpWidget(
+        pumpApp([makeReminder('1', '${fmt(now)} 14:00')]),
+      );
+
+      await tester.tap(find.text('${now.day}'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Reminder 1'), findsOneWidget);
+    });
+
+    testWidgets('tapping a day lists a reminder with empty repeat rule', (
+      tester,
+    ) async {
+      final now = DateTime.now();
+      await tester.pumpWidget(
+        pumpApp([makeReminder('1', fmt(now), repeatRule: '')]),
+      );
 
       await tester.tap(find.text('${now.day}'));
       await tester.pumpAndSettle();

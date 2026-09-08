@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invite Members</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes floatSoft {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .fade-in { animation: fadeIn 0.45s ease both; }
+        .animate-up { animation: slideInUp 0.45s ease both; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .scale-in { animation: scaleIn 0.4s ease both; }
+        .float-soft { animation: floatSoft 3.5s ease-in-out infinite; }
+
+        .action-btn { transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease; }
+        .action-btn:active { transform: scale(0.94); }
+
+        .input-field {
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+        .input-field:focus {
+            border-color: #8b7355;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(139,115,85,0.10);
+        }
+        .input-field.error {
+            border-color: #f87171;
+            box-shadow: 0 0 0 4px rgba(248,113,113,0.10);
+        }
+
+        .avatar { transition: transform 0.18s ease; }
+        .avatar:hover { transform: translateY(-3px) scale(1.05); }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                        figtree: ['Figtree', 'sans-serif'],
+                    },
+                    colors: {
+                        sand: {
+                            50: '#faf8f5',
+                            100: '#f0ebe3',
+                            200: '#e4dace',
+                            300: '#c9b99a',
+                            400: '#b8a080',
+                            500: '#8b7355',
+                            600: '#7a6348',
+                            700: '#634f39',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sand-50 font-figtree" style="max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative; overflow-x: hidden;">
+
+    <!-- STATUS BAR -->
+    <div id="status-bar" class="bg-sand-50 px-5 pt-3 pb-1 flex justify-between items-center fade-in">
+        <span class="text-sand-500 text-xs font-outfit font-medium">9:41 AM</span>
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-wifi text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-signal text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-battery-three-quarters text-sand-500 text-xs"></i>
+        </div>
+    </div>
+
+    <!-- TOP NAV -->
+    <header id="header" class="px-5 pt-2 pb-4 flex items-center justify-between fade-in">
+        <button id="back-button" class="action-btn w-10 h-10 rounded-2xl bg-white border border-sand-200 flex items-center justify-center" aria-label="Go back">
+            <i class="fa-solid fa-chevron-left text-sand-600 text-sm"></i>
+        </button>
+        <h1 class="font-outfit font-bold text-sand-700 text-base">Invite Members</h1>
+        <div class="w-10"></div><!-- Spacer to center title -->
+    </header>
+
+    <main id="main-content" class="px-6 pb-40">
+
+        <!-- HERO ICON -->
+        <section class="flex justify-center pt-6 animate-up">
+            <div class="float-soft w-24 h-24 rounded-full bg-sand-100 border border-sand-200 flex items-center justify-center" style="box-shadow: 0 6px 20px rgba(139,115,85,0.10);">
+                <i class="fa-solid fa-paper-plane text-sand-600 text-3xl -rotate-12"></i>
+            </div>
+        </section>
+
+        <!-- TITLE + DESCRIPTION -->
+        <section class="text-center mt-6 animate-up delay-1">
+            <h2 class="font-outfit font-bold text-sand-700 text-2xl">Grow your circle</h2>
+            <p class="font-figtree text-sand-400 text-sm leading-relaxed mt-3 px-2">
+                Enter your family member's email address<br>
+                below to send them an invitation to join
+                <span class="font-semibold text-sand-600">Smith Family</span>.
+            </p>
+        </section>
+
+        <!-- EMAIL FIELD -->
+        <section class="mt-8 animate-up delay-2">
+            <label for="email-input" class="font-outfit font-semibold text-sand-600 uppercase tracking-wider text-[11px] block mb-2 ml-1">Email Address</label>
+            <div class="relative">
+                <i class="fa-solid fa-envelope absolute left-5 top-1/2 -translate-y-1/2 text-sand-400"></i>
+                <input id="email-input" type="email" inputmode="email" autocomplete="email" placeholder="family@example.com"
+                    class="input-field w-full bg-white border border-sand-200 rounded-2xl pl-12 pr-4 py-4 font-figtree text-sand-700 text-[15px] placeholder:text-sand-300"
+                    style="box-shadow: 0 2px 10px rgba(139,115,85,0.05);">
+            </div>
+            <p id="email-hint" class="hidden font-figtree text-xs mt-2 ml-1 text-red-400">Please enter a valid email address.</p>
+            <p id="email-success" class="hidden font-figtree text-xs mt-2 ml-1 text-emerald-600 font-medium">
+                <i class="fa-solid fa-circle-check mr-1"></i><span>Invitation sent!</span>
+            </p>
+        </section>
+
+        <!-- AVATAR CLUSTER -->
+        <section class="mt-10 flex justify-center animate-up delay-3" aria-label="Family members preview">
+            <div class="relative flex items-center">
+                <div class="avatar w-14 h-14 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center relative z-10" style="box-shadow: 0 4px 12px rgba(96,165,250,0.25);">
+                    <span class="font-outfit font-bold text-blue-500 text-sm">JS</span>
+                </div>
+                <div class="avatar w-11 h-11 rounded-full border-2 border-dashed border-sand-300 bg-sand-50 flex items-center justify-center -ml-3 relative z-20">
+                    <i class="fa-solid fa-plus text-sand-400 text-xs"></i>
+                </div>
+                <div class="avatar w-12 h-12 rounded-full bg-amber-100 border-2 border-white flex items-center justify-center -ml-3 relative z-30" style="box-shadow: 0 4px 12px rgba(251,191,36,0.25);">
+                    <span class="font-outfit font-bold text-amber-500 text-xs">MS</span>
+                </div>
+                <div class="avatar w-14 h-14 rounded-full bg-rose-100 border-2 border-white flex items-center justify-center -ml-3 relative z-40" style="box-shadow: 0 4px 12px rgba(251,113,133,0.25);">
+                    <span class="font-outfit font-bold text-rose-400 text-sm">LS</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM CTA -->
+    <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full px-6 pt-8 pb-8 bg-gradient-to-t from-sand-50 via-sand-50 to-transparent z-40" style="max-width: 430px;">
+        <button id="send-invite-button" class="action-btn w-full bg-sand-500 text-sand-50 font-outfit font-bold text-base py-[18px] rounded-3xl flex items-center justify-center gap-2.5"
+            style="box-shadow: 0 8px 24px rgba(139,115,85,0.35);" aria-label="Send invite">
+            <i id="send-invite-icon" class="fa-solid fa-paper-plane text-sm"></i>
+            <span id="send-invite-label">Send Invite</span>
+        </button>
+    </div>
+
+    <script>
+        const backButton = document.getElementById('back-button');
+        const emailInput = document.getElementById('email-input');
+        const emailHint = document.getElementById('email-hint');
+        const emailSuccess = document.getElementById('email-success');
+        const sendButton = document.getElementById('send-invite-button');
+        const sendLabel = document.getElementById('send-invite-label');
+        const sendIcon = document.getElementById('send-invite-icon');
+
+        backButton.addEventListener('click', () => window.history.back());
+
+        emailInput.addEventListener('input', () => {
+            emailInput.classList.remove('error');
+            emailHint.classList.add('hidden');
+        });
+
+        function isValidEmail(value) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+        }
+
+        sendButton.addEventListener('click', () => {
+            const value = emailInput.value.trim();
+            emailSuccess.classList.add('hidden');
+
+            if (!isValidEmail(value)) {
+                emailInput.classList.add('error');
+                emailHint.classList.remove('hidden');
+                emailInput.focus();
+                return;
+            }
+
+            emailInput.classList.remove('error');
+            emailHint.classList.add('hidden');
+            sendButton.disabled = true;
+            sendIcon.className = 'fa-solid fa-circle-notch fa-spin text-sm';
+            sendLabel.textContent = 'Sending...';
+
+            window.setTimeout(() => {
+                sendIcon.className = 'fa-solid fa-check text-sm';
+                sendLabel.textContent = 'Invite Sent';
+                emailSuccess.classList.remove('hidden');
+                emailInput.value = '';
+
+                window.setTimeout(() => {
+                    sendIcon.className = 'fa-solid fa-paper-plane text-sm';
+                    sendLabel.textContent = 'Send Invite';
+                    sendButton.disabled = false;
+                    emailSuccess.classList.add('hidden');
+                }, 1800);
+            }, 900);
+        });
+
+        emailInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendButton.click();
+            }
+        });
+    </script>
+</body>
+</html>

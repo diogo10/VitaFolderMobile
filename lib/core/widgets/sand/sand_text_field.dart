@@ -44,6 +44,7 @@ class SandLabeledField extends StatefulWidget {
   final TextInputType? keyboardType;
   final TextCapitalization textCapitalization;
   final String? Function(String?)? validator;
+  final bool enabled;
 
   const SandLabeledField({
     super.key,
@@ -57,6 +58,7 @@ class SandLabeledField extends StatefulWidget {
     this.keyboardType,
     this.textCapitalization = TextCapitalization.none,
     this.validator,
+    this.enabled = true,
   });
 
   @override
@@ -93,6 +95,7 @@ class _SandLabeledFieldState extends State<SandLabeledField> {
           obscureText: widget.obscureText && _obscured,
           keyboardType: widget.keyboardType,
           textCapitalization: widget.textCapitalization,
+          enabled: widget.enabled,
           style: theme.bodyMedium?.copyWith(color: SandPalette.sand600),
           decoration: sandInputDecoration(
             hint: widget.hint,

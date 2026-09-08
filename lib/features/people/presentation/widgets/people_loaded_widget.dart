@@ -198,7 +198,8 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
               ..._buildMemberCards(l),
               const SizedBox(height: 12),
               AddFamilyMemberCardWidget(
-                onPressed: () => context.push('/invite-people'),
+                onPressed: () =>
+                    context.push('/invite-people', extra: widget.familyName),
               ),
               const SizedBox(height: 16),
             ],

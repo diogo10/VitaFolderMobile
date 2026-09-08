@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminder_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
@@ -42,22 +43,23 @@ class RemindersLoadedWidget extends StatelessWidget {
   List<_ListEntry> _groupByDay(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final now = DateTime.now();
-    final todayKey = DateFormat('dd/MM/yyyy').format(now);
-    final tomorrowKey = DateFormat(
-      'dd/MM/yyyy',
-    ).format(now.add(const Duration(days: 1)));
+    final todayKey = ReminderDateUtils.dateKey(now);
+    final tomorrowKey = ReminderDateUtils.dateKey(
+      now.add(const Duration(days: 1)),
+    );
 
     final todayList = <ReminderEntity>[];
     final tomorrowList = <ReminderEntity>[];
+    final noDateList = <ReminderEntity>[];
     final laterMap = <String, List<ReminderEntity>>{};
 
     for (final reminder in reminders) {
-      final date = DateFormat('dd/MM/yyyy').tryParse(reminder.dueDate);
+      final date = ReminderDateUtils.parseDueDate(reminder.dueDate);
       if (date == null) {
-        laterMap.putIfAbsent('', () => []).add(reminder);
+        noDateList.add(reminder);
         continue;
       }
-      final key = DateFormat('dd/MM/yyyy').format(date);
+      final key = ReminderDateUtils.dateKey(date);
       if (key == todayKey) {
         todayList.add(reminder);
       } else if (key == tomorrowKey) {
@@ -68,6 +70,18 @@ class RemindersLoadedWidget extends StatelessWidget {
     }
 
     final entries = <_ListEntry>[];
+
+    if (noDateList.isNotEmpty) {
+      entries.add(
+        _ListEntry.header(
+          l.remindersLoadedSectionNoDate,
+          '',
+          _HeaderType.noDate,
+          now,
+        ),
+      );
+      entries.addAll(noDateList.map((r) => _ListEntry.reminder(r, false)));
+    }
 
     if (todayList.isNotEmpty) {
       entries.add(
@@ -96,7 +110,7 @@ class RemindersLoadedWidget extends StatelessWidget {
 
     final keys = laterMap.keys.toList()..sort();
     for (final key in keys) {
-      final date = DateFormat('dd/MM/yyyy').tryParse(key);
+      final date = ReminderDateUtils.parseDueDate(key);
       if (date != null) {
         final label =
             '${DateFormat('EEEE').format(date)} · ${DateFormat('MMM d').format(date)}';
@@ -116,7 +130,7 @@ class RemindersLoadedWidget extends StatelessWidget {
   }
 }
 
-enum _HeaderType { today, tomorrow, later }
+enum _HeaderType { today, tomorrow, later, noDate }
 
 class _ListEntry {
   final String label;
@@ -178,10 +192,17 @@ class _DayHeader extends StatelessWidget {
         SandPalette.sand500,
         SandPalette.sand200,
       ),
+      _HeaderType.noDate => (
+        Icons.event_note_rounded,
+        SandPalette.sand100,
+        SandPalette.sand500,
+        SandPalette.sand200,
+      ),
     };
 
-    final dateLabel = DateFormat('MMM d').format(date);
-    final fullLabel = '$label · $dateLabel';
+    final fullLabel = type == _HeaderType.noDate
+        ? label
+        : '$label · ${DateFormat('MMM d').format(date)}';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 10),

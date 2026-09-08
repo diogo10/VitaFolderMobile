@@ -29,7 +29,9 @@ GoRouter createRouter({
       ),
       GoRoute(
         path: '/invite-people',
-        builder: (context, state) => const InvitePeopleScreen(),
+        builder: (context, state) => InvitePeopleScreen(
+          familyName: state.extra is String ? state.extra as String : null,
+        ),
       ),
       GoRoute(
         path: '/manage-profile',

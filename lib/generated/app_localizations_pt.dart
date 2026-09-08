@@ -216,6 +216,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get homeSuccessRemindersTomorrow => 'Amanhã';
 
   @override
+  String get homeSuccessRemindersNoDate => 'Sem data';
+
+  @override
   String get homeSuccessCircleManage => 'Gerenciar';
 
   @override
@@ -663,6 +666,23 @@ class AppLocalizationsPt extends AppLocalizations {
   String get invitePeopleTitle => 'Convidar Pessoas';
 
   @override
+  String get invitePeopleHeroTitle => 'Aumente seu círculo';
+
+  @override
+  String get invitePeopleHeroDescriptionPrefix =>
+      'Digite o endereço de email do seu familiar abaixo para enviar um convite para participar de ';
+
+  @override
+  String get invitePeopleHeroDescriptionGeneric =>
+      'Digite o endereço de email do seu familiar abaixo para enviar um convite para participar da sua família.';
+
+  @override
+  String get invitePeopleEmailAddressLabel => 'Endereço de email';
+
+  @override
+  String get invitePeopleEmailPlaceholder => 'family@example.com';
+
+  @override
   String get invitePeopleSent => 'Convite enviado!';
 
   @override
@@ -863,6 +883,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get remindersLoadedSectionTomorrow => 'Amanhã';
+
+  @override
+  String get remindersLoadedSectionNoDate => 'Sem data';
 
   @override
   String get remindersLoadedSectionAllDay => 'Dia todo';

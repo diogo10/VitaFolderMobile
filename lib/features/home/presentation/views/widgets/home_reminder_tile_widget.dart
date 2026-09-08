@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 
 class HomeReminderTileWidget extends StatelessWidget {
   final ReminderEntity reminder;
@@ -12,7 +14,13 @@ class HomeReminderTileWidget extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final typeColor = _typeColor(colorScheme);
     final iconData = _typeIcon(reminder.type);
-    final timeLabel = _extractTimeLabel(reminder.dueDate);
+    final timeLabel = ReminderDateUtils.extractTimeLabel(reminder.dueDate);
+    final hasDueDate = ReminderDateUtils.hasDueDate(reminder.dueDate);
+    final chipLabel =
+        timeLabel ??
+        (hasDueDate
+            ? null
+            : AppLocalizations.of(context)?.homeSuccessRemindersNoDate);
 
     return Container(
       width: double.infinity,
@@ -64,7 +72,7 @@ class HomeReminderTileWidget extends StatelessWidget {
               ],
             ),
           ),
-          if (timeLabel != null) ...[
+          if (chipLabel != null) ...[
             const SizedBox(width: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -73,7 +81,7 @@ class HomeReminderTileWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                timeLabel,
+                chipLabel,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: typeColor,
                   fontWeight: FontWeight.w700,
@@ -122,12 +130,5 @@ class HomeReminderTileWidget extends StatelessWidget {
       case ReminderType.custom:
         return Icons.sticky_note_2_rounded;
     }
-  }
-
-  String? _extractTimeLabel(String dueDate) {
-    final match = RegExp(
-      r'(\d{1,2}:\d{2}\s*(AM|PM|am|pm)|\d{1,2}\s*(AM|PM|am|pm))',
-    ).firstMatch(dueDate);
-    return match?.group(0)?.trim();
   }
 }

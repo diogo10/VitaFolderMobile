@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:house_mira/features/home/presentation/views/widgets/home_reminder_tile_widget.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class HomeUpcomingRemindersWidget extends StatelessWidget {
@@ -75,21 +75,22 @@ class HomeUpcomingRemindersWidget extends StatelessWidget {
 
   List<_ReminderGroup> _groupByDay(AppLocalizations l) {
     final now = DateTime.now();
-    final today = DateFormat('dd/MM/yyyy').format(now);
-    final tomorrow = DateFormat(
-      'dd/MM/yyyy',
-    ).format(now.add(const Duration(days: 1)));
+    final today = ReminderDateUtils.dateKey(now);
+    final tomorrow = ReminderDateUtils.dateKey(
+      now.add(const Duration(days: 1)),
+    );
 
     final todayList = <ReminderEntity>[];
     final tomorrowList = <ReminderEntity>[];
     final laterList = <ReminderEntity>[];
+    final noDateList = <ReminderEntity>[];
 
     for (final reminder in reminders) {
-      final date = DateFormat('dd/MM/yyyy').tryParse(reminder.dueDate);
+      final date = ReminderDateUtils.parseDueDate(reminder.dueDate);
       if (date == null) {
-        laterList.add(reminder);
+        noDateList.add(reminder);
       } else {
-        final formatted = DateFormat('dd/MM/yyyy').format(date);
+        final formatted = ReminderDateUtils.dateKey(date);
         if (formatted == today) {
           todayList.add(reminder);
         } else if (formatted == tomorrow) {
@@ -101,6 +102,11 @@ class HomeUpcomingRemindersWidget extends StatelessWidget {
     }
 
     return [
+      if (noDateList.isNotEmpty)
+        _ReminderGroup(
+          label: l.homeSuccessRemindersNoDate,
+          reminders: noDateList,
+        ),
       if (todayList.isNotEmpty)
         _ReminderGroup(
           label: l.homeSuccessRemindersToday,

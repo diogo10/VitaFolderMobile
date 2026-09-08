@@ -24,15 +24,7 @@ class FamilyHeaderWidget extends StatelessWidget {
       children: [
         const _HeaderIcon(icon: Icons.home_rounded),
         const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            role!,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: _brown,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
+        Spacer(),
         Stack(
           clipBehavior: Clip.none,
           children: [

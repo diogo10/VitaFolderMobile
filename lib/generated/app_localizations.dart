@@ -482,6 +482,12 @@ abstract class AppLocalizations {
   /// **'Tomorrow'**
   String get homeSuccessRemindersTomorrow;
 
+  /// No description provided for @homeSuccessRemindersNoDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No date'**
+  String get homeSuccessRemindersNoDate;
+
   /// No description provided for @homeSuccessCircleManage.
   ///
   /// In en, this message translates to:
@@ -1310,6 +1316,36 @@ abstract class AppLocalizations {
   /// **'Invite People'**
   String get invitePeopleTitle;
 
+  /// No description provided for @invitePeopleHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Grow your circle'**
+  String get invitePeopleHeroTitle;
+
+  /// No description provided for @invitePeopleHeroDescriptionPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your family member\'s email address below to send them an invitation to join '**
+  String get invitePeopleHeroDescriptionPrefix;
+
+  /// No description provided for @invitePeopleHeroDescriptionGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your family member\'s email address below to send them an invitation to join your family.'**
+  String get invitePeopleHeroDescriptionGeneric;
+
+  /// No description provided for @invitePeopleEmailAddressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Address'**
+  String get invitePeopleEmailAddressLabel;
+
+  /// No description provided for @invitePeopleEmailPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'family@example.com'**
+  String get invitePeopleEmailPlaceholder;
+
   /// No description provided for @invitePeopleSent.
   ///
   /// In en, this message translates to:
@@ -1693,6 +1729,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tomorrow'**
   String get remindersLoadedSectionTomorrow;
+
+  /// No description provided for @remindersLoadedSectionNoDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No date'**
+  String get remindersLoadedSectionNoDate;
 
   /// No description provided for @remindersLoadedSectionAllDay.
   ///

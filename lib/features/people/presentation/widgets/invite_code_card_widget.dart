@@ -6,7 +6,6 @@ class InviteCodeCardWidget extends StatelessWidget {
   final int expiresInDays;
   final VoidCallback? onCopyPressed;
   final VoidCallback? onSharePressed;
-  final VoidCallback? onRefreshPressed;
   final VoidCallback? onClose;
 
   const InviteCodeCardWidget({
@@ -15,7 +14,6 @@ class InviteCodeCardWidget extends StatelessWidget {
     required this.expiresInDays,
     this.onCopyPressed,
     this.onSharePressed,
-    this.onRefreshPressed,
     this.onClose,
   });
 
@@ -104,27 +102,10 @@ class InviteCodeCardWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _InviteActionButton(
-                  icon: Icons.share_rounded,
-                  label: l.peopleWidgetsInviteCodeShareButton,
-                  onPressed: onSharePressed,
-                  prominent: true,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _InviteActionButton(
-                  icon: Icons.share,
-                  label: l.peopleWidgetsInviteCodeRefreshButton,
-                  onPressed: onRefreshPressed,
-                  prominent: false,
-                  textColor: Colors.white.withValues(alpha: 0.9),
-                ),
-              ),
-            ],
+          _InviteActionButton(
+            icon: Icons.share_rounded,
+            label: l.peopleWidgetsInviteCodeShareButton,
+            onPressed: onSharePressed,
           ),
           const SizedBox(height: 14),
           Center(
@@ -175,15 +156,11 @@ class _InviteActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
-  final bool prominent;
-  final Color? textColor;
 
   const _InviteActionButton({
     required this.icon,
     required this.label,
     required this.onPressed,
-    this.prominent = false,
-    this.textColor,
   });
 
   @override
@@ -193,24 +170,18 @@ class _InviteActionButton extends StatelessWidget {
       style: FilledButton.styleFrom(
         minimumSize: const Size.fromHeight(48),
         padding: const EdgeInsets.symmetric(horizontal: 10),
-        backgroundColor: prominent
-            ? _InviteCodeCardWidgetColors.white
-            : Colors.white.withValues(alpha: 0.12),
-        foregroundColor: prominent ? const Color(0xFF725C43) : Colors.white,
-        side: prominent
-            ? BorderSide.none
-            : BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+        backgroundColor: _InviteCodeCardWidgetColors.white,
+        foregroundColor: const Color(0xFF725C43),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
       ),
-      icon: Icon(icon, size: 17, color: textColor),
+      icon: Icon(icon, size: 17),
       label: FittedBox(
         fit: BoxFit.scaleDown,
         child: Text(
           label,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: textColor,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
       ),
     );

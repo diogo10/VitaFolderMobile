@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:intl/intl.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_state.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
@@ -33,7 +35,6 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   static const _sand200 = Color(0xFFC9B99A);
   static const _sand300 = Color(0xFFB8A080);
   static const _sand400 = Color(0xFF8B7355);
-  static const _sand500 = Color(0xFF8B7355);
   static const _sand600 = Color(0xFF7A6348);
   static const _sand700 = Color(0xFF634F39);
 
@@ -146,6 +147,15 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
     return DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
 
+  void _refreshLists(BuildContext context) {
+    context.read<RemindersCubit>().getReminders();
+    try {
+      context.read<HomeCubit>().getHomeData(isRefresh: true);
+    } catch (_) {
+      // HomeCubit is not in scope when opened from Reminders tab.
+    }
+  }
+
   void _onSave() {
     final cubit = context.read<CreateReminderCubit>();
     if (!cubit.authService.isLoggedIn()) {
@@ -187,7 +197,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       body: BlocConsumer<CreateReminderCubit, CreateReminderState>(
         listener: (context, state) {
           if (state is CreateReminderSuccess) {
-            context.read<RemindersCubit>().getReminders();
+            _refreshLists(context);
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -196,7 +206,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             context.pop();
           }
           if (state is UpdatedReminderSuccess) {
-            context.read<RemindersCubit>().getReminders();
+            _refreshLists(context);
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -681,62 +691,13 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       ),
       child: SafeArea(
         top: false,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: isLoading ? null : _onSave,
-            borderRadius: BorderRadius.circular(28),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              decoration: BoxDecoration(
-                color: isLoading ? _sand400.withValues(alpha: 0.7) : _sand500,
-                borderRadius: BorderRadius.circular(28),
-                boxShadow: isLoading
-                    ? null
-                    : [
-                        BoxShadow(
-                          color: _sand500.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (isLoading)
-                    const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  else ...[
-                    const Icon(
-                      Icons.check_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      _isEditing
-                          ? l.createReminderSaveButtonEdit
-                          : l.createReminderSaveButton,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
+        child: SandPrimaryButton(
+          label: _isEditing
+              ? l.createReminderSaveButtonEdit
+              : l.createReminderSaveButton,
+          icon: Icons.check_rounded,
+          isLoading: isLoading,
+          onPressed: isLoading ? null : _onSave,
         ),
       ),
     );

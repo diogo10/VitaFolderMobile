@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
@@ -30,7 +31,8 @@ class _ReminderWidgetState extends State<ReminderWidget> {
     final typeColors = _getTypeColors(reminder.type);
     final iconData = _typeIcon(reminder.type);
     final typeChipLabel = _typeChipLabel(reminder.type, l);
-    final timeLabel = _extractTimeLabel(reminder.dueDate);
+    final timeLabel = ReminderDateUtils.extractTimeLabel(reminder.dueDate);
+    final hasDueDate = ReminderDateUtils.hasDueDate(reminder.dueDate);
     final repeatLabel = _repeatLabel(reminder.repeatRule, l);
     final description = _buildDescription(repeatLabel, timeLabel, l);
 
@@ -134,6 +136,8 @@ class _ReminderWidgetState extends State<ReminderWidget> {
               _TrailingSection(
                 timeLabel: timeLabel,
                 allDayLabel: l.remindersLoadedSectionAllDay,
+                noDateLabel: l.remindersLoadedSectionNoDate,
+                hasDueDate: hasDueDate,
                 typeColors: typeColors,
                 onMenuPressed: () => _showMenu(context),
               ),
@@ -333,20 +337,6 @@ class _ReminderWidgetState extends State<ReminderWidget> {
     }
   }
 
-  String? _extractTimeLabel(String dueDate) {
-    if (dueDate.trim().isEmpty) return null;
-
-    final match = RegExp(
-      r'(\d{1,2}:\d{2}(?:\s*(?:AM|PM|am|pm))?)',
-    ).firstMatch(dueDate);
-    if (match == null) return null;
-
-    final value = match.group(0)?.trim();
-    if (value == null || value.isEmpty) return null;
-
-    return value;
-  }
-
   String _repeatLabel(String repeatRule, AppLocalizations l) {
     switch (repeatRule) {
       case 'daily':
@@ -520,19 +510,23 @@ class _AssigneeRow extends StatelessWidget {
 class _TrailingSection extends StatelessWidget {
   final String? timeLabel;
   final String allDayLabel;
+  final String noDateLabel;
+  final bool hasDueDate;
   final _TypeColors typeColors;
   final VoidCallback onMenuPressed;
 
   const _TrailingSection({
     required this.timeLabel,
     required this.allDayLabel,
+    required this.noDateLabel,
+    required this.hasDueDate,
     required this.typeColors,
     required this.onMenuPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    final displayTime = timeLabel ?? allDayLabel;
+    final displayTime = timeLabel ?? (hasDueDate ? allDayLabel : noDateLabel);
     final isAllDay = timeLabel == null;
 
     return Column(
