@@ -1,6 +1,9 @@
 name: Build APK
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -26,8 +29,18 @@ jobs:
       - name: Build APK
         run: flutter build apk --debug
 
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: 1:140355243144:android:a6ac1f14183172f272633d
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          testers: ${{ secrets.FIREBASE_TESTERS }}
+          file: build/app/outputs/flutter-apk/app-debug.apk
+          releaseNotes: ${{ github.sha }}
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: apk-debug
           path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 3

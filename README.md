@@ -46,6 +46,31 @@ fvm dart run build_runner watch --delete-conflicting-outputs
 3. Run `fvm flutter analyze` and `fvm flutter test` to ensure code quality
 4. Submit a pull request with a clear description
 
+## APK Distribution
+
+Merging into `main` triggers `.github/workflows/build_apk.yml`:
+
+1. Builds a debug APK (`flutter build apk --debug`)
+2. Uploads it to Firebase App Distribution (project `diogoprojects-617e2`) — testers get an email with the install link
+3. Uploads the APK as a GitHub Actions artifact, auto-deleted after 3 days (`retention-days: 3`)
+
+You can also trigger it manually via Actions → Build APK → Run workflow.
+
+### Required Secrets
+
+Set these in GitHub repo → Settings → Secrets → Actions:
+
+| Secret | Value |
+| --- | --- |
+| `FIREBASE_SERVICE_ACCOUNT` | Service account JSON with `Firebase App Distribution Admin` role |
+| `FIREBASE_TESTERS` | Comma-separated tester emails |
+
+### Firebase Setup (one-time)
+
+1. Firebase console → App Distribution → enable for the Android app
+2. Add tester emails
+3. Project settings → Service accounts → Generate new private key → store as `FIREBASE_SERVICE_ACCOUNT`
+
 ## References
 
 https://supabase.com/docs/guides/getting-started/quickstarts/flutter
