@@ -1,4 +1,4 @@
-package com.vitafolder.vita_folder_mobile
+package com.housemira.app
 
 import io.flutter.embedding.android.FlutterActivity
 
