@@ -27,7 +27,7 @@ jobs:
         run: flutter pub get
 
       - name: Build APK
-        run: flutter build apk --debug
+        run: flutter build apk --profile
 
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
@@ -35,12 +35,12 @@ jobs:
           appId: 1:140355243144:android:a6ac1f14183172f272633d
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           testers: ${{ secrets.FIREBASE_TESTERS }}
-          file: build/app/outputs/flutter-apk/app-debug.apk
+          file: build/app/outputs/flutter-apk/app-profile.apk
           releaseNotes: ${{ github.sha }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk-debug
+          name: apk-profile
           path: build/app/outputs/flutter-apk/*.apk
           retention-days: 3
