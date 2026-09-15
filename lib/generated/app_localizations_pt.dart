@@ -825,13 +825,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String get createReminderRepeatNever => 'Nunca';
 
   @override
-  String get createReminderRepeatDaily => 'Diariamente';
+  String get createReminderRepeatDaily => 'Diário';
 
   @override
-  String get createReminderRepeatWeekly => 'Semanalmente';
+  String get createReminderRepeatWeekly => 'Semanal';
 
   @override
-  String get createReminderRepeatMonthly => 'Mensalmente';
+  String get createReminderRepeatMonthly => 'Mensal';
 
   @override
   String get createReminderSaveButton => 'Criar Lembrete';

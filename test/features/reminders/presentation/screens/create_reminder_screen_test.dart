@@ -112,20 +112,11 @@ void main() {
   group('CreateReminderScreen in edit mode', () {
     testWidgets('pre-fills fields from the reminder', (tester) async {
       await tester.pumpWidget(pumpApp(reminder: reminder));
-      final l = AppLocalizations.of(
-        tester.element(find.byType(CreateReminderScreen)),
-      )!;
 
       expect(find.text(reminder.title), findsOneWidget);
       expect(find.text(reminder.body), findsOneWidget);
-      expect(
-        find.text('${l.createReminderDueDateLabel}: 22/8/2026'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('${l.createReminderTimeLabel}: 3:00 PM'),
-        findsOneWidget,
-      );
+      expect(find.text('22/8/2026'), findsOneWidget);
+      expect(find.text('3:00 PM'), findsOneWidget);
     });
 
     testWidgets('shows edit title and save label', (tester) async {

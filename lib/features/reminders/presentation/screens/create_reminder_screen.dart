@@ -541,7 +541,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                     child: Text(
                       _dueDate == null
                           ? l.createReminderDueDateLabel
-                          : '${l.createReminderDueDateLabel}: ${_dueDate!.day}/${_dueDate!.month}/${_dueDate!.year}',
+                          : '${_dueDate!.day}/${_dueDate!.month}/${_dueDate!.year}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -596,7 +596,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                     child: Text(
                       _dueTime == null
                           ? l.createReminderTimeLabel
-                          : '${l.createReminderTimeLabel}: ${_formatTime(_dueTime!)}',
+                          : _formatTime(_dueTime!),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
