@@ -11,7 +11,9 @@ class CreateReminderLoading extends CreateReminderState {
 }
 
 class CreateReminderSuccess extends CreateReminderState {
-  CreateReminderSuccess();
+  final String reminderId;
+
+  CreateReminderSuccess({required this.reminderId});
 }
 
 class UpdatedReminderSuccess extends CreateReminderState {

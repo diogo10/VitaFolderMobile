@@ -120,10 +120,10 @@ class _FakeReminderRepository implements ReminderRepository {
   }) async => Right([]);
 
   @override
-  Future<Either<Failure, bool>> createReminder(
+  Future<Either<Failure, String>> createReminder(
     ReminderModel reminder,
     String familyId,
-  ) async => Right(true);
+  ) async => Right('fake-reminder-id');
 
   @override
   Future<Either<Failure, bool>> updateReminder(ReminderModel reminder) async =>

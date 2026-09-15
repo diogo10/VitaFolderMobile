@@ -822,6 +822,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createReminderRepeatMonthly => 'Monthly';
 
   @override
+  String get createReminderNotifyTitle => 'Notifications';
+
+  @override
+  String get createReminderNotifyToggle => 'Notify me on this device';
+
+  @override
+  String get createReminderNotifyNoDateHint =>
+      'Set a date to enable notifications';
+
+  @override
+  String get createReminderNotifyAtTime => 'At time';
+
+  @override
+  String get createReminderNotify15Min => '15 min before';
+
+  @override
+  String get createReminderNotify1Hour => '1 hour before';
+
+  @override
+  String get createReminderNotify1Day => '1 day before';
+
+  @override
   String get createReminderSaveButton => 'Create Reminder';
 
   @override

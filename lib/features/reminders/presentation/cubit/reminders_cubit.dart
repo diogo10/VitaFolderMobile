@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
@@ -13,6 +14,7 @@ class RemindersCubit extends Cubit<RemindersState> {
   PeopleRepository peopleRepository;
   AuthService authService;
   ReminderRepository reminderRepository;
+  final IReminderNotificationService? notificationService;
 
   ReminderType? _selectedType;
   ReminderType? get selectedType => _selectedType;
@@ -31,6 +33,7 @@ class RemindersCubit extends Cubit<RemindersState> {
     required this.peopleRepository,
     required this.authService,
     required this.reminderRepository,
+    this.notificationService,
   }) : super(ReminderInitialState());
 
   Future<void> getReminders({String? familyId, ReminderType? type}) async {
@@ -107,6 +110,7 @@ class RemindersCubit extends Cubit<RemindersState> {
         }
       },
       (_) {
+        notificationService?.cancelReminderNotification(id);
         if (currentReminders == null) {
           getReminders(type: currentType);
           return;

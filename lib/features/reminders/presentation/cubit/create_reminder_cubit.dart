@@ -61,7 +61,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
 
     result.fold(
       (err) => emit(CreateReminderError(message: err.message)),
-      (_) => emit(CreateReminderSuccess()),
+      (reminderId) => emit(CreateReminderSuccess(reminderId: reminderId)),
     );
   }
 

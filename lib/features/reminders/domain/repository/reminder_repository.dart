@@ -12,7 +12,9 @@ abstract interface class ReminderRepository {
     required String familyId,
   });
 
-  Future<Either<Failure, bool>> createReminder(
+  /// Creates the reminder and returns the created id so callers can
+  /// schedule per-device notifications for it.
+  Future<Either<Failure, String>> createReminder(
     ReminderModel reminder,
     String familyId,
   );

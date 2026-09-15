@@ -1628,6 +1628,48 @@ abstract class AppLocalizations {
   /// **'Monthly'**
   String get createReminderRepeatMonthly;
 
+  /// No description provided for @createReminderNotifyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get createReminderNotifyTitle;
+
+  /// No description provided for @createReminderNotifyToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify me on this device'**
+  String get createReminderNotifyToggle;
+
+  /// No description provided for @createReminderNotifyNoDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a date to enable notifications'**
+  String get createReminderNotifyNoDateHint;
+
+  /// No description provided for @createReminderNotifyAtTime.
+  ///
+  /// In en, this message translates to:
+  /// **'At time'**
+  String get createReminderNotifyAtTime;
+
+  /// No description provided for @createReminderNotify15Min.
+  ///
+  /// In en, this message translates to:
+  /// **'15 min before'**
+  String get createReminderNotify15Min;
+
+  /// No description provided for @createReminderNotify1Hour.
+  ///
+  /// In en, this message translates to:
+  /// **'1 hour before'**
+  String get createReminderNotify1Hour;
+
+  /// No description provided for @createReminderNotify1Day.
+  ///
+  /// In en, this message translates to:
+  /// **'1 day before'**
+  String get createReminderNotify1Day;
+
   /// No description provided for @createReminderSaveButton.
   ///
   /// In en, this message translates to:

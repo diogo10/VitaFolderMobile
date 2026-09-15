@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/repository/reminder_repository_impl.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
@@ -14,6 +16,15 @@ class ReminderServiceLocator {
   ReminderServiceLocator(this.sl);
 
   void init() {
+    sl.registerSingleton<IReminderNotificationService>(
+      ReminderNotificationService(
+        storage: sl<LocalStorageDatasource>(
+          instanceName: 'localStorageDatasource',
+        ),
+      ),
+      instanceName: 'reminderNotificationService',
+    );
+
     sl.registerSingleton<ReminderRepository>(
       ReminderRepositoryImpl(),
       instanceName: 'reminderRepositoryImpl',
@@ -51,6 +62,7 @@ class ReminderServiceLocator {
         ),
         authService: sl<AuthService>(instanceName: 'authService'),
         reminderRepository: sl(instanceName: 'reminderRepositoryImpl'),
+        notificationService: sl(instanceName: 'reminderNotificationService'),
       ),
       instanceName: 'remindersCubit',
     );

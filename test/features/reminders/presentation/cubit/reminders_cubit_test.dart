@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
@@ -21,17 +22,22 @@ class _FakeGetReminderUsecase extends Mock implements GetReminderUsecase {}
 
 class _FakeReminderRepository extends Mock implements ReminderRepository {}
 
+class _FakeNotificationService extends Mock
+    implements IReminderNotificationService {}
+
 void main() {
   late _FakePeopleRepository peopleRepository;
   late _FakeAuthService authService;
   late _FakeGetReminderUsecase getReminderUsecase;
   late _FakeReminderRepository reminderRepository;
+  late _FakeNotificationService notificationService;
 
   setUp(() {
     peopleRepository = _FakePeopleRepository();
     authService = _FakeAuthService();
     getReminderUsecase = _FakeGetReminderUsecase();
     reminderRepository = _FakeReminderRepository();
+    notificationService = _FakeNotificationService();
   });
 
   RemindersCubit buildCubit() => RemindersCubit(
@@ -197,6 +203,52 @@ void main() {
         isA<LoadedReminders>(),
         isA<EmptyReminders>(),
       ],
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      'cancels the scheduled notification on delete',
+      build: () => RemindersCubit(
+        getReminderUsecase: getReminderUsecase,
+        peopleRepository: peopleRepository,
+        authService: authService,
+        reminderRepository: reminderRepository,
+        notificationService: notificationService,
+      ),
+      setUp: () {
+        when(() => authService.currentUserId).thenReturn('u1');
+        when(
+          () => peopleRepository.getFamilyIdsForUser('u1'),
+        ).thenAnswer((_) async => ['f1']);
+        when(
+          () => peopleRepository.getMyFamilyRole(),
+        ).thenAnswer((_) async => ['member']);
+        when(
+          () => peopleRepository.getProfilesWithRoleForFamily('f1'),
+        ).thenAnswer((_) async => []);
+        when(
+          () => getReminderUsecase.call('f1', type: any(named: 'type')),
+        ).thenAnswer((_) async => Right([reminder('1')]));
+        when(
+          () => reminderRepository.removeReminder('1'),
+        ).thenAnswer((_) async => const Right(true));
+        when(
+          () => notificationService.cancelReminderNotification('1'),
+        ).thenAnswer((_) async {});
+      },
+      act: (cubit) async {
+        await cubit.getReminders();
+        await cubit.removeReminder('1');
+      },
+      expect: () => [
+        isA<RemindersLoading>(),
+        isA<LoadedReminders>(),
+        isA<EmptyReminders>(),
+      ],
+      verify: (_) {
+        verify(
+          () => notificationService.cancelReminderNotification('1'),
+        ).called(1);
+      },
     );
   });
 

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:intl/intl.dart';
+import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
@@ -14,8 +17,14 @@ import 'package:house_mira/generated/app_localizations.dart';
 class CreateReminderScreen extends StatefulWidget {
   final ReminderType? initialType;
   final ReminderEntity? reminder;
+  final IReminderNotificationService? notificationService;
 
-  const CreateReminderScreen({super.key, this.initialType, this.reminder});
+  const CreateReminderScreen({
+    super.key,
+    this.initialType,
+    this.reminder,
+    this.notificationService,
+  });
 
   @override
   State<CreateReminderScreen> createState() => _CreateReminderScreenState();
@@ -29,6 +38,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   String _repeatRule = 'never';
   DateTime? _dueDate;
   TimeOfDay? _dueTime;
+  bool _notifyEnabled = false;
+  ReminderLeadTime _leadTime = ReminderLeadTime.defaultLeadTime;
 
   static const _sand50 = Color(0xFFF5F0EB);
   static const _sand100 = Color(0xFFE4DACE);
@@ -70,12 +81,41 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       final parsed = _parseDueDate(reminder.dueDate);
       _dueDate = parsed;
       _dueTime = parsed == null ? null : TimeOfDay.fromDateTime(parsed);
+      _notificationService.getReminderNotification(reminder.id).then((prefs) {
+        if (!mounted) return;
+        setState(() {
+          _notifyEnabled = prefs.enabled;
+          _leadTime = prefs.leadTime;
+        });
+      });
     } else {
       _selectedType = widget.initialType ?? ReminderType.custom;
     }
   }
 
   bool get _isEditing => widget.reminder != null;
+
+  IReminderNotificationService get _notificationService =>
+      widget.notificationService ??
+      slInstance<IReminderNotificationService>(
+        instanceName: 'reminderNotificationService',
+      );
+
+  Future<void> _syncNotification(String reminderId) async {
+    try {
+      await _notificationService.setReminderNotification(
+        reminderId: reminderId,
+        enabled: _notifyEnabled,
+        leadTime: _leadTime,
+        dueDate: _dueDate,
+        title: _titleController.text.trim(),
+        body: _bodyController.text.trim(),
+        repeatRule: _repeatRule,
+      );
+    } catch (_) {
+      // Notifications are best-effort; the reminder itself was saved.
+    }
+  }
 
   DateTime? _parseDueDate(String dueDate) {
     final trimmed = dueDate.trim();
@@ -195,8 +235,10 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
     return Scaffold(
       backgroundColor: _sand50,
       body: BlocConsumer<CreateReminderCubit, CreateReminderState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is CreateReminderSuccess) {
+            await _syncNotification(state.reminderId);
+            if (!context.mounted) return;
             _refreshLists(context);
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
@@ -206,6 +248,11 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             context.pop();
           }
           if (state is UpdatedReminderSuccess) {
+            final reminder = widget.reminder;
+            if (reminder != null) {
+              await _syncNotification(reminder.id);
+              if (!context.mounted) return;
+            }
             _refreshLists(context);
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
@@ -249,6 +296,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                           _buildTypeChips(l),
                           const SizedBox(height: 24),
                           _buildDateTimeFields(l),
+                          const SizedBox(height: 24),
+                          _buildNotifySection(l),
                           const SizedBox(height: 24),
                           _buildRepeatSelector(l),
                           const SizedBox(height: 100),
@@ -613,6 +662,99 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             ),
           ),
         ),
+      ],
+    );
+  }
+
+  String _leadLabel(ReminderLeadTime lead, AppLocalizations l) {
+    switch (lead) {
+      case ReminderLeadTime.atTime:
+        return l.createReminderNotifyAtTime;
+      case ReminderLeadTime.fifteenMinutes:
+        return l.createReminderNotify15Min;
+      case ReminderLeadTime.oneHour:
+        return l.createReminderNotify1Hour;
+      case ReminderLeadTime.oneDay:
+        return l.createReminderNotify1Day;
+    }
+  }
+
+  Widget _buildNotifySection(AppLocalizations l) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l.createReminderNotifyTitle,
+          style: TextStyle(
+            color: _sand400,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: _sand200),
+          ),
+          child: SwitchListTile(
+            value: _notifyEnabled,
+            onChanged: (value) => setState(() => _notifyEnabled = value),
+            title: Text(
+              l.createReminderNotifyToggle,
+              style: TextStyle(
+                color: _sand700,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+            secondary: Icon(
+              _notifyEnabled
+                  ? Icons.notifications_active_rounded
+                  : Icons.notifications_outlined,
+              color: _sand400,
+            ),
+            activeTrackColor: _sand400,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+        ),
+        if (_notifyEnabled) ...[
+          const SizedBox(height: 12),
+          if (_dueDate == null)
+            Text(
+              l.createReminderNotifyNoDateHint,
+              style: TextStyle(color: _sand300, fontSize: 13),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: ReminderLeadTime.values.map((lead) {
+                final isSelected = _leadTime == lead;
+                return ChoiceChip(
+                  label: Text(_leadLabel(lead, l)),
+                  selected: isSelected,
+                  onSelected: (_) => setState(() => _leadTime = lead),
+                  selectedColor: _sand400,
+                  backgroundColor: Colors.white,
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.white : _sand600,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                  side: BorderSide(color: isSelected ? _sand400 : _sand200),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                );
+              }).toList(),
+            ),
+        ],
       ],
     );
   }

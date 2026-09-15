@@ -86,7 +86,7 @@ void main() {
         stubFamily('f1');
         when(
           () => createReminderUsecase.call(any(), any()),
-        ).thenAnswer((_) async => Right(true));
+        ).thenAnswer((_) async => Right('new-id'));
       },
       act: (cubit) => cubit.createReminder(
         title: 'T',
@@ -97,7 +97,11 @@ void main() {
       ),
       expect: () => [
         isA<CreateReminderLoading>(),
-        isA<CreateReminderSuccess>(),
+        isA<CreateReminderSuccess>().having(
+          (s) => s.reminderId,
+          'reminderId',
+          'new-id',
+        ),
       ],
       verify: (_) {
         final captured = verify(

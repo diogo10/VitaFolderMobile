@@ -16,6 +16,7 @@ import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_
 import 'package:house_mira/features/people/presentation/cubit/family_settings_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/invite_people_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
+import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/generated/app_localizations.dart';
@@ -35,6 +36,14 @@ void main() async {
 
   final serviceLocator = ServiceLocator();
   await serviceLocator.init();
+
+  try {
+    await slInstance<IReminderNotificationService>(
+      instanceName: 'reminderNotificationService',
+    ).init();
+  } catch (_) {
+    // Notifications are best-effort; never block app startup.
+  }
 
   final analyticsService = slInstance<AnalyticsService>(
     instanceName: 'analyticsService',

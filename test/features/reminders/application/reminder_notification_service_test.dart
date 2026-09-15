@@ -1,0 +1,280 @@
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:timezone/timezone.dart' as tz;
+
+class _MockPlugin extends Mock implements FlutterLocalNotificationsPlugin {}
+
+class _MockStorage extends Mock implements LocalStorageDatasource {}
+
+void main() {
+  late _MockPlugin plugin;
+  late _MockStorage storage;
+  late ReminderNotificationService service;
+
+  setUpAll(() {
+    registerFallbackValue(const NotificationDetails());
+    registerFallbackValue(tz.TZDateTime.from(DateTime.utc(2030), tz.UTC));
+    registerFallbackValue(AndroidScheduleMode.inexactAllowWhileIdle);
+    registerFallbackValue(
+      const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      ),
+    );
+  });
+
+  setUp(() {
+    plugin = _MockPlugin();
+    storage = _MockStorage();
+    service = ReminderNotificationService(plugin: plugin, storage: storage);
+
+    when(() => storage.getBool(any())).thenAnswer((_) async => false);
+    when(() => storage.getString(any())).thenAnswer((_) async => null);
+    when(() => storage.setBool(any(), any())).thenAnswer((_) async {});
+    when(() => storage.setString(any(), any())).thenAnswer((_) async {});
+    when(() => plugin.cancel(id: any(named: 'id'))).thenAnswer((_) async {});
+    when(
+      () => plugin.zonedSchedule(
+        id: any(named: 'id'),
+        scheduledDate: any(named: 'scheduledDate'),
+        notificationDetails: any(named: 'notificationDetails'),
+        androidScheduleMode: any(named: 'androidScheduleMode'),
+        title: any(named: 'title'),
+        body: any(named: 'body'),
+        matchDateTimeComponents: any(named: 'matchDateTimeComponents'),
+      ),
+    ).thenAnswer((_) async {});
+  });
+
+  group('pure helpers', () {
+    test('notification id is stable, positive and unique per reminder', () {
+      final first = ReminderNotificationService.notificationIdForReminder(
+        'reminder-1',
+      );
+      final second = ReminderNotificationService.notificationIdForReminder(
+        'reminder-1',
+      );
+      final other = ReminderNotificationService.notificationIdForReminder(
+        'reminder-2',
+      );
+
+      expect(first, second);
+      expect(first, greaterThanOrEqualTo(0));
+      expect(first, lessThan(0x80000000));
+      expect(other, isNot(first));
+    });
+
+    test('fire time subtracts the lead time', () {
+      final due = DateTime(2026, 9, 1, 10, 30);
+      expect(
+        ReminderNotificationService.fireTimeFor(
+          due,
+          ReminderLeadTime.fifteenMinutes,
+        ),
+        DateTime(2026, 9, 1, 10, 15),
+      );
+      expect(
+        ReminderNotificationService.fireTimeFor(due, ReminderLeadTime.atTime),
+        due,
+      );
+      expect(
+        ReminderNotificationService.fireTimeFor(due, ReminderLeadTime.oneDay),
+        DateTime(2026, 8, 31, 10, 30),
+      );
+    });
+
+    test('maps repeat rules to calendar components', () {
+      expect(
+        ReminderNotificationService.repeatComponentFor('daily'),
+        DateTimeComponents.time,
+      );
+      expect(
+        ReminderNotificationService.repeatComponentFor('weekly'),
+        DateTimeComponents.dayOfWeekAndTime,
+      );
+      expect(ReminderNotificationService.repeatComponentFor('never'), isNull);
+      expect(ReminderNotificationService.repeatComponentFor('monthly'), isNull);
+    });
+
+    test('skips one-shot notifications in the past', () {
+      final now = DateTime(2026, 9, 1, 12);
+      expect(
+        ReminderNotificationService.shouldSchedule(
+          fireTime: DateTime(2026, 9, 1, 13),
+          repeatComponent: null,
+          now: now,
+        ),
+        isTrue,
+      );
+      expect(
+        ReminderNotificationService.shouldSchedule(
+          fireTime: DateTime(2026, 9, 1, 11),
+          repeatComponent: null,
+          now: now,
+        ),
+        isFalse,
+      );
+      expect(
+        ReminderNotificationService.shouldSchedule(
+          fireTime: DateTime(2026, 9, 1, 11),
+          repeatComponent: DateTimeComponents.time,
+          now: now,
+        ),
+        isTrue,
+      );
+    });
+  });
+
+  group('setReminderNotification', () {
+    test('disabled choice cancels without scheduling', () async {
+      await service.setReminderNotification(
+        reminderId: 'r1',
+        enabled: false,
+        leadTime: ReminderLeadTime.fifteenMinutes,
+        dueDate: DateTime(2030, 1, 1, 10),
+        title: 'Title',
+        body: 'Body',
+        repeatRule: 'never',
+      );
+
+      verify(() => plugin.cancel(id: any(named: 'id'))).called(1);
+      verifyNever(
+        () => plugin.zonedSchedule(
+          id: any(named: 'id'),
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+        ),
+      );
+      verify(
+        () => storage.setBool('reminder_notify_enabled_r1', false),
+      ).called(1);
+    });
+
+    test('schedules at due date minus lead time and persists choice', () async {
+      final due = DateTime(2030, 5, 4, 9);
+
+      await service.setReminderNotification(
+        reminderId: 'r1',
+        enabled: true,
+        leadTime: ReminderLeadTime.fifteenMinutes,
+        dueDate: due,
+        title: 'Title',
+        body: 'Body',
+        repeatRule: 'never',
+      );
+
+      final captured = verify(
+        () => plugin.zonedSchedule(
+          id: any(named: 'id'),
+          scheduledDate: captureAny(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          title: 'Title',
+          body: 'Body',
+        ),
+      ).captured;
+      final scheduled = captured.single as DateTime;
+      expect(
+        scheduled.millisecondsSinceEpoch,
+        DateTime(2030, 5, 4, 8, 45).millisecondsSinceEpoch,
+      );
+      verify(
+        () => storage.setBool('reminder_notify_enabled_r1', true),
+      ).called(1);
+      verify(
+        () => storage.setString('reminder_notify_lead_minutes_r1', '15'),
+      ).called(1);
+    });
+
+    test('skips one-shot schedule when fire time is in the past', () async {
+      await service.setReminderNotification(
+        reminderId: 'r1',
+        enabled: true,
+        leadTime: ReminderLeadTime.atTime,
+        dueDate: DateTime(2020, 1, 1, 10),
+        title: 'Title',
+        body: 'Body',
+        repeatRule: 'never',
+      );
+
+      verify(() => plugin.cancel(id: any(named: 'id'))).called(1);
+      verifyNever(
+        () => plugin.zonedSchedule(
+          id: any(named: 'id'),
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+        ),
+      );
+      // Choice is still persisted for later edits.
+      verify(
+        () => storage.setBool('reminder_notify_enabled_r1', true),
+      ).called(1);
+    });
+
+    test('persists choice without scheduling when there is no date', () async {
+      await service.setReminderNotification(
+        reminderId: 'r1',
+        enabled: true,
+        leadTime: ReminderLeadTime.oneHour,
+        dueDate: null,
+        title: 'Title',
+        body: 'Body',
+        repeatRule: 'never',
+      );
+
+      verifyNever(
+        () => plugin.zonedSchedule(
+          id: any(named: 'id'),
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+        ),
+      );
+      verify(
+        () => storage.setBool('reminder_notify_enabled_r1', true),
+      ).called(1);
+      verify(
+        () => storage.setString('reminder_notify_lead_minutes_r1', '60'),
+      ).called(1);
+    });
+  });
+
+  group('cancelReminderNotification', () {
+    test('cancels the OS notification and clears the flag', () async {
+      await service.cancelReminderNotification('r1');
+
+      verify(() => plugin.cancel(id: any(named: 'id'))).called(1);
+      verify(
+        () => storage.setBool('reminder_notify_enabled_r1', false),
+      ).called(1);
+    });
+  });
+
+  group('getReminderNotification', () {
+    test('defaults to disabled with fifteen minutes lead', () async {
+      final prefs = await service.getReminderNotification('r1');
+
+      expect(prefs.enabled, isFalse);
+      expect(prefs.leadTime, ReminderLeadTime.fifteenMinutes);
+    });
+
+    test('reads persisted choice', () async {
+      when(
+        () => storage.getBool('reminder_notify_enabled_r1'),
+      ).thenAnswer((_) async => true);
+      when(
+        () => storage.getString('reminder_notify_lead_minutes_r1'),
+      ).thenAnswer((_) async => '60');
+
+      final prefs = await service.getReminderNotification('r1');
+
+      expect(prefs.enabled, isTrue);
+      expect(prefs.leadTime, ReminderLeadTime.oneHour);
+    });
+  });
+}
