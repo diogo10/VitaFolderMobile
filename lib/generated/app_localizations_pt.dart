@@ -856,6 +856,25 @@ class AppLocalizationsPt extends AppLocalizations {
   String get createReminderNotify1Day => '1 dia antes';
 
   @override
+  String get createReminderNotifyDisabledMessage =>
+      'As notificações estão desativadas. Ative-as para receber lembretes.';
+
+  @override
+  String get createReminderNotifySavedWithoutPermission =>
+      'Lembrete salvo, mas as notificações estão desativadas.';
+
+  @override
+  String get createReminderNotifyUpdatedWithoutPermission =>
+      'Lembrete atualizado, mas as notificações estão desativadas.';
+
+  @override
+  String get createReminderNotifyOpenSettings => 'Ajustes';
+
+  @override
+  String get createReminderNotifyExactAlarmMessage =>
+      'Para alertas pontuais, permita alarmes exatos nos Ajustes.';
+
+  @override
   String get createReminderSaveButton => 'Criar Lembrete';
 
   @override

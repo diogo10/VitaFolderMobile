@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
@@ -101,7 +102,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
         instanceName: 'reminderNotificationService',
       );
 
-  Future<void> _syncNotification(String reminderId) async {
+  /// Persists/schedules the notification choice.
+  /// Returns true when alerts will actually fire (or nothing was requested).
+  Future<bool> _syncNotification(String reminderId) async {
     try {
       await _notificationService.setReminderNotification(
         reminderId: reminderId,
@@ -114,7 +117,94 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       );
     } catch (_) {
       // Notifications are best-effort; the reminder itself was saved.
+      return false;
     }
+    if (!_notifyEnabled) return true;
+    // Alerts only fire when the OS allows notifications and a date is set.
+    try {
+      return _dueDate != null &&
+          await _notificationService.hasSystemPermission();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    bool granted = false;
+    try {
+      granted = await _notificationService.hasSystemPermission();
+      if (!granted) {
+        granted = await _notificationService.requestSystemPermission();
+      }
+    } catch (_) {
+      granted = false;
+    }
+    if (!mounted) return;
+    final l = AppLocalizations.of(context)!;
+    if (!granted) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l.createReminderNotifyDisabledMessage),
+            action: SnackBarAction(
+              label: l.createReminderNotifyOpenSettings,
+              onPressed: openAppSettings,
+            ),
+          ),
+        );
+      return;
+    }
+    // Notifications allowed: without exact alarms Android may delay alerts
+    // significantly, so point the user to the system setting once.
+    bool exact = true;
+    try {
+      exact = await _notificationService.canScheduleExactAlarms();
+    } catch (_) {
+      exact = true;
+    }
+    if (!exact && mounted) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l.createReminderNotifyExactAlarmMessage),
+            action: SnackBarAction(
+              label: l.createReminderNotifyOpenSettings,
+              onPressed: () {
+                _notificationService.requestExactAlarmPermission();
+              },
+            ),
+          ),
+        );
+    }
+  }
+
+  SnackBar _saveSnackBar({
+    required AppLocalizations l,
+    required bool notificationsBlocked,
+    required bool isUpdate,
+  }) {
+    if (notificationsBlocked) {
+      return SnackBar(
+        content: Text(
+          isUpdate
+              ? l.createReminderNotifyUpdatedWithoutPermission
+              : l.createReminderNotifySavedWithoutPermission,
+        ),
+        action: SnackBarAction(
+          label: l.createReminderNotifyOpenSettings,
+          onPressed: openAppSettings,
+        ),
+      );
+    }
+    return SnackBar(
+      content: Text(
+        isUpdate
+            ? l.createReminderUpdatedMessage
+            : l.createReminderSuccessMessage,
+      ),
+    );
   }
 
   DateTime? _parseDueDate(String dueDate) {
@@ -237,27 +327,36 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       body: BlocConsumer<CreateReminderCubit, CreateReminderState>(
         listener: (context, state) async {
           if (state is CreateReminderSuccess) {
-            await _syncNotification(state.reminderId);
+            final alertsArmed = await _syncNotification(state.reminderId);
             if (!context.mounted) return;
             _refreshLists(context);
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                SnackBar(content: Text(l.createReminderSuccessMessage)),
+                _saveSnackBar(
+                  l: l,
+                  notificationsBlocked: _notifyEnabled && !alertsArmed,
+                  isUpdate: false,
+                ),
               );
             context.pop();
           }
           if (state is UpdatedReminderSuccess) {
             final reminder = widget.reminder;
+            bool alertsArmed = true;
             if (reminder != null) {
-              await _syncNotification(reminder.id);
+              alertsArmed = await _syncNotification(reminder.id);
               if (!context.mounted) return;
             }
             _refreshLists(context);
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                SnackBar(content: Text(l.createReminderUpdatedMessage)),
+                _saveSnackBar(
+                  l: l,
+                  notificationsBlocked: _notifyEnabled && !alertsArmed,
+                  isUpdate: true,
+                ),
               );
             context.pop();
           }
@@ -701,7 +800,10 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           ),
           child: SwitchListTile(
             value: _notifyEnabled,
-            onChanged: (value) => setState(() => _notifyEnabled = value),
+            onChanged: (value) {
+              setState(() => _notifyEnabled = value);
+              if (value) _checkNotificationPermission();
+            },
             title: Text(
               l.createReminderNotifyToggle,
               style: TextStyle(

@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -27,6 +30,23 @@ class ReminderNotificationPrefs {
 
 abstract interface class IReminderNotificationService {
   Future<void> init();
+
+  /// Whether the OS allows this app to post notifications.
+  /// Returns false (never throws) when the check cannot run.
+  Future<bool> hasSystemPermission();
+
+  /// Asks the OS for notification permission.
+  /// Returns true when granted, false otherwise (never throws).
+  Future<bool> requestSystemPermission();
+
+  /// Whether exact alarms can be scheduled. Always true off Android;
+  /// on Android 12+ it needs the "Alarms & reminders" system setting.
+  /// Never throws.
+  Future<bool> canScheduleExactAlarms();
+
+  /// Opens the system screen where the user grants exact alarms (Android).
+  /// No-op off Android. Never throws.
+  Future<void> requestExactAlarmPermission();
 
   Future<ReminderNotificationPrefs> getReminderNotification(String reminderId);
 
@@ -155,6 +175,52 @@ class ReminderNotificationService implements IReminderNotificationService {
   }
 
   @override
+  Future<bool> hasSystemPermission() async {
+    try {
+      return await Permission.notification.isGranted;
+    } catch (_) {
+      debugPrint('ReminderNotificationService: permission check failed.');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> requestSystemPermission() async {
+    try {
+      final status = await Permission.notification.request();
+      return status.isGranted;
+    } catch (_) {
+      debugPrint('ReminderNotificationService: permission request failed.');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> canScheduleExactAlarms() async {
+    if (!Platform.isAndroid) return true;
+    try {
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      return await android?.canScheduleExactNotifications() ?? false;
+    } catch (_) {
+      debugPrint('ReminderNotifications: exact alarm check failed.');
+      return false;
+    }
+  }
+
+  @override
+  Future<void> requestExactAlarmPermission() async {
+    if (!Platform.isAndroid) return;
+    try {
+      await Permission.scheduleExactAlarm.request();
+    } catch (_) {
+      debugPrint('ReminderNotifications: exact alarm request failed.');
+    }
+  }
+
+  @override
   Future<ReminderNotificationPrefs> getReminderNotification(
     String reminderId,
   ) async {
@@ -182,16 +248,38 @@ class ReminderNotificationService implements IReminderNotificationService {
     await _storage.setBool(_enabledKey(reminderId), enabled);
     await _storage.setString(_leadKey(reminderId), '${leadTime.minutes}');
 
-    if (!enabled || dueDate == null) return;
+    if (!enabled || dueDate == null) {
+      debugPrint(
+        'ReminderNotifications: skipping $reminderId '
+        '(enabled=$enabled, dueDate=$dueDate).',
+      );
+      return;
+    }
 
-    final fireTime = fireTimeFor(dueDate, leadTime);
+    var fireTime = fireTimeFor(dueDate, leadTime);
     final repeatComponent = repeatComponentFor(repeatRule);
+    final now = DateTime.now();
     if (!shouldSchedule(
       fireTime: fireTime,
       repeatComponent: repeatComponent,
-      now: DateTime.now(),
+      now: now,
     )) {
-      return;
+      if (repeatComponent == null && dueDate.isAfter(now)) {
+        // The lead time already elapsed (e.g. editing a reminder due in
+        // 10 min with a 15 min lead): fall back to alerting at due time
+        // instead of staying silent.
+        debugPrint(
+          'ReminderNotifications: fire time $fireTime elapsed, '
+          'falling back to due date $dueDate for $reminderId.',
+        );
+        fireTime = dueDate;
+      } else {
+        debugPrint(
+          'ReminderNotifications: skipping $reminderId '
+          '(due date $dueDate already passed).',
+        );
+        return;
+      }
     }
 
     await _plugin.zonedSchedule(
@@ -211,6 +299,11 @@ class ReminderNotificationService implements IReminderNotificationService {
       ),
       androidScheduleMode: await _scheduleMode(),
       matchDateTimeComponents: repeatComponent,
+    );
+    debugPrint(
+      'ReminderNotifications: scheduled $reminderId '
+      '(notification #${notificationIdForReminder(reminderId)}) '
+      'at $fireTime (lead ${leadTime.minutes}m, repeat $repeatRule).',
     );
   }
 

@@ -1670,6 +1670,36 @@ abstract class AppLocalizations {
   /// **'1 day before'**
   String get createReminderNotify1Day;
 
+  /// No description provided for @createReminderNotifyDisabledMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are disabled. Enable them to receive reminders.'**
+  String get createReminderNotifyDisabledMessage;
+
+  /// No description provided for @createReminderNotifySavedWithoutPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder saved, but notifications are disabled.'**
+  String get createReminderNotifySavedWithoutPermission;
+
+  /// No description provided for @createReminderNotifyUpdatedWithoutPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder updated, but notifications are disabled.'**
+  String get createReminderNotifyUpdatedWithoutPermission;
+
+  /// No description provided for @createReminderNotifyOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get createReminderNotifyOpenSettings;
+
+  /// No description provided for @createReminderNotifyExactAlarmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'For on-time alerts, allow exact alarms in Settings.'**
+  String get createReminderNotifyExactAlarmMessage;
+
   /// No description provided for @createReminderSaveButton.
   ///
   /// In en, this message translates to:

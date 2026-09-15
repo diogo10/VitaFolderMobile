@@ -844,6 +844,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createReminderNotify1Day => '1 day before';
 
   @override
+  String get createReminderNotifyDisabledMessage =>
+      'Notifications are disabled. Enable them to receive reminders.';
+
+  @override
+  String get createReminderNotifySavedWithoutPermission =>
+      'Reminder saved, but notifications are disabled.';
+
+  @override
+  String get createReminderNotifyUpdatedWithoutPermission =>
+      'Reminder updated, but notifications are disabled.';
+
+  @override
+  String get createReminderNotifyOpenSettings => 'Settings';
+
+  @override
+  String get createReminderNotifyExactAlarmMessage =>
+      'For on-time alerts, allow exact alarms in Settings.';
+
+  @override
   String get createReminderSaveButton => 'Create Reminder';
 
   @override

@@ -216,6 +216,33 @@ void main() {
       ).called(1);
     });
 
+    test('falls back to due date when the lead time elapsed', () async {
+      final due = DateTime.now().add(const Duration(minutes: 5));
+
+      await service.setReminderNotification(
+        reminderId: 'r1',
+        enabled: true,
+        leadTime: ReminderLeadTime.fifteenMinutes,
+        dueDate: due,
+        title: 'Title',
+        body: 'Body',
+        repeatRule: 'never',
+      );
+
+      final captured = verify(
+        () => plugin.zonedSchedule(
+          id: any(named: 'id'),
+          scheduledDate: captureAny(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          title: 'Title',
+          body: 'Body',
+        ),
+      ).captured;
+      final scheduled = captured.single as DateTime;
+      expect(scheduled.millisecondsSinceEpoch, due.millisecondsSinceEpoch);
+    });
+
     test('persists choice without scheduling when there is no date', () async {
       await service.setReminderNotification(
         reminderId: 'r1',
@@ -252,6 +279,22 @@ void main() {
       verify(
         () => storage.setBool('reminder_notify_enabled_r1', false),
       ).called(1);
+    });
+  });
+
+  group('system permission', () {
+    test('returns false gracefully when the check cannot run', () async {
+      // No platform channel in unit tests: permission_handler throws,
+      // the service must degrade to false instead of crashing.
+      expect(await service.hasSystemPermission(), isFalse);
+      expect(await service.requestSystemPermission(), isFalse);
+    });
+
+    test('exact alarms report available off Android', () async {
+      // Unit tests run on the host (not Android): must return true
+      // without touching platform channels.
+      expect(await service.canScheduleExactAlarms(), isTrue);
+      await service.requestExactAlarmPermission();
     });
   });
 

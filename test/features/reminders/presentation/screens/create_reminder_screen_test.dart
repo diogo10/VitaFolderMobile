@@ -47,9 +47,38 @@ class _FakeNotificationService implements IReminderNotificationService {
   final Map<String, ReminderNotificationPrefs> stored = {};
   final List<ScheduledCall> scheduled = [];
   final List<String> cancelled = [];
+  bool systemGranted = true;
+  int permissionChecks = 0;
+  int permissionRequests = 0;
+  bool exactAlarms = true;
+  int exactChecks = 0;
+  int exactRequests = 0;
 
   @override
   Future<void> init() async {}
+
+  @override
+  Future<bool> hasSystemPermission() async {
+    permissionChecks++;
+    return systemGranted;
+  }
+
+  @override
+  Future<bool> requestSystemPermission() async {
+    permissionRequests++;
+    return systemGranted;
+  }
+
+  @override
+  Future<bool> canScheduleExactAlarms() async {
+    exactChecks++;
+    return exactAlarms;
+  }
+
+  @override
+  Future<void> requestExactAlarmPermission() async {
+    exactRequests++;
+  }
 
   @override
   Future<ReminderNotificationPrefs> getReminderNotification(
@@ -307,6 +336,70 @@ void main() {
       expect(find.text(l.createReminderNotifyNoDateHint), findsOneWidget);
     });
 
+    testWidgets('enabling toggle without permission tells the user', (
+      tester,
+    ) async {
+      final service = _FakeNotificationService()..systemGranted = false;
+      await tester.pumpWidget(pumpApp(notificationService: service));
+      await tester.pumpAndSettle();
+      final l = AppLocalizations.of(
+        tester.element(find.byType(CreateReminderScreen)),
+      )!;
+
+      await tester.ensureVisible(find.byType(Switch));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+
+      expect(service.permissionRequests, 1);
+      expect(find.text(l.createReminderNotifyDisabledMessage), findsOneWidget);
+      expect(find.text(l.createReminderNotifyOpenSettings), findsOneWidget);
+      // The choice is kept so it still persists on save.
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
+    });
+
+    testWidgets('enabling toggle with permission stays silent', (tester) async {
+      final service = _FakeNotificationService()..systemGranted = true;
+      await tester.pumpWidget(pumpApp(notificationService: service));
+      await tester.pumpAndSettle();
+      final l = AppLocalizations.of(
+        tester.element(find.byType(CreateReminderScreen)),
+      )!;
+
+      await tester.ensureVisible(find.byType(Switch));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+
+      expect(service.permissionRequests, 0);
+      expect(find.text(l.createReminderNotifyDisabledMessage), findsNothing);
+    });
+
+    testWidgets('enabling toggle without exact alarms prompts for it', (
+      tester,
+    ) async {
+      final service = _FakeNotificationService()
+        ..systemGranted = true
+        ..exactAlarms = false;
+      await tester.pumpWidget(pumpApp(notificationService: service));
+      await tester.pumpAndSettle();
+      final l = AppLocalizations.of(
+        tester.element(find.byType(CreateReminderScreen)),
+      )!;
+
+      await tester.ensureVisible(find.byType(Switch));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+
+      expect(service.exactChecks, 1);
+      expect(
+        find.text(l.createReminderNotifyExactAlarmMessage),
+        findsOneWidget,
+      );
+      expect(find.text(l.createReminderNotifyOpenSettings), findsOneWidget);
+    });
+
     testWidgets('edit mode pre-fills notify choice from prefs', (tester) async {
       final service = _FakeNotificationService()
         ..stored['1'] = const ReminderNotificationPrefs(
@@ -378,6 +471,57 @@ void main() {
         service.scheduled.single.leadTime,
         ReminderLeadTime.fifteenMinutes,
       );
+    });
+
+    testWidgets('save warns when notifications are disabled', (tester) async {
+      final service = _FakeNotificationService()..systemGranted = false;
+      when(
+        () => createReminderUsecase.call(any(), any()),
+      ).thenAnswer((_) async => Right('new-id'));
+      when(
+        () => peopleRepository.getMyFamilyRole(),
+      ).thenAnswer((_) async => <String>[]);
+      when(
+        () => peopleRepository.getFamilyIdsForUser(any()),
+      ).thenAnswer((_) async => ['fam-1']);
+      when(
+        () => getReminderUsecase.call(any(), type: any(named: 'type')),
+      ).thenAnswer((_) async => Right([]));
+
+      final testRouter = buildTestRouter(notificationService: service);
+      await tester.pumpWidget(pumpRouter(testRouter));
+      await tester.pumpAndSettle();
+
+      testRouter.push('/create');
+      await tester.pumpAndSettle();
+      final l = AppLocalizations.of(
+        tester.element(find.byType(CreateReminderScreen)),
+      )!;
+
+      await tester.enterText(find.byType(TextFormField).first, 'T');
+      await tester.ensureVisible(find.text(l.createReminderNotifyToggle));
+      await tester.pumpAndSettle();
+      await tester.drag(
+        find.byType(SingleChildScrollView),
+        const Offset(0, -300),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l.createReminderNotifyToggle));
+      await tester.pumpAndSettle();
+      // The permission guidance covers the save button: dismiss it first.
+      await tester.drag(find.byType(SnackBar), const Offset(0, 300));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l.createReminderSaveButton));
+      await tester.pumpAndSettle();
+
+      // Reminder is still saved and the choice persists on-device,
+      // but the user is told alerts will not fire.
+      expect(service.scheduled, hasLength(1));
+      expect(
+        find.text(l.createReminderNotifySavedWithoutPermission),
+        findsOneWidget,
+      );
+      expect(find.text(l.createReminderSuccessMessage), findsNothing);
     });
   });
 }
