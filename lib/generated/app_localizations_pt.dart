@@ -146,7 +146,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get homeEmptyFooterAddMemberButton => 'Adicionar Membro';
 
   @override
-  String get homeEmptyInviteInviteParentTitle => 'Convide um Pai/Mãe';
+  String get homeEmptyInviteInviteParentTitle => 'Convide';
 
   @override
   String get homeEmptyInviteInviteParentSubtitle =>
