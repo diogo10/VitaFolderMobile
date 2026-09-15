@@ -78,17 +78,45 @@ void main() {
       expect(find.byType(Card), findsOneWidget);
     });
 
-    testWidgets('renders type chip', (tester) async {
+    testWidgets('does not render type chip', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      // Should render the appointment type chip
-      expect(find.text('Appointment'), findsOneWidget);
+      // Type chip was removed; icon already communicates the type
+      expect(find.text('Appointment'), findsNothing);
     });
 
     testWidgets('renders assignee name', (tester) async {
       await tester.pumpWidget(buildTestWidget());
 
       expect(find.text('user-1'), findsOneWidget);
+    });
+
+    testWidgets('tap on card reveals edit and remove options in bottom sheet', (
+      tester,
+    ) async {
+      final peopleRepository = _FakePeopleRepository();
+      when(
+        () => peopleRepository.getMyFamilyRole(),
+      ).thenAnswer((_) async => <String>[]);
+
+      final cubit = RemindersCubit(
+        getReminderUsecase: _FakeGetReminderUsecase(),
+        peopleRepository: peopleRepository,
+        authService: _FakeAuthService(),
+        reminderRepository: _FakeReminderRepository(),
+      );
+
+      await tester.pumpWidget(buildTestWidget(cubit: cubit));
+
+      // Tap on the card itself (title), not the 3-dots menu
+      await tester.tap(find.text(reminder.title));
+      await tester.pumpAndSettle();
+
+      // Same bottom sheet as the 3-dots menu should appear
+      expect(find.text('Edit Reminder'), findsOneWidget);
+      expect(find.text('Remove'), findsOneWidget);
+
+      await cubit.close();
     });
 
     testWidgets('tap on menu reveals edit and remove options in bottom sheet', (

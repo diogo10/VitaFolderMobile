@@ -500,9 +500,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   Widget _buildDateTimeFields(AppLocalizations l) {
     return Row(
       children: [
-        Expanded(child: _buildDateField(l)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildTimeField(l)),
+        Expanded(flex: 3, child: _buildDateField(l)),
+        const SizedBox(width: 12),
+        Expanded(flex: 2, child: _buildTimeField(l)),
       ],
     );
   }
@@ -542,6 +542,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                       _dueDate == null
                           ? l.createReminderDueDateLabel
                           : '${l.createReminderDueDateLabel}: ${_dueDate!.day}/${_dueDate!.month}/${_dueDate!.year}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: _dueDate == null ? _sand300 : _sand700,
                         fontSize: 14,
@@ -595,6 +597,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                       _dueTime == null
                           ? l.createReminderTimeLabel
                           : '${l.createReminderTimeLabel}: ${_formatTime(_dueTime!)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: _dueTime == null ? _sand300 : _sand700,
                         fontSize: 14,

@@ -30,7 +30,6 @@ class _ReminderWidgetState extends State<ReminderWidget> {
     final l = AppLocalizations.of(context)!;
     final typeColors = _getTypeColors(reminder.type);
     final iconData = _typeIcon(reminder.type);
-    final typeChipLabel = _typeChipLabel(reminder.type, l);
     final timeLabel = ReminderDateUtils.extractTimeLabel(reminder.dueDate);
     final hasDueDate = ReminderDateUtils.hasDueDate(reminder.dueDate);
     final repeatLabel = _repeatLabel(reminder.repeatRule, l);
@@ -46,102 +45,93 @@ class _ReminderWidgetState extends State<ReminderWidget> {
       shadowColor: SandPalette.sand500.withValues(alpha: 0.10),
       surfaceTintColor: Colors.transparent,
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: SandPalette.sand500.withValues(alpha: 0.10),
-              blurRadius: 18,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _IconContainer(
-                icon: iconData,
-                iconColor: typeColors.iconColor,
-                bgColor: typeColors.bgColor,
-                borderColor: typeColors.borderColor,
-                badgeIcon: _typeBadgeIcon(reminder.type),
-                badgeColor: typeColors.badgeColor,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            reminder.title,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: SandPalette.sand700,
-                              height: 1.3,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        _TypeChip(
-                          label: typeChipLabel,
-                          bgColor: typeColors.chipBgColor,
-                          textColor: typeColors.chipTextColor,
-                        ),
-                      ],
-                    ),
-                    if (description.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: SandPalette.sand400,
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                    if (reminder.body.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        reminder.body,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: SandPalette.sand400,
-                          height: 1.4,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                    _AssigneeRow(
-                      assigneeName: reminder.createdBy,
-                      assigneeColor: _getAssigneeColor(reminder.type),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              _TrailingSection(
-                timeLabel: timeLabel,
-                allDayLabel: l.remindersLoadedSectionAllDay,
-                noDateLabel: l.remindersLoadedSectionNoDate,
-                hasDueDate: hasDueDate,
-                typeColors: typeColors,
-                onMenuPressed: () => _showMenu(context),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: () => _showMenu(context),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: SandPalette.sand500.withValues(alpha: 0.10),
+                blurRadius: 18,
+                offset: const Offset(0, 4),
               ),
             ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _IconContainer(
+                  icon: iconData,
+                  iconColor: typeColors.iconColor,
+                  bgColor: typeColors.bgColor,
+                  borderColor: typeColors.borderColor,
+                  badgeIcon: _typeBadgeIcon(reminder.type),
+                  badgeColor: typeColors.badgeColor,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        reminder.title,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: SandPalette.sand700,
+                          height: 1.3,
+                        ),
+                      ),
+                      if (description.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          description,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: SandPalette.sand400,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                      if (reminder.body.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          reminder.body,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: SandPalette.sand400,
+                            height: 1.4,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      _AssigneeRow(
+                        assigneeName: reminder.createdBy,
+                        assigneeColor: _getAssigneeColor(reminder.type),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                _TrailingSection(
+                  timeLabel: timeLabel,
+                  allDayLabel: l.remindersLoadedSectionAllDay,
+                  noDateLabel: l.remindersLoadedSectionNoDate,
+                  hasDueDate: hasDueDate,
+                  typeColors: typeColors,
+                  onMenuPressed: () => _showMenu(context),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -318,25 +308,6 @@ class _ReminderWidgetState extends State<ReminderWidget> {
     }
   }
 
-  String _typeChipLabel(ReminderType type, AppLocalizations l) {
-    switch (type) {
-      case ReminderType.renewal:
-        return l.createReminderTypeRenewal;
-      case ReminderType.appointment:
-        return l.createReminderTypeAppointment;
-      case ReminderType.vaccine:
-        return l.createReminderTypeVaccine;
-      case ReminderType.reimbursement:
-        return l.createReminderTypeReimbursement;
-      case ReminderType.birthday:
-        return l.createReminderTypeBirthday;
-      case ReminderType.chores:
-        return l.createReminderTypeChores;
-      case ReminderType.custom:
-        return l.createReminderTypeCustom;
-    }
-  }
-
   String _repeatLabel(String repeatRule, AppLocalizations l) {
     switch (repeatRule) {
       case 'daily':
@@ -435,37 +406,6 @@ class _IconContainer extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _TypeChip extends StatelessWidget {
-  final String label;
-  final Color bgColor;
-  final Color textColor;
-
-  const _TypeChip({
-    required this.label,
-    required this.bgColor,
-    required this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(100),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w600,
-          color: textColor,
-        ),
       ),
     );
   }
