@@ -157,6 +157,17 @@
   "accountSettingsRolesPermissionsSubtitle": "Manage admin access",
   "accountSettingsInviteMembers": "Invite Members",
   "accountSettingsInviteMembersSubtitle": "Share invite code",
+  "accountSettingsInviteMembersSubtitleWithCode": "{familyCode} - {subtitle}",
+  "@accountSettingsInviteMembersSubtitleWithCode": {
+    "placeholders": {
+      "familyCode": {
+        "type": "String"
+      },
+      "subtitle": {
+        "type": "String"
+      }
+    }
+  },
   "accountSettingsSupportSection": "SUPPORT",
   "accountSettingsHelpFaq": "Help & FAQ",
   "accountSettingsHelpFaqSubtitle": "Get answers, contact support",

@@ -34,7 +34,7 @@ class HomeSuccessHeaderWidget extends StatelessWidget {
         ),
         const SizedBox(height: 22),
         Text(
-          DateFormat('EEEE, MMMM d').format(DateTime.now()),
+          DateFormat('EEEE, MMMM d', l.localeName).format(DateTime.now()),
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: const Color(0xFFB0906C),
             fontWeight: FontWeight.w600,

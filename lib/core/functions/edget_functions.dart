@@ -7,15 +7,13 @@ class EdgetFunctions {
   ///
   /// When [supabaseClient] is omitted, `Supabase.instance.client` is used.
   /// Tests should pass a mock client.
-  EdgetFunctions({SupabaseClient? supabaseClient}) : _client = supabaseClient;
+  EdgetFunctions({SupabaseClient? supabaseClient})
+    : _client = supabaseClient ?? Supabase.instance.client;
 
-  final SupabaseClient? _client;
-
-  /// The client used to invoke edge functions.
-  SupabaseClient get _effectiveClient => _client ?? Supabase.instance.client;
+  final SupabaseClient _client;
 
   Future<bool> sendEmail({required String to, required String subject}) async {
-    final res = await _effectiveClient.functions.invoke(
+    final res = await _client.functions.invoke(
       'resend-email-v1',
       body: {
         'to': to,
@@ -31,6 +29,6 @@ class EdgetFunctions {
     );
     final data = res.data;
 
-    return data != null && data['success'] == true;
+    return data is Map && data['success'] == true;
   }
 }
