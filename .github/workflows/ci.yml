@@ -99,3 +99,6 @@ jobs:
 
           print('Business-logic coverage is 100%.')
           EOF
+  call-bob:
+    uses: ./.github/workflows/opencode-review-bob.yml
+    secrets: inherit
