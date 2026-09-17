@@ -341,7 +341,7 @@ void showFilterBottomSheet({
   required Map<ReminderType, int> typeCounts,
   required ValueChanged<Set<ReminderType>> onApply,
 }) {
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

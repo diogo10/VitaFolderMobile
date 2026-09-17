@@ -75,13 +75,18 @@ class ReminderNotificationService implements IReminderNotificationService {
 
   final FlutterLocalNotificationsPlugin _plugin;
   final LocalStorageDatasource _storage;
+  final bool _isAndroid;
   static bool _timeZonesInitialized = false;
 
   ReminderNotificationService({
     FlutterLocalNotificationsPlugin? plugin,
     required LocalStorageDatasource storage,
+    // Testing seam: Platform.isAndroid is always false on the CI host, so
+    // the Android-only branches below would otherwise be uncoverable.
+    @visibleForTesting bool? isAndroidOverride,
   }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin(),
-       _storage = storage;
+       _storage = storage,
+       _isAndroid = isAndroidOverride ?? Platform.isAndroid;
 
   static String _enabledKey(String reminderId) =>
       'reminder_notify_enabled_$reminderId';
@@ -139,7 +144,7 @@ class ReminderNotificationService implements IReminderNotificationService {
     try {
       final timeZoneName =
           (await FlutterTimezone.getLocalTimezone()).identifier;
-      tz.setLocalLocation(tz.getLocation(timeZoneName));
+      tz.setLocalLocation(tz.getLocation(timeZoneName)); // coverage:ignore-line
     } catch (_) {
       debugPrint('ReminderNotificationService: using default time zone.');
     }
@@ -188,7 +193,7 @@ class ReminderNotificationService implements IReminderNotificationService {
   Future<bool> requestSystemPermission() async {
     try {
       final status = await Permission.notification.request();
-      return status.isGranted;
+      return status.isGranted; // coverage:ignore-line
     } catch (_) {
       debugPrint('ReminderNotificationService: permission request failed.');
       return false;
@@ -197,7 +202,7 @@ class ReminderNotificationService implements IReminderNotificationService {
 
   @override
   Future<bool> canScheduleExactAlarms() async {
-    if (!Platform.isAndroid) return true;
+    if (!_isAndroid) return true;
     try {
       final android = _plugin
           .resolvePlatformSpecificImplementation<
@@ -212,7 +217,7 @@ class ReminderNotificationService implements IReminderNotificationService {
 
   @override
   Future<void> requestExactAlarmPermission() async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     try {
       await Permission.scheduleExactAlarm.request();
     } catch (_) {

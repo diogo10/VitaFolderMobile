@@ -142,5 +142,69 @@ void main() {
         expect: () => [isA<PeopleError>()],
       );
     });
+
+    group('createFamily', () {
+      blocTest<PeopleCubit, PeopleState>(
+        'reloads people after a successful creation',
+        setUp: () {
+          when(
+            () => createFamilyUsecase(name: 'Fam'),
+          ).thenAnswer((_) async => const Right(true));
+          when(() => getPeopleUsecase()).thenAnswer((_) async => Right(data));
+        },
+        build: () => cubit,
+        act: (cubit) => cubit.createFamily(name: 'Fam'),
+        wait: const Duration(milliseconds: 100),
+        expect: () => [
+          isA<PeopleLoading>(),
+          isA<PeopleLoading>(),
+          isA<PeopleLoaded>(),
+        ],
+      );
+
+      blocTest<PeopleCubit, PeopleState>(
+        'emits [PeopleLoading, PeopleError] when creation fails',
+        setUp: () {
+          when(
+            () => createFamilyUsecase(name: 'Fam'),
+          ).thenAnswer((_) async => Left(Exception('boom')));
+        },
+        build: () => cubit,
+        act: (cubit) => cubit.createFamily(name: 'Fam'),
+        expect: () => [isA<PeopleLoading>(), isA<PeopleError>()],
+      );
+    });
+
+    group('joinFamily', () {
+      blocTest<PeopleCubit, PeopleState>(
+        'reloads people after joining with a valid code',
+        setUp: () {
+          when(
+            () => joinFamilyUsecase(familyCode: 'ABC123'),
+          ).thenAnswer((_) async => const Right(true));
+          when(() => getPeopleUsecase()).thenAnswer((_) async => Right(data));
+        },
+        build: () => cubit,
+        act: (cubit) => cubit.joinFamily(familyCode: 'ABC123'),
+        wait: const Duration(milliseconds: 100),
+        expect: () => [
+          isA<PeopleLoading>(),
+          isA<PeopleLoading>(),
+          isA<PeopleLoaded>(),
+        ],
+      );
+
+      blocTest<PeopleCubit, PeopleState>(
+        'emits PeopleInvalidFamilyCode when joining fails',
+        setUp: () {
+          when(
+            () => joinFamilyUsecase(familyCode: 'WRONG'),
+          ).thenAnswer((_) async => Left(Exception('Invalid family code')));
+        },
+        build: () => cubit,
+        act: (cubit) => cubit.joinFamily(familyCode: 'WRONG'),
+        expect: () => [isA<PeopleLoading>(), isA<PeopleInvalidFamilyCode>()],
+      );
+    });
   });
 }

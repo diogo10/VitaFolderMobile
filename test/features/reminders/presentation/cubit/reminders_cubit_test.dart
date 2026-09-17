@@ -40,6 +40,23 @@ void main() {
     notificationService = _FakeNotificationService();
   });
 
+  setUpAll(() {
+    registerFallbackValue(ReminderType.custom);
+  });
+
+  void stubFamily({String userId = 'u1', String familyId = 'f1'}) {
+    when(() => authService.currentUserId).thenReturn(userId);
+    when(
+      () => peopleRepository.getFamilyIdsForUser(userId),
+    ).thenAnswer((_) async => [familyId]);
+    when(
+      () => peopleRepository.getMyFamilyRole(),
+    ).thenAnswer((_) async => ['member']);
+    when(
+      () => peopleRepository.getProfilesWithRoleForFamily(familyId),
+    ).thenAnswer((_) async => []);
+  }
+
   RemindersCubit buildCubit() => RemindersCubit(
     getReminderUsecase: getReminderUsecase,
     peopleRepository: peopleRepository,
@@ -59,19 +76,6 @@ void main() {
       createdBy: 'Mom',
       createdAt: '',
     );
-
-    void stubFamily({String userId = 'u1', String familyId = 'f1'}) {
-      when(() => authService.currentUserId).thenReturn(userId);
-      when(
-        () => peopleRepository.getFamilyIdsForUser(userId),
-      ).thenAnswer((_) async => [familyId]);
-      when(
-        () => peopleRepository.getMyFamilyRole(),
-      ).thenAnswer((_) async => ['member']);
-      when(
-        () => peopleRepository.getProfilesWithRoleForFamily(familyId),
-      ).thenAnswer((_) async => []);
-    }
 
     blocTest<RemindersCubit, RemindersState>(
       'emits loading then loaded when reminders exist',
@@ -124,6 +128,50 @@ void main() {
       act: (cubit) => cubit.getReminders(),
       expect: () => [isA<RemindersLoading>(), isA<ReminderError>()],
     );
+
+    blocTest<RemindersCubit, RemindersState>(
+      're-emits loading when refreshing from loaded state',
+      build: buildCubit,
+      seed: () => LoadedReminders(
+        reminders: [reminder('9', ReminderType.custom)],
+      ),
+      setUp: () {
+        stubFamily();
+        when(
+          () => getReminderUsecase.call('f1', type: any(named: 'type')),
+        ).thenAnswer((_) async => Right([reminder('1', ReminderType.custom)]));
+      },
+      act: (cubit) => cubit.getReminders(),
+      expect: () => [
+        isA<LoadedReminders>().having(
+          (s) => s.isLoading,
+          'isLoading',
+          isTrue,
+        ),
+        isA<LoadedReminders>().having(
+          (s) => s.reminders.length,
+          'length',
+          1,
+        ),
+      ],
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      're-emits loading when refreshing from empty state',
+      build: buildCubit,
+      seed: () => EmptyReminders(),
+      setUp: () {
+        stubFamily();
+        when(
+          () => getReminderUsecase.call('f1', type: any(named: 'type')),
+        ).thenAnswer((_) async => const Right([]));
+      },
+      act: (cubit) => cubit.getReminders(),
+      expect: () => [
+        isA<EmptyReminders>().having((s) => s.isLoading, 'isLoading', isTrue),
+        isA<EmptyReminders>(),
+      ],
+    );
   });
 
   group('RemindersCubit.removeReminder', () {
@@ -137,6 +185,46 @@ void main() {
       status: 'pending',
       createdBy: 'Mom',
       createdAt: '',
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      're-emits loaded state when removal fails',
+      build: buildCubit,
+      seed: () => LoadedReminders(
+        reminders: [reminder('1'), reminder('2')],
+      ),
+      setUp: () {
+        when(
+          () => reminderRepository.removeReminder('1'),
+        ).thenAnswer((_) async => Left(Failure(message: 'boom')));
+      },
+      act: (cubit) => cubit.removeReminder('1'),
+      expect: () => [
+        isA<LoadedReminders>()
+            .having((s) => s.reminders.length, 'length', 2)
+            .having((s) => s.isLoading, 'isLoading', isFalse),
+      ],
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      'reloads when removal succeeds without a loaded list',
+      build: buildCubit,
+      seed: () => EmptyReminders(),
+      setUp: () {
+        stubFamily();
+        when(
+          () => reminderRepository.removeReminder('1'),
+        ).thenAnswer((_) async => const Right(true));
+        when(
+          () => getReminderUsecase.call('f1', type: any(named: 'type')),
+        ).thenAnswer((_) async => const Right([]));
+      },
+      act: (cubit) => cubit.removeReminder('1'),
+      wait: const Duration(milliseconds: 100),
+      expect: () => [
+        isA<EmptyReminders>().having((s) => s.isLoading, 'isLoading', isTrue),
+        isA<EmptyReminders>().having((s) => s.isLoading, 'isLoading', isFalse),
+      ],
     );
 
     blocTest<RemindersCubit, RemindersState>(
@@ -303,9 +391,117 @@ void main() {
       ];
       expect(cubit.getFilteredReminders(all), hasLength(1));
     });
+
+    blocTest<RemindersCubit, RemindersState>(
+      'setFilterTypes re-emits loaded state with filters',
+      build: buildCubit,
+      seed: () => LoadedReminders(
+        reminders: [
+          ReminderEntity(
+            title: 'A',
+            body: '',
+            id: '1',
+            type: ReminderType.chores,
+            dueDate: '',
+            repeatRule: 'never',
+            status: 'pending',
+            createdBy: '',
+            createdAt: '',
+          ),
+        ],
+      ),
+      act: (cubit) => cubit.setFilterTypes({ReminderType.chores}),
+      expect: () => [
+        isA<LoadedReminders>().having(
+          (s) => s.filterTypes,
+          'filterTypes',
+          {ReminderType.chores},
+        ),
+      ],
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      'setFilterTypes re-emits empty state with filters',
+      build: buildCubit,
+      seed: () => EmptyReminders(),
+      act: (cubit) => cubit.setFilterTypes({ReminderType.chores}),
+      expect: () => [
+        isA<EmptyReminders>().having(
+          (s) => s.filterTypes,
+          'filterTypes',
+          {ReminderType.chores},
+        ),
+      ],
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      'setFilterTypes re-emits loading state with filters',
+      build: buildCubit,
+      seed: () => RemindersLoading(),
+      act: (cubit) => cubit.setFilterTypes({ReminderType.chores}),
+      expect: () => [
+        isA<RemindersLoading>().having(
+          (s) => s.filterTypes,
+          'filterTypes',
+          {ReminderType.chores},
+        ),
+      ],
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      'setFilterTypes re-emits error state with filters',
+      build: buildCubit,
+      seed: () => ReminderError(),
+      act: (cubit) => cubit.setFilterTypes({ReminderType.chores}),
+      expect: () => [
+        isA<ReminderError>().having(
+          (s) => s.filterTypes,
+          'filterTypes',
+          {ReminderType.chores},
+        ),
+      ],
+    );
   });
 
   group('RemindersCubit.toggleViewMode', () {
+    test('exposes the initial selection state', () {
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+
+      expect(cubit.selectedType, isNull);
+      expect(cubit.filterTypes, isEmpty);
+      expect(cubit.myRole, isNull);
+      expect(cubit.viewMode, RemindersViewMode.list);
+    });
+
+    blocTest<RemindersCubit, RemindersState>(
+      'preserves empty state when toggling',
+      build: buildCubit,
+      seed: () => EmptyReminders(),
+      act: (cubit) => cubit.toggleViewMode(),
+      expect: () => [
+        isA<EmptyReminders>().having(
+          (state) => state.viewMode,
+          'viewMode',
+          RemindersViewMode.calendar,
+        ),
+      ],
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      'preserves error state when toggling',
+      build: buildCubit,
+      seed: () => ReminderError(),
+      act: (cubit) => cubit.toggleViewMode(),
+      expect: () => [
+        isA<ReminderError>().having(
+          (state) => state.viewMode,
+          'viewMode',
+          RemindersViewMode.calendar,
+        ),
+      ],
+    );
+
     blocTest<RemindersCubit, RemindersState>(
       'flips from list to calendar on initial state',
       build: buildCubit,

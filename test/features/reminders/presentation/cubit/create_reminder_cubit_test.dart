@@ -157,6 +157,37 @@ void main() {
     );
 
     blocTest<CreateReminderCubit, CreateReminderState>(
+      'emits authRequired when the session lapses mid-creation',
+      build: buildCubit,
+      setUp: () {
+        // _resolveFamilyId reads currentUserId first (returns 'u1', so a
+        // family resolves), then the cubit re-reads it and finds null.
+        final userIds = <String?>['u1', null];
+        when(
+          () => authService.currentUserId,
+        ).thenAnswer((_) => userIds.isEmpty ? null : userIds.removeAt(0));
+        when(
+          () => peopleRepository.getFamilyIdsForUser('u1'),
+        ).thenAnswer((_) async => ['f1']);
+      },
+      act: (cubit) => cubit.createReminder(
+        title: 'T',
+        body: 'B',
+        type: ReminderType.chores,
+        dueDate: null,
+        repeatRule: 'never',
+      ),
+      expect: () => [
+        isA<CreateReminderLoading>(),
+        isA<CreateReminderError>().having(
+          (e) => e.code,
+          'code',
+          CreateReminderErrorCode.authRequired,
+        ),
+      ],
+    );
+
+    blocTest<CreateReminderCubit, CreateReminderState>(
       'emits error message when create fails',
       build: buildCubit,
       setUp: () {
