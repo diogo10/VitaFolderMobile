@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/core/widgets/sand/google_g_icon.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/views/no_account_view.dart';
@@ -14,7 +16,17 @@ import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
+class _MockSupabaseClient extends Mock implements SupabaseClient {}
+
+class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
+
 class _FakeAuthService extends AuthService {
+  _FakeAuthService()
+    : super(
+        supabaseClient: _MockSupabaseClient(),
+        googleSignInHandler: _MockGoogleSignInHandler(),
+      );
+
   Completer<PersonEntity?> personCompleter = Completer<PersonEntity?>()
     ..complete(null);
   String? lastSignInEmail;

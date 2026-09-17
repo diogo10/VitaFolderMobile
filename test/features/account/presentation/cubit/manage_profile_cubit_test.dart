@@ -1,14 +1,25 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/features/account/presentation/cubit/manage_profile_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/manage_profile_state.dart';
+
+class _MockSupabaseClient extends Mock implements SupabaseClient {}
+
+class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
 
 class _FakeAuthService extends AuthService {
   Object? updateError;
   String? lastName;
 
-  _FakeAuthService({this.updateError});
+  _FakeAuthService({this.updateError})
+    : super(
+        supabaseClient: _MockSupabaseClient(),
+        googleSignInHandler: _MockGoogleSignInHandler(),
+      );
 
   @override
   Future<void> updateName(String name) async {

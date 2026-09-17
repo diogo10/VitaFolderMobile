@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/people/data/repository/people_repository_impl.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/people/domain/usecase/create_family_usecase.dart';
@@ -18,7 +19,9 @@ class PeopleServiceLocator {
 
   void init() {
     sl.registerSingleton<PeopleRepository>(
-      PeopleRepositoryImpl(),
+      PeopleRepositoryImpl(
+        authService: sl<AuthService>(instanceName: 'authService'),
+      ),
       instanceName: 'peopleRepositoryImpl',
     );
 

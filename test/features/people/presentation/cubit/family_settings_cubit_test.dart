@@ -2,7 +2,9 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/features/people/domain/entities/family_entity.dart';
 import 'package:house_mira/features/people/domain/entities/people_data.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
@@ -25,10 +27,18 @@ class _MockRemoveMemberUsecase extends Mock implements RemoveMemberUsecase {}
 
 class _MockDeleteFamilyUsecase extends Mock implements DeleteFamilyUsecase {}
 
+class _MockSupabaseClient extends Mock implements SupabaseClient {}
+
+class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
+
 class _FakeAuthService extends AuthService {
   String? stubUserId;
 
-  _FakeAuthService({this.stubUserId});
+  _FakeAuthService({this.stubUserId})
+    : super(
+        supabaseClient: _MockSupabaseClient(),
+        googleSignInHandler: _MockGoogleSignInHandler(),
+      );
 
   @override
   String? get currentUserId => stubUserId;

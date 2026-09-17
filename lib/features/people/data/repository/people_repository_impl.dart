@@ -10,9 +10,11 @@ class PeopleRepositoryImpl implements PeopleRepository {
   final SupabaseClient _client;
   final AuthService _authService;
 
-  PeopleRepositoryImpl({SupabaseClient? client, AuthService? authService})
-    : _client = client ?? Supabase.instance.client,
-      _authService = authService ?? AuthService();
+  PeopleRepositoryImpl({
+    SupabaseClient? client,
+    required AuthService authService,
+  }) : _client = client ?? Supabase.instance.client,
+       _authService = authService;
 
   @override
   Future<FamilyEntity?> getFamilyBy(String id) async {
