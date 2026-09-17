@@ -222,6 +222,38 @@ void main() {
       ).called(1);
     });
 
+    test(
+      'still schedules repeating notifications past their fire time',
+      () async {
+        await service.setReminderNotification(
+          reminderId: 'r1',
+          enabled: true,
+          leadTime: ReminderLeadTime.atTime,
+          dueDate: DateTime(2020, 1, 1, 10),
+          title: 'Title',
+          body: 'Body',
+          repeatRule: 'daily',
+        );
+
+        // Repeating patterns always schedule: the plugin resolves the next
+        // matching occurrence, so a past fire time must not skip scheduling.
+        final captured = verify(
+          () => plugin.zonedSchedule(
+            id: any(named: 'id'),
+            scheduledDate: any(named: 'scheduledDate'),
+            notificationDetails: any(named: 'notificationDetails'),
+            androidScheduleMode: any(named: 'androidScheduleMode'),
+            title: 'Title',
+            body: 'Body',
+            matchDateTimeComponents: captureAny(
+              named: 'matchDateTimeComponents',
+            ),
+          ),
+        ).captured;
+        expect(captured.single, DateTimeComponents.time);
+      },
+    );
+
     test('falls back to due date when the lead time elapsed', () async {
       final due = DateTime.now().add(const Duration(minutes: 5));
 
