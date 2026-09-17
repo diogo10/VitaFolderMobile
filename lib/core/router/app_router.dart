@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/router/main_shell.dart';
+import 'package:house_mira/core/router/splash_view.dart';
 import 'package:house_mira/features/account/presentation/views/account_view.dart';
 import 'package:house_mira/features/account/presentation/views/manage_profile_screen.dart';
 import 'package:house_mira/features/account/presentation/views/notification_settings_screen.dart';
@@ -15,14 +17,51 @@ import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart
 import 'package:house_mira/features/reminders/presentation/screens/create_reminder_screen.dart';
 import 'package:house_mira/features/reminders/presentation/screens/reminders_view.dart';
 
+/// Builds the application router.
+///
+/// When [authStateNotifier] is provided, the router stays synchronized with
+/// Supabase `onAuthStateChange` events: every sign-in, sign-out, token
+/// refresh, or session recovery triggers a redirect re-evaluation via
+/// [refreshListenable]. While the initial session recovery is still in
+/// flight ([AuthStateNotifier.isInitialized] == false), navigation is held
+/// on the splash screen so no unauthenticated content flashes on restart.
+///
+/// Guest usage is allowed: unauthenticated users can browse the main tabs
+/// (each view renders its own signed-out empty state). Only the splash gate
+/// and the signed-in-away-from-sign-up rule are enforced here.
 GoRouter createRouter({
   required bool onboardingCompleted,
+  AuthStateNotifier? authStateNotifier,
   List<NavigatorObserver>? observers,
 }) {
+  final notifier = authStateNotifier;
   return GoRouter(
-    initialLocation: onboardingCompleted ? '/home' : '/onboarding',
+    initialLocation: (notifier != null && !notifier.isInitialized)
+        ? '/splash'
+        : (onboardingCompleted ? '/home' : '/onboarding'),
+    refreshListenable: notifier,
+    redirect: (context, state) {
+      if (notifier == null) {
+        return null;
+      }
+      final location = state.uri.path;
+      if (!notifier.isInitialized) {
+        return location == '/splash' ? null : '/splash';
+      }
+      if (location == '/splash') {
+        return onboardingCompleted ? '/home' : '/onboarding';
+      }
+      if (notifier.isAuthenticated && location == '/sign-up') {
+        return '/home';
+      }
+      return null;
+    },
     observers: observers ?? [],
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashView(),
+      ),
       GoRoute(
         path: '/sign-up',
         builder: (context, state) => const SignUpView(),

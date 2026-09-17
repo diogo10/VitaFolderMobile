@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/router/app_router.dart';
@@ -113,8 +114,13 @@ void main() async {
 
 class MyApp extends StatefulWidget {
   final bool onboardingCompleted;
+  final AuthStateNotifier? authStateNotifier;
 
-  const MyApp({super.key, required this.onboardingCompleted});
+  const MyApp({
+    super.key,
+    required this.onboardingCompleted,
+    this.authStateNotifier,
+  });
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -122,10 +128,24 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   bool _notificationPermissionRequested = false;
+  late final AuthStateNotifier _authStateNotifier;
+  bool _ownsAuthStateNotifier = false;
 
   @override
   void initState() {
     super.initState();
+    final external = widget.authStateNotifier;
+    if (external != null) {
+      _authStateNotifier = external;
+    } else {
+      // Session persistence is handled by Supabase.initialize; this
+      // subscription replays the recovered initial session and keeps the
+      // router synchronized with every later auth transition.
+      _authStateNotifier = AuthStateNotifier.fromSupabase(
+        Supabase.instance.client,
+      );
+      _ownsAuthStateNotifier = true;
+    }
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _requestNotificationPermission();
@@ -148,6 +168,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    if (_ownsAuthStateNotifier) {
+      _authStateNotifier.dispose();
+    }
     super.dispose();
   }
 
@@ -162,6 +185,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       darkTheme: AppTheme.darkTheme,
       routerConfig: createRouter(
         onboardingCompleted: widget.onboardingCompleted,
+        authStateNotifier: _authStateNotifier,
         observers: [analyticsService.observer],
       ),
       debugShowCheckedModeBanner: false,
