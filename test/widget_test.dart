@@ -192,6 +192,25 @@ class _FakeAnalyticsService extends Fake implements AnalyticsService {
   FirebaseAnalyticsObserver get observer => _observer;
 }
 
+/// Pumps [widget] and lets the auth splash gate resolve.
+///
+/// [MyApp] holds navigation on the splash screen until Supabase
+/// `onAuthStateChange` delivers the recovered initial session, which takes
+/// an extra frame or two after the first build. Uses explicit pumps instead
+/// of [WidgetTester.pumpAndSettle] because the splash progress indicator
+/// animates indefinitely.
+Future<void> _pumpAndResolveAuthGate(
+  WidgetTester tester,
+  Widget widget,
+) async {
+  await tester.pumpWidget(widget);
+  await tester.pump();
+  // Lets the splash-to-content route transition finish so gestures hit
+  // the resolved screen instead of the exiting splash page.
+  await tester.pump(const Duration(milliseconds: 500));
+  await tester.pump();
+}
+
 Widget _pumpApp() {
   final fakeAuth = _FakeAuthService();
   final fakePeople = _FakePeopleRepository();
@@ -332,8 +351,7 @@ void main() {
 
   group('MainShell', () {
     testWidgets('displays Home tab by default', (tester) async {
-      await tester.pumpWidget(_pumpApp());
-      await tester.pump();
+      await _pumpAndResolveAuthGate(tester, _pumpApp());
       await tester.pump();
 
       expect(find.text('Fam'), findsOneWidget);
@@ -344,8 +362,7 @@ void main() {
     });
 
     testWidgets('displays bottom navigation bar with 4 items', (tester) async {
-      await tester.pumpWidget(_pumpApp());
-      await tester.pump();
+      await _pumpAndResolveAuthGate(tester, _pumpApp());
 
       expect(find.byType(BottomNavigationBar), findsOneWidget);
       expect(find.text('Home'), findsOneWidget);
@@ -357,8 +374,7 @@ void main() {
     });
 
     testWidgets('switches tabs when tapping navigation items', (tester) async {
-      await tester.pumpWidget(_pumpApp());
-      await tester.pump();
+      await _pumpAndResolveAuthGate(tester, _pumpApp());
       await tester.pump();
 
       await tester.tap(find.text('Reminders'));
@@ -397,8 +413,7 @@ void main() {
     });
 
     testWidgets('renders shell when onboarding completed', (tester) async {
-      await tester.pumpWidget(_pumpApp());
-      await tester.pump();
+      await _pumpAndResolveAuthGate(tester, _pumpApp());
 
       await tester.pump(const Duration(seconds: 11));
       expect(find.byType(BottomNavigationBar), findsOneWidget);
@@ -407,16 +422,14 @@ void main() {
 
   group('Onboarding', () {
     testWidgets('shows onboarding when not completed', (tester) async {
-      await tester.pumpWidget(_pumpAppWithOnboarding());
-      await tester.pump();
+      await _pumpAndResolveAuthGate(tester, _pumpAppWithOnboarding());
 
       expect(find.byType(OnboardingView), findsOneWidget);
       expect(find.text('Your Family,\nIn One Place'), findsOneWidget);
     });
 
     testWidgets('displays 3 pages with navigation dots', (tester) async {
-      await tester.pumpWidget(_pumpAppWithOnboarding());
-      await tester.pump();
+      await _pumpAndResolveAuthGate(tester, _pumpAppWithOnboarding());
 
       expect(find.text('Your Family,\nIn One Place'), findsOneWidget);
 
@@ -433,8 +446,7 @@ void main() {
     });
 
     testWidgets('shows skip and next buttons', (tester) async {
-      await tester.pumpWidget(_pumpAppWithOnboarding());
-      await tester.pump();
+      await _pumpAndResolveAuthGate(tester, _pumpAppWithOnboarding());
 
       expect(find.text('Skip'), findsOneWidget);
       expect(find.text('Next Step'), findsOneWidget);
@@ -442,8 +454,7 @@ void main() {
     });
 
     testWidgets('shows Get Started on last page', (tester) async {
-      await tester.pumpWidget(_pumpAppWithOnboarding());
-      await tester.pump();
+      await _pumpAndResolveAuthGate(tester, _pumpAppWithOnboarding());
 
       expect(find.text('Next Step'), findsOneWidget);
       await tester.tap(find.text('Next Step'));
@@ -461,8 +472,7 @@ void main() {
     });
 
     testWidgets('skip jumps to last page', (tester) async {
-      await tester.pumpWidget(_pumpAppWithOnboarding());
-      await tester.pump();
+      await _pumpAndResolveAuthGate(tester, _pumpAppWithOnboarding());
 
       await tester.tap(find.text('Skip'));
       await tester.pump();
@@ -474,8 +484,7 @@ void main() {
     });
 
     testWidgets('completes onboarding on Get Started', (tester) async {
-      await tester.pumpWidget(_pumpAppWithOnboarding());
-      await tester.pump();
+      await _pumpAndResolveAuthGate(tester, _pumpAppWithOnboarding());
 
       await tester.tap(find.text('Skip'));
       await tester.pump();

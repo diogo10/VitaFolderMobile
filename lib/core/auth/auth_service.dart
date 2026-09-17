@@ -18,6 +18,15 @@ class AuthService {
 
   User? get currentUser => _client.auth.currentUser;
 
+  /// The synchronously recovered session, if session persistence restored
+  /// one during `Supabase.initialize`.
+  Session? get currentSession => _client.auth.currentSession;
+
+  /// Broadcast of Supabase auth transitions (initial session recovery,
+  /// sign-in, sign-out, token refresh). The router observes this via
+  /// [AuthStateNotifier] to trigger routing transitions.
+  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
+
   bool isLoggedIn() {
     return _client.auth.currentUser != null;
   }
