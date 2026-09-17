@@ -8,18 +8,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
   AuthService({
-    SupabaseClient? supabaseClient,
-    IGoogleSignInHandler? googleSignInHandler,
-  }) : _supabaseClient = supabaseClient,
-       _googleSignInHandler = googleSignInHandler;
+    required SupabaseClient supabaseClient,
+    required IGoogleSignInHandler googleSignInHandler,
+  }) : _client = supabaseClient,
+       _googleHandler = googleSignInHandler;
 
-  final SupabaseClient? _supabaseClient;
-  final IGoogleSignInHandler? _googleSignInHandler;
-
-  SupabaseClient get _client => _supabaseClient ?? Supabase.instance.client;
-
-  late final IGoogleSignInHandler _googleHandler =
-      _googleSignInHandler ?? GoogleSignInHandler();
+  final SupabaseClient _client;
+  final IGoogleSignInHandler _googleHandler;
 
   User? get currentUser => _client.auth.currentUser;
 

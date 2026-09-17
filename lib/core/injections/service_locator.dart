@@ -1,7 +1,9 @@
 import 'package:get_it/get_it.dart';
 import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:house_mira/core/injections/account/account_service_locator.dart';
 import 'package:house_mira/core/injections/home/home_service_locator.dart';
 import 'package:house_mira/core/injections/people/people_service_locator.dart';
@@ -19,7 +21,10 @@ class ServiceLocator {
     );
 
     slInstance.registerSingleton<AuthService>(
-      AuthService(),
+      AuthService(
+        supabaseClient: Supabase.instance.client,
+        googleSignInHandler: GoogleSignInHandler(),
+      ),
       instanceName: 'authService',
     );
 

@@ -5,11 +5,15 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/features/people/presentation/cubit/invite_people_cubit.dart';
 import 'package:house_mira/features/people/presentation/views/invite_people_screen.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+
+class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
 
 void main() {
   setUpAll(() async {
@@ -28,7 +32,10 @@ void main() {
         body: BlocProvider<InvitePeopleCubit>(
           create: (_) => InvitePeopleCubit(edgetFunctions: EdgetFunctions()),
           child: Provider<AuthService>(
-            create: (_) => AuthService(),
+            create: (_) => AuthService(
+              supabaseClient: Supabase.instance.client,
+              googleSignInHandler: _MockGoogleSignInHandler(),
+            ),
             child: InvitePeopleScreen(familyName: familyName),
           ),
         ),

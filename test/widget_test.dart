@@ -9,6 +9,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/auth/google_sign_in_handler.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
@@ -34,7 +36,17 @@ import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit
 import 'package:house_mira/main.dart';
 import 'mock_firebase.dart';
 
+class _MockSupabaseClient extends Mock implements SupabaseClient {}
+
+class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
+
 class _FakeAuthService extends AuthService {
+  _FakeAuthService()
+    : super(
+        supabaseClient: _MockSupabaseClient(),
+        googleSignInHandler: _MockGoogleSignInHandler(),
+      );
+
   @override
   bool isLoggedIn() => true;
 
