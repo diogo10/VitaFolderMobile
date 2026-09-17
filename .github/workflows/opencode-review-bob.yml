@@ -1,71 +1,34 @@
 name: opencode-review-bob
 
 on:
-  workflow_run:
-    workflows: ["CI"] # Must exactly match the CI workflow's `name`
-    types: [completed]
-
+  workflow_call:
+  
 jobs:
   review:
-    # Only continue when CI completed successfully.
-    if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'pull_request'
-
     runs-on: ubuntu-latest
-
     permissions:
+      id-token: write
       contents: write
       pull-requests: write
       issues: write
-      id-token: write
-
     steps:
-      - name: Get pull request information
-        id: pr
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          API_URL: ${{ github.api_url }}
-          REPOSITORY: ${{ github.repository }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-        run: |
-          pr=$(gh api \
-            "$API_URL/repos/$REPOSITORY/commits/$HEAD_SHA/pulls" \
-            --jq 'map(select(.base.repo.full_name == env.REPOSITORY))[0]')
-
-          if [ -z "$pr" ] || [ "$pr" = "null" ]; then
-            echo "No pull request found for commit $HEAD_SHA"
-            exit 1
-          fi
-
-          echo "number=$(echo "$pr" | jq -r '.number')" >> "$GITHUB_OUTPUT"
-          echo "head_sha=$(echo "$pr" | jq -r '.head.sha')" >> "$GITHUB_OUTPUT"
-
-      - name: Checkout pull request
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
-          ref: ${{ steps.pr.outputs.head_sha }}
           persist-credentials: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Configure Git
+      # Add these two steps to configure Git
+      - name: Configure Git 
         run: |
           git config --global user.email "diogjp10@gmail.com"
-          git config --global user.name "Diogo Action"
-
-      - name: Review pull request
-        uses: anomalyco/opencode/github@latest
+          git config --global user.name "Diogo Action"   
+      - uses: anomalyco/opencode/github@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           model: opencode/muse-spark-1.3-contributor-free
           use_github_token: true
           prompt: |
-            Review pull request #${{ steps.pr.outputs.number }} and give it a grade from A to D.
-
-            If the grade is A or B:
-            - Approve the pull request.
-            - Merge it only if all required branch-protection checks are successful.
-
-            If the grade is C or D:
-            - Comment on the pull request with specific suggestions.
+            Review the changes and give a grade from A to D. If the grade is A or B:
+            - Aproove the PR and merge it. 
+            - If C or D, comment with the suggestions. 
