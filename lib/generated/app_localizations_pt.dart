@@ -420,6 +420,14 @@ class AppLocalizationsPt extends AppLocalizations {
       'Compartilhar código de convite';
 
   @override
+  String accountSettingsInviteMembersSubtitleWithCode(
+    String familyCode,
+    String subtitle,
+  ) {
+    return '$familyCode - $subtitle';
+  }
+
+  @override
   String get accountSettingsSupportSection => 'SUPORTE';
 
   @override

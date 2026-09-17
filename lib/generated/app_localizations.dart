@@ -854,6 +854,15 @@ abstract class AppLocalizations {
   /// **'Share invite code'**
   String get accountSettingsInviteMembersSubtitle;
 
+  /// No description provided for @accountSettingsInviteMembersSubtitleWithCode.
+  ///
+  /// In en, this message translates to:
+  /// **'{familyCode} - {subtitle}'**
+  String accountSettingsInviteMembersSubtitleWithCode(
+    String familyCode,
+    String subtitle,
+  );
+
   /// No description provided for @accountSettingsSupportSection.
   ///
   /// In en, this message translates to:

@@ -136,6 +136,17 @@
   "accountSettingsRolesPermissionsSubtitle": "Gerenciar acesso de admin",
   "accountSettingsInviteMembers": "Convidar Membros",
   "accountSettingsInviteMembersSubtitle": "Compartilhar código de convite",
+  "accountSettingsInviteMembersSubtitleWithCode": "{familyCode} - {subtitle}",
+  "@accountSettingsInviteMembersSubtitleWithCode": {
+    "placeholders": {
+      "familyCode": {
+        "type": "String"
+      },
+      "subtitle": {
+        "type": "String"
+      }
+    }
+  },
   "accountSettingsSupportSection": "SUPORTE",
   "accountSettingsHelpFaq": "Ajuda e FAQ",
   "accountSettingsHelpFaqSubtitle": "Obter respostas, falar com suporte",

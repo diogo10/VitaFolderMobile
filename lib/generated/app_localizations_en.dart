@@ -412,6 +412,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSettingsInviteMembersSubtitle => 'Share invite code';
 
   @override
+  String accountSettingsInviteMembersSubtitleWithCode(
+    String familyCode,
+    String subtitle,
+  ) {
+    return '$familyCode - $subtitle';
+  }
+
+  @override
   String get accountSettingsSupportSection => 'SUPPORT';
 
   @override
