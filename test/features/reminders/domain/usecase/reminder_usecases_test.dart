@@ -68,6 +68,20 @@ void main() {
 
       expect(result.getRight().toNullable(), 'new-id');
     });
+
+    test('propagates repository failures', () async {
+      when(() => reminders.createReminder(any(), 'f1')).thenAnswer(
+        (_) async => Left(Failure(message: 'boom')),
+      );
+
+      final result = await CreateReminderUsecase(repository: reminders)(
+        model(),
+        'f1',
+      );
+
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable()?.message, 'boom');
+    });
   });
 
   group('UpdateReminderUsecase', () {
@@ -81,6 +95,19 @@ void main() {
       );
 
       expect(result.getRight().toNullable(), isTrue);
+    });
+
+    test('propagates repository failures', () async {
+      when(() => reminders.updateReminder(any())).thenAnswer(
+        (_) async => Left(Failure(message: 'boom')),
+      );
+
+      final result = await UpdateReminderUsecase(repository: reminders)(
+        model(),
+      );
+
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable()?.message, 'boom');
     });
   });
 
@@ -150,6 +177,23 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       expect(result.getLeft().toNullable(), isA<Failure>());
+    });
+
+    test('maps filtered repository failures to Failure', () async {
+      when(
+        () => reminders.getRemindersByTypeAndFamily(
+          type: ReminderType.chores,
+          familyId: 'f1',
+        ),
+      ).thenAnswer((_) async => Left(Failure(message: 'boom')));
+
+      final result = await GetReminderUsecase(
+        repository: reminders,
+        peopleRepository: people,
+      )('f1', type: ReminderType.chores);
+
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable()?.message, 'boom');
     });
 
     test('keeps reminders whose creator id is missing', () async {
