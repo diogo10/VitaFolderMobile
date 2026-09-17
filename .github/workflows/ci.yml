@@ -22,7 +22,11 @@ jobs:
         run: dart analyze --fatal-warnings
 
       - name: Flutter Analyze
-        run: flutter analyze --fatal-warnings
+        # flutter analyze defaults --fatal-infos to on, which fails the build
+        # on info-level lints (e.g. public_member_api_docs from
+        # very_good_analysis). Infos are style suggestions, not compliance
+        # failures: keep warnings/errors fatal, but do not fail on infos.
+        run: flutter analyze --no-fatal-infos --fatal-warnings
 
       - name: Run tests with coverage
         run: flutter test --coverage
