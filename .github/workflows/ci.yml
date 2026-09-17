@@ -101,5 +101,10 @@ jobs:
           EOF
   call-bob:
     needs: [analyze-and-test]
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
     uses: ./.github/workflows/opencode-review-bob.yml
     secrets: inherit
