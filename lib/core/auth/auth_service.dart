@@ -99,7 +99,7 @@ class AuthService {
           .select('full_name')
           .eq('id', userId);
 
-      return response.single['full_name'];
+      return response.single['full_name'] as String?;
     } catch (e) {
       debugPrint('Error getting the family: $e');
       return null;

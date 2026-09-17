@@ -231,7 +231,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
     if (state is FamilySettingsLoaded) {
       final familyName = state.familyName;
 
-      showDialog(
+      showDialog<void>(
         context: context,
         builder: (dialogContext) => AlertDialog(
           shape: RoundedRectangleBorder(
@@ -264,7 +264,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
     final l = AppLocalizations.of(context)!;
     final cubit = context.read<FamilySettingsCubit>();
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -366,7 +366,7 @@ class _ManageMembersSection extends StatelessWidget {
   final String currentUserId;
   final String familyName;
   final int memberCount;
-  final Function(String memberId, String memberName) onRemoveMember;
+  final void Function(String memberId, String memberName) onRemoveMember;
   final bool isRemoving;
   final AppLocalizations l;
 
@@ -424,7 +424,7 @@ class _ManageMembersSection extends StatelessWidget {
     List<PersonEntity> members,
     String currentUserId,
     String familyName,
-    Function(String memberId, String memberName) onRemoveMember,
+    void Function(String memberId, String memberName) onRemoveMember,
     bool isRemoving,
   ) {
     return members.asMap().entries.map((entry) {

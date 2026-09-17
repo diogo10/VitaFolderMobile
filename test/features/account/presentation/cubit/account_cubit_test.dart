@@ -12,6 +12,7 @@ import 'package:house_mira/features/people/domain/repository/people_repository.d
 class _FakeAuthService extends AuthService {
   User? stubUser;
   PersonEntity? stubPerson;
+  Object? personError;
   Object? signInError;
   Object? signOutError;
   Object? resetError;
@@ -20,6 +21,7 @@ class _FakeAuthService extends AuthService {
   _FakeAuthService({
     this.stubUser,
     this.stubPerson,
+    this.personError,
     this.signInError,
     this.signOutError,
     this.resetError,
@@ -35,7 +37,10 @@ class _FakeAuthService extends AuthService {
   User? get currentUser => stubUser;
 
   @override
-  Future<PersonEntity?> getAsPersonEntity() async => stubPerson;
+  Future<PersonEntity?> getAsPersonEntity() async {
+    if (personError != null) throw personError!;
+    return stubPerson;
+  }
 
   @override
   Future<void> signOut() async {
@@ -270,6 +275,29 @@ void main() {
           PasswordResetErrorCode.sendFailed,
         ),
       ],
+    );
+    blocTest<AccountCubit, AccountState>(
+      'loadAccount emits NoAccount when the profile lookup throws',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(personError: Exception('boom')),
+        peopleRepository: _FakePeopleRepository(),
+      ),
+      act: (cubit) => cubit.loadAccount(),
+      expect: () => [isA<AccountLoading>(), isA<NoAccount>()],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'signIn emits NoAccount on unexpected errors',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubPerson: _testPerson(),
+          signInError: Exception('boom'),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+      ),
+      act: (cubit) => cubit.signIn('user@example.com', 'password123'),
+      expect: () => [isA<NoAccount>()],
     );
   });
 }

@@ -99,6 +99,28 @@ void main() {
       expect(home.reminders, hasLength(1));
     });
 
+    test('falls back to an empty family when the family fetch fails', () async {
+      when(() => auth.isLoggedIn()).thenReturn(true);
+      when(() => auth.currentUserId).thenReturn('u1');
+      when(
+        () => people.getPeople(),
+      ).thenAnswer((_) async => Right([_person()]));
+      when(
+        () => people.getMyFamily(),
+      ).thenAnswer((_) async => Left(Exception('boom')));
+      when(() => people.getMyFamilyRole()).thenAnswer((_) async => []);
+      when(
+        () => people.getFamilyIdsForUser('u1'),
+      ).thenAnswer((_) async => <String>[]);
+
+      final result = await build()();
+
+      final HomeEntity home = result.getRight().toNullable()!;
+      expect(home.familyName, '');
+      expect(home.reminders, isEmpty);
+      expect(home.hasReminders, isFalse);
+    });
+
     test('tolerates reminder fetch failure as empty list', () async {
       when(() => auth.isLoggedIn()).thenReturn(true);
       when(() => auth.currentUserId).thenReturn('u1');

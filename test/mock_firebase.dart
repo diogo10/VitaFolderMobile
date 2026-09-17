@@ -1,5 +1,4 @@
 import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class MockFirebasePlatform extends FirebasePlatform {
   @override
@@ -9,18 +8,6 @@ class MockFirebasePlatform extends FirebasePlatform {
   }) async {
     return MockFirebaseAppPlatform();
   }
-
-  @override
-  Future<void> setAutomaticDataCollectionEnabled(bool enabled) async {}
-
-  @override
-  Future<bool> getAutomaticDataCollectionEnabled() async => true;
-
-  @override
-  Future<void> setAutomaticResourceManagementEnabled(bool enabled) async {}
-
-  @override
-  Future<bool> getAutomaticResourceManagementEnabled() async => true;
 
   @override
   List<FirebaseAppPlatform> get apps => [MockFirebaseAppPlatform()];
@@ -44,9 +31,6 @@ class MockFirebaseAppPlatform extends FirebaseAppPlatform {
 
   @override
   bool get isAutomaticDataCollectionEnabled => true;
-
-  @override
-  set automaticDataCollectionEnabled(bool enabled) {}
 
   @override
   Future<void> setAutomaticDataCollectionEnabled(bool enabled) async {}

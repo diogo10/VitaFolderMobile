@@ -140,7 +140,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
 
   void _showMenu(BuildContext context) {
     final cubit = context.read<RemindersCubit>();
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       useRootNavigator: true,

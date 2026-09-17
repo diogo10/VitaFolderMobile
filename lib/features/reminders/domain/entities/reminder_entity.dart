@@ -11,7 +11,7 @@ class ReminderEntity {
   final String createdBy;
   final String createdAt;
 
-ReminderEntity({
+  ReminderEntity({
     required this.title,
     required this.body,
     required this.id,
@@ -46,4 +46,32 @@ ReminderEntity({
       createdAt: createdAt ?? this.createdAt,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ReminderEntity) return false;
+    return title == other.title &&
+        body == other.body &&
+        id == other.id &&
+        type == other.type &&
+        dueDate == other.dueDate &&
+        repeatRule == other.repeatRule &&
+        status == other.status &&
+        createdBy == other.createdBy &&
+        createdAt == other.createdAt;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    title,
+    body,
+    id,
+    type,
+    dueDate,
+    repeatRule,
+    status,
+    createdBy,
+    createdAt,
+  );
 }

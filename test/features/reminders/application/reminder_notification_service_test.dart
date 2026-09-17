@@ -10,6 +10,9 @@ class _MockPlugin extends Mock implements FlutterLocalNotificationsPlugin {}
 
 class _MockStorage extends Mock implements LocalStorageDatasource {}
 
+class _MockAndroidPlugin extends Mock
+    implements AndroidFlutterLocalNotificationsPlugin {}
+
 void main() {
   late _MockPlugin plugin;
   late _MockStorage storage;
@@ -23,6 +26,9 @@ void main() {
       const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       ),
+    );
+    registerFallbackValue(
+      const AndroidNotificationChannel('id', 'name'),
     );
   });
 
@@ -318,6 +324,194 @@ void main() {
 
       expect(prefs.enabled, isTrue);
       expect(prefs.leadTime, ReminderLeadTime.oneHour);
+    });
+  });
+
+  group('init', () {
+    test('initializes plugin and creates channel', () async {
+      final android = _MockAndroidPlugin();
+      when(
+        () => plugin.initialize(settings: any(named: 'settings')),
+      ).thenAnswer((_) async => true);
+      when(
+        () => plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenReturn(android);
+      when(
+        () => android.createNotificationChannel(any()),
+      ).thenAnswer((_) async {});
+
+      await service.init();
+
+      verify(
+        () => plugin.initialize(settings: any(named: 'settings')),
+      ).called(1);
+      verify(() => android.createNotificationChannel(any())).called(1);
+    });
+
+    test('skips channel setup when platform lookup throws', () async {
+      when(
+        () => plugin.initialize(settings: any(named: 'settings')),
+      ).thenAnswer((_) async => true);
+      when(
+        () => plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenThrow(Exception('no platform'));
+
+      await service.init();
+
+      verify(
+        () => plugin.initialize(settings: any(named: 'settings')),
+      ).called(1);
+    });
+  });
+
+  group('android exact alarms', () {
+    test('checks exact alarm capability on Android', () async {
+      final androidService = ReminderNotificationService(
+        plugin: plugin,
+        storage: storage,
+        isAndroidOverride: true,
+      );
+      final android = _MockAndroidPlugin();
+      when(
+        () => plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenReturn(android);
+      when(
+        () => android.canScheduleExactNotifications(),
+      ).thenAnswer((_) async => true);
+
+      expect(await androidService.canScheduleExactAlarms(), isTrue);
+    });
+
+    test('returns false when Android check throws', () async {
+      final androidService = ReminderNotificationService(
+        plugin: plugin,
+        storage: storage,
+        isAndroidOverride: true,
+      );
+      when(
+        () => plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenThrow(Exception('no platform'));
+
+      expect(await androidService.canScheduleExactAlarms(), isFalse);
+    });
+
+    test('requests exact alarm permission on Android', () async {
+      final androidService = ReminderNotificationService(
+        plugin: plugin,
+        storage: storage,
+        isAndroidOverride: true,
+      );
+
+      // permission_handler has no platform channel in unit tests and
+      // throws; the service must swallow it, covering the catch branch.
+      await androidService.requestExactAlarmPermission();
+    });
+
+    test('uses exact schedule mode when allowed', () async {
+      final androidService = ReminderNotificationService(
+        plugin: plugin,
+        storage: storage,
+        isAndroidOverride: true,
+      );
+      final android = _MockAndroidPlugin();
+      when(
+        () => plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenReturn(android);
+      when(
+        () => android.canScheduleExactNotifications(),
+      ).thenAnswer((_) async => true);
+
+      await androidService.setReminderNotification(
+        reminderId: 'r1',
+        enabled: true,
+        leadTime: ReminderLeadTime.atTime,
+        dueDate: DateTime(2030, 1, 1, 10),
+        title: 'Title',
+        body: 'Body',
+        repeatRule: 'never',
+      );
+
+      final captured = verify(
+        () => plugin.zonedSchedule(
+          id: any(named: 'id'),
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: captureAny(named: 'androidScheduleMode'),
+          title: any(named: 'title'),
+          body: any(named: 'body'),
+          payload: any(named: 'payload'),
+          matchDateTimeComponents: any(named: 'matchDateTimeComponents'),
+        ),
+      ).captured;
+      expect(
+        captured.single,
+        AndroidScheduleMode.exactAllowWhileIdle,
+      );
+    });
+
+    test('falls back to inexact mode when exact check throws', () async {
+      final androidService = ReminderNotificationService(
+        plugin: plugin,
+        storage: storage,
+        isAndroidOverride: true,
+      );
+      when(
+        () => plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenThrow(Exception('no platform'));
+
+      await androidService.setReminderNotification(
+        reminderId: 'r1',
+        enabled: true,
+        leadTime: ReminderLeadTime.atTime,
+        dueDate: DateTime(2030, 1, 1, 10),
+        title: 'Title',
+        body: 'Body',
+        repeatRule: 'never',
+      );
+
+      final captured = verify(
+        () => plugin.zonedSchedule(
+          id: any(named: 'id'),
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: captureAny(named: 'androidScheduleMode'),
+          title: any(named: 'title'),
+          body: any(named: 'body'),
+          payload: any(named: 'payload'),
+          matchDateTimeComponents: any(named: 'matchDateTimeComponents'),
+        ),
+      ).captured;
+      expect(
+        captured.single,
+        AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+    });
+  });
+
+  group('construction', () {
+    test('defaults to a real plugin when none is given', () {
+      expect(
+        ReminderNotificationService(storage: storage),
+        isA<ReminderNotificationService>(),
+      );
     });
   });
 }

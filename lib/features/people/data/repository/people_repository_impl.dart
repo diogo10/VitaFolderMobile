@@ -24,7 +24,10 @@ class PeopleRepositoryImpl implements PeopleRepository {
       }
 
       final body = response.single;
-      return FamilyEntity(name: body['name'], inviteCode: body['invite_code']);
+      return FamilyEntity(
+        name: body['name'] as String,
+        inviteCode: body['invite_code'] as String,
+      );
     } catch (e) {
       debugPrint('Error getting the family: $e');
       return null;
@@ -48,7 +51,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
       }
 
       final body = response.single;
-      final familyId = body['family_id'];
+      final familyId = body['family_id'] as String;
       final family = await getFamilyBy(familyId);
       return family != null
           ? Right(family)
@@ -209,7 +212,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
     return profiles
         .map((p) {
           final person = PersonEntity.from(p);
-          final role = roleByUserId[person?.id];
+          final role = roleByUserId[person?.id] as String?;
           return person?.copyWith(role: role);
         })
         .nonNulls

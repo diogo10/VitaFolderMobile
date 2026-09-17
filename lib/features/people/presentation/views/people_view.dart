@@ -26,7 +26,7 @@ class _PeopleViewState extends State<PeopleView> {
       return;
     }
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(AppLocalizations.of(context)!.peopleViewCreateFamily),

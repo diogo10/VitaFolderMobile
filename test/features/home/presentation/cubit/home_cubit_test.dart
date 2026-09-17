@@ -101,6 +101,26 @@ void main() {
     );
 
     blocTest<HomeCubit, HomeState>(
+      'loads without reminders flag when the reminders check fails',
+      setUp: () {
+        when(() => usecase()).thenAnswer((_) async => Right(tEntity));
+        when(
+          () => hasRemindersUsecase(),
+        ).thenAnswer((_) async => Left(Failure(message: 'boom')));
+      },
+      build: () => cubit,
+      act: (cubit) => cubit.getHomeData(),
+      expect: () => [
+        isA<HomeLoading>(),
+        isA<HomeLoaded>().having(
+          (s) => s.data.hasReminders,
+          'hasReminders',
+          false,
+        ),
+      ],
+    );
+
+    blocTest<HomeCubit, HomeState>(
       'propagates people repository errors instead of falling back to empty',
       setUp: () {
         when(

@@ -5,13 +5,7 @@ class PersonEntity {
   final String? phone;
   final String? role;
 
-  PersonEntity({
-    this.id,
-    this.name,
-    this.email,
-    this.phone,
-    this.role
-  });
+  const PersonEntity({this.id, this.name, this.email, this.phone, this.role});
 
   PersonEntity copyWith({
     String? id,
@@ -25,7 +19,7 @@ class PersonEntity {
       name: name ?? this.name,
       email: email ?? this.email,
       phone: phone ?? this.phone,
-      role: role ?? this.role
+      role: role ?? this.role,
     );
   }
 
@@ -39,4 +33,18 @@ class PersonEntity {
       role: json['role'] as String?,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! PersonEntity) return false;
+    return id == other.id &&
+        name == other.name &&
+        email == other.email &&
+        phone == other.phone &&
+        role == other.role;
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, email, phone, role);
 }
