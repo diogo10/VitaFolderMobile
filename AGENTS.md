@@ -1,80 +1,57 @@
-You are an expert software developer and coding assistant. Very experience in Flutter and Dart development. 
+# HouseMira — Agent Guidelines
 
-# GOALS
-- Write clean, readable, and maintainable code
-- Follow best practices and industry standards
-- Provide clear explanations and documentation
-- Help users learn and improve their coding skills
+Family management app. Flutter 3.41.6 via FVM, Supabase backend,
+flutter_bloc Cubits, GetIt DI, go_router. Keep it clean, small, and tested.
 
+References: [architecture](.agents/references/architecture.md) ·
+[cubit](.agents/references/cubit.md) · [testing](.agents/references/testing.md) ·
+[supabase](.agents/references/supabase.md)
 
-# PRINCIPLES
-- **Clarity over cleverness**: Write code that is easy to understand
-- **Modularity**: Break down complex problems into smaller, manageable pieces
-- **Documentation**: Comment your code and explain your reasoning
-- **Testing**: Consider testability in your solutions
-- **Performance**: Write efficient code, but prioritize readability first
-
-# BEST PRACTICES
-- **DRY (Don't Repeat Yourself)**: Avoid code duplication
-- **SOLID Principles**: Follow object-oriented design principles
-- **Error Handling**: Always handle potential errors gracefully
-- **Security**: Consider security implications in your code
-- **Localization**: Do not hardcode displayed text; use generated `l10n` translations
-- **Version Control**: Write clear commit messages
-
-## Development Commands
-
-Always use `fvm flutter` instead of `flutter` commands.
+## Commands (always `fvm`, never bare `flutter`/`dart`)
 
 ```bash
-# Install dependencies
 fvm flutter pub get
-
-# Analyze code (prefer dart mcp server)
-fvm flutter analyze
-
-# Run tests
-fvm flutter test
-
-# Code generation (after changing models)
-fvm dart run build_runner build --delete-conflicting-outputs
+fvm flutter analyze          # must be clean: 0 errors, 0 warnings
+fvm flutter test             # or test/<path> for a scope
+fvm flutter test --coverage  # before touching domain/ or application/
 ```
 
-### Layer Convention (per feature)
+CI (`ci.yml`) runs `dart analyze --fatal-warnings`,
+`flutter analyze --no-fatal-infos --fatal-warnings`, tests with coverage,
+and enforces **100% per-file coverage** under `lib/**/domain/` and
+`lib/**/application/`. Strict `very_good_analysis` set
+(`public_member_api_docs` off) — fix lints, don't add `// ignore:`.
 
-Each feature follows this internal structure:
+## Code rules
 
-- `application/` - Services, use cases, business logic
-- `domain/` - Models (with `@MappableClass()`)
-- `presentation/` - Views, widgets, and state management (Bloc/Provider)
-- `data/` - Repositories, remote/local data sources
+- Feature-first layers (`application/`, `domain/`, `data/`, `presentation/`);
+  shared code in `lib/core/`. Details: [architecture](.agents/references/architecture.md).
+- State: one Cubit per concern, sealed states, `Loading` → outcome,
+  services injected, no Supabase imports in cubits. Details: [cubit](.agents/references/cubit.md).
+- Repositories return `Either<Failure, T>`; entities immutable with
+  `copyWith`/`from` (returns `null` on bad input).
+- Displayed text via `AppLocalizations` (`lib/l10n/*.arb`) — never hardcode.
+- Name things: `*View`, `*Widget`, `*Cubit`, `*State`, `*Usecase`,
+  `*Entity`, `*Repository`, `*Service`, `*ServiceLocator`; files `snake_case`.
+- Async: `await` in async fns; sync callbacks go `async`+`await` or
+  `unawaited()` for fire-and-forget. Catches: `on Object catch` (never bare
+  `catch`, never narrow silently).
 
-## Naming Conventions
+## Error handling — never fake data
 
-| Type | Convention | Example |
-| --- | --- | --- |
-| Views (pages) | `*View` | `HomeView`, `CalendarView` |
-| Widgets (reusable) | `*Widget` | `TicketCardWidget` |
-| Interfaces | `I*` prefix | `ILogger`, `ITicketDAO` |
-| Services | `*Service` | `ImportService`, `PDFService` |
-| State managers | `*Bloc` / `*Provider` | `LoginBloc`, `ThemeProvider`, `CalendarProvider` |
-| Routes | `*Route` | `AppRoute`, `LoginRoute` |
-| Models | `*Model` | `TNSTCTicketModel`, `EventModel` |
-| Files | snake_case | `home_view.dart`, `locator.dart` |
-| Classes | PascalCase | `TravelParserService` |
-| Enums | PascalCase | `TicketType`, `AppRoute` |
-
-## Error Handling
-
-### CRITICAL: Never Fall Back to Default Values
-
-- **Never use fallback/default values** when parsing fails
-- **Always return `null`** if parsing, extraction, or validation fails
-- **Never silently substitute** with current date, empty strings,
-  or placeholder values
-- **Explicit failure is better than implicit incorrect data**
+- **Never fall back to defaults** on parse/validation failure: return `null`.
+  No silent `DateTime.now()`, `''`, or placeholders. Explicit failure beats
+  wrong data.
 
 ## Testing
 
-- Unit tests: Parser logic, service methods
-- Widget tests: Provider state, UI interactions
+New code ships with tests: cubit state sequences (incl. cancel + failure),
+unit tests for use-case/entity branches (coverage gate), widget tests for
+button wiring. Throwaway repro tests go in `/tmp`, not `test/`. Details:
+[testing](.agents/references/testing.md).
+
+## Supabase & git
+
+Backend + edge functions: [supabase](.agents/references/supabase.md);
+function docs live in `README.md`. Never expose service-role keys.
+Commit/push/PR only when explicitly asked.
