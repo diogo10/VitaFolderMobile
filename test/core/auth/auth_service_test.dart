@@ -18,6 +18,8 @@ class _MockUserResponse extends Mock implements UserResponse {}
 
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
 
+class _MockFunctionsClient extends Mock implements FunctionsClient {}
+
 /// Fake postgrest filter builder that resolves the configured rows
 /// (or throws the configured error) when awaited. Avoids stubbing
 /// `Future.then` on a mock, which mocktail does not support.
@@ -619,6 +621,94 @@ void main() {
       _stubSelectError(supabase: supabase, error: Exception('Network error'));
 
       expect(await build().getProfileName(), isNull);
+    });
+  });
+
+  group('AuthService.deleteAccount', () {
+    late _MockFunctionsClient functions;
+
+    setUp(() {
+      functions = _MockFunctionsClient();
+      when(() => supabase.functions).thenReturn(functions);
+    });
+
+    void stubInvokeSuccess() {
+      when(() => functions.invoke(any())).thenAnswer(
+        (_) async => const FunctionResponse(
+          data: {'success': true},
+          status: 200,
+        ),
+      );
+    }
+
+    test('invokes the delete-account edge function when signed in', () async {
+      when(() => auth.currentUser).thenReturn(_user());
+      stubInvokeSuccess();
+
+      await build().deleteAccount();
+
+      verify(() => functions.invoke('delete-account')).called(1);
+    });
+
+    test('throws AuthException without invoking when not signed in', () async {
+      when(() => auth.currentUser).thenReturn(null);
+
+      expect(
+        () => build().deleteAccount(),
+        throwsA(
+          isA<AuthException>().having(
+            (e) => e.message,
+            'message',
+            'Not signed in.',
+          ),
+        ),
+      );
+      verifyNever(() => functions.invoke(any()));
+    });
+
+    test('maps a 409 sole_owner response to SoleOwnerException', () async {
+      when(() => auth.currentUser).thenReturn(_user());
+      when(() => functions.invoke(any())).thenThrow(
+        const FunctionException(
+          status: 409,
+          details: {'code': 'sole_owner', 'family_id': 'family-1'},
+        ),
+      );
+
+      expect(
+        () => build().deleteAccount(),
+        throwsA(
+          isA<SoleOwnerException>().having(
+            (e) => e.familyId,
+            'familyId',
+            'family-1',
+          ),
+        ),
+      );
+    });
+
+    test('maps server failures to DeleteAccountException', () async {
+      when(() => auth.currentUser).thenReturn(_user());
+      when(() => functions.invoke(any())).thenThrow(
+        const FunctionException(
+          status: 500,
+          details: {'code': 'delete_failed'},
+        ),
+      );
+
+      expect(
+        () => build().deleteAccount(),
+        throwsA(isA<DeleteAccountException>()),
+      );
+    });
+
+    test('maps 401 to AuthException', () async {
+      when(() => auth.currentUser).thenReturn(_user());
+      when(() => functions.invoke(any())).thenThrow(
+        const FunctionException(status: 401, details: {'code': 'unauthorized'}),
+      );
+
+      expect(() => build().deleteAccount(), throwsA(isA<AuthException>()));
     });
   });
 

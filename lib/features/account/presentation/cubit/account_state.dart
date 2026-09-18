@@ -50,3 +50,18 @@ class PasswordResetError extends AccountState {
 class AccountLoginSuccess extends AccountState {
   AccountLoginSuccess();
 }
+
+class AccountDeleting extends AccountState {
+  AccountDeleting();
+}
+
+class AccountDeletedSuccess extends AccountState {
+  AccountDeletedSuccess();
+}
+
+enum AccountDeleteErrorCode { soleOwner, sendFailed }
+
+class AccountDeleteFailed extends AccountState {
+  final AccountDeleteErrorCode code;
+  AccountDeleteFailed({required this.code});
+}

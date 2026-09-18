@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "140355243144-e5v8co3dej28784h2g0gcchsuod8vdm5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.housemira.app",
+            "certificate_hash": "b8cf471f4eb123ec4c46c4c49d92e854dbc3f373"
+          }
+        },
+        {
           "client_id": "140355243144-q85g6alo5injsn28tiuotoqvmbckrql8.apps.googleusercontent.com",
           "client_type": 3
         }

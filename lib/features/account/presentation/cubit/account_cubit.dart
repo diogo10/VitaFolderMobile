@@ -78,6 +78,31 @@ class AccountCubit extends Cubit<AccountState> {
     }
   }
 
+  /// Permanently deletes the current user's account.
+  ///
+  /// Delegates the server-side deletion to [AuthService.deleteAccount]
+  /// (edge function + cascade), then signs out locally so the router
+  /// reacts to the auth state change like a regular sign-out.
+  /// Emits [AccountDeleteFailed] with `soleOwner` when the user is the
+  /// last remaining member of an owned family — nothing is deleted and
+  /// the UI should point them at Family Settings. After a failure the
+  /// account is reloaded so the user lands back on their settings.
+  Future<void> deleteAccount() async {
+    emit(AccountDeleting());
+
+    try {
+      await _authService.deleteAccount();
+      await _authService.signOut();
+      emit(AccountDeletedSuccess());
+    } on SoleOwnerException {
+      emit(AccountDeleteFailed(code: AccountDeleteErrorCode.soleOwner));
+      await loadAccount();
+    } catch (_) {
+      emit(AccountDeleteFailed(code: AccountDeleteErrorCode.sendFailed));
+      await loadAccount();
+    }
+  }
+
   Future<void> forgotPassword(String email) async {
     if (email.trim().isEmpty) {
       emit(PasswordResetError(code: PasswordResetErrorCode.emptyEmail));

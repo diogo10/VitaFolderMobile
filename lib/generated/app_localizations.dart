@@ -905,6 +905,60 @@ abstract class AppLocalizations {
   /// **'Log out of this device'**
   String get accountSettingsSignOutSubtitle;
 
+  /// No description provided for @accountSettingsDangerSection.
+  ///
+  /// In en, this message translates to:
+  /// **'DANGER ZONE'**
+  String get accountSettingsDangerSection;
+
+  /// No description provided for @accountSettingsDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get accountSettingsDeleteAccount;
+
+  /// No description provided for @accountSettingsDeleteAccountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently remove your account'**
+  String get accountSettingsDeleteAccountSubtitle;
+
+  /// No description provided for @accountDeleteDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account?'**
+  String get accountDeleteDialogTitle;
+
+  /// No description provided for @accountDeleteDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be undone. Your profile, family memberships and login will be permanently removed. Your family\'s shared data stays with the other members.'**
+  String get accountDeleteDialogMessage;
+
+  /// No description provided for @accountDeleteDialogConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get accountDeleteDialogConfirm;
+
+  /// No description provided for @accountDeletedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted.'**
+  String get accountDeletedSuccess;
+
+  /// No description provided for @accountDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not delete your account. Please try again.'**
+  String get accountDeleteFailed;
+
+  /// No description provided for @accountDeleteSoleOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'You are the last owner of your family circle. Transfer ownership or delete the circle in Family Settings first.'**
+  String get accountDeleteSoleOwner;
+
   /// No description provided for @notificationSettingsTitle.
   ///
   /// In en, this message translates to:

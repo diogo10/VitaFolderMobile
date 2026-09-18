@@ -450,6 +450,37 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountSettingsSignOutSubtitle => 'Sair deste dispositivo';
 
   @override
+  String get accountSettingsDangerSection => 'ZONA DE PERIGO';
+
+  @override
+  String get accountSettingsDeleteAccount => 'Excluir Conta';
+
+  @override
+  String get accountSettingsDeleteAccountSubtitle =>
+      'Remover sua conta permanentemente';
+
+  @override
+  String get accountDeleteDialogTitle => 'Excluir conta?';
+
+  @override
+  String get accountDeleteDialogMessage =>
+      'Isso não pode ser desfeito. Seu perfil, vínculos familiares e login serão removidos permanentemente. Os dados compartilhados da família permanecem com os outros membros.';
+
+  @override
+  String get accountDeleteDialogConfirm => 'Excluir';
+
+  @override
+  String get accountDeletedSuccess => 'Sua conta foi excluída.';
+
+  @override
+  String get accountDeleteFailed =>
+      'Não foi possível excluir sua conta. Tente novamente.';
+
+  @override
+  String get accountDeleteSoleOwner =>
+      'Você é o último responsável pelo seu círculo familiar. Transfira a responsabilidade ou exclua o círculo nas Configurações da Família primeiro.';
+
+  @override
   String get notificationSettingsTitle => 'Configurações de Notificação';
 
   @override

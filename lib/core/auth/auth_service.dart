@@ -6,6 +6,18 @@ import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+class SoleOwnerException implements Exception {
+  SoleOwnerException({this.familyId});
+
+  final String? familyId;
+}
+
+/// Thrown when the `delete-account` edge function reports that the
+/// account could not be deleted on the server side.
+class DeleteAccountException extends AuthException {
+  DeleteAccountException(super.message);
+}
+
 class AuthService {
   AuthService({
     required SupabaseClient supabaseClient,
@@ -118,6 +130,51 @@ class AuthService {
   Future<void> signOut() async {
     await _googleHandler.signOut();
     await _client.auth.signOut();
+  }
+
+  /// Permanently deletes the current user's account.
+  ///
+  /// Invokes the `delete-account` edge function, which verifies the
+  /// caller's JWT server-side and deletes the auth user with admin
+  /// privileges. Postgres `ON DELETE CASCADE` then removes the
+  /// `profiles` row, `family_memberships` rows and notification rows,
+  /// while the shared `families` row is left intact.
+  ///
+  /// Throws [SoleOwnerException] when the user is the last remaining
+  /// member of an owned family (nothing is deleted), or
+  /// [DeleteAccountException] when the server reports a failure.
+  /// Endpoint: `POST /functions/v1/delete-account` on the linked project
+  /// (VitaFolderMobileBackend). The client resolves the full URL from
+  /// `Supabase.initialize`; the caller JWT is attached automatically and
+  /// the uid is taken from the verified token server-side, never the body.
+  Future<void> deleteAccount() async {
+    if (currentUserId == null) {
+      throw AuthException('Not signed in.');
+    }
+    try {
+      await _client.functions.invoke(
+        'delete-account',
+        method: HttpMethod.post,
+      );
+    } on FunctionException catch (e) {
+      throw _mapFunctionException(e);
+    }
+  }
+
+  Exception _mapFunctionException(FunctionException e) {
+    final details = e.details;
+    if (e.status == 409 && details is Map && details['code'] == 'sole_owner') {
+      final familyId = details['family_id'];
+      return SoleOwnerException(
+        familyId: familyId is String ? familyId : null,
+      );
+    }
+    if (e.status == 401) {
+      return AuthException('Not signed in.');
+    }
+    return DeleteAccountException(
+      'Account deletion failed (status ${e.status}).',
+    );
   }
 
   // https://supabase.com/docs/guides/auth/passwords?queryGroups=language&language=dart#resetting-a-password

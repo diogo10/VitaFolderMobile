@@ -109,12 +109,12 @@ void main() {
       when(
         () => functions.invoke(any(), body: any(named: 'body')),
       ).thenThrow(
-        const FunctionsRelayException(status: 502, reasonPhrase: 'relay down'),
+        const FunctionException(status: 502, reasonPhrase: 'relay down'),
       );
 
       expect(
         () => build().sendEmail(to: 'a@b.c', subject: 'Invite'),
-        throwsA(isA<FunctionsRelayException>()),
+        throwsA(isA<FunctionException>()),
       );
     });
   });

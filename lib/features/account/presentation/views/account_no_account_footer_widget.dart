@@ -10,8 +10,10 @@ class AccountNoAccountFooterWidget extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        runSpacing: 8,
         children: [
           _AccountNoAccountTrustItem(
             icon: Icons.shield_outlined,

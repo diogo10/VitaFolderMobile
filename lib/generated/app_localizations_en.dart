@@ -441,6 +441,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSettingsSignOutSubtitle => 'Log out of this device';
 
   @override
+  String get accountSettingsDangerSection => 'DANGER ZONE';
+
+  @override
+  String get accountSettingsDeleteAccount => 'Delete Account';
+
+  @override
+  String get accountSettingsDeleteAccountSubtitle =>
+      'Permanently remove your account';
+
+  @override
+  String get accountDeleteDialogTitle => 'Delete account?';
+
+  @override
+  String get accountDeleteDialogMessage =>
+      'This cannot be undone. Your profile, family memberships and login will be permanently removed. Your family\'s shared data stays with the other members.';
+
+  @override
+  String get accountDeleteDialogConfirm => 'Delete';
+
+  @override
+  String get accountDeletedSuccess => 'Your account has been deleted.';
+
+  @override
+  String get accountDeleteFailed =>
+      'We could not delete your account. Please try again.';
+
+  @override
+  String get accountDeleteSoleOwner =>
+      'You are the last owner of your family circle. Transfer ownership or delete the circle in Family Settings first.';
+
+  @override
   String get notificationSettingsTitle => 'Notification Settings';
 
   @override

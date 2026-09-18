@@ -86,9 +86,50 @@ class AccountSettingsWidget extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 24),
+          _AccountSettingsSection(
+            title: l.accountSettingsDangerSection,
+            items: [
+              _AccountSettingsItemData(
+                icon: Icons.delete_forever_rounded,
+                title: l.accountSettingsDeleteAccount,
+                subtitle: l.accountSettingsDeleteAccountSubtitle,
+                accent: true,
+                onTap: () => _confirmDeleteAccount(context),
+              ),
+            ],
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.accountDeleteDialogTitle),
+        content: Text(l.accountDeleteDialogMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            child: Text(l.accountDeleteDialogConfirm),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      context.read<AccountCubit>().deleteAccount();
+    }
   }
 }
 

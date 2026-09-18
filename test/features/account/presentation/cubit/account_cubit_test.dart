@@ -22,7 +22,10 @@ class _FakeAuthService extends AuthService {
   Object? signInError;
   Object? signOutError;
   Object? resetError;
+  Object? deleteError;
   int signInCalls = 0;
+  int deleteCalls = 0;
+  int signOutCalls = 0;
 
   _FakeAuthService({
     this.stubUser,
@@ -31,6 +34,7 @@ class _FakeAuthService extends AuthService {
     this.signInError,
     this.signOutError,
     this.resetError,
+    this.deleteError,
     SupabaseClient? supabaseClient,
     IGoogleSignInHandler? googleSignInHandler,
   }) : super(
@@ -55,7 +59,14 @@ class _FakeAuthService extends AuthService {
 
   @override
   Future<void> signOut() async {
+    signOutCalls++;
     if (signOutError != null) throw signOutError!;
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    deleteCalls++;
+    if (deleteError != null) throw deleteError!;
   }
 
   @override
@@ -309,6 +320,62 @@ void main() {
       ),
       act: (cubit) => cubit.signIn('user@example.com', 'password123'),
       expect: () => [isA<NoAccount>()],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'deleteAccount emits deleting then deleted success',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(),
+        peopleRepository: _FakePeopleRepository(),
+      ),
+      act: (cubit) => cubit.deleteAccount(),
+      expect: () => [isA<AccountDeleting>(), isA<AccountDeletedSuccess>()],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'deleteAccount emits soleOwner failure then reloads the account',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubPerson: _testPerson(),
+          deleteError: SoleOwnerException(familyId: 'family-1'),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+      ),
+      act: (cubit) => cubit.deleteAccount(),
+      expect: () => [
+        isA<AccountDeleting>(),
+        isA<AccountDeleteFailed>().having(
+          (e) => e.code,
+          'code',
+          AccountDeleteErrorCode.soleOwner,
+        ),
+        isA<AccountLoading>(),
+        isA<AccountLoaded>(),
+      ],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'deleteAccount emits sendFailed failure then reloads the account',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubPerson: _testPerson(),
+          deleteError: Exception('boom'),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+      ),
+      act: (cubit) => cubit.deleteAccount(),
+      expect: () => [
+        isA<AccountDeleting>(),
+        isA<AccountDeleteFailed>().having(
+          (e) => e.code,
+          'code',
+          AccountDeleteErrorCode.sendFailed,
+        ),
+        isA<AccountLoading>(),
+        isA<AccountLoaded>(),
+      ],
     );
   });
 }

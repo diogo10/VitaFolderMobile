@@ -45,6 +45,24 @@ class _AccountViewState extends State<AccountView> {
           _refreshAllTabs();
         }
 
+        if (state is AccountDeletedSuccess) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l.accountDeletedSuccess)));
+
+          _refreshAllTabs();
+        }
+
+        if (state is AccountDeleteFailed) {
+          final message = switch (state.code) {
+            AccountDeleteErrorCode.soleOwner => l.accountDeleteSoleOwner,
+            AccountDeleteErrorCode.sendFailed => l.accountDeleteFailed,
+          };
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
+        }
+
         if (state is AccountLoginSuccess) {
           _refreshAllTabs();
         }
@@ -73,12 +91,15 @@ class _AccountViewState extends State<AccountView> {
         }
       },
       builder: (context, state) {
-        if (state is AccountLoading) {
+        if (state is AccountLoading ||
+            state is AccountDeleting ||
+            state is AccountDeleteFailed) {
           return const Center(child: CircularProgressIndicator());
         }
 
         if (state is NoAccount ||
             state is AccountLogoutSuccess ||
+            state is AccountDeletedSuccess ||
             state is LoginFailed ||
             state is PasswordResetSent ||
             state is PasswordResetError) {
