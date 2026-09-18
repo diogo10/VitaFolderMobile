@@ -6,13 +6,13 @@ import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.da
 import 'package:house_mira/features/home/presentation/cubit/home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
-  final GetHomeDataUsecase getHomeDataUsecase;
-  final HasRemindersUsecase hasRemindersUsecase;
 
   HomeCubit({
     required this.getHomeDataUsecase,
     required this.hasRemindersUsecase,
   }) : super(const HomeInitial());
+  final GetHomeDataUsecase getHomeDataUsecase;
+  final HasRemindersUsecase hasRemindersUsecase;
 
   Future<void> getHomeData({bool isRefresh = false}) async {
     if (!isRefresh) {

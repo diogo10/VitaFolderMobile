@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/core/widgets/sand/google_g_icon.dart';
 import 'package:house_mira/features/login/presentation/cubit/sign_up_cubit.dart';
 import 'package:house_mira/features/login/presentation/views/sign_up_screen.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
@@ -37,7 +37,7 @@ class _FakeAuthService extends AuthService {
     lastSignUpPassword = password;
     lastSignUpName = name;
     if (!shouldSucceed) {
-      throw AuthException('Sign up failed');
+      throw const AuthException('Sign up failed');
     }
     return User.fromJson({'id': 'u1', 'email': email});
   }
@@ -100,7 +100,8 @@ void main() {
       );
       expect(
         find.text(
-          'Create your account and invite your family members to start collaborating today.',
+          'Create your account and invite your family members to start '
+          'collaborating today.',
         ),
         findsOneWidget,
       );
@@ -117,7 +118,8 @@ void main() {
       expect(find.text('Create a strong password'), findsOneWidget);
       expect(
         find.text(
-          'Must be at least 8 characters long with a mix of letters and numbers.',
+          'Must be at least 8 characters long with a mix of letters '
+          'and numbers.',
         ),
         findsOneWidget,
       );

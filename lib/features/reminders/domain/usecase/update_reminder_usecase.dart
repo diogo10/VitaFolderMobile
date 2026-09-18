@@ -4,11 +4,11 @@ import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 
 class UpdateReminderUsecase {
-  final ReminderRepository repository;
 
   UpdateReminderUsecase({required this.repository});
+  final ReminderRepository repository;
 
   Future<Either<Failure, bool>> call(ReminderModel reminder) async {
-    return await repository.updateReminder(reminder);
+    return repository.updateReminder(reminder);
   }
 }

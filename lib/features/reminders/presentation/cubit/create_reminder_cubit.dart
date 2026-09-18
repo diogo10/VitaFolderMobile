@@ -9,10 +9,6 @@ import 'package:house_mira/features/reminders/domain/usecase/update_reminder_use
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_state.dart';
 
 class CreateReminderCubit extends Cubit<CreateReminderState> {
-  final CreateReminderUsecase _createReminderUsecase;
-  final UpdateReminderUsecase _updateReminderUsecase;
-  final AuthService authService;
-  final PeopleRepository _peopleRepository;
 
   CreateReminderCubit({
     required CreateReminderUsecase createReminderUsecase,
@@ -23,6 +19,10 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
        _updateReminderUsecase = updateReminderUsecase,
        _peopleRepository = peopleRepository,
        super(CreateReminderInitial());
+  final CreateReminderUsecase _createReminderUsecase;
+  final UpdateReminderUsecase _updateReminderUsecase;
+  final AuthService authService;
+  final PeopleRepository _peopleRepository;
 
   Future<void> createReminder({
     required String title,

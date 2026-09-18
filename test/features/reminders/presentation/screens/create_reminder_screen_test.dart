@@ -5,23 +5,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/domain/usecase/update_reminder_usecase.dart';
-import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
-import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/screens/create_reminder_screen.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _FakeAuthService extends Mock implements AuthService {
   @override
@@ -100,7 +100,6 @@ class _FakeNotificationService implements IReminderNotificationService {
         reminderId: reminderId,
         enabled: enabled,
         leadTime: leadTime,
-        dueDate: dueDate,
       ),
     );
     stored[reminderId] = ReminderNotificationPrefs(
@@ -117,17 +116,14 @@ class _FakeNotificationService implements IReminderNotificationService {
 }
 
 class ScheduledCall {
-  final String reminderId;
-  final bool enabled;
-  final ReminderLeadTime leadTime;
-  final DateTime? dueDate;
-
   ScheduledCall({
     required this.reminderId,
     required this.enabled,
     required this.leadTime,
-    required this.dueDate,
   });
+  final String reminderId;
+  final bool enabled;
+  final ReminderLeadTime leadTime;
 }
 
 void main() {
@@ -148,7 +144,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(
-      ReminderModel(
+      const ReminderModel(
         title: '',
         body: '',
         id: '',
@@ -162,7 +158,7 @@ void main() {
     );
   });
 
-  final reminder = ReminderEntity(
+  const reminder = ReminderEntity(
     id: '1',
     title: 'Test Title',
     body: 'Test Body',
@@ -175,9 +171,9 @@ void main() {
   );
 
   MultiBlocProvider buildProviders({
+    required Widget child,
     ReminderEntity? reminder,
     IReminderNotificationService? notificationService,
-    required Widget child,
   }) {
     return MultiBlocProvider(
       providers: [
@@ -222,8 +218,8 @@ void main() {
   }
 
   GoRouter buildTestRouter({
-    ReminderEntity? reminder,
     required IReminderNotificationService notificationService,
+    ReminderEntity? reminder,
   }) {
     return GoRouter(
       initialLocation: '/',
@@ -281,7 +277,7 @@ void main() {
         () => updateReminderUsecase.call(any()),
       ).thenAnswer((_) => completer.future);
       addTearDown(() {
-        if (!completer.isCompleted) completer.complete(Right(true));
+        if (!completer.isCompleted) completer.complete(const Right(true));
       });
 
       await tester.pumpWidget(pumpApp(reminder: reminder));
@@ -429,7 +425,7 @@ void main() {
       final service = _FakeNotificationService();
       when(
         () => createReminderUsecase.call(any(), any()),
-      ).thenAnswer((_) async => Right('new-id'));
+      ).thenAnswer((_) async => const Right('new-id'));
       when(
         () => peopleRepository.getMyFamilyRole(),
       ).thenAnswer((_) async => <String>[]);
@@ -438,13 +434,13 @@ void main() {
       ).thenAnswer((_) async => ['fam-1']);
       when(
         () => getReminderUsecase.call(any(), type: any(named: 'type')),
-      ).thenAnswer((_) async => Right([]));
+      ).thenAnswer((_) async => const Right([]));
 
       final testRouter = buildTestRouter(notificationService: service);
       await tester.pumpWidget(pumpRouter(testRouter));
       await tester.pumpAndSettle();
 
-      testRouter.push('/create');
+      unawaited(testRouter.push('/create'));
       await tester.pumpAndSettle();
       final l = AppLocalizations.of(
         tester.element(find.byType(CreateReminderScreen)),
@@ -477,7 +473,7 @@ void main() {
       final service = _FakeNotificationService()..systemGranted = false;
       when(
         () => createReminderUsecase.call(any(), any()),
-      ).thenAnswer((_) async => Right('new-id'));
+      ).thenAnswer((_) async => const Right('new-id'));
       when(
         () => peopleRepository.getMyFamilyRole(),
       ).thenAnswer((_) async => <String>[]);
@@ -486,13 +482,13 @@ void main() {
       ).thenAnswer((_) async => ['fam-1']);
       when(
         () => getReminderUsecase.call(any(), type: any(named: 'type')),
-      ).thenAnswer((_) async => Right([]));
+      ).thenAnswer((_) async => const Right([]));
 
       final testRouter = buildTestRouter(notificationService: service);
       await tester.pumpWidget(pumpRouter(testRouter));
       await tester.pumpAndSettle();
 
-      testRouter.push('/create');
+      unawaited(testRouter.push('/create'));
       await tester.pumpAndSettle();
       final l = AppLocalizations.of(
         tester.element(find.byType(CreateReminderScreen)),

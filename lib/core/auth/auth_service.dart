@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:house_mira/core/auth/auth_state_notifier.dart'
+    show AuthStateNotifier;
 import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -56,7 +58,7 @@ class AuthService {
     );
 
     if (response.user == null) {
-      throw AuthException('An unexpected error occurred.');
+      throw const AuthException('An unexpected error occurred.');
     }
 
     if (response.user != null && response.user!.email == null) {
@@ -69,12 +71,12 @@ class AuthService {
 
   Future<void> _updateUser(String name, String email) async {
     try {
-      String userId = currentUser?.id ?? "";
+      final userId = currentUser?.id ?? '';
       await _client
           .from('profiles')
           .update({'full_name': name, 'email': email})
           .eq('id', userId);
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error creating family: $e');
     }
   }
@@ -86,7 +88,7 @@ class AuthService {
     );
 
     if (response.user == null) {
-      throw AuthException('Invalid email or password.');
+      throw const AuthException('Invalid email or password.');
     }
   }
 
@@ -117,7 +119,7 @@ class AuthService {
     );
 
     if (response.user == null) {
-      throw AuthException('An unexpected error occurred.');
+      throw const AuthException('An unexpected error occurred.');
     }
 
     return response.user;
@@ -149,12 +151,11 @@ class AuthService {
   /// the uid is taken from the verified token server-side, never the body.
   Future<void> deleteAccount() async {
     if (currentUserId == null) {
-      throw AuthException('Not signed in.');
+      throw const AuthException('Not signed in.');
     }
     try {
       await _client.functions.invoke(
         'delete-account',
-        method: HttpMethod.post,
       );
     } on FunctionException catch (e) {
       throw _mapFunctionException(e);
@@ -170,7 +171,7 @@ class AuthService {
       );
     }
     if (e.status == 401) {
-      return AuthException('Not signed in.');
+      return const AuthException('Not signed in.');
     }
     return DeleteAccountException(
       'Account deletion failed (status ${e.status}).',
@@ -181,14 +182,14 @@ class AuthService {
   Future<void> resetPassword(String email) async {
     await _client.auth.resetPasswordForEmail(
       email.trim(),
-      redirectTo: "http://example.com/account/update-password",
+      redirectTo: 'http://example.com/account/update-password',
     );
   }
 
   Future<void> updateName(String name) async {
     final userId = currentUserId;
     if (userId == null) {
-      throw AuthException('Not signed in.');
+      throw const AuthException('Not signed in.');
     }
     await _client.from('profiles').update({'full_name': name}).eq('id', userId);
     await _client.auth.updateUser(
@@ -208,7 +209,7 @@ class AuthService {
           .eq('id', userId);
 
       return response.single['full_name'] as String?;
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error getting the family: $e');
       return null;
     }
@@ -216,11 +217,11 @@ class AuthService {
 
   Future<PersonEntity?> getAsPersonEntity() async {
     try {
-      final userId = currentUser?.id ?? "";
+      final userId = currentUser?.id ?? '';
       final response = await _client.from('profiles').select().eq('id', userId);
 
       return PersonEntity.from(response.single);
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error: $e');
       return null;
     }

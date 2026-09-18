@@ -9,16 +9,15 @@ import 'package:house_mira/theme/sand_palette.dart';
 /// [SandPalette.sand700] title, trailing spacer (56px) for optical centering
 /// unless a [trailing] action is provided.
 class SandHeader extends StatelessWidget {
-  final String title;
-  final Widget? trailing;
-  final VoidCallback? onBack;
 
   const SandHeader({
-    super.key,
-    required this.title,
+    required this.title, super.key,
     this.trailing,
     this.onBack,
   });
+  final String title;
+  final Widget? trailing;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {

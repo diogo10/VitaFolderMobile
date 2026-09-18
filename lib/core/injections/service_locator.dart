@@ -3,56 +3,51 @@ import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:house_mira/core/injections/account/account_service_locator.dart';
 import 'package:house_mira/core/injections/home/home_service_locator.dart';
 import 'package:house_mira/core/injections/people/people_service_locator.dart';
 import 'package:house_mira/core/injections/reminders/reminder_service_locator.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final GetIt slInstance = GetIt.instance;
 
 class ServiceLocator {
   Future<void> init() async {
-    slInstance.registerSingleton<AnalyticsService>(
-      AnalyticsService(),
-      instanceName: 'analyticsService',
-    );
+    slInstance
+      ..registerSingleton<AnalyticsService>(
+        AnalyticsService(),
+        instanceName: 'analyticsService',
+      )
+      ..registerSingleton<AuthService>(
+        AuthService(
+          supabaseClient: Supabase.instance.client,
+          googleSignInHandler: GoogleSignInHandler(),
+        ),
+        instanceName: 'authService',
+      )
+      ..registerSingleton<EdgetFunctions>(
+        EdgetFunctions(),
+        instanceName: 'edgetFunctions',
+      )
+      ..registerSingleton<OnboardingLocalDatasource>(
+        OnboardingLocalDatasource(),
+        instanceName: 'onboardingLocalDatasource',
+      )
+      ..registerSingleton<LocalStorageDatasource>(
+        LocalStorageDatasource(),
+        instanceName: 'localStorageDatasource',
+      );
 
-    slInstance.registerSingleton<AuthService>(
-      AuthService(
-        supabaseClient: Supabase.instance.client,
-        googleSignInHandler: GoogleSignInHandler(),
-      ),
-      instanceName: 'authService',
-    );
+    PeopleServiceLocator(slInstance).init();
 
-    slInstance.registerSingleton<EdgetFunctions>(
-      EdgetFunctions(),
-      instanceName: 'edgetFunctions',
-    );
+    ReminderServiceLocator(slInstance).init();
 
-    slInstance.registerSingleton<OnboardingLocalDatasource>(
-      OnboardingLocalDatasource(),
-      instanceName: 'onboardingLocalDatasource',
-    );
+    HomeServiceLocator(
+      slInstance,
+    ).init(slInstance(instanceName: 'authService'));
 
-    slInstance.registerSingleton<LocalStorageDatasource>(
-      LocalStorageDatasource(),
-      instanceName: 'localStorageDatasource',
-    );
-
-    final peopleServiceLocator = PeopleServiceLocator(slInstance);
-    peopleServiceLocator.init();
-
-    final reminderServiceLocator = ReminderServiceLocator(slInstance);
-    reminderServiceLocator.init();
-
-    final homeServiceLocator = HomeServiceLocator(slInstance);
-    homeServiceLocator.init(slInstance(instanceName: 'authService'));
-
-    final accountServiceLocator = AccountServiceLocator(slInstance);
-    accountServiceLocator.init();
+    AccountServiceLocator(slInstance).init();
   }
 }

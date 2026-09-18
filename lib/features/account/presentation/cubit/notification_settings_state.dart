@@ -9,13 +9,13 @@ class NotificationSettingsLoading extends NotificationSettingsState {
 enum NotificationPermissionDenied { denied, permanentlyDenied }
 
 class NotificationSettingsLoaded extends NotificationSettingsState {
-  final bool notificationsEnabled;
-  final NotificationPermissionDenied? permissionDenied;
 
   NotificationSettingsLoaded({
     required this.notificationsEnabled,
     this.permissionDenied,
   });
+  final bool notificationsEnabled;
+  final NotificationPermissionDenied? permissionDenied;
 }
 
 class NotificationSettingsError extends NotificationSettingsState {

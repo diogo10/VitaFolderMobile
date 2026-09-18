@@ -1,9 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/features/people/presentation/cubit/invite_people_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/invite_people_state.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _MockEdgetFunctions extends Mock implements EdgetFunctions {}
 
@@ -28,7 +28,7 @@ void main() {
           to: any(named: 'to'),
           subject: any(named: 'subject'),
         ),
-      ).thenAnswer((_) async => result as bool);
+      ).thenAnswer((_) async => result! as bool);
     }
     return Future.value();
   }

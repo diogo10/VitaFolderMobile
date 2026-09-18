@@ -34,11 +34,9 @@ class HomeEmptyRemindersWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: context.colorScheme.onSurface.withValues(alpha: 0.12),
-              width: 1,
             ),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 width: 64,

@@ -14,81 +14,78 @@ import 'package:house_mira/features/people/presentation/cubit/invite_people_cubi
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 
 class PeopleServiceLocator {
-  final GetIt sl;
   PeopleServiceLocator(this.sl);
+  final GetIt sl;
 
   void init() {
-    sl.registerSingleton<PeopleRepository>(
-      PeopleRepositoryImpl(
-        authService: sl<AuthService>(instanceName: 'authService'),
-      ),
-      instanceName: 'peopleRepositoryImpl',
-    );
-
-    sl.registerSingleton<GetPeopleUsecase>(
-      GetPeopleUsecase(repository: sl(instanceName: 'peopleRepositoryImpl')),
-      instanceName: 'getPeopleUsecase',
-    );
-
-    sl.registerSingleton<GetMyFamilyIdUsecase>(
-      GetMyFamilyIdUsecase(
-        repository: sl(instanceName: 'peopleRepositoryImpl'),
-      ),
-      instanceName: 'getMyFamilyIdUsecase',
-    );
-
-    sl.registerSingleton<CreateFamilyUsecase>(
-      CreateFamilyUsecase(repository: sl(instanceName: 'peopleRepositoryImpl')),
-      instanceName: 'createFamilyUsecase',
-    );
-
-    sl.registerSingleton<JoinFamilyUsecase>(
-      JoinFamilyUsecase(repository: sl(instanceName: 'peopleRepositoryImpl')),
-      instanceName: 'joinFamilyUsecase',
-    );
-
-    sl.registerSingleton<UpdateFamilyNameUsecase>(
-      UpdateFamilyNameUsecase(
-        repository: sl(instanceName: 'peopleRepositoryImpl'),
-      ),
-      instanceName: 'updateFamilyNameUsecase',
-    );
-
-    sl.registerSingleton<RemoveMemberUsecase>(
-      RemoveMemberUsecase(repository: sl(instanceName: 'peopleRepositoryImpl')),
-      instanceName: 'removeMemberUsecase',
-    );
-
-    sl.registerSingleton<DeleteFamilyUsecase>(
-      DeleteFamilyUsecase(repository: sl(instanceName: 'peopleRepositoryImpl')),
-      instanceName: 'deleteFamilyUsecase',
-    );
-
-    sl.registerSingleton<PeopleCubit>(
-      PeopleCubit(
-        getPeopleUsecase: sl(instanceName: 'getPeopleUsecase'),
-        createFamilyUsecase: sl(instanceName: 'createFamilyUsecase'),
-        joinFamilyUsecase: sl(instanceName: 'joinFamilyUsecase'),
-        authService: sl(instanceName: 'authService'),
-      ),
-      instanceName: 'peopleCubit',
-    );
-
-    sl.registerSingleton<FamilySettingsCubit>(
-      FamilySettingsCubit(
-        getPeopleUsecase: sl(instanceName: 'getPeopleUsecase'),
-        getMyFamilyIdUsecase: sl(instanceName: 'getMyFamilyIdUsecase'),
-        updateFamilyNameUsecase: sl(instanceName: 'updateFamilyNameUsecase'),
-        removeMemberUsecase: sl(instanceName: 'removeMemberUsecase'),
-        deleteFamilyUsecase: sl(instanceName: 'deleteFamilyUsecase'),
-        authService: sl(instanceName: 'authService'),
-      ),
-      instanceName: 'familySettingsCubit',
-    );
-
-    sl.registerSingleton<InvitePeopleCubit>(
-      InvitePeopleCubit(edgetFunctions: sl(instanceName: 'edgetFunctions')),
-      instanceName: 'invitePeopleCubit',
-    );
+    sl
+      ..registerSingleton<PeopleRepository>(
+        PeopleRepositoryImpl(
+          authService: sl<AuthService>(instanceName: 'authService'),
+        ),
+        instanceName: 'peopleRepositoryImpl',
+      )
+      ..registerSingleton<GetPeopleUsecase>(
+        GetPeopleUsecase(repository: sl(instanceName: 'peopleRepositoryImpl')),
+        instanceName: 'getPeopleUsecase',
+      )
+      ..registerSingleton<GetMyFamilyIdUsecase>(
+        GetMyFamilyIdUsecase(
+          repository: sl(instanceName: 'peopleRepositoryImpl'),
+        ),
+        instanceName: 'getMyFamilyIdUsecase',
+      )
+      ..registerSingleton<CreateFamilyUsecase>(
+        CreateFamilyUsecase(
+          repository: sl(instanceName: 'peopleRepositoryImpl'),
+        ),
+        instanceName: 'createFamilyUsecase',
+      )
+      ..registerSingleton<JoinFamilyUsecase>(
+        JoinFamilyUsecase(repository: sl(instanceName: 'peopleRepositoryImpl')),
+        instanceName: 'joinFamilyUsecase',
+      )
+      ..registerSingleton<UpdateFamilyNameUsecase>(
+        UpdateFamilyNameUsecase(
+          repository: sl(instanceName: 'peopleRepositoryImpl'),
+        ),
+        instanceName: 'updateFamilyNameUsecase',
+      )
+      ..registerSingleton<RemoveMemberUsecase>(
+        RemoveMemberUsecase(
+          repository: sl(instanceName: 'peopleRepositoryImpl'),
+        ),
+        instanceName: 'removeMemberUsecase',
+      )
+      ..registerSingleton<DeleteFamilyUsecase>(
+        DeleteFamilyUsecase(
+          repository: sl(instanceName: 'peopleRepositoryImpl'),
+        ),
+        instanceName: 'deleteFamilyUsecase',
+      )
+      ..registerSingleton<PeopleCubit>(
+        PeopleCubit(
+          getPeopleUsecase: sl(instanceName: 'getPeopleUsecase'),
+          createFamilyUsecase: sl(instanceName: 'createFamilyUsecase'),
+          joinFamilyUsecase: sl(instanceName: 'joinFamilyUsecase'),
+          authService: sl(instanceName: 'authService'),
+        ),
+        instanceName: 'peopleCubit',
+      )
+      ..registerSingleton<FamilySettingsCubit>(
+        FamilySettingsCubit(
+          getPeopleUsecase: sl(instanceName: 'getPeopleUsecase'),
+          getMyFamilyIdUsecase: sl(instanceName: 'getMyFamilyIdUsecase'),
+          updateFamilyNameUsecase: sl(instanceName: 'updateFamilyNameUsecase'),
+          removeMemberUsecase: sl(instanceName: 'removeMemberUsecase'),
+          deleteFamilyUsecase: sl(instanceName: 'deleteFamilyUsecase'),
+          authService: sl(instanceName: 'authService'),
+        ),
+        instanceName: 'familySettingsCubit',
+      )
+      ..registerSingleton<InvitePeopleCubit>(
+        InvitePeopleCubit(edgetFunctions: sl(instanceName: 'edgetFunctions')),
+        instanceName: 'invitePeopleCubit',
+      );
   }
 }

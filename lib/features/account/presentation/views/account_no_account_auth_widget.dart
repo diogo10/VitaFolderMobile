@@ -8,20 +8,21 @@ import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class AccountNoAccountAuthWidget extends StatelessWidget {
-  final TextEditingController emailController;
-  final TextEditingController passwordController;
-  final VoidCallback onSignIn;
-  final VoidCallback onForgotPassword;
-  final bool isLoading;
-
   const AccountNoAccountAuthWidget({
-    super.key,
     required this.emailController,
     required this.passwordController,
     required this.onSignIn,
+    required this.onGoogleSignIn,
     required this.onForgotPassword,
+    super.key,
     this.isLoading = false,
   });
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final VoidCallback onSignIn;
+  final VoidCallback onGoogleSignIn;
+  final VoidCallback onForgotPassword;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +33,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
         SandSocialButton(
           icon: const GoogleGIcon(),
           label: l.accountNoAccountContinueGoogle,
+          onTap: onGoogleSignIn,
         ),
         const SizedBox(height: 12),
         SandSocialButton(
@@ -104,10 +106,10 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
                 ).textTheme.bodyMedium?.copyWith(color: SandPalette.sand400),
                 children: [
                   TextSpan(text: l.accountNoAccountNewToApp),
-                  TextSpan(text: ' '),
+                  const TextSpan(text: ' '),
                   TextSpan(
                     text: l.accountNoAccountCreateFreeAccount,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: SandPalette.sand600,
                       fontWeight: FontWeight.w600,
                       decoration: TextDecoration.underline,

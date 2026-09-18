@@ -5,14 +5,13 @@ import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.d
 import 'package:house_mira/generated/app_localizations.dart';
 
 class HomeUpcomingRemindersWidget extends StatelessWidget {
-  final List<ReminderEntity> reminders;
-  final VoidCallback? onAddPressed;
 
   const HomeUpcomingRemindersWidget({
-    super.key,
-    required this.reminders,
+    required this.reminders, super.key,
     this.onAddPressed,
   });
+  final List<ReminderEntity> reminders;
+  final VoidCallback? onAddPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -127,8 +126,8 @@ class HomeUpcomingRemindersWidget extends StatelessWidget {
 }
 
 class _ReminderGroup {
-  final String label;
-  final List<ReminderEntity> reminders;
 
   const _ReminderGroup({required this.label, required this.reminders});
+  final String label;
+  final List<ReminderEntity> reminders;
 }

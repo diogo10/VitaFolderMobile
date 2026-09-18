@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class RemindersErrorWidget extends StatelessWidget {
-  final VoidCallback? onRetry;
-
   const RemindersErrorWidget({super.key, this.onRetry});
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +28,9 @@ class RemindersErrorWidget extends StatelessWidget {
           Text(
             l.remindersErrorDescription,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
           if (onRetry != null) ...[

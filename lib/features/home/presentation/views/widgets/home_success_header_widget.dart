@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:house_mira/features/people/presentation/widgets/family_header_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 class HomeSuccessHeaderWidget extends StatelessWidget {
+  const HomeSuccessHeaderWidget({
+    required this.role,
+    required this.familyName,
+    required this.activeMembers,
+    required this.pendingReminders,
+    super.key,
+    this.onNotificationsPressed,
+    this.onProfilePressed,
+  });
   final String role;
   final String familyName;
   final int activeMembers;
   final int pendingReminders;
   final VoidCallback? onNotificationsPressed;
   final VoidCallback? onProfilePressed;
-
-  const HomeSuccessHeaderWidget({
-    super.key,
-    required this.role,
-    required this.familyName,
-    required this.activeMembers,
-    required this.pendingReminders,
-    this.onNotificationsPressed,
-    this.onProfilePressed,
-  });
 
   @override
   Widget build(BuildContext context) {

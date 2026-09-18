@@ -13,7 +13,7 @@ void mockPermissionResponses({
   bool throwOnRequest = false,
 }) {
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMethodCallHandler(_channel, (MethodCall call) async {
+      .setMockMethodCallHandler(_channel, (call) async {
         switch (call.method) {
           case 'checkPermissionStatus':
             return checkStatus;
@@ -96,7 +96,7 @@ void main() {
 
   group('hasNotificationPermission', () {
     test('returns true when granted', () async {
-      mockPermissionResponses(checkStatus: 1);
+      mockPermissionResponses();
 
       expect(await service.hasNotificationPermission(), isTrue);
     });

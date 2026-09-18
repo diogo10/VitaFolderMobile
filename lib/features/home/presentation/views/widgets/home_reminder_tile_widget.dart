@@ -5,9 +5,9 @@ import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.d
 import 'package:house_mira/generated/app_localizations.dart';
 
 class HomeReminderTileWidget extends StatelessWidget {
-  final ReminderEntity reminder;
 
-  const HomeReminderTileWidget({super.key, required this.reminder});
+  const HomeReminderTileWidget({required this.reminder, super.key});
+  final ReminderEntity reminder;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,6 @@ class HomeReminderTileWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: colorScheme.onSurface.withValues(alpha: 0.12),
-          width: 1,
         ),
       ),
       child: Row(

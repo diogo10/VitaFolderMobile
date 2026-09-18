@@ -1,7 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:fpdart/fpdart.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
@@ -12,6 +11,7 @@ import 'package:house_mira/features/reminders/domain/usecase/create_reminder_use
 import 'package:house_mira/features/reminders/domain/usecase/update_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_state.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _FakeAuthService extends Mock implements AuthService {}
 
@@ -38,7 +38,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(
-      ReminderModel(
+      const ReminderModel(
         title: '',
         body: '',
         id: '',
@@ -59,7 +59,7 @@ void main() {
     peopleRepository: peopleRepository,
   );
 
-  final reminder = ReminderEntity(
+  const reminder = ReminderEntity(
     id: '1',
     title: 'Old title',
     body: 'Old body',
@@ -86,7 +86,7 @@ void main() {
         stubFamily('f1');
         when(
           () => createReminderUsecase.call(any(), any()),
-        ).thenAnswer((_) async => Right('new-id'));
+        ).thenAnswer((_) async => const Right('new-id'));
       },
       act: (cubit) => cubit.createReminder(
         title: 'T',
@@ -217,7 +217,7 @@ void main() {
       setUp: () {
         when(
           () => updateReminderUsecase.call(any()),
-        ).thenAnswer((_) async => Right(true));
+        ).thenAnswer((_) async => const Right(true));
       },
       act: (cubit) => cubit.updateReminder(
         reminder: reminder,

@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class OnboardingPageWidget extends StatelessWidget {
+
+  const OnboardingPageWidget({
+    required this.title, required this.subtitle, required this.hero, super.key,
+  });
   final String title;
   final String subtitle;
   final Widget hero;
-
-  const OnboardingPageWidget({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.hero,
-  });
 
   @override
   Widget build(BuildContext context) {

@@ -5,7 +5,8 @@ enum ReminderType {
   reimbursement('reimbursement'),
   birthday('birthday'),
   chores('chores'),
-  custom('custom');
+  custom('custom')
+  ;
 
   const ReminderType(this.value);
 

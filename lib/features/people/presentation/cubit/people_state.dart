@@ -21,10 +21,14 @@ class PeopleInvalidFamilyCode extends PeopleState {
 }
 
 class PeopleLoaded extends PeopleState {
+  PeopleLoaded({
+    required this.people,
+    required this.inviteCode,
+    required this.familyName,
+  });
   List<PersonEntity> people;
   String inviteCode;
   String familyName;
-  PeopleLoaded({required this.people, required this.inviteCode, required this.familyName});
 }
 
 class PeopleError extends PeopleState {

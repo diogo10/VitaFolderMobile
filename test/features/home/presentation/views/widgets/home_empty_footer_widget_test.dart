@@ -4,7 +4,7 @@ import 'package:house_mira/features/home/presentation/views/widgets/home_empty_f
 import 'package:house_mira/generated/app_localizations.dart';
 
 Widget _pumpApp() {
-  return MaterialApp(
+  return const MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(body: HomeEmptyFooterWidget()),

@@ -1,16 +1,13 @@
-import 'package:fpdart/fpdart.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/google_sign_in_handler.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
@@ -27,6 +24,8 @@ import 'package:house_mira/features/people/domain/usecase/create_family_usecase.
 import 'package:house_mira/features/people/domain/usecase/get_people_usecase.dart';
 import 'package:house_mira/features/people/domain/usecase/join_family_usecase.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
+import 'package:house_mira/features/people/presentation/cubit/people_state.dart'
+    show PeopleEmpty;
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
@@ -34,6 +33,10 @@ import 'package:house_mira/features/reminders/domain/repository/reminder_reposit
 import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/main.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'mock_firebase.dart';
 
 class _MockSupabaseClient extends Mock implements SupabaseClient {}
@@ -55,21 +58,22 @@ class _FakeAuthService extends AuthService {
 }
 
 class _FakePeopleRepository implements PeopleRepository {
+  _FakePeopleRepository({this.familyName = 'Fam', this.inviteCode = 'ABC'});
+
   /// Empty name/inviteCode drives PeopleCubit to [PeopleEmpty], which is what
   /// the People tab test asserts. Home keeps its own fake with 'Fam'.
   final String familyName;
   final String inviteCode;
 
-  _FakePeopleRepository({this.familyName = 'Fam', this.inviteCode = 'ABC'});
-
   @override
-  Future<Either<Exception, List<PersonEntity>>> getPeople() async => Right([]);
+  Future<Either<Exception, List<PersonEntity>>> getPeople() async =>
+      const Right([]);
 
   @override
   Future<Either<Exception, bool>> createFamily({
     required String name,
     required String inviteCode,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<Either<Exception, FamilyEntity>> getMyFamily() async =>
@@ -78,7 +82,7 @@ class _FakePeopleRepository implements PeopleRepository {
   @override
   Future<Either<Exception, bool>> joinFamily({
     required String inviteCode,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<FamilyEntity?> getFamilyBy(String id) async =>
@@ -101,48 +105,49 @@ class _FakePeopleRepository implements PeopleRepository {
   Future<Either<Exception, bool>> updateFamilyName({
     required String familyId,
     required String name,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<Either<Exception, bool>> removeMember({
     required String familyId,
     required String userId,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<Either<Exception, bool>> deleteFamily({
     required String familyId,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<Either<Exception, String?>> getMyFamilyId() async =>
-      Right('fake-family');
+      const Right('fake-family');
 }
 
 class _FakeReminderRepository implements ReminderRepository {
   @override
   Future<Either<Failure, List<ReminderEntity>>> getReminders(
     String familyId,
-  ) async => Right([]);
+  ) async => const Right([]);
 
   @override
   Future<Either<Failure, List<ReminderEntity>>> getRemindersByTypeAndFamily({
     required ReminderType type,
     required String familyId,
-  }) async => Right([]);
+  }) async => const Right([]);
 
   @override
   Future<Either<Failure, String>> createReminder(
     ReminderModel reminder,
     String familyId,
-  ) async => Right('fake-reminder-id');
+  ) async => const Right('fake-reminder-id');
 
   @override
   Future<Either<Failure, bool>> updateReminder(ReminderModel reminder) async =>
-      Right(true);
+      const Right(true);
 
   @override
-  Future<Either<Failure, bool>> removeReminder(String id) async => Right(true);
+  Future<Either<Failure, bool>> removeReminder(String id) async =>
+      const Right(true);
 }
 
 class _FakeFirebaseAnalytics extends Fake implements FirebaseAnalytics {
@@ -323,30 +328,31 @@ void main() {
     // ServiceLocator creates a real AnalyticsService backed by
     // FirebaseAnalytics.instance, which throws in tests, so register a fake.
     await GetIt.instance.reset();
-    slInstance.registerSingleton<AnalyticsService>(
-      _FakeAnalyticsService(),
-      instanceName: 'analyticsService',
-    );
-    slInstance.registerSingleton<OnboardingLocalDatasource>(
-      OnboardingLocalDatasource(),
-      instanceName: 'onboardingLocalDatasource',
-    );
-    slInstance.registerSingleton<LocalStorageDatasource>(
-      LocalStorageDatasource(),
-      instanceName: 'localStorageDatasource',
-    );
-    slInstance.registerSingleton<GetHomeDataUsecase>(
-      GetHomeDataUsecase(
-        authService: _FakeAuthService(),
-        peopleRepository: _FakePeopleRepository(),
-        reminderRepository: _FakeReminderRepository(),
-      ),
-      instanceName: 'getHomeDataUsecase',
-    );
+    slInstance
+      ..registerSingleton<AnalyticsService>(
+        _FakeAnalyticsService(),
+        instanceName: 'analyticsService',
+      )
+      ..registerSingleton<OnboardingLocalDatasource>(
+        OnboardingLocalDatasource(),
+        instanceName: 'onboardingLocalDatasource',
+      )
+      ..registerSingleton<LocalStorageDatasource>(
+        LocalStorageDatasource(),
+        instanceName: 'localStorageDatasource',
+      )
+      ..registerSingleton<GetHomeDataUsecase>(
+        GetHomeDataUsecase(
+          authService: _FakeAuthService(),
+          peopleRepository: _FakePeopleRepository(),
+          reminderRepository: _FakeReminderRepository(),
+        ),
+        instanceName: 'getHomeDataUsecase',
+      );
   });
 
-  tearDownAll(() {
-    GetIt.instance.reset();
+  tearDownAll(() async {
+    await GetIt.instance.reset();
   });
 
   group('MainShell', () {

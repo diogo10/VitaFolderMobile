@@ -5,26 +5,26 @@ import 'package:house_mira/features/people/domain/repository/people_repository.d
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 
 class HasRemindersUsecase {
-  final AuthService authService;
-  final PeopleRepository peopleRepository;
-  final ReminderRepository reminderRepository;
 
   HasRemindersUsecase({
     required this.authService,
     required this.peopleRepository,
     required this.reminderRepository,
   });
+  final AuthService authService;
+  final PeopleRepository peopleRepository;
+  final ReminderRepository reminderRepository;
 
   Future<Either<Failure, bool>> call() async {
     final userId = authService.currentUserId;
     if (userId == null) {
-      return Right(false);
+      return const Right(false);
     }
 
     final familyIds = await peopleRepository.getFamilyIdsForUser(userId);
     final familyId = familyIds.isEmpty ? null : familyIds.first;
     if (familyId == null) {
-      return Right(false);
+      return const Right(false);
     }
 
     final result = await reminderRepository.getReminders(familyId);

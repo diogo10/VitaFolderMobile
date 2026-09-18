@@ -2,13 +2,13 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:house_mira/features/home/domain/entities/home_entity.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_state.dart';
 import 'package:house_mira/features/home/presentation/views/home_view.dart';
 import 'package:house_mira/features/home/presentation/views/home_view_success.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _MockHomeCubit extends MockCubit<HomeState> implements HomeCubit {}
 
@@ -59,9 +59,9 @@ void main() {
     });
 
     testWidgets('shows HomeViewSuccess when state is loaded', (tester) async {
-      final entity = HomeEntity(peopleInCircle: []);
+      const entity = HomeEntity(peopleInCircle: []);
 
-      await tester.pumpWidget(pumpApp(HomeLoaded(data: entity)));
+      await tester.pumpWidget(pumpApp(const HomeLoaded(data: entity)));
 
       expect(find.byType(HomeViewSuccess), findsOneWidget);
     });

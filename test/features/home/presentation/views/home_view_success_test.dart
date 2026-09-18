@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:house_mira/features/home/domain/entities/home_entity.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
@@ -15,13 +14,14 @@ import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _FakeGetHomeDataUsecase extends Mock implements GetHomeDataUsecase {}
 
 class _FakeHasRemindersUsecase extends Mock implements HasRemindersUsecase {}
 
 void main() {
-  final tEntity = HomeEntity(
+  const tEntity = HomeEntity(
     peopleInCircle: [],
     familyName: 'Smith Family',
     myRole: 'admin',
@@ -102,7 +102,7 @@ void main() {
     testWidgets('renders HomeCircleWidget when people present', (tester) async {
       await tester.pumpWidget(
         pumpApp(
-          HomeEntity(
+          const HomeEntity(
             peopleInCircle: [PersonEntity(name: 'Mom', role: 'parent')],
             familyName: 'Smith Family',
           ),
@@ -122,11 +122,11 @@ void main() {
 
     testWidgets('renders reminders tiles when reminders exist', (tester) async {
       final entity = HomeEntity(
-        peopleInCircle: [],
+        peopleInCircle: const [],
         familyName: 'Smith Family',
         reminders: [
           ReminderEntity(
-            title: 'Lily\'s Allergy Meds',
+            title: "Lily's Allergy Meds",
             body: 'Take medicine below stairs',
             id: '1',
             type: ReminderType.renewal,
@@ -142,7 +142,7 @@ void main() {
       await tester.pumpWidget(pumpApp(entity));
 
       expect(find.byType(HomeUpcomingRemindersWidget), findsOneWidget);
-      expect(find.text('Lily\'s Allergy Meds'), findsOneWidget);
+      expect(find.text("Lily's Allergy Meds"), findsOneWidget);
     });
 
     testWidgets('renders reminders section with localized heading', (
@@ -157,7 +157,9 @@ void main() {
     });
 
     testWidgets('shows RefreshIndicator and refreshes on pull', (tester) async {
-      when(() => getHomeDataUsecase()).thenAnswer((_) async => Right(tEntity));
+      when(
+        () => getHomeDataUsecase(),
+      ).thenAnswer((_) async => const Right(tEntity));
       when(
         () => hasRemindersUsecase(),
       ).thenAnswer((_) async => const Right(false));

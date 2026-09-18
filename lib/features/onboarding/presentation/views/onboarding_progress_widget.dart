@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class OnboardingProgressWidget extends StatelessWidget {
-  final int currentPage;
-  final int pageCount;
 
   const OnboardingProgressWidget({
-    super.key,
-    required this.currentPage,
+    required this.currentPage, super.key,
     this.pageCount = 3,
   });
+  final int currentPage;
+  final int pageCount;
 
   @override
   Widget build(BuildContext context) {

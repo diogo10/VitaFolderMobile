@@ -8,15 +8,15 @@ import 'package:house_mira/features/reminders/domain/entities/reminder_entity.da
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 
 class GetHomeDataUsecase {
-  final PeopleRepository peopleRepository;
-  final ReminderRepository reminderRepository;
-  final AuthService authService;
 
   GetHomeDataUsecase({
     required this.peopleRepository,
     required this.reminderRepository,
     required this.authService,
   });
+  final PeopleRepository peopleRepository;
+  final ReminderRepository reminderRepository;
+  final AuthService authService;
 
   Future<Either<Exception, HomeEntity>> call() async {
     if (!authService.isLoggedIn()) {
@@ -24,7 +24,7 @@ class GetHomeDataUsecase {
     }
 
     final peopleResult = await peopleRepository.getPeople();
-    return peopleResult.fold((err) => Left(err), (people) async {
+    return peopleResult.fold(Left.new, (people) async {
       final familyResult = await peopleRepository.getMyFamily();
       final family = familyResult.getOrElse(
         (_) => FamilyEntity(name: '', inviteCode: ''),

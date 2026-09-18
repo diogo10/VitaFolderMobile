@@ -1,17 +1,16 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/features/account/application/notification_permission_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/notification_settings_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/notification_settings_state.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _FakePermissionService extends NotificationPermissionService {
-  NotificationPermissionResult result;
-
   _FakePermissionService(
     this.result,
   );
+  NotificationPermissionResult result;
 
   @override
   Future<NotificationPermissionResult> requestNotificationPermission() async =>
@@ -26,7 +25,7 @@ void main() {
   setUp(() {
     storage = _MockStorage();
     when(
-      () => storage.setBool(any(), any()),
+      () => storage.setBool(any(), value: any(named: 'value')),
     ).thenAnswer((_) async {});
   });
 
@@ -74,14 +73,16 @@ void main() {
     blocTest<NotificationSettingsCubit, NotificationSettingsState>(
       'enables and persists when permission is granted (from loading)',
       build: build,
-      act: (cubit) => cubit.setNotificationsEnabled(true),
+      act: (cubit) => cubit.setNotificationsEnabled(enabled: true),
       expect: () => [
         isA<NotificationSettingsLoaded>()
             .having((s) => s.notificationsEnabled, 'enabled', isTrue)
             .having((s) => s.permissionDenied, 'denied', isNull),
       ],
       verify: (_) {
-        verify(() => storage.setBool('notifications_enabled', true)).called(1);
+        verify(
+          () => storage.setBool('notifications_enabled', value: true),
+        ).called(1);
       },
     );
 
@@ -95,7 +96,7 @@ void main() {
       },
       act: (cubit) async {
         await cubit.loadSettings();
-        await cubit.setNotificationsEnabled(true);
+        await cubit.setNotificationsEnabled(enabled: true);
       },
       expect: () => [
         isA<NotificationSettingsLoaded>().having(
@@ -116,7 +117,7 @@ void main() {
       build: () => build(
         permissionResult: NotificationPermissionResult.permanentlyDenied,
       ),
-      act: (cubit) => cubit.setNotificationsEnabled(true),
+      act: (cubit) => cubit.setNotificationsEnabled(enabled: true),
       expect: () => [
         isA<NotificationSettingsLoaded>()
             .having((s) => s.notificationsEnabled, 'enabled', isFalse)
@@ -127,14 +128,16 @@ void main() {
             ),
       ],
       verify: (_) {
-        verifyNever(() => storage.setBool(any(), any()));
+        verifyNever(
+          () => storage.setBool(any(), value: any(named: 'value')),
+        );
       },
     );
 
     blocTest<NotificationSettingsCubit, NotificationSettingsState>(
       'reports denied without persisting',
       build: () => build(permissionResult: NotificationPermissionResult.denied),
-      act: (cubit) => cubit.setNotificationsEnabled(true),
+      act: (cubit) => cubit.setNotificationsEnabled(enabled: true),
       expect: () => [
         isA<NotificationSettingsLoaded>()
             .having((s) => s.notificationsEnabled, 'enabled', isFalse)
@@ -145,14 +148,16 @@ void main() {
             ),
       ],
       verify: (_) {
-        verifyNever(() => storage.setBool(any(), any()));
+        verifyNever(
+          () => storage.setBool(any(), value: any(named: 'value')),
+        );
       },
     );
 
     blocTest<NotificationSettingsCubit, NotificationSettingsState>(
       'disables and persists when switched off',
       build: build,
-      act: (cubit) => cubit.setNotificationsEnabled(false),
+      act: (cubit) => cubit.setNotificationsEnabled(enabled: false),
       expect: () => [
         isA<NotificationSettingsLoaded>().having(
           (s) => s.notificationsEnabled,
@@ -161,7 +166,9 @@ void main() {
         ),
       ],
       verify: (_) {
-        verify(() => storage.setBool('notifications_enabled', false)).called(1);
+        verify(
+          () => storage.setBool('notifications_enabled', value: false),
+        ).called(1);
       },
     );
   });

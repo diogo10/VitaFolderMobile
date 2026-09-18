@@ -1,16 +1,11 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 
+@immutable
 class HomeEntity {
-  final List<PersonEntity> peopleInCircle;
-  final bool hasReminders;
-  final String familyName;
-  final String myRole;
-  final int activeMembers;
-  final List<ReminderEntity> reminders;
-
-  HomeEntity({
+  const HomeEntity({
     required this.peopleInCircle,
     this.hasReminders = false,
     this.familyName = '',
@@ -18,6 +13,12 @@ class HomeEntity {
     this.activeMembers = 0,
     this.reminders = const [],
   });
+  final List<PersonEntity> peopleInCircle;
+  final bool hasReminders;
+  final String familyName;
+  final String myRole;
+  final int activeMembers;
+  final List<ReminderEntity> reminders;
 
   HomeEntity copyWith({
     List<PersonEntity>? peopleInCircle,

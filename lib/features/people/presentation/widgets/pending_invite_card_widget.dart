@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class PendingInviteCardWidget extends StatelessWidget {
+
+  const PendingInviteCardWidget({
+    required this.email, required this.sentAtLabel, super.key,
+    this.onResendPressed,
+  });
   final String email;
   final String sentAtLabel;
   final VoidCallback? onResendPressed;
-
-  const PendingInviteCardWidget({
-    super.key,
-    required this.email,
-    required this.sentAtLabel,
-    this.onResendPressed,
-  });
 
   @override
   Widget build(BuildContext context) {

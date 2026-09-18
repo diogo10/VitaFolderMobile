@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/core/widgets/sand/google_g_icon.dart';
@@ -15,6 +13,8 @@ import 'package:house_mira/features/people/domain/entities/family_entity.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
@@ -32,6 +32,7 @@ class _FakeAuthService extends AuthService {
   String? lastSignInEmail;
   String? lastSignInPassword;
   String? lastResetEmail;
+  int googleSignInCalls = 0;
 
   @override
   Future<PersonEntity?> getAsPersonEntity() => personCompleter.future;
@@ -48,18 +49,25 @@ class _FakeAuthService extends AuthService {
   }
 
   @override
+  Future<User?> signInWithGoogle() async {
+    googleSignInCalls++;
+    return null;
+  }
+
+  @override
   User? get currentUser => null;
 }
 
 class _FakePeopleRepository implements PeopleRepository {
   @override
-  Future<Either<Exception, List<PersonEntity>>> getPeople() async => Right([]);
+  Future<Either<Exception, List<PersonEntity>>> getPeople() async =>
+      const Right([]);
 
   @override
   Future<Either<Exception, bool>> createFamily({
     required String name,
     required String inviteCode,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<Either<Exception, FamilyEntity>> getMyFamily() async =>
@@ -68,7 +76,7 @@ class _FakePeopleRepository implements PeopleRepository {
   @override
   Future<Either<Exception, bool>> joinFamily({
     required String inviteCode,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<FamilyEntity?> getFamilyBy(String id) async =>
@@ -89,22 +97,22 @@ class _FakePeopleRepository implements PeopleRepository {
   Future<Either<Exception, bool>> updateFamilyName({
     required String familyId,
     required String name,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<Either<Exception, bool>> removeMember({
     required String familyId,
     required String userId,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<Either<Exception, bool>> deleteFamily({
     required String familyId,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<Either<Exception, String?>> getMyFamilyId() async =>
-      Right('fake-family');
+      const Right('fake-family');
 }
 
 void main() {
@@ -151,7 +159,8 @@ void main() {
       );
       expect(
         find.text(
-          'Manage your circle, set reminders and collaborate as a family — all in one place.',
+          'Manage your circle, set reminders and collaborate as a '
+          'family — all in one place.',
         ),
         findsOneWidget,
       );
@@ -191,6 +200,19 @@ void main() {
 
       expect(authService.lastSignInEmail, 'user@example.com');
       expect(authService.lastSignInPassword, 'secret');
+    });
+
+    testWidgets('delegates to Google sign-in from Google button', (
+      tester,
+    ) async {
+      await pumpNoAccount(tester, buildCubit());
+
+      await tester.ensureVisible(find.text('Continue with Google'));
+      await tester.pump();
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pump();
+
+      expect(authService.googleSignInCalls, 1);
     });
 
     testWidgets('requests password reset with entered email', (tester) async {

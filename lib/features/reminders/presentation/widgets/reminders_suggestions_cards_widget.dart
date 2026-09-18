@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
+import 'package:provider/provider.dart';
 
 class RemindersSuggestionsCardsWidget extends StatelessWidget {
   const RemindersSuggestionsCardsWidget({super.key});
 
-  void _handleSuggestionPressed(
+  Future<void> _handleSuggestionPressed(
     BuildContext context,
     ReminderType reminderType,
-  ) {
+  ) async {
     final authService = context.read<AuthService>();
     if (!authService.isLoggedIn()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -20,14 +20,14 @@ class RemindersSuggestionsCardsWidget extends StatelessWidget {
       );
       return;
     }
-    context.push('/create-reminder', extra: reminderType);
+    await context.push('/create-reminder', extra: reminderType);
   }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Column(
         children: [
           _ReminderSuggestionCard(
@@ -75,16 +75,6 @@ class RemindersSuggestionsCardsWidget extends StatelessWidget {
 }
 
 class _ReminderSuggestionCard extends StatelessWidget {
-  final IconData icon;
-  final Color iconBackground;
-  final Color iconColor;
-  final String title;
-  final String subtitle;
-  final Color buttonColor;
-  final String buttonLabel;
-  final ReminderType reminderType;
-  final VoidCallback onPressed;
-
   const _ReminderSuggestionCard({
     required this.icon,
     required this.iconBackground,
@@ -96,6 +86,15 @@ class _ReminderSuggestionCard extends StatelessWidget {
     required this.reminderType,
     required this.onPressed,
   });
+  final IconData icon;
+  final Color iconBackground;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final Color buttonColor;
+  final String buttonLabel;
+  final ReminderType reminderType;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {

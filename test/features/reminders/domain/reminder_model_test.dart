@@ -65,7 +65,7 @@ void main() {
 
   group('ReminderModel payloads', () {
     test('toCreate includes family id and null due_at when empty', () {
-      final model = ReminderModel(
+      const model = ReminderModel(
         title: 'T',
         body: 'B',
         id: '',
@@ -83,7 +83,7 @@ void main() {
     });
 
     test('toUpdate omits server-managed fields', () {
-      final model = ReminderModel(
+      const model = ReminderModel(
         title: 'T',
         body: 'B',
         id: '1',

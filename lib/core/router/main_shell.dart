@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class MainShell extends StatelessWidget {
-  final StatefulNavigationShell navigationShell;
 
-  const MainShell({super.key, required this.navigationShell});
+  const MainShell({required this.navigationShell, super.key});
+  final StatefulNavigationShell navigationShell;
 
   static const List<IconData> _tabIcons = [
     Icons.home_rounded,
@@ -64,7 +64,6 @@ class MainShell extends StatelessWidget {
           selectedItemColor: const Color(0xFF8B7558),
           unselectedItemColor: const Color(0xFFC2B299),
           selectedFontSize: 12,
-          unselectedFontSize: 12,
           currentIndex: navigationShell.currentIndex,
           onTap: (index) => navigationShell.goBranch(
             index,

@@ -20,7 +20,7 @@ void main() {
   group('HomeEntity.copyWith', () {
     test('overrides only the given fields', () {
       final original = HomeEntity(
-        peopleInCircle: [PersonEntity(id: 'u1', name: 'Ana')],
+        peopleInCircle: const [PersonEntity(id: 'u1', name: 'Ana')],
         hasReminders: true,
         familyName: 'Fam',
         myRole: 'admin',
@@ -39,7 +39,7 @@ void main() {
     });
 
     test('keeps every field when called empty', () {
-      final original = HomeEntity(peopleInCircle: []);
+      const original = HomeEntity(peopleInCircle: []);
 
       final copy = original.copyWith();
 
@@ -55,12 +55,12 @@ void main() {
   group('HomeEntity equality', () {
     test('equal entities compare equal with matching hash codes', () {
       final first = HomeEntity(
-        peopleInCircle: [PersonEntity(id: 'u1')],
+        peopleInCircle: const [PersonEntity(id: 'u1')],
         familyName: 'Fam',
         reminders: [reminder('1')],
       );
       final second = HomeEntity(
-        peopleInCircle: [PersonEntity(id: 'u1')],
+        peopleInCircle: const [PersonEntity(id: 'u1')],
         familyName: 'Fam',
         reminders: [reminder('1')],
       );
@@ -70,15 +70,15 @@ void main() {
     });
 
     test('identical instance is equal to itself', () {
-      final entity = HomeEntity(peopleInCircle: []);
+      const entity = HomeEntity(peopleInCircle: []);
 
       expect(entity == entity, isTrue);
     });
 
     test('differs when any field differs', () {
-      final base = HomeEntity(peopleInCircle: []);
+      const base = HomeEntity(peopleInCircle: []);
 
-      final Object other = 'not-an-entity';
+      const Object other = 'not-an-entity';
       expect(base == other, isFalse);
       expect(base, isNot(base.copyWith(hasReminders: true)));
       expect(base, isNot(base.copyWith(familyName: 'Fam')));
@@ -86,7 +86,7 @@ void main() {
       expect(base, isNot(base.copyWith(activeMembers: 1)));
       expect(
         base,
-        isNot(base.copyWith(peopleInCircle: [PersonEntity(id: 'u1')])),
+        isNot(base.copyWith(peopleInCircle: [const PersonEntity(id: 'u1')])),
       );
       expect(base, isNot(base.copyWith(reminders: [reminder('1')])));
     });

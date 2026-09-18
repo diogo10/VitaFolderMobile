@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:house_mira/features/account/presentation/views/no_account_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
 import 'package:house_mira/features/account/presentation/views/account_loaded_widget.dart';
+import 'package:house_mira/features/account/presentation/views/no_account_view.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/generated/app_localizations.dart';
@@ -20,15 +22,17 @@ class _AccountViewState extends State<AccountView> {
   @override
   void initState() {
     super.initState();
-    context.read<AccountCubit>().loadAccount();
+    unawaited(context.read<AccountCubit>().loadAccount());
   }
 
   void _refreshAllTabs() {
-    context.read<HomeCubit>().getHomeData(isRefresh: true);
-    context.read<PeopleCubit>().getPeople(isRefresh: true);
+    unawaited(context.read<HomeCubit>().getHomeData(isRefresh: true));
+    unawaited(context.read<PeopleCubit>().getPeople(isRefresh: true));
 
     final remindersCubit = context.read<RemindersCubit>();
-    remindersCubit.getReminders(type: remindersCubit.selectedType);
+    unawaited(
+      remindersCubit.getReminders(type: remindersCubit.selectedType),
+    );
   }
 
   @override

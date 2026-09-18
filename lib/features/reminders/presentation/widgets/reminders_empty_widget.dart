@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/reminders/presentation/widgets/reminders_suggestions_cards_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
-import 'package:house_mira/features/reminders/presentation/widgets/reminders_suggestions_cards_widget.dart';
+import 'package:provider/provider.dart';
 
 class RemindersEmptyWidget extends StatelessWidget {
+  const RemindersEmptyWidget({super.key, this.isLoading = false});
   final bool isLoading;
 
-  const RemindersEmptyWidget({super.key, this.isLoading = false});
-
-  void _handleCreateReminderPressed(BuildContext context) {
+  Future<void> _handleCreateReminderPressed(BuildContext context) async {
     final authService = context.read<AuthService>();
     if (!authService.isLoggedIn()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -19,7 +18,7 @@ class RemindersEmptyWidget extends StatelessWidget {
       );
       return;
     }
-    context.push('/create-reminder');
+    await context.push('/create-reminder');
   }
 
   @override
@@ -47,7 +46,6 @@ class RemindersEmptyWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(
                       color: onSurface.withValues(alpha: 0.08),
-                      width: 1,
                     ),
                   ),
                   child: Column(
@@ -107,14 +105,12 @@ class RemindersEmptyWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(
-                        left: 24.0,
-                        right: 24.0,
-                        bottom: 8.0,
+                        left: 24,
+                        right: 24,
+                        bottom: 8,
                       ),
                       child: Text(
                         l.remindersEmptySuggestionsTitle,

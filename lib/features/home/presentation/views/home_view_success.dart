@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:house_mira/features/home/domain/entities/home_entity.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/home/presentation/views/widgets/home_circle_widget.dart';
@@ -12,10 +11,11 @@ import 'package:house_mira/features/home/presentation/views/widgets/home_empty_r
 import 'package:house_mira/features/home/presentation/views/widgets/home_success_header_widget.dart';
 import 'package:house_mira/features/home/presentation/views/widgets/home_upcoming_reminders_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:share_plus/share_plus.dart';
 
 class HomeViewSuccess extends StatelessWidget {
+  const HomeViewSuccess({required this.data, super.key});
   final HomeEntity data;
-  const HomeViewSuccess({super.key, required this.data});
 
   Future<void> _shareInvite(BuildContext context) async {
     final l = AppLocalizations.of(context)!;

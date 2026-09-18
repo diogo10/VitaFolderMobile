@@ -9,13 +9,6 @@ import 'package:house_mira/features/people/domain/usecase/update_family_name_use
 import 'package:house_mira/features/people/presentation/cubit/family_settings_state.dart';
 
 class FamilySettingsCubit extends Cubit<FamilySettingsState> {
-  final GetPeopleUsecase _getPeopleUsecase;
-  final GetMyFamilyIdUsecase _getMyFamilyIdUsecase;
-  final UpdateFamilyNameUsecase _updateFamilyNameUsecase;
-  final RemoveMemberUsecase _removeMemberUsecase;
-  final DeleteFamilyUsecase _deleteFamilyUsecase;
-  final AuthService _authService;
-
   FamilySettingsCubit({
     required GetPeopleUsecase getPeopleUsecase,
     required GetMyFamilyIdUsecase getMyFamilyIdUsecase,
@@ -30,6 +23,12 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
        _deleteFamilyUsecase = deleteFamilyUsecase,
        _authService = authService,
        super(const FamilySettingsInitial());
+  final GetPeopleUsecase _getPeopleUsecase;
+  final GetMyFamilyIdUsecase _getMyFamilyIdUsecase;
+  final UpdateFamilyNameUsecase _updateFamilyNameUsecase;
+  final RemoveMemberUsecase _removeMemberUsecase;
+  final DeleteFamilyUsecase _deleteFamilyUsecase;
+  final AuthService _authService;
 
   Future<void> loadSettings() async {
     emit(const FamilySettingsLoading());
@@ -46,7 +45,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
           final currentUserRole = peopleData.people
               .firstWhere(
                 (p) => p.id == currentUserId,
-                orElse: () => PersonEntity(),
+                orElse: PersonEntity.new,
               )
               .role;
 
@@ -66,7 +65,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
           );
         },
       );
-    } catch (e) {
+    } on Object catch (e) {
       emit(FamilySettingsError(message: e.toString()));
     }
   }
@@ -140,7 +139,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
 
       // Reload settings after save
       await loadSettings();
-    } catch (e) {
+    } on Object catch (e) {
       emit(FamilySettingsError(message: e.toString()));
     }
   }
@@ -168,7 +167,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
         (error) => emit(FamilySettingsError(message: error.toString())),
         (_) => emit(const FamilySettingsDeleteSuccess()),
       );
-    } catch (e) {
+    } on Object catch (e) {
       emit(FamilySettingsError(message: e.toString()));
     }
   }

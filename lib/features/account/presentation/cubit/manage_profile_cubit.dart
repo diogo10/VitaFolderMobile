@@ -3,11 +3,10 @@ import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/manage_profile_state.dart';
 
 class ManageProfileCubit extends Cubit<ManageProfileState> {
-  final AuthService _authService;
-
   ManageProfileCubit({required AuthService authService})
-      : _authService = authService,
-        super(ManageProfileInitial());
+    : _authService = authService,
+      super(ManageProfileInitial());
+  final AuthService _authService;
 
   Future<void> saveName(String name) async {
     emit(ManageProfileLoading());
@@ -15,7 +14,7 @@ class ManageProfileCubit extends Cubit<ManageProfileState> {
     try {
       await _authService.updateName(name.trim());
       emit(ManageProfileSuccess());
-    } catch (e) {
+    } on Object catch (e) {
       emit(ManageProfileError(message: e.toString()));
     }
   }

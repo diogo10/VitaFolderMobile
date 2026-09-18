@@ -1,31 +1,32 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
-import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
-import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_state.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class CreateReminderScreen extends StatefulWidget {
-  final ReminderType? initialType;
-  final ReminderEntity? reminder;
-  final IReminderNotificationService? notificationService;
-
   const CreateReminderScreen({
     super.key,
     this.initialType,
     this.reminder,
     this.notificationService,
   });
+  final ReminderType? initialType;
+  final ReminderEntity? reminder;
+  final IReminderNotificationService? notificationService;
 
   @override
   State<CreateReminderScreen> createState() => _CreateReminderScreenState();
@@ -50,7 +51,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   static const _sand600 = Color(0xFF7A6348);
   static const _sand700 = Color(0xFF634F39);
 
-  final _typeIcons = {
+  final Map<ReminderType, IconData> _typeIcons = {
     ReminderType.renewal: Icons.refresh_rounded,
     ReminderType.appointment: Icons.calendar_month_rounded,
     ReminderType.vaccine: Icons.vaccines_rounded,
@@ -60,7 +61,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
     ReminderType.custom: Icons.star_rounded,
   };
 
-  final _typeColors = {
+  final Map<ReminderType, MaterialColor> _typeColors = {
     ReminderType.renewal: Colors.teal,
     ReminderType.appointment: Colors.blue,
     ReminderType.vaccine: Colors.red,
@@ -82,13 +83,15 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       final parsed = _parseDueDate(reminder.dueDate);
       _dueDate = parsed;
       _dueTime = parsed == null ? null : TimeOfDay.fromDateTime(parsed);
-      _notificationService.getReminderNotification(reminder.id).then((prefs) {
-        if (!mounted) return;
-        setState(() {
-          _notifyEnabled = prefs.enabled;
-          _leadTime = prefs.leadTime;
-        });
-      });
+      unawaited(
+        _notificationService.getReminderNotification(reminder.id).then((prefs) {
+          if (!mounted) return;
+          setState(() {
+            _notifyEnabled = prefs.enabled;
+            _leadTime = prefs.leadTime;
+          });
+        }),
+      );
     } else {
       _selectedType = widget.initialType ?? ReminderType.custom;
     }
@@ -115,7 +118,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
         body: _bodyController.text.trim(),
         repeatRule: _repeatRule,
       );
-    } catch (_) {
+    } on Object catch (_) {
       // Notifications are best-effort; the reminder itself was saved.
       return false;
     }
@@ -124,19 +127,19 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
     try {
       return _dueDate != null &&
           await _notificationService.hasSystemPermission();
-    } catch (_) {
+    } on Object catch (_) {
       return false;
     }
   }
 
   Future<void> _checkNotificationPermission() async {
-    bool granted = false;
+    var granted = false;
     try {
       granted = await _notificationService.hasSystemPermission();
       if (!granted) {
         granted = await _notificationService.requestSystemPermission();
       }
-    } catch (_) {
+    } on Object catch (_) {
       granted = false;
     }
     if (!mounted) return;
@@ -157,10 +160,10 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
     }
     // Notifications allowed: without exact alarms Android may delay alerts
     // significantly, so point the user to the system setting once.
-    bool exact = true;
+    var exact = true;
     try {
       exact = await _notificationService.canScheduleExactAlarms();
-    } catch (_) {
+    } on Object catch (_) {
       exact = true;
     }
     if (!exact && mounted) {
@@ -171,8 +174,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             content: Text(l.createReminderNotifyExactAlarmMessage),
             action: SnackBarAction(
               label: l.createReminderNotifyOpenSettings,
-              onPressed: () {
-                _notificationService.requestExactAlarmPermission();
+              onPressed: () async {
+                await _notificationService.requestExactAlarmPermission();
               },
             ),
           ),
@@ -278,15 +281,15 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   }
 
   void _refreshLists(BuildContext context) {
-    context.read<RemindersCubit>().getReminders();
+    unawaited(context.read<RemindersCubit>().getReminders());
     try {
-      context.read<HomeCubit>().getHomeData(isRefresh: true);
-    } catch (_) {
+      unawaited(context.read<HomeCubit>().getHomeData(isRefresh: true));
+    } on Object catch (_) {
       // HomeCubit is not in scope when opened from Reminders tab.
     }
   }
 
-  void _onSave() {
+  Future<void> _onSave() async {
     final cubit = context.read<CreateReminderCubit>();
     if (!cubit.authService.isLoggedIn()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -298,7 +301,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       final reminder = widget.reminder;
       if (reminder != null) {
-        cubit.updateReminder(
+        await cubit.updateReminder(
           reminder: reminder,
           title: _titleController.text.trim(),
           body: _bodyController.text.trim(),
@@ -307,7 +310,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           repeatRule: _repeatRule,
         );
       } else {
-        cubit.createReminder(
+        await cubit.createReminder(
           title: _titleController.text.trim(),
           body: _bodyController.text.trim(),
           type: _selectedType,
@@ -343,7 +346,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           }
           if (state is UpdatedReminderSuccess) {
             final reminder = widget.reminder;
-            bool alertsArmed = true;
+            var alertsArmed = true;
             if (reminder != null) {
               alertsArmed = await _syncNotification(reminder.id);
               if (!context.mounted) return;
@@ -454,7 +457,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           Expanded(
             child: Text(
               _isEditing ? l.createReminderTitleEdit : l.createReminderTitle,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
                 color: _sand700,
@@ -473,7 +476,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       children: [
         Text(
           l.createReminderTitleLabel,
-          style: TextStyle(
+          style: const TextStyle(
             color: _sand400,
             fontSize: 12,
             fontWeight: FontWeight.bold,
@@ -484,14 +487,14 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
         TextFormField(
           controller: _titleController,
           textCapitalization: TextCapitalization.sentences,
-          style: TextStyle(
+          style: const TextStyle(
             color: _sand700,
             fontWeight: FontWeight.w600,
             fontSize: 16,
           ),
           decoration: InputDecoration(
             hintText: l.createReminderTitleHint,
-            hintStyle: TextStyle(
+            hintStyle: const TextStyle(
               color: _sand300,
               fontWeight: FontWeight.normal,
             ),
@@ -503,11 +506,11 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide(color: _sand200),
+              borderSide: const BorderSide(color: _sand200),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide(color: _sand200),
+              borderSide: const BorderSide(color: _sand200),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
@@ -539,7 +542,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       children: [
         Text(
           '${l.createReminderBodyLabel} (${l.createReminderOptional})',
-          style: TextStyle(
+          style: const TextStyle(
             color: _sand400,
             fontSize: 12,
             fontWeight: FontWeight.bold,
@@ -556,7 +559,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           ).textTheme.bodyMedium?.copyWith(color: _sand600, fontSize: 16),
           decoration: InputDecoration(
             hintText: l.createReminderBodyHint,
-            hintStyle: TextStyle(color: _sand300),
+            hintStyle: const TextStyle(color: _sand300),
             filled: true,
             fillColor: _sand100,
             contentPadding: const EdgeInsets.symmetric(
@@ -565,11 +568,11 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide(color: _sand200),
+              borderSide: const BorderSide(color: _sand200),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide(color: _sand200),
+              borderSide: const BorderSide(color: _sand200),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
@@ -587,7 +590,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       children: [
         Text(
           l.createReminderTypeLabel,
-          style: TextStyle(
+          style: const TextStyle(
             color: _sand400,
             fontSize: 12,
             fontWeight: FontWeight.bold,
@@ -661,7 +664,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       children: [
         Text(
           l.createReminderDueDateLabel,
-          style: TextStyle(
+          style: const TextStyle(
             color: _sand400,
             fontSize: 12,
             fontWeight: FontWeight.bold,
@@ -683,7 +686,11 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.calendar_today_rounded, size: 20, color: _sand300),
+                  const Icon(
+                    Icons.calendar_today_rounded,
+                    size: 20,
+                    color: _sand300,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -716,7 +723,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       children: [
         Text(
           l.createReminderTimeLabel,
-          style: TextStyle(
+          style: const TextStyle(
             color: _sand400,
             fontSize: 12,
             fontWeight: FontWeight.bold,
@@ -738,7 +745,11 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.access_time_rounded, size: 20, color: _sand300),
+                  const Icon(
+                    Icons.access_time_rounded,
+                    size: 20,
+                    color: _sand300,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -784,7 +795,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       children: [
         Text(
           l.createReminderNotifyTitle,
-          style: TextStyle(
+          style: const TextStyle(
             color: _sand400,
             fontSize: 12,
             fontWeight: FontWeight.bold,
@@ -800,13 +811,13 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           ),
           child: SwitchListTile(
             value: _notifyEnabled,
-            onChanged: (value) {
+            onChanged: (value) async {
               setState(() => _notifyEnabled = value);
-              if (value) _checkNotificationPermission();
+              if (value) await _checkNotificationPermission();
             },
             title: Text(
               l.createReminderNotifyToggle,
-              style: TextStyle(
+              style: const TextStyle(
                 color: _sand700,
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
@@ -830,7 +841,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           if (_dueDate == null)
             Text(
               l.createReminderNotifyNoDateHint,
-              style: TextStyle(color: _sand300, fontSize: 13),
+              style: const TextStyle(color: _sand300, fontSize: 13),
             )
           else
             Wrap(
@@ -874,7 +885,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       children: [
         Text(
           l.createReminderRepeatRuleLabel,
-          style: TextStyle(
+          style: const TextStyle(
             color: _sand400,
             fontSize: 12,
             fontWeight: FontWeight.bold,

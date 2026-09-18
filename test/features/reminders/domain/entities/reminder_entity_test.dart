@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 
-ReminderEntity base() => ReminderEntity(
+ReminderEntity base() => const ReminderEntity(
   title: 'Title',
   body: 'Body',
   id: '1',

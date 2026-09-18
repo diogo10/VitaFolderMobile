@@ -7,21 +7,9 @@ import 'package:house_mira/theme/sand_palette.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
 
 class RemindersHeaderWidget extends StatefulWidget {
-  final String title;
-  final String? role;
-  final ReminderType? selectedType;
-  final RemindersViewMode? viewMode;
-  final ValueChanged<ReminderType?>? onCategoryChanged;
-  final VoidCallback? onAddPressed;
-  final VoidCallback? onCalendarPressed;
-  final VoidCallback? onNotificationsPressed;
-  final VoidCallback? onProfilePressed;
-  final VoidCallback? onFilterPressed;
-  final bool hasActiveFilters;
 
   const RemindersHeaderWidget({
-    super.key,
-    required this.title,
+    required this.title, super.key,
     this.role,
     this.selectedType,
     this.viewMode,
@@ -33,6 +21,17 @@ class RemindersHeaderWidget extends StatefulWidget {
     this.onFilterPressed,
     this.hasActiveFilters = false,
   });
+  final String title;
+  final String? role;
+  final ReminderType? selectedType;
+  final RemindersViewMode? viewMode;
+  final ValueChanged<ReminderType?>? onCategoryChanged;
+  final VoidCallback? onAddPressed;
+  final VoidCallback? onCalendarPressed;
+  final VoidCallback? onNotificationsPressed;
+  final VoidCallback? onProfilePressed;
+  final VoidCallback? onFilterPressed;
+  final bool hasActiveFilters;
 
   @override
   State<RemindersHeaderWidget> createState() => _RemindersHeaderWidgetState();
@@ -46,7 +45,7 @@ class _RemindersHeaderWidgetState extends State<RemindersHeaderWidget> {
     final background = context.colorScheme.surface;
 
     return Padding(
-      padding: const EdgeInsets.only(top: 20.0),
+      padding: const EdgeInsets.only(top: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

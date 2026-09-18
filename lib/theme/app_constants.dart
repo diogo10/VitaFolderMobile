@@ -65,13 +65,13 @@ class AppConstants {
   // Consistent border widths for outlines and dividers
 
   /// Thin border (1px) - For subtle outlines, dividers
-  static const double borderWidthThin = 1.0;
+  static const double borderWidthThin = 1;
 
   /// Medium border (2px) - For form fields, buttons
-  static const double borderWidthMedium = 2.0;
+  static const double borderWidthMedium = 2;
 
   /// Thick border (4px) - For emphasis, focus states
-  static const double borderWidthThick = 4.0;
+  static const double borderWidthThick = 4;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 🏔️ ELEVATION SYSTEM
@@ -133,37 +133,37 @@ class AppConstants {
   // Frequently used measurements for consistent implementation
 
   /// Standard button height (48px) - Meets accessibility guidelines
-  static const double buttonHeight = 48.0;
+  static const double buttonHeight = 48;
 
   /// Large button height (56px) - For prominent actions
-  static const double buttonHeightLarge = 56.0;
+  static const double buttonHeightLarge = 56;
 
   /// Small button height (40px) - For compact layouts
-  static const double buttonHeightSmall = 40.0;
+  static const double buttonHeightSmall = 40;
 
   /// Text field height (56px) - Standard Material Design height
-  static const double textFieldHeight = 56.0;
+  static const double textFieldHeight = 56;
 
   /// App bar height (56px) - Standard Material Design app bar
-  static const double appBarHeight = 56.0;
+  static const double appBarHeight = 56;
 
   /// Tab bar height (48px) - Standard Material Design tab bar
-  static const double tabBarHeight = 48.0;
+  static const double tabBarHeight = 48;
 
   /// Bottom navigation height (80px) - With padding and content
-  static const double bottomNavHeight = 80.0;
+  static const double bottomNavHeight = 80;
 
   /// FAB size (56px) - Standard floating action button
-  static const double fabSize = 56.0;
+  static const double fabSize = 56;
 
   /// Large FAB size (64px) - Extended floating action button
-  static const double fabSizeLarge = 64.0;
+  static const double fabSizeLarge = 64;
 
   /// Avatar size (40px) - Standard user avatar
-  static const double avatarSize = 40.0;
+  static const double avatarSize = 40;
 
   /// Large avatar size (64px) - Profile or prominent display
-  static const double avatarSizeLarge = 64.0;
+  static const double avatarSizeLarge = 64;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 📱 RESPONSIVE BREAKPOINTS
@@ -171,14 +171,15 @@ class AppConstants {
   // Screen size breakpoints for responsive design
 
   /// Mobile breakpoint (600px) - Phone screens
-  /// Note: Breakpoints use raw logical pixels (not ScreenUtil-scaled) for correct responsive checks
-  static const double breakpointMobile = 600.0;
+  /// Note: Breakpoints use raw logical pixels (not ScreenUtil-scaled) for
+  /// correct responsive checks
+  static const double breakpointMobile = 600;
 
   /// Tablet breakpoint (900px) - Tablet screens
-  static const double breakpointTablet = 900.0;
+  static const double breakpointTablet = 900;
 
   /// Desktop breakpoint (1200px) - Desktop screens
-  static const double breakpointDesktop = 1200.0;
+  static const double breakpointDesktop = 1200;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 🔤 TYPOGRAPHY SCALE
@@ -186,49 +187,49 @@ class AppConstants {
   // Font sizes following Material Design 3 type scale
 
   /// Display Large (57px) - Hero text, major headlines
-  static const double fontSizeDisplayLarge = 57.0;
+  static const double fontSizeDisplayLarge = 57;
 
   /// Display Medium (45px) - Large headers
-  static const double fontSizeDisplayMedium = 45.0;
+  static const double fontSizeDisplayMedium = 45;
 
   /// Display Small (36px) - Section headers
-  static const double fontSizeDisplaySmall = 36.0;
+  static const double fontSizeDisplaySmall = 36;
 
   /// Headline Large (32px) - Page titles
-  static const double fontSizeHeadlineLarge = 32.0;
+  static const double fontSizeHeadlineLarge = 32;
 
   /// Headline Medium (28px) - Card titles
-  static const double fontSizeHeadlineMedium = 28.0;
+  static const double fontSizeHeadlineMedium = 28;
 
   /// Headline Small (24px) - List headers
-  static const double fontSizeHeadlineSmall = 24.0;
+  static const double fontSizeHeadlineSmall = 24;
 
   /// Title Large (22px) - App bar titles
-  static const double fontSizeTitleLarge = 22.0;
+  static const double fontSizeTitleLarge = 22;
 
   /// Title Medium (16px) - Button text, tab labels
-  static const double fontSizeTitleMedium = 16.0;
+  static const double fontSizeTitleMedium = 16;
 
   /// Title Small (14px) - List item titles
-  static const double fontSizeTitleSmall = 14.0;
+  static const double fontSizeTitleSmall = 14;
 
   /// Body Large (16px) - Prominent body text
-  static const double fontSizeBodyLarge = 16.0;
+  static const double fontSizeBodyLarge = 16;
 
   /// Body Medium (14px) - Standard body text
-  static const double fontSizeBodyMedium = 14.0;
+  static const double fontSizeBodyMedium = 14;
 
   /// Body Small (12px) - Supporting text
-  static const double fontSizeBodySmall = 12.0;
+  static const double fontSizeBodySmall = 12;
 
   /// Label Large (14px) - Form labels
-  static const double fontSizeLabelLarge = 14.0;
+  static const double fontSizeLabelLarge = 14;
 
   /// Label Medium (12px) - Caption text
-  static const double fontSizeLabelMedium = 12.0;
+  static const double fontSizeLabelMedium = 12;
 
   /// Label Small (11px) - Small annotations
-  static const double fontSizeLabelSmall = 11.0;
+  static const double fontSizeLabelSmall = 11;
 
   /// Primary font family - Figtree via Google Fonts
   static const String fontFamily = 'Figtree';
@@ -240,11 +241,11 @@ class AppConstants {
   /// Get responsive padding based on screen width
   static EdgeInsets getResponsivePadding(double screenWidth) {
     if (screenWidth >= breakpointDesktop) {
-      return EdgeInsets.all(spacingXXL);
+      return const EdgeInsets.all(spacingXXL);
     } else if (screenWidth >= breakpointTablet) {
-      return EdgeInsets.all(spacingXL);
+      return const EdgeInsets.all(spacingXL);
     } else {
-      return EdgeInsets.all(spacingMD);
+      return const EdgeInsets.all(spacingMD);
     }
   }
 
@@ -255,7 +256,7 @@ class AppConstants {
     } else if (screenWidth >= breakpointTablet) {
       return 1.05; // 5% larger on tablet
     } else {
-      return 1.0; // Standard size on mobile
+      return 1; // Standard size on mobile
     }
   }
 

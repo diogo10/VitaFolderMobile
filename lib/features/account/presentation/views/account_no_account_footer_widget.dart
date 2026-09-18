@@ -36,10 +36,10 @@ class AccountNoAccountFooterWidget extends StatelessWidget {
 }
 
 class _AccountNoAccountTrustItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
 
   const _AccountNoAccountTrustItem({required this.icon, required this.label});
+  final IconData icon;
+  final String label;
 
   @override
   Widget build(BuildContext context) {

@@ -1,20 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/people/domain/entities/family_entity.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:house_mira/core/auth/auth_service.dart';
 
 class PeopleRepositoryImpl implements PeopleRepository {
-  final SupabaseClient _client;
-  final AuthService _authService;
-
   PeopleRepositoryImpl({
-    SupabaseClient? client,
     required AuthService authService,
+    SupabaseClient? client,
   }) : _client = client ?? Supabase.instance.client,
        _authService = authService;
+  final SupabaseClient _client;
+  final AuthService _authService;
 
   @override
   Future<FamilyEntity?> getFamilyBy(String id) async {
@@ -30,7 +29,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
         name: body['name'] as String,
         inviteCode: body['invite_code'] as String,
       );
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error getting the family: $e');
       return null;
     }
@@ -57,8 +56,8 @@ class PeopleRepositoryImpl implements PeopleRepository {
       final family = await getFamilyBy(familyId);
       return family != null
           ? Right(family)
-          : Left(Exception("No families found"));
-    } catch (e) {
+          : Left(Exception('No families found'));
+    } on Object catch (e) {
       debugPrint('Error getting the family: $e');
       return Left(Exception(e.toString()));
     }
@@ -81,8 +80,8 @@ class PeopleRepositoryImpl implements PeopleRepository {
         'invite_code': inviteCode,
       });
 
-      return Right(true);
-    } catch (e) {
+      return const Right(true);
+    } on Object catch (e) {
       debugPrint('Error creating family: $e');
       return Left(Exception(e.toString()));
     }
@@ -116,18 +115,18 @@ class PeopleRepositoryImpl implements PeopleRepository {
       await _client.from('family_memberships').insert({
         'family_id': familyId,
         'user_id': userId,
-        "role": 'member',
+        'role': 'member',
       });
 
       // Add to people table
       final userName = await _authService.getProfileName();
       await _client.from('people').insert({
         'family_id': familyId,
-        'full_name': userName ?? "",
+        'full_name': userName ?? '',
       });
 
-      return Right(true);
-    } catch (e) {
+      return const Right(true);
+    } on Object catch (e) {
       debugPrint('Error joining family: $e');
       return Left(Exception(e.toString()));
     }
@@ -149,7 +148,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
       final familyId = response.first;
       final people = await getProfilesWithRoleForFamily(familyId);
       return Right(people);
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error getting the family: $e');
       return Left(Exception(e.toString()));
     }
@@ -163,7 +162,9 @@ class PeopleRepositoryImpl implements PeopleRepository {
         .eq('user_id', userId);
 
     final rows = res as List;
-    return rows.map((e) => e['family_id'] as String).toList();
+    return rows
+        .map((e) => (e as Map<String, dynamic>)['family_id'] as String)
+        .toList();
   }
 
   @override
@@ -178,24 +179,29 @@ class PeopleRepositoryImpl implements PeopleRepository {
         .eq('user_id', userId);
 
     final rows = res as List;
-    return rows.map((e) => e['role'] as String).toList();
+    return rows
+        .map((e) => (e as Map<String, dynamic>)['role'] as String)
+        .toList();
   }
 
   @override
   Future<List<PersonEntity>> getProfilesWithRoleForFamily(
     String familyId,
   ) async {
-    //TODO: replace this with a edge function
+    // TODO(diogohenrique): replace this with a edge function
 
     // Step 1: get memberships (user_id + role) for the family
     final membershipsRes = await _client
         .from('family_memberships')
         .select('user_id, role')
         .eq('family_id', familyId);
-
-    final memberships = (membershipsRes as List)
-        .map((e) => {'user_id': e['user_id'], 'role': e['role']})
-        .toList();
+    final memberships = (membershipsRes as List).map((e) {
+      final entry = e as Map<String, dynamic>;
+      return {
+        'user_id': entry['user_id'],
+        'role': entry['role'],
+      };
+    }).toList();
 
     final userIds = memberships.map((m) => m['user_id'] as String).toList();
     if (userIds.isEmpty) return [];
@@ -206,7 +212,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
         .select()
         .inFilter('id', userIds);
 
-    final profiles = (profilesRes as List);
+    final profiles = profilesRes as List;
 
     // Step 3: merge role back into each profile (matches the original SELECT)
     final roleByUserId = {for (final m in memberships) m['user_id']: m['role']};
@@ -228,8 +234,8 @@ class PeopleRepositoryImpl implements PeopleRepository {
   }) async {
     try {
       await _client.from('families').update({'name': name}).eq('id', familyId);
-      return Right(true);
-    } catch (e) {
+      return const Right(true);
+    } on Object catch (e) {
       debugPrint('Error updating family name: $e');
       return Left(Exception(e.toString()));
     }
@@ -246,8 +252,8 @@ class PeopleRepositoryImpl implements PeopleRepository {
           .delete()
           .eq('family_id', familyId)
           .eq('user_id', userId);
-      return Right(true);
-    } catch (e) {
+      return const Right(true);
+    } on Object catch (e) {
       debugPrint('Error removing member: $e');
       return Left(Exception(e.toString()));
     }
@@ -270,8 +276,8 @@ class PeopleRepositoryImpl implements PeopleRepository {
       // Delete the family
       await _client.from('families').delete().eq('id', familyId);
 
-      return Right(true);
-    } catch (e) {
+      return const Right(true);
+    } on Object catch (e) {
       debugPrint('Error deleting family: $e');
       return Left(Exception(e.toString()));
     }
@@ -296,7 +302,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
 
       final familyId = response.first['family_id'] as String;
       return Right(familyId);
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error getting family ID: $e');
       return Left(Exception(e.toString()));
     }

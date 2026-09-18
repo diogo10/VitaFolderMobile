@@ -18,13 +18,13 @@ class MockFirebasePlatform extends FirebasePlatform {
 }
 
 class MockFirebaseAppPlatform extends FirebaseAppPlatform {
-  MockFirebaseAppPlatform() : super('mock-app', MockFirebaseOptions());
+  MockFirebaseAppPlatform() : super('mock-app', const MockFirebaseOptions());
 
   @override
   Future<void> delete() async {}
 
   @override
-  FirebaseOptions get options => MockFirebaseOptions();
+  FirebaseOptions get options => const MockFirebaseOptions();
 
   @override
   String get name => 'mock-app';

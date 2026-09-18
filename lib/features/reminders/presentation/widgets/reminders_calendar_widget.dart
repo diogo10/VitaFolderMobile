@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminder_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
+import 'package:intl/intl.dart';
 
 class RemindersCalendarWidget extends StatefulWidget {
+  const RemindersCalendarWidget({required this.reminders, super.key});
   final List<ReminderEntity> reminders;
-
-  const RemindersCalendarWidget({super.key, required this.reminders});
 
   @override
   State<RemindersCalendarWidget> createState() =>
@@ -91,7 +90,7 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: SandPalette.sand100, width: 1),
+          border: Border.all(color: SandPalette.sand100),
           boxShadow: [
             BoxShadow(
               color: SandPalette.sand500.withValues(alpha: 0.12),
@@ -173,8 +172,6 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 7,
         crossAxisSpacing: 4,
-        mainAxisSpacing: 0,
-        childAspectRatio: 1,
       ),
       itemCount: 7,
       itemBuilder: (context, index) {
@@ -183,7 +180,7 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
             names[index].toUpperCase(),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.w700,
-              letterSpacing: 2.0,
+              letterSpacing: 2,
               color: SandPalette.sand300,
             ),
           ),
@@ -202,7 +199,8 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
     final firstDayOfWeek = MaterialLocalizations.of(
       context,
     ).firstDayOfWeekIndex;
-    // Dart weekday: 1=Mon..7=Sun. Convert to 0=Mon..6=Sun, then subtract firstDayOfWeekIndex (0=Mon..6=Sun)
+    // Dart weekday: 1=Mon..7=Sun. Convert to 0=Mon..6=Sun,
+    // then subtract firstDayOfWeekIndex (0=Mon..6=Sun)
     final offset = ((firstDay.weekday - 1 - firstDayOfWeek) % 7 + 7) % 7;
     final cells = offset + daysInMonth;
     final todayKey = _dateFormat.format(DateTime.now());
@@ -215,7 +213,6 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
         crossAxisCount: 7,
         mainAxisSpacing: 8,
         crossAxisSpacing: 4,
-        childAspectRatio: 1,
       ),
       itemCount: cells,
       itemBuilder: (context, index) {
@@ -229,7 +226,7 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
         final isSelected =
             _selectedDate != null && _sameDay(date, _selectedDate!);
         final hasReminders = reminderKeys.contains(dateKey);
-        final isCurrentMonth = true;
+        const isCurrentMonth = true;
 
         return _DayCell(
           day: day,
@@ -252,12 +249,12 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 4.0),
+          padding: const EdgeInsets.only(left: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 12.0),
+                padding: const EdgeInsets.only(left: 12),
                 child: Text(
                   _dayDetailFormat.format(_selectedDate!),
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -267,7 +264,7 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(right: 12.0),
+                padding: const EdgeInsets.only(right: 12),
                 child: Text(
                   '${reminders.length} ${l.homeTasks}',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -284,7 +281,7 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Padding(
-              padding: const EdgeInsets.only(left: 18.0, right: 8.0),
+              padding: const EdgeInsets.only(left: 18, right: 8),
               child: Text(
                 l.remindersCalendarEmptyDay,
                 style: Theme.of(
@@ -313,13 +310,6 @@ class _RemindersCalendarWidgetState extends State<RemindersCalendarWidget> {
 }
 
 class _DayCell extends StatelessWidget {
-  final int day;
-  final bool isToday;
-  final bool isSelected;
-  final bool hasReminders;
-  final bool isCurrentMonth;
-  final VoidCallback onTap;
-
   const _DayCell({
     required this.day,
     required this.isToday,
@@ -328,12 +318,18 @@ class _DayCell extends StatelessWidget {
     required this.isCurrentMonth,
     required this.onTap,
   });
+  final int day;
+  final bool isToday;
+  final bool isSelected;
+  final bool hasReminders;
+  final bool isCurrentMonth;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     Color textColor;
     Color? backgroundColor;
-    double borderRadius = 12;
+    const double borderRadius = 12;
 
     if (isSelected) {
       textColor = Colors.white;

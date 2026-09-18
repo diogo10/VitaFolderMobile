@@ -1,6 +1,5 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
@@ -11,12 +10,13 @@ import 'package:house_mira/features/reminders/domain/repository/reminder_reposit
 import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/domain/usecase/update_reminder_usecase.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _MockReminders extends Mock implements ReminderRepository {}
 
 class _MockPeople extends Mock implements PeopleRepository {}
 
-ReminderModel model() => ReminderModel(
+ReminderModel model() => const ReminderModel(
   title: 'T',
   body: 'B',
   id: '',
@@ -121,11 +121,11 @@ void main() {
     test('fetches unfiltered reminders and resolves creator names', () async {
       when(() => reminders.getReminders('f1')).thenAnswer(
         (_) async => Right<Failure, List<ReminderEntity>>([
-          entity(id: '1'),
+          entity(),
           entity(id: '2', createdBy: 'unknown'),
         ]),
       );
-      stubPeople([PersonEntity(id: 'u1', name: 'Mom')]);
+      stubPeople([const PersonEntity(id: 'u1', name: 'Mom')]);
 
       final result = await GetReminderUsecase(
         repository: reminders,
@@ -200,7 +200,7 @@ void main() {
       when(() => reminders.getReminders('f1')).thenAnswer(
         (_) async => Right<Failure, List<ReminderEntity>>([entity()]),
       );
-      stubPeople([PersonEntity(name: 'Nameless')]);
+      stubPeople([const PersonEntity(name: 'Nameless')]);
 
       final result = await GetReminderUsecase(
         repository: reminders,

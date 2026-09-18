@@ -4,10 +4,10 @@ import 'package:house_mira/features/home/presentation/views/widgets/home_empty_h
 import 'package:house_mira/generated/app_localizations.dart';
 
 Widget _pumpApp() {
-  return MaterialApp(
+  return const MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: const Scaffold(body: HomeEmptyHeaderWidget()),
+    home: Scaffold(body: HomeEmptyHeaderWidget()),
   );
 }
 

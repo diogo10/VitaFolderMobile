@@ -1,23 +1,25 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'app_constants.dart';
+import 'package:house_mira/theme/app_constants.dart';
 
-/// AppTheme provides light and dark theme configurations with Material 3 support
+/// AppTheme provides light and dark theme configurations with Material 3
+/// support
 /// Generated with Flutter Theme Generator - Clean, modular, and maintainable
 ///
 /// Features:
 /// ✅ Uses AppConstants for consistent design tokens
 /// ✅ Modular structure with separate theme components
 /// ✅ Material 3 compliant color schemes
-/// ✅ Support for 6 contrast modes (light, dark, medium/high contrast variants)
+/// ✅ Support for 6 contrast modes (light, dark, medium/high contrast
+/// variants)
 /// ✅ Production-ready with proper type declarations
 class AppTheme {
   AppTheme._(); // Private constructor to prevent instantiation
 
-  // ═══════════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
   // 🎨 PUBLIC THEME GETTERS
-  // ═══════════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
 
   /// Light theme configuration
   static ThemeData get lightTheme => theme(lightScheme());
@@ -38,9 +40,9 @@ class AppTheme {
   /// Dark high contrast theme
   static ThemeData get darkHighContrast => theme(darkHighContrastScheme());
 
-  // ═══════════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
   // 🌈 COLOR SCHEMES - Material 3 compliant
-  // ═══════════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
 
   /// Light color scheme
   static ColorScheme lightScheme() {
@@ -151,16 +153,16 @@ class AppTheme {
   /// Light medium contrast color scheme
   static ColorScheme lightMediumContrastScheme() {
     return lightScheme().copyWith(
-      primary: Color(0xFFb3a38a),
-      surface: Color(0xFFfaf6f9),
+      primary: const Color(0xFFb3a38a),
+      surface: const Color(0xFFfaf6f9),
     );
   }
 
   /// Light high contrast color scheme
   static ColorScheme lightHighContrastScheme() {
     return lightScheme().copyWith(
-      primary: Color(0xFFa4947b),
-      surface: Color(0xFFf5f1f4),
+      primary: const Color(0xFFa4947b),
+      surface: const Color(0xFFf5f1f4),
       outline: const Color(0xff000000),
     );
   }
@@ -168,23 +170,23 @@ class AppTheme {
   /// Dark medium contrast color scheme
   static ColorScheme darkMediumContrastScheme() {
     return darkScheme().copyWith(
-      primary: Color(0xFFbdad94),
-      surface: Color(0xFF150e12),
+      primary: const Color(0xFFbdad94),
+      surface: const Color(0xFF150e12),
     );
   }
 
   /// Dark high contrast color scheme
   static ColorScheme darkHighContrastScheme() {
     return darkScheme().copyWith(
-      primary: Color(0xFFccbca3),
-      surface: Color(0xFF1a1317),
+      primary: const Color(0xFFccbca3),
+      surface: const Color(0xFF1a1317),
       outline: const Color(0xffffffff),
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
   // 🎯 MAIN THEME BUILDER - Clean and modular structure
-  // ═══════════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
 
   /// Main theme function that combines all theme components
   /// Uses clean, modular structure with proper AppConstants integration
@@ -219,21 +221,22 @@ class AppTheme {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
   // 🔤 FONT CONFIGURATION
-  // ═══════════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
 
   static void _configureFonts() {
     GoogleFonts.config.allowRuntimeFetching = !kReleaseMode;
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
   // 🎨 THEME COMPONENTS - All using AppConstants for consistency
-  // ═══════════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════
 
-  /// Text theme using AppConstants for consistent font sizes with Figtree font family
+  /// Text theme using AppConstants for consistent font sizes with Figtree
+  /// font family
   static final TextTheme _textTheme = GoogleFonts.figtreeTextTheme(
-    TextTheme(
+    const TextTheme(
       displayLarge: TextStyle(
         fontSize: AppConstants.fontSizeDisplayLarge,
         fontWeight: FontWeight.w400,
@@ -344,7 +347,7 @@ class AppTheme {
             return AppConstants.elevationLevel2;
           }),
           padding: WidgetStateProperty.all(
-            EdgeInsets.symmetric(
+            const EdgeInsets.symmetric(
               horizontal: AppConstants.spacingLG,
               vertical: AppConstants.spacingMD,
             ),
@@ -387,7 +390,7 @@ class AppTheme {
       FilledButtonThemeData(
         style: ButtonStyle(
           padding: WidgetStateProperty.all(
-            EdgeInsets.symmetric(
+            const EdgeInsets.symmetric(
               horizontal: AppConstants.spacingLG,
               vertical: AppConstants.spacingMD,
             ),
@@ -426,7 +429,7 @@ class AppTheme {
       TextButtonThemeData(
         style: ButtonStyle(
           padding: WidgetStateProperty.all(
-            EdgeInsets.symmetric(
+            const EdgeInsets.symmetric(
               horizontal: AppConstants.spacingLG,
               vertical: AppConstants.spacingMD,
             ),
@@ -462,7 +465,7 @@ class AppTheme {
       OutlinedButtonThemeData(
         style: ButtonStyle(
           padding: WidgetStateProperty.all(
-            EdgeInsets.symmetric(
+            const EdgeInsets.symmetric(
               horizontal: AppConstants.spacingLG,
               vertical: AppConstants.spacingMD,
             ),
@@ -526,7 +529,7 @@ class AppTheme {
   /// Input decoration theme
   static final InputDecorationTheme _inputDecorationTheme =
       InputDecorationTheme(
-        contentPadding: EdgeInsets.symmetric(
+        contentPadding: const EdgeInsets.symmetric(
           horizontal: AppConstants.spacingMD,
           vertical: AppConstants.spacingMD,
         ),
@@ -545,7 +548,7 @@ class AppTheme {
       );
 
   /// App bar theme for light mode
-  static final AppBarTheme _lightAppBarTheme = AppBarTheme(
+  static const AppBarTheme _lightAppBarTheme = AppBarTheme(
     elevation: AppConstants.elevationLevel1,
     centerTitle: false,
     titleSpacing: AppConstants.spacingMD,
@@ -553,7 +556,7 @@ class AppTheme {
   );
 
   /// App bar theme for dark mode
-  static final AppBarTheme _darkAppBarTheme = AppBarTheme(
+  static const AppBarTheme _darkAppBarTheme = AppBarTheme(
     elevation: AppConstants.elevationLevel1,
     centerTitle: false,
     titleSpacing: AppConstants.spacingMD,
@@ -563,7 +566,7 @@ class AppTheme {
   /// Card theme
   static final CardThemeData _cardTheme = CardThemeData(
     elevation: AppConstants.elevationLevel1,
-    margin: EdgeInsets.all(AppConstants.spacingSM),
+    margin: const EdgeInsets.all(AppConstants.spacingSM),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppConstants.radiusLG),
     ),
@@ -571,7 +574,7 @@ class AppTheme {
 
   /// Chip theme
   static final ChipThemeData _chipTheme = ChipThemeData(
-    padding: EdgeInsets.symmetric(
+    padding: const EdgeInsets.symmetric(
       horizontal: AppConstants.spacingMD,
       vertical: AppConstants.spacingSM,
     ),
@@ -581,17 +584,17 @@ class AppTheme {
   );
 
   /// Progress indicator theme
-  static final ProgressIndicatorThemeData _progressIndicatorTheme =
+  static const ProgressIndicatorThemeData _progressIndicatorTheme =
       ProgressIndicatorThemeData();
 
   /// Divider theme
-  static final DividerThemeData _dividerTheme = DividerThemeData(
+  static const DividerThemeData _dividerTheme = DividerThemeData(
     thickness: AppConstants.borderWidthThin,
     space: AppConstants.spacingMD,
   );
 
   /// Bottom navigation bar theme
-  static final BottomNavigationBarThemeData
+  static const BottomNavigationBarThemeData
   _bottomNavigationBarTheme = BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,
     selectedLabelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
@@ -599,7 +602,7 @@ class AppTheme {
   );
 
   /// Tab bar theme
-  static final TabBarThemeData _tabBarTheme = TabBarThemeData(
+  static const TabBarThemeData _tabBarTheme = TabBarThemeData(
     labelPadding: EdgeInsets.symmetric(
       horizontal: AppConstants.spacingMD,
       vertical: AppConstants.spacingSM,
@@ -631,10 +634,10 @@ class AppTheme {
   );
 
   /// Radio theme
-  static final RadioThemeData _radioTheme = RadioThemeData();
+  static const RadioThemeData _radioTheme = RadioThemeData();
 
   /// Slider theme
-  static final SliderThemeData _sliderTheme = SliderThemeData();
+  static const SliderThemeData _sliderTheme = SliderThemeData();
 }
 
 /// Custom theme colors extension for additional brand colors

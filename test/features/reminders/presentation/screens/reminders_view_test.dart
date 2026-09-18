@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
@@ -15,6 +14,7 @@ import 'package:house_mira/features/reminders/presentation/screens/reminders_vie
 import 'package:house_mira/features/reminders/presentation/widgets/reminder_widget.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminders_empty_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _FakeAuthService extends Mock implements AuthService {}
 
@@ -79,7 +79,7 @@ void main() {
       when(
         () => getReminderUsecase('fam-1', type: any(named: 'type')),
       ).thenAnswer(
-        (_) async => Right([
+        (_) async => const Right([
           ReminderEntity(
             id: '1',
             title: 'Test Title',

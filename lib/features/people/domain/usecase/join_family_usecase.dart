@@ -2,9 +2,9 @@ import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 
 class JoinFamilyUsecase {
-  final PeopleRepository repository;
 
   JoinFamilyUsecase({required this.repository});
+  final PeopleRepository repository;
 
   Future<Either<Exception, bool>> call({required String familyCode}) async {
     // Check if the family code is valid

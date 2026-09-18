@@ -6,10 +6,12 @@ import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 
 class GetReminderUsecase {
+  GetReminderUsecase({
+    required this.repository,
+    required this.peopleRepository,
+  });
   final ReminderRepository repository;
   final PeopleRepository peopleRepository;
-
-  GetReminderUsecase({required this.repository, required this.peopleRepository});
 
   Future<Either<Failure, List<ReminderEntity>>> call(
     String familyId, {
@@ -25,7 +27,9 @@ class GetReminderUsecase {
     return remindersResult.fold(
       (err) => Left(Failure(message: err.message)),
       (reminders) async {
-        final people = await peopleRepository.getProfilesWithRoleForFamily(familyId);
+        final people = await peopleRepository.getProfilesWithRoleForFamily(
+          familyId,
+        );
         final peopleById = {
           for (final person in people)
             if (person.id != null) person.id!: person,

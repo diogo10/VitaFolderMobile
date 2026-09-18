@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -12,6 +11,7 @@ import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecas
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminder_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _FakeReminderRepository extends Mock implements ReminderRepository {}
 
@@ -23,7 +23,7 @@ class _FakeGetReminderUsecase extends Mock implements GetReminderUsecase {}
 
 void main() {
   group('ReminderWidget', () {
-    final reminder = ReminderEntity(
+    const reminder = ReminderEntity(
       id: '1',
       title: 'Test Title',
       body: 'Test Body Content',
@@ -49,7 +49,7 @@ void main() {
                   authService: _FakeAuthService(),
                   reminderRepository: _FakeReminderRepository(),
                 ),
-            child: ReminderWidget(reminder: reminder),
+            child: const ReminderWidget(reminder: reminder),
           ),
         ),
       );
@@ -96,7 +96,7 @@ void main() {
     ) async {
       final peopleRepository = _FakePeopleRepository();
       when(
-        () => peopleRepository.getMyFamilyRole(),
+        peopleRepository.getMyFamilyRole,
       ).thenAnswer((_) async => <String>[]);
 
       final cubit = RemindersCubit(
@@ -126,9 +126,9 @@ void main() {
       final peopleRepository = _FakePeopleRepository();
       when(
         () => repository.removeReminder(reminder.id),
-      ).thenAnswer((_) async => Right(true));
+      ).thenAnswer((_) async => const Right(true));
       when(
-        () => peopleRepository.getMyFamilyRole(),
+        peopleRepository.getMyFamilyRole,
       ).thenAnswer((_) async => <String>[]);
 
       final cubit = RemindersCubit(

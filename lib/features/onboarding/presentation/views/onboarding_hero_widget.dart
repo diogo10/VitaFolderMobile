@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:house_mira/theme/sand_palette.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira/theme/sand_palette.dart';
 
 class OnboardingFamilyHeroWidget extends StatelessWidget {
   const OnboardingFamilyHeroWidget({super.key});
@@ -208,15 +208,15 @@ class OnboardingSecurityHeroWidget extends StatelessWidget {
 }
 
 class _TagBadge extends StatelessWidget {
-  final String label;
-  final Color background;
-  final Color foreground;
 
   const _TagBadge({
     required this.label,
     required this.background,
     required this.foreground,
   });
+  final String label;
+  final Color background;
+  final Color foreground;
 
   @override
   Widget build(BuildContext context) {
@@ -247,12 +247,6 @@ class _TagBadge extends StatelessWidget {
 }
 
 class _ReminderCard extends StatelessWidget {
-  final IconData icon;
-  final Color iconBackground;
-  final Color iconColor;
-  final String title;
-  final String subtitle;
-  final List<String>? avatars;
 
   const _ReminderCard({
     required this.icon,
@@ -262,6 +256,12 @@ class _ReminderCard extends StatelessWidget {
     required this.subtitle,
     this.avatars,
   });
+  final IconData icon;
+  final Color iconBackground;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final List<String>? avatars;
 
   @override
   Widget build(BuildContext context) {
@@ -345,9 +345,9 @@ class _ReminderCard extends StatelessWidget {
 }
 
 class _FloatAnimation extends StatefulWidget {
-  final Widget child;
 
   const _FloatAnimation({required this.child});
+  final Widget child;
 
   @override
   State<_FloatAnimation> createState() => _FloatAnimationState();
@@ -383,9 +383,9 @@ class _FloatAnimationState extends State<_FloatAnimation>
 }
 
 class _PulseAnimation extends StatefulWidget {
-  final Widget child;
 
   const _PulseAnimation({required this.child});
+  final Widget child;
 
   @override
   State<_PulseAnimation> createState() => _PulseAnimationState();
@@ -399,7 +399,7 @@ class _PulseAnimationState extends State<_PulseAnimation>
   )..repeat(reverse: true);
 
   late final Animation<double> _scale = Tween<double>(
-    begin: 1.0,
+    begin: 1,
     end: 1.05,
   ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 

@@ -1,7 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:fpdart/fpdart.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/people/domain/entities/family_entity.dart';
 import 'package:house_mira/features/people/domain/entities/people_data.dart';
@@ -11,6 +10,7 @@ import 'package:house_mira/features/people/domain/usecase/get_people_usecase.dar
 import 'package:house_mira/features/people/domain/usecase/join_family_usecase.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_state.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _MockGetPeopleUsecase extends Mock implements GetPeopleUsecase {}
 
@@ -29,13 +29,13 @@ void main() {
 
   final family = FamilyEntity(name: 'The Smiths', inviteCode: 'ABC123');
   final people = [
-    PersonEntity(
+    const PersonEntity(
       id: '1',
       name: 'John',
       email: 'john@example.com',
       role: 'parent',
     ),
-    PersonEntity(
+    const PersonEntity(
       id: '2',
       name: 'Jane',
       email: 'jane@example.com',
@@ -58,8 +58,8 @@ void main() {
     );
   });
 
-  tearDown(() {
-    cubit.close();
+  tearDown(() async {
+    await cubit.close();
   });
 
   group('PeopleCubit', () {

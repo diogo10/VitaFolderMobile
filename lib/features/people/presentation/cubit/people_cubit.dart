@@ -1,29 +1,30 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
-import 'package:house_mira/features/people/domain/usecase/get_people_usecase.dart';
 import 'package:house_mira/features/people/domain/usecase/create_family_usecase.dart';
+import 'package:house_mira/features/people/domain/usecase/get_people_usecase.dart';
 import 'package:house_mira/features/people/domain/usecase/join_family_usecase.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_state.dart';
 
 class PeopleCubit extends Cubit<PeopleState> {
-  GetPeopleUsecase getPeopleUsecase;
-  CreateFamilyUsecase createFamilyUsecase;
-  JoinFamilyUsecase joinFamilyUsecase;
-  final AuthService authService;
-
   PeopleCubit({
     required this.getPeopleUsecase,
     required this.createFamilyUsecase,
     required this.joinFamilyUsecase,
     required this.authService,
   }) : super(PeopleInitial());
+  GetPeopleUsecase getPeopleUsecase;
+  CreateFamilyUsecase createFamilyUsecase;
+  JoinFamilyUsecase joinFamilyUsecase;
+  final AuthService authService;
 
   Future<void> createFamily({required String name}) async {
     emit(PeopleLoading());
     final result = await createFamilyUsecase(name: name);
 
     result.fold((err) => emit(PeopleError()), (created) {
-      getPeople();
+      unawaited(getPeople());
     });
   }
 
@@ -32,7 +33,7 @@ class PeopleCubit extends Cubit<PeopleState> {
     final result = await joinFamilyUsecase(familyCode: familyCode);
 
     result.fold((err) => emit(PeopleInvalidFamilyCode()), (joined) {
-      getPeople();
+      unawaited(getPeople());
     });
   }
 

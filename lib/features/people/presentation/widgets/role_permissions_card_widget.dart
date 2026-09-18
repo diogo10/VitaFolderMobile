@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class RolePermissionsCardWidget extends StatelessWidget {
-  final VoidCallback? onLearnMorePressed;
 
   const RolePermissionsCardWidget({super.key, this.onLearnMorePressed});
+  final VoidCallback? onLearnMorePressed;
 
   @override
   Widget build(BuildContext context) {

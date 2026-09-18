@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_state.dart';
 import 'package:house_mira/features/home/presentation/views/home_view_empty.dart';
-import 'package:house_mira/features/home/presentation/views/widgets/home_empty_header_widget.dart';
 import 'package:house_mira/features/home/presentation/views/widgets/home_empty_footer_widget.dart';
+import 'package:house_mira/features/home/presentation/views/widgets/home_empty_header_widget.dart';
 import 'package:house_mira/features/home/presentation/views/widgets/home_empty_invite_card_widget.dart';
 import 'package:house_mira/features/home/presentation/views/widgets/home_empty_reminders_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 Widget _pumpApp() {
-  return MaterialApp(
+  return const MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: HomeViewEmpty(state: const HomeEmpty()),
+    home: HomeViewEmpty(state: HomeEmpty()),
   );
 }
 

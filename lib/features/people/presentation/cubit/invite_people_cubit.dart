@@ -3,10 +3,9 @@ import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/features/people/presentation/cubit/invite_people_state.dart';
 
 class InvitePeopleCubit extends Cubit<InvitePeopleState> {
-  EdgetFunctions edgetFunctions;
-
   InvitePeopleCubit({required this.edgetFunctions})
     : super(InvitePeopleInitial());
+  EdgetFunctions edgetFunctions;
 
   Future<void> sendInvite({
     required String email,
@@ -26,7 +25,7 @@ class InvitePeopleCubit extends Cubit<InvitePeopleState> {
       }
 
       emit(InvitePeopleSuccess());
-    } catch (e) {
+    } on Object catch (e) {
       emit(InvitePeopleError(message: e.toString()));
     }
   }

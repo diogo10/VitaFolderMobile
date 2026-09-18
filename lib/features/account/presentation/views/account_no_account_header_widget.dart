@@ -12,7 +12,7 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Center(child: const SandBrandMark()),
+        const Center(child: SandBrandMark()),
         const SizedBox(height: 24),
         const Center(child: _AccountNoAccountHeroWidget()),
         const SizedBox(height: 24),
@@ -26,12 +26,12 @@ class AccountNoAccountHeaderWidget extends StatelessWidget {
             children: [
               TextSpan(
                 text: l.accountNoAccountTitleTop,
-                style: TextStyle(color: SandPalette.sand700),
+                style: const TextStyle(color: SandPalette.sand700),
               ),
               const TextSpan(text: '\n'),
               TextSpan(
                 text: l.accountNoAccountTitleBottom,
-                style: TextStyle(color: SandPalette.sand500),
+                style: const TextStyle(color: SandPalette.sand500),
               ),
             ],
           ),
@@ -143,11 +143,11 @@ class _AccountNoAccountHeroWidget extends StatelessWidget {
               height: 32,
               child: Stack(
                 children: [
-                  _HeroAvatar(
+                  const _HeroAvatar(
                     image: 'assets/images/onboarding/avatar_1.jpg',
                     left: 0,
                   ),
-                  _HeroAvatar(
+                  const _HeroAvatar(
                     image: 'assets/images/onboarding/avatar_2.jpg',
                     left: 24,
                   ),
@@ -207,10 +207,10 @@ class _AccountNoAccountHeroWidget extends StatelessWidget {
 }
 
 class _HeroAvatar extends StatelessWidget {
-  final String image;
-  final double left;
 
   const _HeroAvatar({required this.image, required this.left});
+  final String image;
+  final double left;
 
   @override
   Widget build(BuildContext context) {
@@ -231,12 +231,6 @@ class _HeroAvatar extends StatelessWidget {
 }
 
 class _AccountNoAccountChip extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Color background;
-  final Color foreground;
-  final Color border;
-  final Color iconColor;
 
   const _AccountNoAccountChip({
     required this.label,
@@ -246,6 +240,12 @@ class _AccountNoAccountChip extends StatelessWidget {
     required this.border,
     required this.iconColor,
   });
+  final String label;
+  final IconData icon;
+  final Color background;
+  final Color foreground;
+  final Color border;
+  final Color iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -275,9 +275,9 @@ class _AccountNoAccountChip extends StatelessWidget {
 }
 
 class _FloatAnimation extends StatefulWidget {
-  final Widget child;
 
   const _FloatAnimation({required this.child});
+  final Widget child;
 
   @override
   State<_FloatAnimation> createState() => _FloatAnimationState();

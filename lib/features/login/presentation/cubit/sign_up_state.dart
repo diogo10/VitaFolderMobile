@@ -13,16 +13,16 @@ class SignUpLoading extends SignUpState {
 }
 
 class SignUpSuccess extends SignUpState {
-  final User user;
 
   SignUpSuccess(this.user);
+  final User user;
 }
 
 enum SignUpErrorCode { unexpected }
 
 class SignUpError extends SignUpState {
-  final String? message;
-  final SignUpErrorCode? code;
 
   SignUpError({this.message, this.code});
+  final String? message;
+  final SignUpErrorCode? code;
 }

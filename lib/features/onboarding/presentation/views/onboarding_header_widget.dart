@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:house_mira/theme/sand_palette.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira/theme/sand_palette.dart';
 
 class OnboardingHeaderWidget extends StatelessWidget {
-  final VoidCallback onSkip;
 
-  const OnboardingHeaderWidget({super.key, required this.onSkip});
+  const OnboardingHeaderWidget({required this.onSkip, super.key});
+  final VoidCallback onSkip;
 
   @override
   Widget build(BuildContext context) {

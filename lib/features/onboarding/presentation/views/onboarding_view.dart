@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:house_mira/theme/sand_palette.dart';
 import 'package:house_mira/features/onboarding/presentation/views/onboarding_footer_widget.dart';
 import 'package:house_mira/features/onboarding/presentation/views/onboarding_header_widget.dart';
 import 'package:house_mira/features/onboarding/presentation/views/onboarding_hero_widget.dart';
 import 'package:house_mira/features/onboarding/presentation/views/onboarding_page_widget.dart';
 import 'package:house_mira/features/onboarding/presentation/views/onboarding_progress_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira/theme/sand_palette.dart';
 
 class OnboardingView extends StatefulWidget {
+  const OnboardingView({required this.onComplete, super.key});
   final VoidCallback onComplete;
-
-  const OnboardingView({super.key, required this.onComplete});
 
   @override
   State<OnboardingView> createState() => _OnboardingViewState();
@@ -28,18 +27,18 @@ class _OnboardingViewState extends State<OnboardingView> {
     super.dispose();
   }
 
-  void _onSkip() {
+  Future<void> _onSkip() async {
     if (_currentPage == _pageCount - 1) return;
-    _pageController.animateToPage(
+    await _pageController.animateToPage(
       _pageCount - 1,
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOut,
     );
   }
 
-  void _onNext() {
+  Future<void> _onNext() async {
     if (_currentPage < _pageCount - 1) {
-      _pageController.nextPage(
+      await _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
@@ -97,7 +96,6 @@ class _OnboardingViewState extends State<OnboardingView> {
                 children: [
                   OnboardingProgressWidget(
                     currentPage: _currentPage,
-                    pageCount: _pageCount,
                   ),
                   const Spacer(),
                   OnboardingFooterWidget(
@@ -115,13 +113,12 @@ class _OnboardingViewState extends State<OnboardingView> {
 }
 
 class _OnboardingPageData {
-  final String title;
-  final String subtitle;
-  final Widget hero;
-
   const _OnboardingPageData({
     required this.title,
     required this.subtitle,
     required this.hero,
   });
+  final String title;
+  final String subtitle;
+  final Widget hero;
 }

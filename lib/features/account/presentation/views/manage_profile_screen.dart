@@ -1,14 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/widgets/sand/sand_header.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
-import 'package:house_mira/theme/sand_palette.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
 import 'package:house_mira/features/account/presentation/cubit/manage_profile_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/manage_profile_state.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira/theme/sand_palette.dart';
 
 class ManageProfileScreen extends StatefulWidget {
   const ManageProfileScreen({super.key});
@@ -36,9 +38,9 @@ class _ManageProfileScreenState extends State<ManageProfileScreen> {
     super.dispose();
   }
 
-  void _onSave() {
+  Future<void> _onSave() async {
     if (_formKey.currentState?.validate() ?? false) {
-      context.read<ManageProfileCubit>().saveName(_nameController.text);
+      await context.read<ManageProfileCubit>().saveName(_nameController.text);
     }
   }
 
@@ -50,7 +52,7 @@ class _ManageProfileScreenState extends State<ManageProfileScreen> {
       body: BlocConsumer<ManageProfileCubit, ManageProfileState>(
         listener: (context, state) {
           if (state is ManageProfileSuccess) {
-            context.read<AccountCubit>().loadAccount();
+            unawaited(context.read<AccountCubit>().loadAccount());
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(

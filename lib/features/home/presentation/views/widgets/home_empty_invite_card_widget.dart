@@ -3,12 +3,11 @@ import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
 
 class HomeEmptyInviteCardWidget extends StatelessWidget {
-  final VoidCallback onSharePressed;
 
   const HomeEmptyInviteCardWidget({
-    super.key,
-    required this.onSharePressed,
+    required this.onSharePressed, super.key,
   });
+  final VoidCallback onSharePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +28,7 @@ class HomeEmptyInviteCardWidget extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.person_add_alt_1_rounded,
               color: Colors.white,
               size: 26,

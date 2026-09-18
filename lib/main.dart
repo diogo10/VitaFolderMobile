@@ -1,6 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
@@ -20,11 +20,11 @@ import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart'
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
+import 'package:house_mira/firebase_options.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/app_theme.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,7 +42,7 @@ void main() async {
     await slInstance<IReminderNotificationService>(
       instanceName: 'reminderNotificationService',
     ).init();
-  } catch (_) {
+  } on Object catch (_) {
     // Notifications are best-effort; never block app startup.
   }
 
@@ -113,14 +113,13 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-  final bool onboardingCompleted;
-  final AuthStateNotifier? authStateNotifier;
-
   const MyApp({
-    super.key,
     required this.onboardingCompleted,
+    super.key,
     this.authStateNotifier,
   });
+  final bool onboardingCompleted;
+  final AuthStateNotifier? authStateNotifier;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -147,22 +146,22 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       _ownsAuthStateNotifier = true;
     }
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _requestNotificationPermission();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _requestNotificationPermission();
     });
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
-      _requestNotificationPermission();
+      await _requestNotificationPermission();
     }
   }
 
-  void _requestNotificationPermission() {
+  Future<void> _requestNotificationPermission() async {
     if (_notificationPermissionRequested) return;
     _notificationPermissionRequested = true;
-    NotificationPermissionService().requestNotificationPermission();
+    await NotificationPermissionService().requestNotificationPermission();
   }
 
   @override

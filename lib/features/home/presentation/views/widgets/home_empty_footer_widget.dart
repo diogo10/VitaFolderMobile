@@ -24,10 +24,13 @@ class HomeEmptyFooterWidget extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed:() => context.go('/people'),
+                onPressed: () => context.go('/people'),
                 style: TextButton.styleFrom(
                   foregroundColor: context.colorScheme.onSurface,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -62,7 +65,6 @@ class HomeEmptyFooterWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: context.colorScheme.onSurface.withValues(alpha: 0.12),
-              width: 1,
             ),
           ),
           child: Column(

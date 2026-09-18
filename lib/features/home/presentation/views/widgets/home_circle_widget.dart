@@ -4,14 +4,13 @@ import 'package:house_mira/features/people/presentation/widgets/family_member_ca
 import 'package:house_mira/generated/app_localizations.dart';
 
 class HomeCircleWidget extends StatelessWidget {
-  final List<PersonEntity> people;
-  final VoidCallback? onManagePressed;
 
   const HomeCircleWidget({
-    super.key,
-    required this.people,
+    required this.people, super.key,
     this.onManagePressed,
   });
+  final List<PersonEntity> people;
+  final VoidCallback? onManagePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -98,10 +97,10 @@ class HomeCircleWidget extends StatelessWidget {
 }
 
 class _CircleAvatarItem extends StatelessWidget {
-  final PersonEntity person;
-  final FamilyMemberRole role;
 
   const _CircleAvatarItem({required this.person, required this.role});
+  final PersonEntity person;
+  final FamilyMemberRole role;
 
   @override
   Widget build(BuildContext context) {

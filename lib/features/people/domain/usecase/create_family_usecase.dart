@@ -4,18 +4,18 @@ import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 
 class CreateFamilyUsecase {
-  final PeopleRepository repository;
 
   CreateFamilyUsecase({required this.repository});
+  final PeopleRepository repository;
 
   Future<Either<Exception, bool>> call({required String name}) async {
-    final String inviteCode = _generateInviteCode();
+    final inviteCode = _generateInviteCode();
     final result = await repository.createFamily(
       name: name,
       inviteCode: inviteCode,
     );
     if (result.isLeft()) {
-      return Right(false);
+      return const Right(false);
     }
     return result;
   }

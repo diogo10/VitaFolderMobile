@@ -2,13 +2,13 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 
 class AnalyticsService {
-  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
-  final FirebaseAnalyticsObserver _observer;
 
   AnalyticsService()
     : _observer = FirebaseAnalyticsObserver(
         analytics: FirebaseAnalytics.instance,
       );
+  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
+  final FirebaseAnalyticsObserver _observer;
 
   FirebaseAnalytics get analytics => _analytics;
 

@@ -14,13 +14,12 @@ import 'package:timezone/timezone.dart' as tz;
 /// Notifications are local-only: each device schedules its own alerts.
 /// Nothing is sent to other family members.
 class ReminderNotificationPrefs {
-  final bool enabled;
-  final ReminderLeadTime leadTime;
-
   const ReminderNotificationPrefs({
     required this.enabled,
     required this.leadTime,
   });
+  final bool enabled;
+  final ReminderLeadTime leadTime;
 
   static const disabled = ReminderNotificationPrefs(
     enabled: false,
@@ -69,6 +68,15 @@ abstract interface class IReminderNotificationService {
 }
 
 class ReminderNotificationService implements IReminderNotificationService {
+  ReminderNotificationService({
+    required LocalStorageDatasource storage,
+    FlutterLocalNotificationsPlugin? plugin,
+    // Testing seam: Platform.isAndroid is always false on the CI host, so
+    // the Android-only branches below would otherwise be uncoverable.
+    @visibleForTesting bool? isAndroidOverride,
+  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin(),
+       _storage = storage,
+       _isAndroid = isAndroidOverride ?? Platform.isAndroid;
   static const _channelId = 'reminders';
   static const _channelName = 'Reminders';
   static const _channelDescription = 'Reminder notifications';
@@ -77,16 +85,6 @@ class ReminderNotificationService implements IReminderNotificationService {
   final LocalStorageDatasource _storage;
   final bool _isAndroid;
   static bool _timeZonesInitialized = false;
-
-  ReminderNotificationService({
-    FlutterLocalNotificationsPlugin? plugin,
-    required LocalStorageDatasource storage,
-    // Testing seam: Platform.isAndroid is always false on the CI host, so
-    // the Android-only branches below would otherwise be uncoverable.
-    @visibleForTesting bool? isAndroidOverride,
-  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin(),
-       _storage = storage,
-       _isAndroid = isAndroidOverride ?? Platform.isAndroid;
 
   static String _enabledKey(String reminderId) =>
       'reminder_notify_enabled_$reminderId';
@@ -145,7 +143,7 @@ class ReminderNotificationService implements IReminderNotificationService {
       final timeZoneName =
           (await FlutterTimezone.getLocalTimezone()).identifier;
       tz.setLocalLocation(tz.getLocation(timeZoneName)); // coverage:ignore-line
-    } catch (_) {
+    } on Object catch (_) {
       debugPrint('ReminderNotificationService: using default time zone.');
     }
 
@@ -174,7 +172,7 @@ class ReminderNotificationService implements IReminderNotificationService {
           importance: Importance.max,
         ),
       );
-    } catch (_) {
+    } on Object catch (_) {
       debugPrint('ReminderNotificationService: channel setup skipped.');
     }
   }
@@ -183,7 +181,7 @@ class ReminderNotificationService implements IReminderNotificationService {
   Future<bool> hasSystemPermission() async {
     try {
       return await Permission.notification.isGranted;
-    } catch (_) {
+    } on Object catch (_) {
       debugPrint('ReminderNotificationService: permission check failed.');
       return false;
     }
@@ -194,7 +192,7 @@ class ReminderNotificationService implements IReminderNotificationService {
     try {
       final status = await Permission.notification.request();
       return status.isGranted; // coverage:ignore-line
-    } catch (_) {
+    } on Object catch (_) {
       debugPrint('ReminderNotificationService: permission request failed.');
       return false;
     }
@@ -209,7 +207,7 @@ class ReminderNotificationService implements IReminderNotificationService {
             AndroidFlutterLocalNotificationsPlugin
           >();
       return await android?.canScheduleExactNotifications() ?? false;
-    } catch (_) {
+    } on Object catch (_) {
       debugPrint('ReminderNotifications: exact alarm check failed.');
       return false;
     }
@@ -220,7 +218,7 @@ class ReminderNotificationService implements IReminderNotificationService {
     if (!_isAndroid) return;
     try {
       await Permission.scheduleExactAlarm.request();
-    } catch (_) {
+    } on Object catch (_) {
       debugPrint('ReminderNotifications: exact alarm request failed.');
     }
   }
@@ -250,7 +248,7 @@ class ReminderNotificationService implements IReminderNotificationService {
   }) async {
     _ensureTimeZones();
     await _plugin.cancel(id: notificationIdForReminder(reminderId));
-    await _storage.setBool(_enabledKey(reminderId), enabled);
+    await _storage.setBool(_enabledKey(reminderId), value: enabled);
     await _storage.setString(_leadKey(reminderId), '${leadTime.minutes}');
 
     if (!enabled || dueDate == null) {
@@ -315,7 +313,7 @@ class ReminderNotificationService implements IReminderNotificationService {
   @override
   Future<void> cancelReminderNotification(String reminderId) async {
     await _plugin.cancel(id: notificationIdForReminder(reminderId));
-    await _storage.setBool(_enabledKey(reminderId), false);
+    await _storage.setBool(_enabledKey(reminderId), value: false);
   }
 
   static void _ensureTimeZones() {
@@ -333,7 +331,7 @@ class ReminderNotificationService implements IReminderNotificationService {
       final canScheduleExact =
           await android?.canScheduleExactNotifications() ?? false;
       if (canScheduleExact) return AndroidScheduleMode.exactAllowWhileIdle;
-    } catch (_) {
+    } on Object catch (_) {
       debugPrint('ReminderNotificationService: exact alarm check skipped.');
     }
     return AndroidScheduleMode.inexactAllowWhileIdle;

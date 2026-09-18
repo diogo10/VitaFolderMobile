@@ -11,10 +11,6 @@ class AccountLoading extends AccountState {
 }
 
 class AccountLoaded extends AccountState {
-  final String userName;
-  final String email;
-  final String familyCode;
-  final String myRole;
 
   AccountLoaded({
     required this.userName,
@@ -22,6 +18,10 @@ class AccountLoaded extends AccountState {
     required this.familyCode,
     required this.myRole,
   });
+  final String userName;
+  final String email;
+  final String familyCode;
+  final String myRole;
 }
 
 class NoAccount extends AccountState {
@@ -43,8 +43,8 @@ class PasswordResetSent extends AccountState {
 enum PasswordResetErrorCode { emptyEmail, sendFailed }
 
 class PasswordResetError extends AccountState {
-  final PasswordResetErrorCode code;
   PasswordResetError({required this.code});
+  final PasswordResetErrorCode code;
 }
 
 class AccountLoginSuccess extends AccountState {
@@ -62,6 +62,6 @@ class AccountDeletedSuccess extends AccountState {
 enum AccountDeleteErrorCode { soleOwner, sendFailed }
 
 class AccountDeleteFailed extends AccountState {
-  final AccountDeleteErrorCode code;
   AccountDeleteFailed({required this.code});
+  final AccountDeleteErrorCode code;
 }

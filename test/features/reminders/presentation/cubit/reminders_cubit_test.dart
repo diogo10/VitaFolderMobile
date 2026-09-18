@@ -1,7 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:fpdart/fpdart.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
@@ -13,6 +12,7 @@ import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecas
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_state.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_view_mode.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _FakePeopleRepository extends Mock implements PeopleRepository {}
 
@@ -159,7 +159,7 @@ void main() {
     blocTest<RemindersCubit, RemindersState>(
       're-emits loading when refreshing from empty state',
       build: buildCubit,
-      seed: () => EmptyReminders(),
+      seed: EmptyReminders.new,
       setUp: () {
         stubFamily();
         when(
@@ -209,7 +209,7 @@ void main() {
     blocTest<RemindersCubit, RemindersState>(
       'reloads when removal succeeds without a loaded list',
       build: buildCubit,
-      seed: () => EmptyReminders(),
+      seed: EmptyReminders.new,
       setUp: () {
         stubFamily();
         when(
@@ -345,7 +345,7 @@ void main() {
       final cubit = buildCubit();
       addTearDown(cubit.close);
       final all = [
-        ReminderEntity(
+        const ReminderEntity(
           title: 'A',
           body: '',
           id: '1',
@@ -366,7 +366,7 @@ void main() {
       cubit.setFilterTypes({ReminderType.chores});
       expect(cubit.filterTypes, {ReminderType.chores});
       final all = [
-        ReminderEntity(
+        const ReminderEntity(
           title: 'A',
           body: '',
           id: '1',
@@ -377,7 +377,7 @@ void main() {
           createdBy: '',
           createdAt: '',
         ),
-        ReminderEntity(
+        const ReminderEntity(
           title: 'B',
           body: '',
           id: '2',
@@ -397,7 +397,7 @@ void main() {
       build: buildCubit,
       seed: () => LoadedReminders(
         reminders: [
-          ReminderEntity(
+          const ReminderEntity(
             title: 'A',
             body: '',
             id: '1',
@@ -423,7 +423,7 @@ void main() {
     blocTest<RemindersCubit, RemindersState>(
       'setFilterTypes re-emits empty state with filters',
       build: buildCubit,
-      seed: () => EmptyReminders(),
+      seed: EmptyReminders.new,
       act: (cubit) => cubit.setFilterTypes({ReminderType.chores}),
       expect: () => [
         isA<EmptyReminders>().having(
@@ -437,7 +437,7 @@ void main() {
     blocTest<RemindersCubit, RemindersState>(
       'setFilterTypes re-emits loading state with filters',
       build: buildCubit,
-      seed: () => RemindersLoading(),
+      seed: RemindersLoading.new,
       act: (cubit) => cubit.setFilterTypes({ReminderType.chores}),
       expect: () => [
         isA<RemindersLoading>().having(
@@ -451,7 +451,7 @@ void main() {
     blocTest<RemindersCubit, RemindersState>(
       'setFilterTypes re-emits error state with filters',
       build: buildCubit,
-      seed: () => ReminderError(),
+      seed: ReminderError.new,
       act: (cubit) => cubit.setFilterTypes({ReminderType.chores}),
       expect: () => [
         isA<ReminderError>().having(
@@ -477,7 +477,7 @@ void main() {
     blocTest<RemindersCubit, RemindersState>(
       'preserves empty state when toggling',
       build: buildCubit,
-      seed: () => EmptyReminders(),
+      seed: EmptyReminders.new,
       act: (cubit) => cubit.toggleViewMode(),
       expect: () => [
         isA<EmptyReminders>().having(
@@ -491,7 +491,7 @@ void main() {
     blocTest<RemindersCubit, RemindersState>(
       'preserves error state when toggling',
       build: buildCubit,
-      seed: () => ReminderError(),
+      seed: ReminderError.new,
       act: (cubit) => cubit.toggleViewMode(),
       expect: () => [
         isA<ReminderError>().having(
@@ -519,8 +519,9 @@ void main() {
       'toggles back to list on second call',
       build: buildCubit,
       act: (cubit) {
-        cubit.toggleViewMode();
-        cubit.toggleViewMode();
+        cubit
+          ..toggleViewMode()
+          ..toggleViewMode();
       },
       expect: () => [
         isA<ReminderInitialState>().having(
@@ -549,7 +550,7 @@ void main() {
         when(
           () => peopleRepository.getProfilesWithRoleForFamily('f1'),
         ).thenAnswer((_) async => []);
-        final reminder = ReminderEntity(
+        const reminder = ReminderEntity(
           title: 'Take meds',
           body: '',
           id: '1',
@@ -562,7 +563,7 @@ void main() {
         );
         when(
           () => getReminderUsecase.call('f1', type: any(named: 'type')),
-        ).thenAnswer((_) async => Right([reminder]));
+        ).thenAnswer((_) async => const Right([reminder]));
         return buildCubit();
       },
       act: (cubit) async {

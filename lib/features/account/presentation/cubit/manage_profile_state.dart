@@ -15,6 +15,6 @@ class ManageProfileSuccess extends ManageProfileState {
 }
 
 class ManageProfileError extends ManageProfileState {
-  final String message;
   ManageProfileError({required this.message});
+  final String message;
 }

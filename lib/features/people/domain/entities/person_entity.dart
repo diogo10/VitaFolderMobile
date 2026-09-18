@@ -1,11 +1,13 @@
+import 'package:flutter/foundation.dart';
+
+@immutable
 class PersonEntity {
+  const PersonEntity({this.id, this.name, this.email, this.phone, this.role});
   final String? id;
   final String? name;
   final String? email;
   final String? phone;
   final String? role;
-
-  const PersonEntity({this.id, this.name, this.email, this.phone, this.role});
 
   PersonEntity copyWith({
     String? id,

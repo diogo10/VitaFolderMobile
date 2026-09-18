@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class AddFamilyMemberCardWidget extends StatelessWidget {
-  final VoidCallback? onPressed;
 
   const AddFamilyMemberCardWidget({super.key, this.onPressed});
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,6 @@ class AddFamilyMemberCardWidget extends StatelessWidget {
         side: const BorderSide(
           color: Color(0xFFD3B487),
           width: 1.5,
-          strokeAlign: BorderSide.strokeAlignInside,
         ),
       ),
       child: InkWell(

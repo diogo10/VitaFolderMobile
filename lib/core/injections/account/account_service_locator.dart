@@ -8,29 +8,34 @@ import 'package:house_mira/features/account/presentation/cubit/notification_sett
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 
 class AccountServiceLocator {
-  final GetIt sl;
   AccountServiceLocator(this.sl);
+  final GetIt sl;
 
   void init() {
-    sl.registerSingleton<AccountCubit>(
-      AccountCubit(
-        authService: sl<AuthService>(instanceName: 'authService'),
-        peopleRepository: sl<PeopleRepository>(instanceName: 'peopleRepositoryImpl'),
-      ),
-      instanceName: 'accountCubit',
-    );
-    sl.registerSingleton<ManageProfileCubit>(
-      ManageProfileCubit(
-        authService: sl<AuthService>(instanceName: 'authService'),
-      ),
-      instanceName: 'manageProfileCubit',
-    );
-    sl.registerSingleton<NotificationSettingsCubit>(
-      NotificationSettingsCubit(
-        permissionService: NotificationPermissionService(),
-        storage: sl<LocalStorageDatasource>(instanceName: 'localStorageDatasource'),
-      ),
-      instanceName: 'notificationSettingsCubit',
-    );
+    sl
+      ..registerSingleton<AccountCubit>(
+        AccountCubit(
+          authService: sl<AuthService>(instanceName: 'authService'),
+          peopleRepository: sl<PeopleRepository>(
+            instanceName: 'peopleRepositoryImpl',
+          ),
+        ),
+        instanceName: 'accountCubit',
+      )
+      ..registerSingleton<ManageProfileCubit>(
+        ManageProfileCubit(
+          authService: sl<AuthService>(instanceName: 'authService'),
+        ),
+        instanceName: 'manageProfileCubit',
+      )
+      ..registerSingleton<NotificationSettingsCubit>(
+        NotificationSettingsCubit(
+          permissionService: NotificationPermissionService(),
+          storage: sl<LocalStorageDatasource>(
+            instanceName: 'localStorageDatasource',
+          ),
+        ),
+        instanceName: 'notificationSettingsCubit',
+      );
   }
 }

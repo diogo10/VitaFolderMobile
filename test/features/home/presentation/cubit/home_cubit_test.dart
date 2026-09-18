@@ -1,13 +1,13 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:fpdart/fpdart.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/features/home/domain/entities/home_entity.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_state.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _MockGetHomeDataUsecase extends Mock implements GetHomeDataUsecase {}
 
@@ -18,7 +18,7 @@ void main() {
   late HasRemindersUsecase hasRemindersUsecase;
   late HomeCubit cubit;
 
-  final tEntity = HomeEntity(peopleInCircle: []);
+  const tEntity = HomeEntity(peopleInCircle: []);
 
   setUp(() {
     usecase = _MockGetHomeDataUsecase();
@@ -34,8 +34,8 @@ void main() {
     );
   });
 
-  tearDown(() {
-    cubit.close();
+  tearDown(() async {
+    await cubit.close();
   });
 
   group('HomeCubit', () {
@@ -46,7 +46,7 @@ void main() {
     blocTest<HomeCubit, HomeState>(
       'emits [HomeLoading, HomeLoaded] when getHomeData succeeds',
       setUp: () {
-        when(() => usecase()).thenAnswer((_) async => Right(tEntity));
+        when(() => usecase()).thenAnswer((_) async => const Right(tEntity));
       },
       build: () => cubit,
       act: (cubit) => cubit.getHomeData(),
@@ -61,9 +61,10 @@ void main() {
     );
 
     blocTest<HomeCubit, HomeState>(
-      'emits [HomeLoading, HomeLoaded] with reminders flag when reminders exist',
+      'emits [HomeLoading, HomeLoaded] with reminders flag '
+      'when reminders exist',
       setUp: () {
-        when(() => usecase()).thenAnswer((_) async => Right(tEntity));
+        when(() => usecase()).thenAnswer((_) async => const Right(tEntity));
         when(
           () => hasRemindersUsecase(),
         ).thenAnswer((_) async => const Right(true));
@@ -103,7 +104,7 @@ void main() {
     blocTest<HomeCubit, HomeState>(
       'loads without reminders flag when the reminders check fails',
       setUp: () {
-        when(() => usecase()).thenAnswer((_) async => Right(tEntity));
+        when(() => usecase()).thenAnswer((_) async => const Right(tEntity));
         when(
           () => hasRemindersUsecase(),
         ).thenAnswer((_) async => Left(Failure(message: 'boom')));

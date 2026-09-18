@@ -12,71 +12,66 @@ import 'package:house_mira/features/reminders/presentation/cubit/create_reminder
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 
 class ReminderServiceLocator {
-  final GetIt sl;
   ReminderServiceLocator(this.sl);
+  final GetIt sl;
 
   void init() {
-    sl.registerSingleton<IReminderNotificationService>(
-      ReminderNotificationService(
-        storage: sl<LocalStorageDatasource>(
-          instanceName: 'localStorageDatasource',
+    sl
+      ..registerSingleton<IReminderNotificationService>(
+        ReminderNotificationService(
+          storage: sl<LocalStorageDatasource>(
+            instanceName: 'localStorageDatasource',
+          ),
         ),
-      ),
-      instanceName: 'reminderNotificationService',
-    );
-
-    sl.registerSingleton<ReminderRepository>(
-      ReminderRepositoryImpl(),
-      instanceName: 'reminderRepositoryImpl',
-    );
-
-    sl.registerSingleton<GetReminderUsecase>(
-      GetReminderUsecase(
-        repository: sl(instanceName: 'reminderRepositoryImpl'),
-        peopleRepository: sl<PeopleRepository>(
-          instanceName: 'peopleRepositoryImpl',
+        instanceName: 'reminderNotificationService',
+      )
+      ..registerSingleton<ReminderRepository>(
+        ReminderRepositoryImpl(),
+        instanceName: 'reminderRepositoryImpl',
+      )
+      ..registerSingleton<GetReminderUsecase>(
+        GetReminderUsecase(
+          repository: sl(instanceName: 'reminderRepositoryImpl'),
+          peopleRepository: sl<PeopleRepository>(
+            instanceName: 'peopleRepositoryImpl',
+          ),
         ),
-      ),
-      instanceName: 'getReminderUsecase',
-    );
-
-    sl.registerSingleton<CreateReminderUsecase>(
-      CreateReminderUsecase(
-        repository: sl(instanceName: 'reminderRepositoryImpl'),
-      ),
-      instanceName: 'createReminderUsecase',
-    );
-
-    sl.registerSingleton<UpdateReminderUsecase>(
-      UpdateReminderUsecase(
-        repository: sl(instanceName: 'reminderRepositoryImpl'),
-      ),
-      instanceName: 'updateReminderUsecase',
-    );
-
-    sl.registerSingleton<RemindersCubit>(
-      RemindersCubit(
-        getReminderUsecase: sl(instanceName: 'getReminderUsecase'),
-        peopleRepository: sl<PeopleRepository>(
-          instanceName: 'peopleRepositoryImpl',
+        instanceName: 'getReminderUsecase',
+      )
+      ..registerSingleton<CreateReminderUsecase>(
+        CreateReminderUsecase(
+          repository: sl(instanceName: 'reminderRepositoryImpl'),
         ),
-        authService: sl<AuthService>(instanceName: 'authService'),
-        reminderRepository: sl(instanceName: 'reminderRepositoryImpl'),
-        notificationService: sl(instanceName: 'reminderNotificationService'),
-      ),
-      instanceName: 'remindersCubit',
-    );
-
-    sl.registerSingleton<CreateReminderCubit>(
-      CreateReminderCubit(
-        createReminderUsecase: sl(instanceName: 'createReminderUsecase'),
-        updateReminderUsecase: sl(instanceName: 'updateReminderUsecase'),
-        authService: sl<AuthService>(instanceName: 'authService'),
-        peopleRepository: sl<PeopleRepository>(
-          instanceName: 'peopleRepositoryImpl',
+        instanceName: 'createReminderUsecase',
+      )
+      ..registerSingleton<UpdateReminderUsecase>(
+        UpdateReminderUsecase(
+          repository: sl(instanceName: 'reminderRepositoryImpl'),
         ),
-      ),
-      instanceName: 'createReminderCubit',
-    );
+        instanceName: 'updateReminderUsecase',
+      )
+      ..registerSingleton<RemindersCubit>(
+        RemindersCubit(
+          getReminderUsecase: sl(instanceName: 'getReminderUsecase'),
+          peopleRepository: sl<PeopleRepository>(
+            instanceName: 'peopleRepositoryImpl',
+          ),
+          authService: sl<AuthService>(instanceName: 'authService'),
+          reminderRepository: sl(instanceName: 'reminderRepositoryImpl'),
+          notificationService: sl(instanceName: 'reminderNotificationService'),
+        ),
+        instanceName: 'remindersCubit',
+      )
+      ..registerSingleton<CreateReminderCubit>(
+        CreateReminderCubit(
+          createReminderUsecase: sl(instanceName: 'createReminderUsecase'),
+          updateReminderUsecase: sl(instanceName: 'updateReminderUsecase'),
+          authService: sl<AuthService>(instanceName: 'authService'),
+          peopleRepository: sl<PeopleRepository>(
+            instanceName: 'peopleRepositoryImpl',
+          ),
+        ),
+        instanceName: 'createReminderCubit',
+      );
   }
 }

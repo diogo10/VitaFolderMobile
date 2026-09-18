@@ -4,14 +4,13 @@ import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class FilterChipsWidget extends StatelessWidget {
-  final ReminderType? selectedType;
-  final ValueChanged<ReminderType?> onFilterChanged;
-
   const FilterChipsWidget({
-    super.key,
     required this.selectedType,
     required this.onFilterChanged,
+    super.key,
   });
+  final ReminderType? selectedType;
+  final ValueChanged<ReminderType?> onFilterChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +20,6 @@ class FilterChipsWidget extends StatelessWidget {
       _FilterChipData(
         type: null,
         label: l.remindersHeaderAll,
-        icon: null,
         bgColor: SandPalette.sand50,
         borderColor: SandPalette.sand200,
         textColor: SandPalette.sand700,
@@ -120,6 +118,16 @@ class FilterChipsWidget extends StatelessWidget {
 }
 
 class _FilterChipData {
+  const _FilterChipData({
+    required this.type,
+    required this.label,
+    required this.bgColor,
+    required this.borderColor,
+    required this.textColor,
+    required this.activeBgColor,
+    required this.activeTextColor,
+    this.icon,
+  });
   final ReminderType? type;
   final String label;
   final IconData? icon;
@@ -128,29 +136,17 @@ class _FilterChipData {
   final Color textColor;
   final Color activeBgColor;
   final Color activeTextColor;
-
-  const _FilterChipData({
-    required this.type,
-    required this.label,
-    this.icon,
-    required this.bgColor,
-    required this.borderColor,
-    required this.textColor,
-    required this.activeBgColor,
-    required this.activeTextColor,
-  });
 }
 
 class _FilterChip extends StatelessWidget {
-  final _FilterChipData data;
-  final bool isSelected;
-  final VoidCallback onTap;
-
   const _FilterChip({
     required this.data,
     required this.isSelected,
     required this.onTap,
   });
+  final _FilterChipData data;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +167,6 @@ class _FilterChip extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: isSelected ? data.activeBgColor : data.borderColor,
-                width: 1,
               ),
             ),
             child: Row(

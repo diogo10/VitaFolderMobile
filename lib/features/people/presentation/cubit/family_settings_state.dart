@@ -13,11 +13,6 @@ class FamilySettingsLoading extends FamilySettingsState {
 }
 
 class FamilySettingsLoaded extends FamilySettingsState {
-  final String familyName;
-  final List<PersonEntity> members;
-  final String currentUserId;
-  final String? pendingFamilyName;
-  final Set<String> pendingRemovals;
 
   const FamilySettingsLoaded({
     required this.familyName,
@@ -26,6 +21,11 @@ class FamilySettingsLoaded extends FamilySettingsState {
     this.pendingFamilyName,
     this.pendingRemovals = const {},
   });
+  final String familyName;
+  final List<PersonEntity> members;
+  final String currentUserId;
+  final String? pendingFamilyName;
+  final Set<String> pendingRemovals;
 
   FamilySettingsLoaded copyWith({
     String? familyName,
@@ -67,8 +67,8 @@ class FamilySettingsDeleteSuccess extends FamilySettingsState {
 enum FamilySettingsErrorCode { notAdmin, notFound }
 
 class FamilySettingsError extends FamilySettingsState {
-  final String? message;
-  final FamilySettingsErrorCode? code;
 
   const FamilySettingsError({this.message, this.code});
+  final String? message;
+  final FamilySettingsErrorCode? code;
 }

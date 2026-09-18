@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -6,14 +8,14 @@ import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_state.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_view_mode.dart';
+import 'package:house_mira/features/reminders/presentation/widgets/filter_bottom_sheet.dart';
+import 'package:house_mira/features/reminders/presentation/widgets/filter_chips_widget.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminders_calendar_widget.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminders_empty_widget.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminders_error_widget.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminders_header_widget.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminders_loaded_widget.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminders_loading_widget.dart';
-import 'package:house_mira/features/reminders/presentation/widgets/filter_chips_widget.dart';
-import 'package:house_mira/features/reminders/presentation/widgets/filter_bottom_sheet.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class RemindersView extends StatefulWidget {
@@ -29,11 +31,11 @@ class _RemindersViewState extends State<RemindersView> {
     super.initState();
     final cubit = context.read<RemindersCubit>();
     if (cubit.authService.isLoggedIn()) {
-      cubit.getReminders();
+      unawaited(cubit.getReminders());
     }
   }
 
-  void _handleAddPressed() {
+  Future<void> _handleAddPressed() async {
     final cubit = context.read<RemindersCubit>();
     if (!cubit.authService.isLoggedIn()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -41,7 +43,7 @@ class _RemindersViewState extends State<RemindersView> {
       );
       return;
     }
-    context.push('/create-reminder');
+    await context.push('/create-reminder');
   }
 
   @override
@@ -111,7 +113,7 @@ class _RemindersViewState extends State<RemindersView> {
     final cubit = context.read<RemindersCubit>();
     final state = cubit.state;
 
-    Map<ReminderType, int> typeCounts = {};
+    final typeCounts = <ReminderType, int>{};
     if (state is LoadedReminders) {
       for (final reminder in state.reminders) {
         typeCounts[reminder.type] = (typeCounts[reminder.type] ?? 0) + 1;
@@ -122,9 +124,7 @@ class _RemindersViewState extends State<RemindersView> {
       context: context,
       selectedTypes: state.filterTypes,
       typeCounts: typeCounts,
-      onApply: (types) {
-        cubit.setFilterTypes(types);
-      },
+      onApply: cubit.setFilterTypes,
     );
   }
 
@@ -183,7 +183,7 @@ class _RemindersViewState extends State<RemindersView> {
         if (isLoading)
           const SliverToBoxAdapter(child: LinearProgressIndicator()),
         if (filteredReminders.isEmpty)
-          SliverToBoxAdapter(child: RemindersEmptyWidget(isLoading: false))
+          const SliverToBoxAdapter(child: RemindersEmptyWidget())
         else
           RemindersLoadedWidget(reminders: filteredReminders),
       ],

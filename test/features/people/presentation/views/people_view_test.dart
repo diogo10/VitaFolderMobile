@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
@@ -13,6 +11,8 @@ import 'package:house_mira/features/people/presentation/views/people_view.dart';
 import 'package:house_mira/features/people/presentation/widgets/people_empty_widget.dart';
 import 'package:house_mira/features/people/presentation/widgets/people_loaded_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class _MockPeopleCubit extends MockCubit<PeopleState> implements PeopleCubit {}
 
@@ -59,7 +59,7 @@ void main() {
       await tester.pumpWidget(
         pumpApp(
           PeopleLoaded(
-            people: [PersonEntity(id: '1', name: 'John', role: 'parent')],
+            people: [const PersonEntity(id: '1', name: 'John', role: 'parent')],
             inviteCode: 'ABC123',
             familyName: 'The Smiths',
           ),
@@ -96,7 +96,9 @@ void main() {
         await tester.pumpWidget(
           pumpApp(
             PeopleLoaded(
-              people: [PersonEntity(id: '1', name: 'John', role: 'parent')],
+              people: [
+                const PersonEntity(id: '1', name: 'John', role: 'parent'),
+              ],
               inviteCode: 'ABC123',
               familyName: 'The Smiths',
             ),

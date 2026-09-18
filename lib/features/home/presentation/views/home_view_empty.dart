@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_state.dart';
 import 'package:house_mira/features/home/presentation/views/widgets/home_empty_action_card_widget.dart';
@@ -10,11 +9,12 @@ import 'package:house_mira/features/home/presentation/views/widgets/home_empty_h
 import 'package:house_mira/features/home/presentation/views/widgets/home_empty_invite_card_widget.dart';
 import 'package:house_mira/features/home/presentation/views/widgets/home_empty_reminders_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:share_plus/share_plus.dart';
 
 class HomeViewEmpty extends StatelessWidget {
-  final HomeEmpty state;
 
-  const HomeViewEmpty({super.key, required this.state});
+  const HomeViewEmpty({required this.state, super.key});
+  final HomeEmpty state;
 
   Future<void> _shareInvite(BuildContext context) async {
     final l = AppLocalizations.of(context)!;

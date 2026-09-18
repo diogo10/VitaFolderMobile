@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -9,14 +11,13 @@ import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class ReminderWidget extends StatefulWidget {
-  final ReminderEntity reminder;
-  final bool isFutureDay;
-
   const ReminderWidget({
-    super.key,
     required this.reminder,
+    super.key,
     this.isFutureDay = false,
   });
+  final ReminderEntity reminder;
+  final bool isFutureDay;
 
   @override
   State<ReminderWidget> createState() => _ReminderWidgetState();
@@ -39,7 +40,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
-        side: BorderSide(color: _getBorderColor(), width: 1),
+        side: BorderSide(color: _getBorderColor()),
       ),
       elevation: 0,
       shadowColor: SandPalette.sand500.withValues(alpha: 0.10),
@@ -82,7 +83,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
                     children: [
                       Text(
                         reminder.title,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: SandPalette.sand700,
@@ -93,7 +94,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
                         const SizedBox(height: 4),
                         Text(
                           description,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 12,
                             color: SandPalette.sand400,
                             height: 1.4,
@@ -104,7 +105,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
                         const SizedBox(height: 4),
                         Text(
                           reminder.body,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 12,
                             color: SandPalette.sand400,
                             height: 1.4,
@@ -140,21 +141,23 @@ class _ReminderWidgetState extends State<ReminderWidget> {
 
   void _showMenu(BuildContext context) {
     final cubit = context.read<RemindersCubit>();
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      useRootNavigator: true,
-      builder: (context) => _ReminderMenuSheet(
-        reminder: reminder,
-        cubit: cubit,
-        onEdit: () {
-          Navigator.of(context).pop();
-          context.push('/create-reminder', extra: reminder);
-        },
-        onRemove: () async {
-          Navigator.of(context).pop();
-          await _onRemove(cubit);
-        },
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        useRootNavigator: true,
+        builder: (context) => _ReminderMenuSheet(
+          reminder: reminder,
+          cubit: cubit,
+          onEdit: () async {
+            Navigator.of(context).pop();
+            await context.push('/create-reminder', extra: reminder);
+          },
+          onRemove: () async {
+            Navigator.of(context).pop();
+            await _onRemove(cubit);
+          },
+        ),
       ),
     );
   }
@@ -189,7 +192,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
   _TypeColors _getTypeColors(ReminderType type) {
     switch (type) {
       case ReminderType.chores:
-        return _TypeColors(
+        return const _TypeColors(
           iconColor: ReminderTypeColors.chores500,
           bgColor: ReminderTypeColors.chores50,
           borderColor: ReminderTypeColors.chores100,
@@ -198,7 +201,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
           chipTextColor: ReminderTypeColors.chores600,
         );
       case ReminderType.appointment:
-        return _TypeColors(
+        return const _TypeColors(
           iconColor: ReminderTypeColors.appts500,
           bgColor: ReminderTypeColors.appts50,
           borderColor: ReminderTypeColors.appts100,
@@ -207,7 +210,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
           chipTextColor: ReminderTypeColors.appts600,
         );
       case ReminderType.birthday:
-        return _TypeColors(
+        return const _TypeColors(
           iconColor: ReminderTypeColors.bday400,
           bgColor: ReminderTypeColors.bday50,
           borderColor: ReminderTypeColors.bday100,
@@ -216,31 +219,31 @@ class _ReminderWidgetState extends State<ReminderWidget> {
           chipTextColor: ReminderTypeColors.bday600,
         );
       case ReminderType.renewal:
-        return _TypeColors(
-          iconColor: const Color(0xFF4087C3),
-          bgColor: const Color(0xFFE3F2FD),
-          borderColor: const Color(0xFFBBDEFB),
-          badgeColor: const Color(0xFF42A5F5),
-          chipBgColor: const Color(0xFFBBDEFB),
-          chipTextColor: const Color(0xFF1E88E5),
+        return const _TypeColors(
+          iconColor: Color(0xFF4087C3),
+          bgColor: Color(0xFFE3F2FD),
+          borderColor: Color(0xFFBBDEFB),
+          badgeColor: Color(0xFF42A5F5),
+          chipBgColor: Color(0xFFBBDEFB),
+          chipTextColor: Color(0xFF1E88E5),
         );
       case ReminderType.vaccine:
-        return _TypeColors(
-          iconColor: const Color(0xFF6C63B8),
-          bgColor: const Color(0xFFEDE7F6),
-          borderColor: const Color(0xFFD1C4E9),
-          badgeColor: const Color(0xFF7E57C2),
-          chipBgColor: const Color(0xFFD1C4E9),
-          chipTextColor: const Color(0xFF5E35B1),
+        return const _TypeColors(
+          iconColor: Color(0xFF6C63B8),
+          bgColor: Color(0xFFEDE7F6),
+          borderColor: Color(0xFFD1C4E9),
+          badgeColor: Color(0xFF7E57C2),
+          chipBgColor: Color(0xFFD1C4E9),
+          chipTextColor: Color(0xFF5E35B1),
         );
       case ReminderType.reimbursement:
-        return _TypeColors(
-          iconColor: const Color(0xFF4CAF7D),
-          bgColor: const Color(0xFFE8F5E9),
-          borderColor: const Color(0xFFC8E6C9),
-          badgeColor: const Color(0xFF66BB6A),
-          chipBgColor: const Color(0xFFC8E6C9),
-          chipTextColor: const Color(0xFF388E3C),
+        return const _TypeColors(
+          iconColor: Color(0xFF4CAF7D),
+          bgColor: Color(0xFFE8F5E9),
+          borderColor: Color(0xFFC8E6C9),
+          badgeColor: Color(0xFF66BB6A),
+          chipBgColor: Color(0xFFC8E6C9),
+          chipTextColor: Color(0xFF388E3C),
         );
       case ReminderType.custom:
         final primary = Theme.of(context).colorScheme.primary;
@@ -338,13 +341,6 @@ class _ReminderWidgetState extends State<ReminderWidget> {
 }
 
 class _TypeColors {
-  final Color iconColor;
-  final Color bgColor;
-  final Color borderColor;
-  final Color badgeColor;
-  final Color chipBgColor;
-  final Color chipTextColor;
-
   const _TypeColors({
     required this.iconColor,
     required this.bgColor,
@@ -353,16 +349,15 @@ class _TypeColors {
     required this.chipBgColor,
     required this.chipTextColor,
   });
-}
-
-class _IconContainer extends StatelessWidget {
-  final IconData icon;
   final Color iconColor;
   final Color bgColor;
   final Color borderColor;
-  final IconData badgeIcon;
   final Color badgeColor;
+  final Color chipBgColor;
+  final Color chipTextColor;
+}
 
+class _IconContainer extends StatelessWidget {
   const _IconContainer({
     required this.icon,
     required this.iconColor,
@@ -371,6 +366,12 @@ class _IconContainer extends StatelessWidget {
     required this.badgeIcon,
     required this.badgeColor,
   });
+  final IconData icon;
+  final Color iconColor;
+  final Color bgColor;
+  final Color borderColor;
+  final IconData badgeIcon;
+  final Color badgeColor;
 
   @override
   Widget build(BuildContext context) {
@@ -385,7 +386,7 @@ class _IconContainer extends StatelessWidget {
             decoration: BoxDecoration(
               color: bgColor,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: borderColor, width: 1),
+              border: Border.all(color: borderColor),
             ),
             child: Center(child: Icon(icon, size: 28, color: iconColor)),
           ),
@@ -412,10 +413,9 @@ class _IconContainer extends StatelessWidget {
 }
 
 class _AssigneeRow extends StatelessWidget {
+  const _AssigneeRow({required this.assigneeName, required this.assigneeColor});
   final String assigneeName;
   final Color assigneeColor;
-
-  const _AssigneeRow({required this.assigneeName, required this.assigneeColor});
 
   @override
   Widget build(BuildContext context) {
@@ -426,7 +426,7 @@ class _AssigneeRow extends StatelessWidget {
           backgroundColor: SandPalette.sand200,
           child: Text(
             assigneeName.isNotEmpty ? assigneeName[0].toUpperCase() : '?',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 8,
               fontWeight: FontWeight.w600,
               color: SandPalette.sand600,
@@ -448,13 +448,6 @@ class _AssigneeRow extends StatelessWidget {
 }
 
 class _TrailingSection extends StatelessWidget {
-  final String? timeLabel;
-  final String allDayLabel;
-  final String noDateLabel;
-  final bool hasDueDate;
-  final _TypeColors typeColors;
-  final VoidCallback onMenuPressed;
-
   const _TrailingSection({
     required this.timeLabel,
     required this.allDayLabel,
@@ -463,6 +456,12 @@ class _TrailingSection extends StatelessWidget {
     required this.typeColors,
     required this.onMenuPressed,
   });
+  final String? timeLabel;
+  final String allDayLabel;
+  final String noDateLabel;
+  final bool hasDueDate;
+  final _TypeColors typeColors;
+  final VoidCallback onMenuPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -478,7 +477,6 @@ class _TrailingSection extends StatelessWidget {
             color: isAllDay ? typeColors.chipBgColor : typeColors.chipBgColor,
             border: Border.all(
               color: isAllDay ? typeColors.borderColor : typeColors.borderColor,
-              width: 1,
             ),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -504,7 +502,7 @@ class _TrailingSection extends StatelessWidget {
                 color: SandPalette.sand100,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Center(
+              child: const Center(
                 child: Icon(
                   Icons.more_horiz_rounded,
                   size: 18,
@@ -520,26 +518,25 @@ class _TrailingSection extends StatelessWidget {
 }
 
 class _ReminderMenuSheet extends StatelessWidget {
-  final ReminderEntity reminder;
-  final RemindersCubit cubit;
-  final VoidCallback onEdit;
-  final VoidCallback onRemove;
-
   const _ReminderMenuSheet({
     required this.reminder,
     required this.cubit,
     required this.onEdit,
     required this.onRemove,
   });
+  final ReminderEntity reminder;
+  final RemindersCubit cubit;
+  final VoidCallback onEdit;
+  final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
 
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: SandPalette.sand50,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: SafeArea(
         top: false,
@@ -587,17 +584,16 @@ class _ReminderMenuSheet extends StatelessWidget {
 }
 
 class _MenuItem extends StatelessWidget {
+  const _MenuItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.isDestructive = false,
+  });
   final IconData icon;
   final String label;
   final bool isDestructive;
   final VoidCallback onTap;
-
-  const _MenuItem({
-    required this.icon,
-    required this.label,
-    this.isDestructive = false,
-    required this.onTap,
-  });
 
   @override
   Widget build(BuildContext context) {

@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class FamilyHeaderWidget extends StatelessWidget {
-  final String? role;
-  final VoidCallback? onNotificationsPressed;
-  final VoidCallback? onProfilePressed;
 
   const FamilyHeaderWidget({
     super.key,
@@ -12,6 +9,9 @@ class FamilyHeaderWidget extends StatelessWidget {
     this.onNotificationsPressed,
     this.onProfilePressed,
   });
+  final String? role;
+  final VoidCallback? onNotificationsPressed;
+  final VoidCallback? onProfilePressed;
 
   static const _brown = Color(0xFF725C43);
   static const _cream = Color(0xFFF2EDE4);
@@ -24,7 +24,7 @@ class FamilyHeaderWidget extends StatelessWidget {
       children: [
         const _HeaderIcon(icon: Icons.home_rounded),
         const SizedBox(width: 8),
-        Spacer(),
+        const Spacer(),
         Stack(
           clipBehavior: Clip.none,
           children: [
@@ -74,9 +74,9 @@ class FamilyHeaderWidget extends StatelessWidget {
 }
 
 class _HeaderIcon extends StatelessWidget {
-  final IconData icon;
 
   const _HeaderIcon({required this.icon});
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {

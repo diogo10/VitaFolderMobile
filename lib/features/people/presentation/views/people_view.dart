@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
@@ -26,36 +28,39 @@ class _PeopleViewState extends State<PeopleView> {
       return;
     }
 
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.peopleViewCreateFamily),
-        content: TextField(
-          controller: _familyNameController,
-          decoration: InputDecoration(
-            hintText: AppLocalizations.of(context)!.peopleViewFamilyNameHint,
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(AppLocalizations.of(context)!.peopleViewCreateFamily),
+          content: TextField(
+            controller: _familyNameController,
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context)!.peopleViewFamilyNameHint,
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              _familyNameController.clear();
-              Navigator.of(dialogContext).pop();
-            },
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              final name = _familyNameController.text.trim();
-              if (name.isNotEmpty) {
-                context.read<PeopleCubit>().createFamily(name: name);
+          actions: [
+            TextButton(
+              onPressed: () {
                 _familyNameController.clear();
                 Navigator.of(dialogContext).pop();
-              }
-            },
-            child: Text(AppLocalizations.of(context)!.ok),
-          ),
-        ],
+              },
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () async {
+                final name = _familyNameController.text.trim();
+                if (name.isNotEmpty) {
+                  final navigator = Navigator.of(dialogContext);
+                  await context.read<PeopleCubit>().createFamily(name: name);
+                  _familyNameController.clear();
+                  navigator.pop();
+                }
+              },
+              child: Text(AppLocalizations.of(context)!.ok),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -63,7 +68,7 @@ class _PeopleViewState extends State<PeopleView> {
   @override
   void initState() {
     super.initState();
-    context.read<PeopleCubit>().getPeople();
+    unawaited(context.read<PeopleCubit>().getPeople());
   }
 
   @override

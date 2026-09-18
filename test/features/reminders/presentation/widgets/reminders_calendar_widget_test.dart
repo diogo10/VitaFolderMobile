@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:intl/intl.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminders_calendar_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   group('RemindersCalendarWidget', () {

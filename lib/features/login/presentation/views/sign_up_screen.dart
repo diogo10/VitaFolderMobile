@@ -32,9 +32,9 @@ class _SignUpViewState extends State<SignUpView> {
     super.dispose();
   }
 
-  void _onSignUp() {
+  Future<void> _onSignUp() async {
     if (_formKey.currentState?.validate() ?? false) {
-      context.read<SignUpCubit>().signUp(
+      await context.read<SignUpCubit>().signUp(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
@@ -97,12 +97,12 @@ class _SignUpViewState extends State<SignUpView> {
                         children: [
                           TextSpan(
                             text: l.signUpTitleTop,
-                            style: TextStyle(color: SandPalette.sand700),
+                            style: const TextStyle(color: SandPalette.sand700),
                           ),
                           const TextSpan(text: '\n'),
                           TextSpan(
                             text: l.signUpTitleBottom,
-                            style: TextStyle(color: SandPalette.sand500),
+                            style: const TextStyle(color: SandPalette.sand500),
                           ),
                         ],
                       ),
@@ -209,10 +209,10 @@ class _SignUpViewState extends State<SignUpView> {
                                 ?.copyWith(color: SandPalette.sand400),
                             children: [
                               TextSpan(text: l.signUpAlreadyHaveAccount),
-                              TextSpan(text: ' '),
+                              const TextSpan(text: ' '),
                               TextSpan(
                                 text: l.signUpSignInLink,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: SandPalette.sand600,
                                   fontWeight: FontWeight.w700,
                                   decoration: TextDecoration.underline,

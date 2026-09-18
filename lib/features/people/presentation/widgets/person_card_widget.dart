@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 
 class PersonCardWidget extends StatelessWidget {
-  final String name;
-  final String email;
-  final String phone;
-  final int id;
-
   const PersonCardWidget({
-    super.key,
     required this.name,
     required this.email,
     required this.phone,
     required this.id,
+    super.key,
   });
+  final String name;
+  final String email;
+  final String phone;
+  final int id;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +24,6 @@ class PersonCardWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: const Color.fromARGB(33, 158, 158, 158),
-              width: 1,
             ),
           ),
           width: double.infinity,

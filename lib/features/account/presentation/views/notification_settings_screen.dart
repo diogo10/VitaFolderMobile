@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/widgets/sand/sand_header.dart';
@@ -20,7 +22,7 @@ class _NotificationSettingsScreenState
   @override
   void initState() {
     super.initState();
-    context.read<NotificationSettingsCubit>().loadSettings();
+    unawaited(context.read<NotificationSettingsCubit>().loadSettings());
   }
 
   @override
@@ -61,6 +63,8 @@ class _NotificationSettingsScreenState
                       }
 
                       final loaded = state as NotificationSettingsLoaded;
+                      final enableSubtitle =
+                          l.notificationSettingsEnableNotificationsSubtitle;
                       return ListView(
                         padding: const EdgeInsets.all(24),
                         children: [
@@ -106,7 +110,7 @@ class _NotificationSettingsScreenState
                                         ?.copyWith(fontWeight: FontWeight.bold),
                                   ),
                                   subtitle: Text(
-                                    l.notificationSettingsEnableNotificationsSubtitle,
+                                    enableSubtitle,
                                     style: context.textTheme.bodySmall
                                         ?.copyWith(
                                           color: context.colorScheme.onSurface
@@ -116,7 +120,9 @@ class _NotificationSettingsScreenState
                                   value: loaded.notificationsEnabled,
                                   onChanged: (value) => context
                                       .read<NotificationSettingsCubit>()
-                                      .setNotificationsEnabled(value),
+                                      .setNotificationsEnabled(
+                                        enabled: value,
+                                      ),
                                 ),
                               ],
                             ),
@@ -134,10 +140,9 @@ class _NotificationSettingsScreenState
 }
 
 class _SettingsIcon extends StatelessWidget {
+  const _SettingsIcon({required this.icon, required this.color});
   final IconData icon;
   final Color color;
-
-  const _SettingsIcon({required this.icon, required this.color});
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,5 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/people/domain/usecase/create_family_usecase.dart';
 import 'package:house_mira/features/people/domain/usecase/delete_family_usecase.dart';
@@ -8,6 +7,7 @@ import 'package:house_mira/features/people/domain/usecase/get_my_family_id_useca
 import 'package:house_mira/features/people/domain/usecase/join_family_usecase.dart';
 import 'package:house_mira/features/people/domain/usecase/remove_member_usecase.dart';
 import 'package:house_mira/features/people/domain/usecase/update_family_name_usecase.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _MockPeople extends Mock implements PeopleRepository {}
 

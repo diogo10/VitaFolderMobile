@@ -1,17 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/login/presentation/cubit/sign_up_state.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignUpCubit extends Cubit<SignUpState> {
-  final AuthService _authService;
-
   SignUpCubit(this._authService) : super(SignUpInitial());
+  final AuthService _authService;
 
   Future<void> signUp({
     required String email,
     required String password,
-    required String name
+    required String name,
   }) async {
     emit(SignUpLoading());
 
@@ -19,7 +18,7 @@ class SignUpCubit extends Cubit<SignUpState> {
       final user = await _authService.signUp(
         email: email,
         password: password,
-        name: name
+        name: name,
       );
 
       if (user != null) {
@@ -29,7 +28,7 @@ class SignUpCubit extends Cubit<SignUpState> {
       }
     } on AuthException catch (e) {
       emit(SignUpError(message: e.message));
-    } catch (e) {
+    } on Object catch (e) {
       emit(SignUpError(message: e.toString()));
     }
   }

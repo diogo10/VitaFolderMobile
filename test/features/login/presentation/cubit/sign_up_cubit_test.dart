@@ -1,10 +1,10 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/login/presentation/cubit/sign_up_cubit.dart';
 import 'package:house_mira/features/login/presentation/cubit/sign_up_state.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class _MockAuthService extends Mock implements AuthService {}
 
@@ -74,7 +74,7 @@ void main() {
             password: any(named: 'password'),
             name: any(named: 'name'),
           ),
-        ).thenThrow(AuthException('Email taken'));
+        ).thenThrow(const AuthException('Email taken'));
       },
       act: (cubit) =>
           cubit.signUp(email: 'a@b.c', password: 'secret123', name: 'Ana'),

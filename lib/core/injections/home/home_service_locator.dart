@@ -7,40 +7,39 @@ import 'package:house_mira/features/people/domain/repository/people_repository.d
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 
 class HomeServiceLocator {
-  final GetIt sl;
   HomeServiceLocator(this.sl);
+  final GetIt sl;
 
   void init(AuthService authService) {
-    sl.registerSingleton<GetHomeDataUsecase>(
-      GetHomeDataUsecase(
-        authService: authService,
-        peopleRepository: sl(instanceName: 'peopleRepositoryImpl'),
-        reminderRepository: sl<ReminderRepository>(
-          instanceName: 'reminderRepositoryImpl',
+    sl
+      ..registerSingleton<GetHomeDataUsecase>(
+        GetHomeDataUsecase(
+          authService: authService,
+          peopleRepository: sl(instanceName: 'peopleRepositoryImpl'),
+          reminderRepository: sl<ReminderRepository>(
+            instanceName: 'reminderRepositoryImpl',
+          ),
         ),
-      ),
-      instanceName: 'getHomeDataUsecase',
-    );
-
-    sl.registerSingleton<HasRemindersUsecase>(
-      HasRemindersUsecase(
-        authService: authService,
-        peopleRepository: sl<PeopleRepository>(
-          instanceName: 'peopleRepositoryImpl',
+        instanceName: 'getHomeDataUsecase',
+      )
+      ..registerSingleton<HasRemindersUsecase>(
+        HasRemindersUsecase(
+          authService: authService,
+          peopleRepository: sl<PeopleRepository>(
+            instanceName: 'peopleRepositoryImpl',
+          ),
+          reminderRepository: sl<ReminderRepository>(
+            instanceName: 'reminderRepositoryImpl',
+          ),
         ),
-        reminderRepository: sl<ReminderRepository>(
-          instanceName: 'reminderRepositoryImpl',
+        instanceName: 'hasRemindersUsecase',
+      )
+      ..registerSingleton<HomeCubit>(
+        HomeCubit(
+          getHomeDataUsecase: sl(instanceName: 'getHomeDataUsecase'),
+          hasRemindersUsecase: sl(instanceName: 'hasRemindersUsecase'),
         ),
-      ),
-      instanceName: 'hasRemindersUsecase',
-    );
-
-    sl.registerSingleton<HomeCubit>(
-      HomeCubit(
-        getHomeDataUsecase: sl(instanceName: 'getHomeDataUsecase'),
-        hasRemindersUsecase: sl(instanceName: 'hasRemindersUsecase'),
-      ),
-      instanceName: 'homeCubit',
-    );
+        instanceName: 'homeCubit',
+      );
   }
 }

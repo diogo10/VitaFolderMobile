@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
@@ -17,7 +19,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    context.read<HomeCubit>().getHomeData();
+    unawaited(context.read<HomeCubit>().getHomeData());
   }
 
   @override

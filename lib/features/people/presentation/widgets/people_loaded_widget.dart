@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,37 +9,37 @@ import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/people/presentation/widgets/add_family_member_card_widget.dart';
-import 'package:house_mira/features/people/presentation/widgets/family_member_card_widget.dart';
 import 'package:house_mira/features/people/presentation/widgets/family_header_widget.dart';
+import 'package:house_mira/features/people/presentation/widgets/family_member_card_widget.dart';
 import 'package:house_mira/features/people/presentation/widgets/invite_code_card_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class PeopleLoadedWidget extends StatefulWidget {
-  final List<PersonEntity> people;
-  final String inviteCode;
-  final String familyName;
-
   const PeopleLoadedWidget({
-    super.key,
     required this.people,
     required this.inviteCode,
     required this.familyName,
+    super.key,
   });
+  final List<PersonEntity> people;
+  final String inviteCode;
+  final String familyName;
 
   @override
   State<PeopleLoadedWidget> createState() => _PeopleLoadedWidgetState();
 }
 
 class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
-  final _storage = GetIt.instance<LocalStorageDatasource>(
-    instanceName: 'localStorageDatasource',
-  );
+  final LocalStorageDatasource _storage =
+      GetIt.instance<LocalStorageDatasource>(
+        instanceName: 'localStorageDatasource',
+      );
   bool _showInviteCodeCard = true;
 
   @override
   void initState() {
     super.initState();
-    _loadInviteCodeCardVisibility();
+    unawaited(_loadInviteCodeCardVisibility());
   }
 
   Future<void> _loadInviteCodeCardVisibility() async {
@@ -70,7 +72,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
     };
 
     final cards = <Widget>[];
-    for (int i = 0; i < widget.people.length; i++) {
+    for (var i = 0; i < widget.people.length; i++) {
       if (i > 0) cards.add(const SizedBox(height: 10));
       final person = widget.people[i];
       final role = _roleFromString(person.role);
@@ -117,7 +119,12 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
   }
 
   void _closeInviteCodeCardClicked() {
-    _storage.setBool('invite_code_card_dismissed_${widget.inviteCode}', true);
+    unawaited(
+      _storage.setBool(
+        'invite_code_card_dismissed_${widget.inviteCode}',
+        value: true,
+      ),
+    );
     setState(() => _showInviteCodeCard = false);
   }
 
@@ -161,7 +168,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
               ),
               if (_showInviteCodeCard)
                 Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
+                  padding: const EdgeInsets.only(top: 8),
                   child: InviteCodeCardWidget(
                     code: widget.inviteCode,
                     expiresInDays: 6,
@@ -179,7 +186,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                 ),
               SizedBox(height: _showInviteCodeCard ? 26 : 8),
               Padding(
-                padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                padding: const EdgeInsets.only(top: 8, bottom: 8),
                 child: Row(
                   children: [
                     Expanded(

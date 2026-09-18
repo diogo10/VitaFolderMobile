@@ -1,19 +1,18 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AccountCubit extends Cubit<AccountState> {
-  final AuthService _authService;
-  final PeopleRepository _peopleRepository;
-
   AccountCubit({
     required AuthService authService,
     required PeopleRepository peopleRepository,
   }) : _authService = authService,
        _peopleRepository = peopleRepository,
        super(AccountInitial());
+  final AuthService _authService;
+  final PeopleRepository _peopleRepository;
 
   Future<void> loadAccount() async {
     emit(AccountLoading());
@@ -26,7 +25,7 @@ class AccountCubit extends Cubit<AccountState> {
         final myRole = await _peopleRepository.getMyFamilyRole();
         emit(
           AccountLoaded(
-            userName: user.name ?? "------",
+            userName: user.name ?? '------',
             email: user.email ?? '',
             familyCode: familyCode,
             myRole: myRole.first,
@@ -37,7 +36,7 @@ class AccountCubit extends Cubit<AccountState> {
       }
 
       emit(NoAccount());
-    } catch (_) {
+    } on Object catch (_) {
       emit(NoAccount());
     }
   }
@@ -67,13 +66,39 @@ class AccountCubit extends Cubit<AccountState> {
     }
   }
 
+  /// Signs in with Google via the native ID token exchange.
+  ///
+  /// Delegates to [AuthService.signInWithGoogle]. Emits [NoAccount] when
+  /// the user cancels the Google flow (nothing happened, back to the
+  /// form), [LoginFailed] when the exchange fails, and loads the account
+  /// on success like [signIn] does.
+  Future<void> signInWithGoogle() async {
+    emit(AccountLoading());
+
+    try {
+      final user = await _authService.signInWithGoogle();
+
+      if (user == null) {
+        emit(NoAccount());
+        return;
+      }
+
+      emit(AccountLoginSuccess());
+      await loadAccount();
+    } on AuthException {
+      emit(LoginFailed());
+    } on Object catch (_) {
+      emit(NoAccount());
+    }
+  }
+
   Future<void> signOut() async {
     emit(AccountLoading());
 
     try {
       await _authService.signOut();
       emit(AccountLogoutSuccess());
-    } catch (_) {
+    } on Object catch (_) {
       emit(NoAccount());
     }
   }
@@ -97,7 +122,7 @@ class AccountCubit extends Cubit<AccountState> {
     } on SoleOwnerException {
       emit(AccountDeleteFailed(code: AccountDeleteErrorCode.soleOwner));
       await loadAccount();
-    } catch (_) {
+    } on Object catch (_) {
       emit(AccountDeleteFailed(code: AccountDeleteErrorCode.sendFailed));
       await loadAccount();
     }
@@ -112,7 +137,7 @@ class AccountCubit extends Cubit<AccountState> {
     try {
       await _authService.resetPassword(email);
       emit(PasswordResetSent());
-    } catch (_) {
+    } on Object catch (_) {
       emit(PasswordResetError(code: PasswordResetErrorCode.sendFailed));
     }
   }

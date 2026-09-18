@@ -5,20 +5,19 @@ import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class FamilyMemberSettingsTile extends StatelessWidget {
+  const FamilyMemberSettingsTile({
+    required this.person,
+    required this.currentUserId,
+    required this.familyName,
+    super.key,
+    this.onRemove,
+    this.isRemoving = false,
+  });
   final PersonEntity person;
   final String currentUserId;
   final String familyName;
   final VoidCallback? onRemove;
   final bool isRemoving;
-
-  const FamilyMemberSettingsTile({
-    super.key,
-    required this.person,
-    required this.currentUserId,
-    required this.familyName,
-    this.onRemove,
-    this.isRemoving = false,
-  });
 
   bool get isCurrentUser => person.id == currentUserId;
 
@@ -92,7 +91,7 @@ class FamilyMemberSettingsTile extends StatelessWidget {
                           ),
                           child: Text(
                             l.youBadge,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: SandPalette.sand400,
                               fontSize: 8,
                               fontWeight: FontWeight.w700,

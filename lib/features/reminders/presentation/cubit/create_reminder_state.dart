@@ -11,9 +11,9 @@ class CreateReminderLoading extends CreateReminderState {
 }
 
 class CreateReminderSuccess extends CreateReminderState {
-  final String reminderId;
 
   CreateReminderSuccess({required this.reminderId});
+  final String reminderId;
 }
 
 class UpdatedReminderSuccess extends CreateReminderState {
@@ -23,7 +23,7 @@ class UpdatedReminderSuccess extends CreateReminderState {
 enum CreateReminderErrorCode { noFamily, authRequired }
 
 class CreateReminderError extends CreateReminderState {
+  CreateReminderError({this.message, this.code});
   final String? message;
   final CreateReminderErrorCode? code;
-  CreateReminderError({this.message, this.code});
 }

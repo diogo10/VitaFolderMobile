@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:go_router/go_router.dart' show GoRouter;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Reactive bridge between Supabase auth and the [GoRouter] configuration.
@@ -63,7 +64,7 @@ class AuthStateNotifier extends ChangeNotifier {
 
   @override
   void dispose() {
-    _subscription?.cancel();
+    unawaited(_subscription?.cancel());
     super.dispose();
   }
 }

@@ -3,12 +3,12 @@ import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_view_mode.dart';
 
 sealed class RemindersState {
-  final RemindersViewMode viewMode;
-  final Set<ReminderType> filterTypes;
   RemindersState({
     this.viewMode = RemindersViewMode.list,
     this.filterTypes = const {},
   });
+  final RemindersViewMode viewMode;
+  final Set<ReminderType> filterTypes;
 }
 
 class ReminderInitialState extends RemindersState {
@@ -20,9 +20,6 @@ class RemindersLoading extends RemindersState {
 }
 
 class LoadedReminders extends RemindersState {
-  final List<ReminderEntity> reminders;
-  final ReminderType? type;
-  final bool isLoading;
 
   LoadedReminders({
     required this.reminders,
@@ -31,11 +28,12 @@ class LoadedReminders extends RemindersState {
     super.viewMode,
     super.filterTypes,
   });
+  final List<ReminderEntity> reminders;
+  final ReminderType? type;
+  final bool isLoading;
 }
 
 class EmptyReminders extends RemindersState {
-  final ReminderType? type;
-  final bool isLoading;
 
   EmptyReminders({
     this.type,
@@ -43,6 +41,8 @@ class EmptyReminders extends RemindersState {
     super.viewMode,
     super.filterTypes,
   });
+  final ReminderType? type;
+  final bool isLoading;
 }
 
 class ReminderError extends RemindersState {

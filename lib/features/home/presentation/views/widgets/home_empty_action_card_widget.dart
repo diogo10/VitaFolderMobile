@@ -2,20 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
 
 class HomeEmptyActionCardWidget extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String buttonLabel;
-  final VoidCallback onPressed;
-
   const HomeEmptyActionCardWidget({
-    super.key,
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.buttonLabel,
     required this.onPressed,
+    super.key,
   });
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String buttonLabel;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {

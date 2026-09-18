@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -11,6 +10,7 @@ import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecas
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminders_loaded_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _FakePeopleRepository extends Mock implements PeopleRepository {}
 
@@ -32,8 +32,8 @@ void main() {
     );
   });
 
-  tearDown(() {
-    cubit.close();
+  tearDown(() async {
+    await cubit.close();
   });
 
   Widget pumpApp(List<ReminderEntity> reminders) {
@@ -90,7 +90,8 @@ void main() {
       );
       expect(
         find.text(
-          '${l.remindersLoadedSectionTomorrow} · ${_monthDay(now.add(const Duration(days: 1)))}',
+          '${l.remindersLoadedSectionTomorrow} · '
+          '${_monthDay(now.add(const Duration(days: 1)))}',
         ),
         findsOneWidget,
       );

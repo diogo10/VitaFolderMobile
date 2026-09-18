@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/generated/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PeopleEmptyWidget extends StatefulWidget {
-  final VoidCallback? onCreateFamilyPressed;
-  final ValueChanged<String>? onJoinFamilyPressed;
-  final RefreshCallback? onRefresh;
 
   const PeopleEmptyWidget({
     super.key,
@@ -15,6 +12,9 @@ class PeopleEmptyWidget extends StatefulWidget {
     this.onJoinFamilyPressed,
     this.onRefresh,
   });
+  final VoidCallback? onCreateFamilyPressed;
+  final ValueChanged<String>? onJoinFamilyPressed;
+  final RefreshCallback? onRefresh;
 
   @override
   State<PeopleEmptyWidget> createState() => _PeopleEmptyWidgetState();

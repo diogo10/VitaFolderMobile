@@ -1,9 +1,7 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
-import 'package:house_mira/features/home/domain/entities/home_entity.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
 import 'package:house_mira/features/people/domain/entities/family_entity.dart';
@@ -12,6 +10,7 @@ import 'package:house_mira/features/people/domain/repository/people_repository.d
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _MockAuth extends Mock implements AuthService {}
 
@@ -19,9 +18,9 @@ class _MockPeople extends Mock implements PeopleRepository {}
 
 class _MockReminders extends Mock implements ReminderRepository {}
 
-PersonEntity _person() => PersonEntity(id: 'u1', name: 'Ana');
+PersonEntity _person() => const PersonEntity(id: 'u1', name: 'Ana');
 
-ReminderEntity _reminder() => ReminderEntity(
+ReminderEntity _reminder() => const ReminderEntity(
   id: '1',
   title: 'T',
   body: 'B',
@@ -92,7 +91,7 @@ void main() {
       final result = await build()();
 
       expect(result.isRight(), isTrue);
-      final HomeEntity home = result.getRight().toNullable()!;
+      final home = result.getRight().toNullable()!;
       expect(home.familyName, 'Fam');
       expect(home.activeMembers, 1);
       expect(home.hasReminders, isTrue);
@@ -115,7 +114,7 @@ void main() {
 
       final result = await build()();
 
-      final HomeEntity home = result.getRight().toNullable()!;
+      final home = result.getRight().toNullable()!;
       expect(home.familyName, '');
       expect(home.reminders, isEmpty);
       expect(home.hasReminders, isFalse);
@@ -140,7 +139,7 @@ void main() {
 
       final result = await build()();
 
-      final HomeEntity home = result.getRight().toNullable()!;
+      final home = result.getRight().toNullable()!;
       expect(home.hasReminders, isFalse);
       expect(home.myRole, '');
     });

@@ -1,9 +1,9 @@
 class Failure implements Exception {
-  final String message;
   Failure({this.message = 'Unexpected error occurred.'});
+  final String message;
 }
 
 class NoDataException implements Exception {
-  final String message;
   NoDataException({this.message = 'No data available.'});
+  final String message;
 }

@@ -34,6 +34,20 @@ OutlineInputBorder _outlineBorder({double width = 1}) {
 }
 
 class SandLabeledField extends StatefulWidget {
+  const SandLabeledField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    required this.prefixIcon,
+    super.key,
+    this.obscureText = false,
+    this.helperText,
+    this.labelTrailing,
+    this.keyboardType,
+    this.textCapitalization = TextCapitalization.none,
+    this.validator,
+    this.enabled = true,
+  });
   final TextEditingController controller;
   final String label;
   final String hint;
@@ -45,21 +59,6 @@ class SandLabeledField extends StatefulWidget {
   final TextCapitalization textCapitalization;
   final String? Function(String?)? validator;
   final bool enabled;
-
-  const SandLabeledField({
-    super.key,
-    required this.controller,
-    required this.label,
-    required this.hint,
-    required this.prefixIcon,
-    this.obscureText = false,
-    this.helperText,
-    this.labelTrailing,
-    this.keyboardType,
-    this.textCapitalization = TextCapitalization.none,
-    this.validator,
-    this.enabled = true,
-  });
 
   @override
   State<SandLabeledField> createState() => _SandLabeledFieldState();

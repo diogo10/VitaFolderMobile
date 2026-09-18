@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class SandSocialButton extends StatelessWidget {
+
+  const SandSocialButton({
+    required this.icon, required this.label, super.key,
+    this.onTap,
+  });
   final Widget icon;
   final String label;
   final VoidCallback? onTap;
-
-  const SandSocialButton({
-    super.key,
-    required this.icon,
-    required this.label,
-    this.onTap,
-  });
 
   @override
   Widget build(BuildContext context) {

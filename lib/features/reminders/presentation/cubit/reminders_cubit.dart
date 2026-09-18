@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
@@ -10,6 +12,13 @@ import 'package:house_mira/features/reminders/presentation/cubit/reminders_state
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_view_mode.dart';
 
 class RemindersCubit extends Cubit<RemindersState> {
+  RemindersCubit({
+    required this.getReminderUsecase,
+    required this.peopleRepository,
+    required this.authService,
+    required this.reminderRepository,
+    this.notificationService,
+  }) : super(ReminderInitialState());
   GetReminderUsecase getReminderUsecase;
   PeopleRepository peopleRepository;
   AuthService authService;
@@ -27,14 +36,6 @@ class RemindersCubit extends Cubit<RemindersState> {
 
   RemindersViewMode _viewMode = RemindersViewMode.list;
   RemindersViewMode get viewMode => _viewMode;
-
-  RemindersCubit({
-    required this.getReminderUsecase,
-    required this.peopleRepository,
-    required this.authService,
-    required this.reminderRepository,
-    this.notificationService,
-  }) : super(ReminderInitialState());
 
   Future<void> getReminders({String? familyId, ReminderType? type}) async {
     _selectedType = type;
@@ -103,16 +104,15 @@ class RemindersCubit extends Cubit<RemindersState> {
             LoadedReminders(
               reminders: current.reminders,
               type: currentType,
-              isLoading: false,
               viewMode: _viewMode,
             ),
           );
         }
       },
       (_) {
-        notificationService?.cancelReminderNotification(id);
+        unawaited(notificationService?.cancelReminderNotification(id));
         if (currentReminders == null) {
-          getReminders(type: currentType);
+          unawaited(getReminders(type: currentType));
           return;
         }
         final updated = currentReminders.where((r) => r.id != id).toList();

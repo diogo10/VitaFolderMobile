@@ -5,12 +5,13 @@ enum FamilyMemberRole {
   admin(Color(0xFFF6D584), Color(0xFF9B6500)),
   parent(Color(0xFFD9E8FF), Color(0xFF3974C9)),
   child(Color(0xFFE8DFFF), Color(0xFF6D4BD2)),
-  member(Color(0xFFD9F5EA), Color(0xFF27835F));
+  member(Color(0xFFD9F5EA), Color(0xFF27835F))
+  ;
+
+  const FamilyMemberRole(this.backgroundColor, this.foregroundColor);
 
   final Color backgroundColor;
   final Color foregroundColor;
-
-  const FamilyMemberRole(this.backgroundColor, this.foregroundColor);
 
   String localizedLabel(AppLocalizations l) {
     switch (this) {
@@ -27,22 +28,21 @@ enum FamilyMemberRole {
 }
 
 class FamilyMemberCardWidget extends StatelessWidget {
+  const FamilyMemberCardWidget({
+    required this.name,
+    required this.relationship,
+    required this.detail,
+    required this.role,
+    required this.avatarColor,
+    super.key,
+    this.onPressed,
+  });
   final String name;
   final String relationship;
   final String detail;
   final FamilyMemberRole role;
   final Color avatarColor;
   final VoidCallback? onPressed;
-
-  const FamilyMemberCardWidget({
-    super.key,
-    required this.name,
-    required this.relationship,
-    required this.detail,
-    required this.role,
-    required this.avatarColor,
-    this.onPressed,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +152,7 @@ class FamilyMemberCardWidget extends StatelessWidget {
   }
 
   String _initials(String value) {
-    if (value.isEmpty) return "";
+    if (value.isEmpty) return '';
     final words = value.trim().split(RegExp(r'\s+'));
     return words.take(2).map((word) => word[0].toUpperCase()).join();
   }

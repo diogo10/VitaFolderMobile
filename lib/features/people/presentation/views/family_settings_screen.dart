@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -25,7 +27,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<FamilySettingsCubit>().loadSettings();
+    unawaited(context.read<FamilySettingsCubit>().loadSettings());
   }
 
   @override
@@ -141,7 +143,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
                         ),
 
                         const SizedBox(height: 24),
-                        Divider(height: 1, color: SandPalette.sand100),
+                        const Divider(height: 1, color: SandPalette.sand100),
                         const SizedBox(height: 24),
 
                         // Manage Members Section
@@ -231,30 +233,32 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
     if (state is FamilySettingsLoaded) {
       final familyName = state.familyName;
 
-      showDialog<void>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            l.removeMemberConfirm(memberName, familyName),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(l.cancel),
+      unawaited(
+        showDialog<void>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                cubit.queueMemberRemoval(memberId);
-              },
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: Text(l.deleteFamilyButton),
+            title: Text(
+              l.removeMemberConfirm(memberName, familyName),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-          ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l.cancel),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  cubit.queueMemberRemoval(memberId);
+                },
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: Text(l.deleteFamilyButton),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -264,53 +268,56 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
     final l = AppLocalizations.of(context)!;
     final cubit = context.read<FamilySettingsCubit>();
 
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          l.deleteFamilyTitle,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.red,
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
+          title: Text(
+            l.deleteFamilyTitle,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.red,
+            ),
+          ),
+          content: Text(
+            l.deleteFamilyDescription,
+            style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l.cancel),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await cubit.deleteFamily();
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: Text(l.deleteFamilyButton),
+            ),
+          ],
         ),
-        content: Text(
-          l.deleteFamilyDescription,
-          style: TextStyle(fontSize: 13, color: Colors.grey[700]),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              cubit.deleteFamily();
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(l.deleteFamilyButton),
-          ),
-        ],
       ),
     );
   }
 }
 
 class _FamilyNameSection extends StatefulWidget {
-  final TextEditingController controller;
-  final String label;
-  final String hint;
-  final ValueChanged<String> onChanged;
-
   const _FamilyNameSection({
     required this.controller,
     required this.label,
     required this.hint,
     required this.onChanged,
   });
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final ValueChanged<String> onChanged;
 
   @override
   State<_FamilyNameSection> createState() => _FamilyNameSectionState();
@@ -340,7 +347,7 @@ class _FamilyNameSectionState extends State<_FamilyNameSection> {
       children: [
         Text(
           widget.label,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Outfit',
             fontWeight: FontWeight.w600,
             color: SandPalette.sand500,
@@ -362,14 +369,6 @@ class _FamilyNameSectionState extends State<_FamilyNameSection> {
 }
 
 class _ManageMembersSection extends StatelessWidget {
-  final List<PersonEntity> members;
-  final String currentUserId;
-  final String familyName;
-  final int memberCount;
-  final void Function(String memberId, String memberName) onRemoveMember;
-  final bool isRemoving;
-  final AppLocalizations l;
-
   const _ManageMembersSection({
     required this.members,
     required this.currentUserId,
@@ -379,6 +378,13 @@ class _ManageMembersSection extends StatelessWidget {
     required this.isRemoving,
     required this.l,
   });
+  final List<PersonEntity> members;
+  final String currentUserId;
+  final String familyName;
+  final int memberCount;
+  final void Function(String memberId, String memberName) onRemoveMember;
+  final bool isRemoving;
+  final AppLocalizations l;
 
   @override
   Widget build(BuildContext context) {
@@ -390,7 +396,7 @@ class _ManageMembersSection extends StatelessWidget {
           children: [
             Text(
               l.manageMembersTitle,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'Outfit',
                 fontWeight: FontWeight.bold,
                 color: SandPalette.sand700,
@@ -399,7 +405,7 @@ class _ManageMembersSection extends StatelessWidget {
             ),
             Text(
               l.memberCount(memberCount),
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'Figtree',
                 fontWeight: FontWeight.w500,
                 color: SandPalette.sand300,
@@ -447,17 +453,16 @@ class _ManageMembersSection extends StatelessWidget {
 }
 
 class _DangerZoneSection extends StatelessWidget {
-  final String familyName;
-  final VoidCallback onDeletePressed;
-  final bool isDeleting;
-  final AppLocalizations l;
-
   const _DangerZoneSection({
     required this.familyName,
     required this.onDeletePressed,
     required this.isDeleting,
     required this.l,
   });
+  final String familyName;
+  final VoidCallback onDeletePressed;
+  final bool isDeleting;
+  final AppLocalizations l;
 
   @override
   Widget build(BuildContext context) {
@@ -466,7 +471,7 @@ class _DangerZoneSection extends StatelessWidget {
       children: [
         Text(
           l.dangerZoneTitle,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Outfit',
             fontWeight: FontWeight.bold,
             color: Colors.red,
@@ -486,7 +491,7 @@ class _DangerZoneSection extends StatelessWidget {
             children: [
               Text(
                 l.deleteFamilyTitle,
-                style: TextStyle(
+                style: const TextStyle(
                   fontFamily: 'Outfit',
                   fontWeight: FontWeight.bold,
                   color: Colors.red,
@@ -496,9 +501,9 @@ class _DangerZoneSection extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 l.deleteFamilyDescription,
-                style: TextStyle(
+                style: const TextStyle(
                   fontFamily: 'Figtree',
-                  color: const Color(0xFFF47174),
+                  color: Color(0xFFF47174),
                   fontSize: 10,
                   height: 1.5,
                 ),

@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminder_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
+import 'package:intl/intl.dart';
 
 class RemindersLoadedWidget extends StatelessWidget {
+  const RemindersLoadedWidget({required this.reminders, super.key});
   final List<ReminderEntity> reminders;
-
-  const RemindersLoadedWidget({super.key, required this.reminders});
 
   @override
   Widget build(BuildContext context) {
@@ -72,40 +71,52 @@ class RemindersLoadedWidget extends StatelessWidget {
     final entries = <_ListEntry>[];
 
     if (noDateList.isNotEmpty) {
-      entries.add(
-        _ListEntry.header(
-          l.remindersLoadedSectionNoDate,
-          '',
-          _HeaderType.noDate,
-          now,
-        ),
-      );
-      entries.addAll(noDateList.map((r) => _ListEntry.reminder(r, false)));
+      entries
+        ..add(
+          _ListEntry.header(
+            l.remindersLoadedSectionNoDate,
+            _HeaderType.noDate,
+            now,
+          ),
+        )
+        ..addAll(
+          noDateList.map(
+            (r) => _ListEntry.reminder(r, isFutureDay: false),
+          ),
+        );
     }
 
     if (todayList.isNotEmpty) {
-      entries.add(
-        _ListEntry.header(
-          l.remindersLoadedSectionToday,
-          DateFormat('MMM d').format(now),
-          _HeaderType.today,
-          now,
-        ),
-      );
-      entries.addAll(todayList.map((r) => _ListEntry.reminder(r, false)));
+      entries
+        ..add(
+          _ListEntry.header(
+            l.remindersLoadedSectionToday,
+            _HeaderType.today,
+            now,
+          ),
+        )
+        ..addAll(
+          todayList.map(
+            (r) => _ListEntry.reminder(r, isFutureDay: false),
+          ),
+        );
     }
 
     if (tomorrowList.isNotEmpty) {
       final tomorrowDate = now.add(const Duration(days: 1));
-      entries.add(
-        _ListEntry.header(
-          l.remindersLoadedSectionTomorrow,
-          DateFormat('MMM d').format(tomorrowDate),
-          _HeaderType.tomorrow,
-          tomorrowDate,
-        ),
-      );
-      entries.addAll(tomorrowList.map((r) => _ListEntry.reminder(r, false)));
+      entries
+        ..add(
+          _ListEntry.header(
+            l.remindersLoadedSectionTomorrow,
+            _HeaderType.tomorrow,
+            tomorrowDate,
+          ),
+        )
+        ..addAll(
+          tomorrowList.map(
+            (r) => _ListEntry.reminder(r, isFutureDay: false),
+          ),
+        );
     }
 
     final keys = laterMap.keys.toList()..sort();
@@ -113,16 +124,17 @@ class RemindersLoadedWidget extends StatelessWidget {
       final date = ReminderDateUtils.parseDueDate(key);
       if (date != null) {
         final label =
-            '${DateFormat('EEEE').format(date)} · ${DateFormat('MMM d').format(date)}';
-        entries.add(
-          _ListEntry.header(
-            label,
-            DateFormat('MMM d').format(date),
-            _HeaderType.later,
-            date,
-          ),
-        );
-        entries.addAll(laterMap[key]!.map((r) => _ListEntry.reminder(r, true)));
+            '${DateFormat('EEEE').format(date)} · '
+            '${DateFormat('MMM d').format(date)}';
+        entries
+          ..add(
+            _ListEntry.header(label, _HeaderType.later, date),
+          )
+          ..addAll(
+            laterMap[key]!.map(
+              (r) => _ListEntry.reminder(r, isFutureDay: true),
+            ),
+          );
       }
     }
 
@@ -133,12 +145,6 @@ class RemindersLoadedWidget extends StatelessWidget {
 enum _HeaderType { today, tomorrow, later, noDate }
 
 class _ListEntry {
-  final String label;
-  final ReminderEntity? reminder;
-  final _HeaderType? headerType;
-  final DateTime? headerDate;
-  final bool isFutureDay;
-
   const _ListEntry._(
     this.label,
     this.reminder,
@@ -147,29 +153,34 @@ class _ListEntry {
     this.isFutureDay,
   );
 
-  bool get isHeader => reminder == null;
-
   factory _ListEntry.header(
     String label,
-    String dateLabel,
     _HeaderType type,
     DateTime date,
   ) => _ListEntry._(label, null, type, date, false);
 
-  factory _ListEntry.reminder(ReminderEntity reminder, bool isFutureDay) =>
-      _ListEntry._('', reminder, null, null, isFutureDay);
+  factory _ListEntry.reminder(
+    ReminderEntity reminder, {
+    required bool isFutureDay,
+  }) => _ListEntry._('', reminder, null, null, isFutureDay);
+  final String label;
+  final ReminderEntity? reminder;
+  final _HeaderType? headerType;
+  final DateTime? headerDate;
+  final bool isFutureDay;
+
+  bool get isHeader => reminder == null;
 }
 
 class _DayHeader extends StatelessWidget {
-  final String label;
-  final _HeaderType type;
-  final DateTime date;
-
   const _DayHeader({
     required this.label,
     required this.type,
     required this.date,
   });
+  final String label;
+  final _HeaderType type;
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +226,7 @@ class _DayHeader extends StatelessWidget {
             decoration: BoxDecoration(
               color: bgColor,
               borderRadius: BorderRadius.circular(100),
-              border: Border.all(color: borderColor, width: 1),
+              border: Border.all(color: borderColor),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

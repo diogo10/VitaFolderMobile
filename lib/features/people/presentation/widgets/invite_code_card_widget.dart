@@ -2,20 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class InviteCodeCardWidget extends StatelessWidget {
+
+  const InviteCodeCardWidget({
+    required this.code, required this.expiresInDays, super.key,
+    this.onCopyPressed,
+    this.onSharePressed,
+    this.onClose,
+  });
   final String code;
   final int expiresInDays;
   final VoidCallback? onCopyPressed;
   final VoidCallback? onSharePressed;
   final VoidCallback? onClose;
-
-  const InviteCodeCardWidget({
-    super.key,
-    required this.code,
-    required this.expiresInDays,
-    this.onCopyPressed,
-    this.onSharePressed,
-    this.onClose,
-  });
 
   static const _cardColor = Color(0xFF9A7D59);
   static const _softWhite = Color(0xFFFDFBF8);
@@ -153,15 +151,15 @@ class _CardLabel extends StatelessWidget {
 }
 
 class _InviteActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback? onPressed;
 
   const _InviteActionButton({
     required this.icon,
     required this.label,
     required this.onPressed,
   });
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {

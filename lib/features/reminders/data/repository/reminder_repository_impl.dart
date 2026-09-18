@@ -8,10 +8,9 @@ import 'package:house_mira/features/reminders/domain/repository/reminder_reposit
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ReminderRepositoryImpl implements ReminderRepository {
-  final SupabaseClient _client;
-
   ReminderRepositoryImpl({SupabaseClient? client})
     : _client = client ?? Supabase.instance.client;
+  final SupabaseClient _client;
 
   @override
   Future<Either<Failure, List<ReminderEntity>>> getReminders(
@@ -28,7 +27,7 @@ class ReminderRepositoryImpl implements ReminderRepository {
       return Right(data);
     } on Failure catch (e) {
       return Left(Failure(message: e.message));
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error getting the reminders: $e');
       return Left(Failure());
     }
@@ -51,7 +50,7 @@ class ReminderRepositoryImpl implements ReminderRepository {
       return Right(data);
     } on Failure catch (e) {
       return Left(Failure(message: e.message));
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error getting reminders by type and family: $e');
       return Left(Failure());
     }
@@ -74,7 +73,7 @@ class ReminderRepositoryImpl implements ReminderRepository {
       return Right(id);
     } on Failure catch (e) {
       return Left(Failure(message: e.message));
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error creating reminder: $e');
       return Left(Failure());
     }
@@ -85,10 +84,10 @@ class ReminderRepositoryImpl implements ReminderRepository {
     try {
       final input = reminder.toUpdate();
       await _client.from('reminders').update(input).eq('id', reminder.id);
-      return Right(true);
+      return const Right(true);
     } on Failure catch (e) {
       return Left(Failure(message: e.message));
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error updating reminder: $e');
       return Left(Failure());
     }
@@ -98,10 +97,10 @@ class ReminderRepositoryImpl implements ReminderRepository {
   Future<Either<Failure, bool>> removeReminder(String id) async {
     try {
       await _client.from('reminders').delete().eq('id', id);
-      return Right(true);
+      return const Right(true);
     } on Failure catch (e) {
       return Left(Failure(message: e.message));
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error removing reminder: $e');
       return Left(Failure());
     }

@@ -4,17 +4,16 @@ import 'package:house_mira/features/account/application/notification_permission_
 import 'package:house_mira/features/account/presentation/cubit/notification_settings_state.dart';
 
 class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
-  final NotificationPermissionService _permissionService;
-  final LocalStorageDatasource _storage;
-
-  static const _notificationsEnabledKey = 'notifications_enabled';
-
   NotificationSettingsCubit({
     required NotificationPermissionService permissionService,
     required LocalStorageDatasource storage,
   }) : _permissionService = permissionService,
        _storage = storage,
        super(NotificationSettingsLoading());
+  final NotificationPermissionService _permissionService;
+  final LocalStorageDatasource _storage;
+
+  static const _notificationsEnabledKey = 'notifications_enabled';
 
   Future<void> loadSettings() async {
     try {
@@ -24,17 +23,17 @@ class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
       emit(
         NotificationSettingsLoaded(notificationsEnabled: notificationsEnabled),
       );
-    } catch (_) {
+    } on Object catch (_) {
       emit(NotificationSettingsError());
     }
   }
 
-  Future<void> setNotificationsEnabled(bool enabled) async {
+  Future<void> setNotificationsEnabled({required bool enabled}) async {
     if (enabled) {
       final result = await _permissionService.requestNotificationPermission();
       switch (result) {
         case NotificationPermissionResult.granted:
-          await _storage.setBool(_notificationsEnabledKey, true);
+          await _storage.setBool(_notificationsEnabledKey, value: true);
           emit(_currentLoaded(notificationsEnabled: true));
         case NotificationPermissionResult.permanentlyDenied:
           emit(
@@ -54,7 +53,7 @@ class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
       return;
     }
 
-    await _storage.setBool(_notificationsEnabledKey, false);
+    await _storage.setBool(_notificationsEnabledKey, value: false);
     emit(_currentLoaded(notificationsEnabled: false));
   }
 

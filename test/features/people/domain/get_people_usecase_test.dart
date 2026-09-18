@@ -1,11 +1,10 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/features/people/domain/entities/family_entity.dart';
-import 'package:house_mira/features/people/domain/entities/people_data.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/people/domain/usecase/get_people_usecase.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _MockPeople extends Mock implements PeopleRepository {}
 
@@ -18,13 +17,13 @@ void main() {
 
   test('returns family and people on success', () async {
     final family = FamilyEntity(name: 'Fam', inviteCode: 'ABC');
-    final members = [PersonEntity(id: 'u1', name: 'Ana')];
+    final members = [const PersonEntity(id: 'u1', name: 'Ana')];
     when(() => repository.getPeople()).thenAnswer((_) async => Right(members));
     when(() => repository.getMyFamily()).thenAnswer((_) async => Right(family));
 
     final result = await build()();
 
-    final PeopleData data = result.getRight().toNullable()!;
+    final data = result.getRight().toNullable()!;
     expect(data.family.name, 'Fam');
     expect(data.people, hasLength(1));
   });
@@ -37,7 +36,7 @@ void main() {
 
     final result = await build()();
 
-    final PeopleData data = result.getRight().toNullable()!;
+    final data = result.getRight().toNullable()!;
     expect(data.family.name, '');
     expect(data.people, isEmpty);
   });
@@ -52,7 +51,7 @@ void main() {
 
     final result = await build()();
 
-    final PeopleData data = result.getRight().toNullable()!;
+    final data = result.getRight().toNullable()!;
     expect(data.family.name, 'Fam');
     expect(data.people, isEmpty);
   });

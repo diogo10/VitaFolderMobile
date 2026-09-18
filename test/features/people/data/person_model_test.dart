@@ -4,7 +4,7 @@ import 'package:house_mira/features/people/data/models/person_model.dart';
 void main() {
   group('PersonModel.fromMap', () {
     test('parses string ids', () {
-      final model = PersonModel.fromMap({
+      final model = PersonModel.fromMap(const {
         'id': 'u1',
         'name': 'Ana',
         'email': 'a@b.c',
@@ -15,7 +15,7 @@ void main() {
     });
 
     test('coerces int ids to string', () {
-      final model = PersonModel.fromMap({
+      final model = PersonModel.fromMap(const {
         'id': 7,
         'name': 'Ana',
         'email': 'a@b.c',
@@ -25,7 +25,7 @@ void main() {
     });
 
     test('round-trips through toMap/fromJson', () {
-      final model = PersonModel(
+      const model = PersonModel(
         id: 'u1',
         name: 'Ana',
         email: 'a@b.c',

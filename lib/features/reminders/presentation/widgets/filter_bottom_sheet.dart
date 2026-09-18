@@ -1,19 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class FilterBottomSheet extends StatefulWidget {
-  final Set<ReminderType> selectedTypes;
-  final Map<ReminderType, int> typeCounts;
-  final ValueChanged<Set<ReminderType>> onApply;
-
   const FilterBottomSheet({
-    super.key,
     required this.selectedTypes,
     required this.typeCounts,
     required this.onApply,
+    super.key,
   });
+  final Set<ReminderType> selectedTypes;
+  final Map<ReminderType, int> typeCounts;
+  final ValueChanged<Set<ReminderType>> onApply;
 
   @override
   State<FilterBottomSheet> createState() => _FilterBottomSheetState();
@@ -201,15 +202,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 }
 
 class _FilterOption {
-  final ReminderType type;
-  final String label;
-  final IconData icon;
-  final Color iconBgColor;
-  final Color iconColor;
-  final Color countColor;
-  final Color countBgColor;
-  final int count;
-
   const _FilterOption({
     required this.type,
     required this.label,
@@ -220,18 +212,25 @@ class _FilterOption {
     required this.countBgColor,
     required this.count,
   });
+  final ReminderType type;
+  final String label;
+  final IconData icon;
+  final Color iconBgColor;
+  final Color iconColor;
+  final Color countColor;
+  final Color countBgColor;
+  final int count;
 }
 
 class _FilterCheckboxTile extends StatelessWidget {
-  final _FilterOption option;
-  final bool isSelected;
-  final ValueChanged<bool?> onChanged;
-
   const _FilterCheckboxTile({
     required this.option,
     required this.isSelected,
     required this.onChanged,
   });
+  final _FilterOption option;
+  final bool isSelected;
+  final ValueChanged<bool?> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -245,7 +244,7 @@ class _FilterCheckboxTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: SandPalette.sand100,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: SandPalette.sand200, width: 1),
+            border: Border.all(color: SandPalette.sand200),
           ),
           child: Row(
             children: [
@@ -305,16 +304,15 @@ class _FilterCheckboxTile extends StatelessWidget {
 }
 
 class FilterBottomSheetOverlay extends StatelessWidget {
-  final bool isOpen;
-  final Widget child;
-  final VoidCallback onDismiss;
-
   const FilterBottomSheetOverlay({
-    super.key,
     required this.isOpen,
     required this.child,
     required this.onDismiss,
+    super.key,
   });
+  final bool isOpen;
+  final Widget child;
+  final VoidCallback onDismiss;
 
   @override
   Widget build(BuildContext context) {
@@ -326,7 +324,7 @@ class FilterBottomSheetOverlay extends StatelessWidget {
       bottom: isOpen ? 0 : -MediaQuery.of(context).size.height,
       child: GestureDetector(
         onTap: onDismiss,
-        child: Container(
+        child: ColoredBox(
           color: Colors.black.withValues(alpha: isOpen ? 0.3 : 0.0),
           child: child,
         ),
@@ -341,18 +339,20 @@ void showFilterBottomSheet({
   required Map<ReminderType, int> typeCounts,
   required ValueChanged<Set<ReminderType>> onApply,
 }) {
-  showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: 0.3),
-    builder: (context) => FilterBottomSheet(
-      selectedTypes: selectedTypes,
-      typeCounts: typeCounts,
-      onApply: (types) {
-        onApply(types);
-        Navigator.of(context).pop();
-      },
+  unawaited(
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      builder: (context) => FilterBottomSheet(
+        selectedTypes: selectedTypes,
+        typeCounts: typeCounts,
+        onApply: (types) {
+          onApply(types);
+          Navigator.of(context).pop();
+        },
+      ),
     ),
   );
 }

@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:house_mira/features/home/domain/entities/home_entity.dart';
 
+@immutable
 sealed class HomeState {
   const HomeState();
 
@@ -18,10 +20,10 @@ class HomeLoading extends HomeState {
   const HomeLoading();
 }
 
+@immutable
 class HomeLoaded extends HomeState {
-  final HomeEntity data;
-
   const HomeLoaded({required this.data});
+  final HomeEntity data;
 
   @override
   bool operator ==(Object other) => other is HomeLoaded && other.data == data;
@@ -30,10 +32,10 @@ class HomeLoaded extends HomeState {
   int get hashCode => Object.hash(runtimeType, data);
 }
 
+@immutable
 class HomeEmpty extends HomeState {
-  final bool hasReminders;
-
   const HomeEmpty({this.hasReminders = false});
+  final bool hasReminders;
 
   @override
   bool operator ==(Object other) =>

@@ -1,8 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
@@ -10,23 +8,14 @@ import 'package:house_mira/features/account/presentation/cubit/account_state.dar
 import 'package:house_mira/features/people/domain/entities/family_entity.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
 
 class _FakeAuthService extends AuthService {
-  User? stubUser;
-  PersonEntity? stubPerson;
-  Object? personError;
-  Object? signInError;
-  Object? signOutError;
-  Object? resetError;
-  Object? deleteError;
-  int signInCalls = 0;
-  int deleteCalls = 0;
-  int signOutCalls = 0;
-
   _FakeAuthService({
     this.stubUser,
     this.stubPerson,
@@ -35,12 +24,26 @@ class _FakeAuthService extends AuthService {
     this.signOutError,
     this.resetError,
     this.deleteError,
+    this.googleError,
     SupabaseClient? supabaseClient,
     IGoogleSignInHandler? googleSignInHandler,
   }) : super(
          supabaseClient: supabaseClient ?? _MockSupabaseClient(),
          googleSignInHandler: googleSignInHandler ?? _MockGoogleSignInHandler(),
        );
+  User? stubUser;
+  PersonEntity? stubPerson;
+  Exception? personError;
+  Exception? signInError;
+  Exception? signOutError;
+  Exception? resetError;
+  Exception? deleteError;
+  int signInCalls = 0;
+  int deleteCalls = 0;
+  int signOutCalls = 0;
+  User? googleStubUser;
+  Exception? googleError;
+  int googleSignInCalls = 0;
 
   @override
   Future<void> signIn({required String email, required String password}) async {
@@ -73,6 +76,13 @@ class _FakeAuthService extends AuthService {
   Future<void> resetPassword(String email) async {
     if (resetError != null) throw resetError!;
   }
+
+  @override
+  Future<User?> signInWithGoogle() async {
+    googleSignInCalls++;
+    if (googleError != null) throw googleError!;
+    return googleStubUser;
+  }
 }
 
 class _FakePeopleRepository implements PeopleRepository {
@@ -82,13 +92,14 @@ class _FakePeopleRepository implements PeopleRepository {
   List<String> roles = const ['member'];
 
   @override
-  Future<Either<Exception, List<PersonEntity>>> getPeople() async => Right([]);
+  Future<Either<Exception, List<PersonEntity>>> getPeople() async =>
+      const Right([]);
 
   @override
   Future<Either<Exception, bool>> createFamily({
     required String name,
     required String inviteCode,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<Either<Exception, FamilyEntity>> getMyFamily() async => familyResult;
@@ -96,7 +107,7 @@ class _FakePeopleRepository implements PeopleRepository {
   @override
   Future<Either<Exception, bool>> joinFamily({
     required String inviteCode,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<FamilyEntity?> getFamilyBy(String id) async =>
@@ -117,29 +128,32 @@ class _FakePeopleRepository implements PeopleRepository {
   Future<Either<Exception, bool>> updateFamilyName({
     required String familyId,
     required String name,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<Either<Exception, bool>> removeMember({
     required String familyId,
     required String userId,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<Either<Exception, bool>> deleteFamily({
     required String familyId,
-  }) async => Right(true);
+  }) async => const Right(true);
 
   @override
   Future<Either<Exception, String?>> getMyFamilyId() async =>
-      Right('fake-family');
+      const Right('fake-family');
 }
 
 User _testUser() =>
     User.fromJson({'id': 'user-id', 'email': 'user@example.com'})!;
 
-PersonEntity _testPerson() =>
-    PersonEntity(id: 'user-id', name: 'Test User', email: 'user@example.com');
+PersonEntity _testPerson() => const PersonEntity(
+  id: 'user-id',
+  name: 'Test User',
+  email: 'user@example.com',
+);
 
 void main() {
   group('AccountCubit', () {
@@ -187,7 +201,7 @@ void main() {
       'signIn emits LoginFailed when no current user after signIn',
       () async {
         final cubit = AccountCubit(
-          authService: _FakeAuthService(stubUser: null, stubPerson: null),
+          authService: _FakeAuthService(),
           peopleRepository: _FakePeopleRepository(),
         );
         addTearDown(cubit.close);
@@ -214,6 +228,63 @@ void main() {
       expect(cubit.state, isA<LoginFailed>());
     });
 
+    test('signInWithGoogle emits AccountLoaded on success', () async {
+      final auth = _FakeAuthService(
+        stubUser: _testUser(),
+        stubPerson: _testPerson(),
+      )..googleStubUser = _testUser();
+      final cubit = AccountCubit(
+        authService: auth,
+        peopleRepository: _FakePeopleRepository(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithGoogle();
+
+      expect(auth.googleSignInCalls, 1);
+      expect(cubit.state, isA<AccountLoaded>());
+    });
+
+    test('signInWithGoogle emits NoAccount when user cancels', () async {
+      final auth = _FakeAuthService()..googleStubUser = null;
+      final cubit = AccountCubit(
+        authService: auth,
+        peopleRepository: _FakePeopleRepository(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithGoogle();
+
+      expect(auth.googleSignInCalls, 1);
+      expect(cubit.state, isA<NoAccount>());
+    });
+
+    test('signInWithGoogle emits LoginFailed on AuthException', () async {
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(
+          googleError: const AuthException('Google sign-in failed.'),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithGoogle();
+
+      expect(cubit.state, isA<LoginFailed>());
+    });
+
+    test('signInWithGoogle emits NoAccount on unexpected error', () async {
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(googleError: Exception('boom')),
+        peopleRepository: _FakePeopleRepository(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithGoogle();
+
+      expect(cubit.state, isA<NoAccount>());
+    });
+
     blocTest<AccountCubit, AccountState>(
       'loadAccount emits loading then loaded when user exists',
       build: () => AccountCubit(
@@ -230,7 +301,7 @@ void main() {
     blocTest<AccountCubit, AccountState>(
       'loadAccount emits loading then NoAccount when user is null',
       build: () => AccountCubit(
-        authService: _FakeAuthService(stubUser: null, stubPerson: null),
+        authService: _FakeAuthService(),
         peopleRepository: _FakePeopleRepository(),
       ),
       act: (cubit) => cubit.loadAccount(),

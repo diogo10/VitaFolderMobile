@@ -2,23 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class SandPrimaryButton extends StatelessWidget {
+
+  const SandPrimaryButton({
+    required this.label, required this.icon, super.key,
+    this.isLoading = false,
+    this.onPressed,
+  });
   final String label;
   final IconData icon;
   final bool isLoading;
   final VoidCallback? onPressed;
 
-  const SandPrimaryButton({
-    super.key,
-    required this.label,
-    required this.icon,
-    this.isLoading = false,
-    this.onPressed,
-  });
-
   @override
   Widget build(BuildContext context) {
-    final bool isDisabled = onPressed == null;
-    final bool showDimmed = isLoading || isDisabled;
+    final isDisabled = onPressed == null;
+    final showDimmed = isLoading || isDisabled;
 
     return Material(
       color: Colors.transparent,

@@ -55,7 +55,7 @@ class GoogleSignInHandler implements IGoogleSignInHandler {
   /// the app bundle (`com.housemira.app`) in Google Cloud; when `null`, the
   /// value from the platform configuration files is used, if present.
   ///
-  /// TODO(diogohenrique): register an iOS OAuth client and pass its ID here
+  // TODO(diogohenrique): register an iOS OAuth client and pass its ID here
   /// (and add the corresponding `REVERSED_CLIENT_ID` URL scheme to
   /// `ios/Runner/Info.plist`).
   final String? clientId;

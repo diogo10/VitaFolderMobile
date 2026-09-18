@@ -12,3 +12,13 @@
 # Strict lint set from Very Good Ventures. See
 # https://pub.dev/packages/very_good_analysis for the enabled rules.
 include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  errors:
+    # CI runs with `--fatal-warnings`: warnings fail the build, infos don't.
+    # The rules below are disabled because they don't fit this project's
+    # established style (see justification per rule). Re-enable per rule
+    # once the codebase is migrated, rather than adding `// ignore:`s.
+    public_member_api_docs: ignore # 800+ violations: public API is
+      # documented at the feature level (README/AGENTS.md), not per member.
+      # Doc comments are still welcome on non-obvious public APIs.

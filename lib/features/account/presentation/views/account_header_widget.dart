@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
 
 class AccountHeaderWidget extends StatelessWidget {
-  final String userName;
-  final String email;
-
   const AccountHeaderWidget({
-    super.key,
     required this.userName,
     required this.email,
+    super.key,
   });
+  final String userName;
+  final String email;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +21,6 @@ class AccountHeaderWidget extends StatelessWidget {
       color: context.colorScheme.surface,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 24),
           Container(
@@ -36,9 +34,13 @@ class AccountHeaderWidget extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Container(
+                const ColoredBox(
                   color: Colors.blue,
-                  child: const Icon(Icons.person_rounded, size: 60, color: Colors.white),
+                  child: Icon(
+                    Icons.person_rounded,
+                    size: 60,
+                    color: Colors.white,
+                  ),
                 ),
                 Positioned(
                   right: 0,

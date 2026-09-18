@@ -39,7 +39,9 @@ void main() {
 
     when(() => storage.getBool(any())).thenAnswer((_) async => false);
     when(() => storage.getString(any())).thenAnswer((_) async => null);
-    when(() => storage.setBool(any(), any())).thenAnswer((_) async {});
+    when(
+      () => storage.setBool(any(), value: any(named: 'value')),
+    ).thenAnswer((_) async {});
     when(() => storage.setString(any(), any())).thenAnswer((_) async {});
     when(() => plugin.cancel(id: any(named: 'id'))).thenAnswer((_) async {});
     when(
@@ -156,7 +158,7 @@ void main() {
         ),
       );
       verify(
-        () => storage.setBool('reminder_notify_enabled_r1', false),
+        () => storage.setBool('reminder_notify_enabled_r1', value: false),
       ).called(1);
     });
 
@@ -189,7 +191,7 @@ void main() {
         DateTime(2030, 5, 4, 8, 45).millisecondsSinceEpoch,
       );
       verify(
-        () => storage.setBool('reminder_notify_enabled_r1', true),
+        () => storage.setBool('reminder_notify_enabled_r1', value: true),
       ).called(1);
       verify(
         () => storage.setString('reminder_notify_lead_minutes_r1', '15'),
@@ -218,7 +220,7 @@ void main() {
       );
       // Choice is still persisted for later edits.
       verify(
-        () => storage.setBool('reminder_notify_enabled_r1', true),
+        () => storage.setBool('reminder_notify_enabled_r1', value: true),
       ).called(1);
     });
 
@@ -301,7 +303,7 @@ void main() {
         ),
       );
       verify(
-        () => storage.setBool('reminder_notify_enabled_r1', true),
+        () => storage.setBool('reminder_notify_enabled_r1', value: true),
       ).called(1);
       verify(
         () => storage.setString('reminder_notify_lead_minutes_r1', '60'),
@@ -315,7 +317,7 @@ void main() {
 
       verify(() => plugin.cancel(id: any(named: 'id'))).called(1);
       verify(
-        () => storage.setBool('reminder_notify_enabled_r1', false),
+        () => storage.setBool('reminder_notify_enabled_r1', value: false),
       ).called(1);
     });
   });
@@ -417,7 +419,7 @@ void main() {
             >(),
       ).thenReturn(android);
       when(
-        () => android.canScheduleExactNotifications(),
+        android.canScheduleExactNotifications,
       ).thenAnswer((_) async => true);
 
       expect(await androidService.canScheduleExactAlarms(), isTrue);
@@ -465,7 +467,7 @@ void main() {
             >(),
       ).thenReturn(android);
       when(
-        () => android.canScheduleExactNotifications(),
+        android.canScheduleExactNotifications,
       ).thenAnswer((_) async => true);
 
       await androidService.setReminderNotification(

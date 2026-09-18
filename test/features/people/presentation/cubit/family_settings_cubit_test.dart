@@ -1,8 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/features/people/domain/entities/family_entity.dart';
@@ -15,6 +13,8 @@ import 'package:house_mira/features/people/domain/usecase/remove_member_usecase.
 import 'package:house_mira/features/people/domain/usecase/update_family_name_usecase.dart';
 import 'package:house_mira/features/people/presentation/cubit/family_settings_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/family_settings_state.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class _MockGetPeopleUsecase extends Mock implements GetPeopleUsecase {}
 
@@ -32,13 +32,12 @@ class _MockSupabaseClient extends Mock implements SupabaseClient {}
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
 
 class _FakeAuthService extends AuthService {
-  String? stubUserId;
-
   _FakeAuthService({this.stubUserId})
     : super(
         supabaseClient: _MockSupabaseClient(),
         googleSignInHandler: _MockGoogleSignInHandler(),
       );
+  String? stubUserId;
 
   @override
   String? get currentUserId => stubUserId;
@@ -47,8 +46,8 @@ class _FakeAuthService extends AuthService {
 PeopleData adminData() => PeopleData(
   family: FamilyEntity(name: 'Fam', inviteCode: 'ABC123'),
   people: [
-    PersonEntity(id: 'u1', name: 'Ana', role: 'Admin'),
-    PersonEntity(id: 'u2', name: 'Bob', role: 'member'),
+    const PersonEntity(id: 'u1', name: 'Ana', role: 'Admin'),
+    const PersonEntity(id: 'u2', name: 'Bob', role: 'member'),
   ],
 );
 
@@ -186,9 +185,10 @@ void main() {
       final cubit = build();
       addTearDown(cubit.close);
 
-      cubit.queueFamilyNameChange('New');
-      cubit.queueMemberRemoval('u2');
-      cubit.cancelMemberRemoval('u2');
+      cubit
+        ..queueFamilyNameChange('New')
+        ..queueMemberRemoval('u2')
+        ..cancelMemberRemoval('u2');
 
       expect(cubit.state, isA<FamilySettingsInitial>());
     });
@@ -232,8 +232,9 @@ void main() {
       },
       act: (cubit) async {
         await cubit.loadSettings();
-        cubit.queueFamilyNameChange('New');
-        cubit.queueMemberRemoval('u2');
+        cubit
+          ..queueFamilyNameChange('New')
+          ..queueMemberRemoval('u2');
         await cubit.saveChanges();
       },
       expect: () => [
@@ -273,8 +274,9 @@ void main() {
       },
       act: (cubit) async {
         await cubit.loadSettings();
-        cubit.queueFamilyNameChange('Fam');
-        cubit.queueMemberRemoval('u2');
+        cubit
+          ..queueFamilyNameChange('Fam')
+          ..queueMemberRemoval('u2');
         await cubit.saveChanges();
       },
       expect: () => [

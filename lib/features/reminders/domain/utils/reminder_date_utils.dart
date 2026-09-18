@@ -1,5 +1,6 @@
-import 'package:intl/intl.dart';
+import 'package:house_mira/features/reminders/data/models/reminder_model.dart' show ReminderModel;
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:intl/intl.dart';
 
 /// Shared parsing for reminder due dates.
 ///

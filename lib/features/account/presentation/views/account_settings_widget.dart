@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:house_mira/generated/app_localizations.dart';
-import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
 
 class AccountSettingsWidget extends StatelessWidget {
-  final String familyCode;
-  final bool isAdmin;
   const AccountSettingsWidget({
-    super.key,
     required this.familyCode,
     required this.isAdmin,
+    super.key,
   });
+  final String familyCode;
+  final bool isAdmin;
 
   @override
   Widget build(BuildContext context) {
@@ -80,8 +80,8 @@ class AccountSettingsWidget extends StatelessWidget {
                 title: l.accountSettingsSignOut,
                 subtitle: l.accountSettingsSignOutSubtitle,
                 accent: true,
-                onTap: () {
-                  context.read<AccountCubit>().signOut();
+                onTap: () async {
+                  await context.read<AccountCubit>().signOut();
                 },
               ),
             ],
@@ -128,16 +128,15 @@ class AccountSettingsWidget extends StatelessWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      context.read<AccountCubit>().deleteAccount();
+      await context.read<AccountCubit>().deleteAccount();
     }
   }
 }
 
 class _AccountSettingsSection extends StatelessWidget {
+  const _AccountSettingsSection({required this.title, required this.items});
   final String title;
   final List<_AccountSettingsItemData> items;
-
-  const _AccountSettingsSection({required this.title, required this.items});
 
   @override
   Widget build(BuildContext context) {
@@ -184,12 +183,6 @@ class _AccountSettingsSection extends StatelessWidget {
 }
 
 class _AccountSettingsItemData {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool accent;
-  final VoidCallback? onTap;
-
   const _AccountSettingsItemData({
     required this.icon,
     required this.title,
@@ -197,13 +190,17 @@ class _AccountSettingsItemData {
     this.accent = false,
     this.onTap,
   });
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool accent;
+  final VoidCallback? onTap;
 }
 
 class _AccountSettingsItem extends StatelessWidget {
+  const _AccountSettingsItem({required this.data, required this.isLast});
   final _AccountSettingsItemData data;
   final bool isLast;
-
-  const _AccountSettingsItem({required this.data, required this.isLast});
 
   @override
   Widget build(BuildContext context) {

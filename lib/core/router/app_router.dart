@@ -22,7 +22,7 @@ import 'package:house_mira/features/reminders/presentation/screens/reminders_vie
 /// When [authStateNotifier] is provided, the router stays synchronized with
 /// Supabase `onAuthStateChange` events: every sign-in, sign-out, token
 /// refresh, or session recovery triggers a redirect re-evaluation via
-/// [refreshListenable]. While the initial session recovery is still in
+/// `refreshListenable`. While the initial session recovery is still in
 /// flight ([AuthStateNotifier.isInitialized] == false), navigation is held
 /// on the splash screen so no unauthenticated content flashes on restart.
 ///
@@ -69,7 +69,7 @@ GoRouter createRouter({
       GoRoute(
         path: '/invite-people',
         builder: (context, state) => InvitePeopleScreen(
-          familyName: state.extra is String ? state.extra as String : null,
+          familyName: state.extra is String ? state.extra! as String : null,
         ),
       ),
       GoRoute(

@@ -10,7 +10,9 @@ class AccountLoadedWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.select<AccountCubit, AccountState>((cubit) => cubit.state);
+    final state = context.select<AccountCubit, AccountState>(
+      (cubit) => cubit.state,
+    );
 
     if (state is! AccountLoaded) {
       return const SizedBox.shrink();
@@ -28,8 +30,8 @@ class AccountLoadedWidget extends StatelessWidget {
               email: loadedState.email,
             ),
             AccountSettingsWidget(
-              familyCode: loadedState.familyCode, 
-              isAdmin: loadedState.myRole == "admin",
+              familyCode: loadedState.familyCode,
+              isAdmin: loadedState.myRole == 'admin',
             ),
           ],
         ),

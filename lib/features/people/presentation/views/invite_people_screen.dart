@@ -13,9 +13,8 @@ import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class InvitePeopleScreen extends StatefulWidget {
-  final String? familyName;
-
   const InvitePeopleScreen({super.key, this.familyName});
+  final String? familyName;
 
   @override
   State<InvitePeopleScreen> createState() => _InvitePeopleScreenState();
@@ -33,7 +32,7 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
     super.dispose();
   }
 
-  void _handleSendInvite(AppLocalizations l) {
+  Future<void> _handleSendInvite(AppLocalizations l) async {
     final authService = context.read<AuthService>();
     if (!authService.isLoggedIn()) {
       ScaffoldMessenger.of(
@@ -44,7 +43,7 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
 
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final email = _emailController.text.trim();
-    context.read<InvitePeopleCubit>().sendInvite(
+    await context.read<InvitePeopleCubit>().sendInvite(
       email: email,
       relationship: InviteRelationship.other,
       subject: l.invitePeopleEmailSubject(l.invitePeopleRelationshipOther),
@@ -288,12 +287,6 @@ abstract final class _AvatarCluster {
 }
 
 class _AvatarBubble extends StatelessWidget {
-  final double size;
-  final Color backgroundColor;
-  final Color textColor;
-  final String label;
-  final double fontSize;
-
   const _AvatarBubble({
     required this.size,
     required this.backgroundColor,
@@ -301,6 +294,11 @@ class _AvatarBubble extends StatelessWidget {
     required this.label,
     this.fontSize = 14,
   });
+  final double size;
+  final Color backgroundColor;
+  final Color textColor;
+  final String label;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -359,9 +357,8 @@ class _DashedPlusBubble extends StatelessWidget {
 }
 
 class _DashedCirclePainter extends CustomPainter {
-  final Color color;
-
   _DashedCirclePainter({required this.color});
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
