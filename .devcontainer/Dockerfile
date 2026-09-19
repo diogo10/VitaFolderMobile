@@ -6,7 +6,7 @@ RUN apt-get install -y curl git unzip xz-utils zip libglu1-mesa python3 python3-
 RUN apt-get clean
 
 # Install opencode
-RUN curl -fsSL https://opencode.ai/install | bash
+RUN curl -fsSL https://opencode.ai/v2/install | bash
 
 # Install Flutter related dependencies
 RUN git clone -b '3.41.6' --single-branch https://github.com/flutter/flutter.git --depth 1 /flutter
