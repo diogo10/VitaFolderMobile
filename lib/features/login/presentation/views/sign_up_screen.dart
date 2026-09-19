@@ -119,6 +119,13 @@ class _SignUpViewState extends State<SignUpView> {
                     SandSocialButton(
                       icon: const GoogleGIcon(),
                       label: l.signUpContinueGoogle,
+                      onTap: isLoading
+                          ? null
+                          : () async {
+                              await context
+                                  .read<SignUpCubit>()
+                                  .signInWithGoogle();
+                            },
                     ),
                     const SizedBox(height: 24),
                     Row(

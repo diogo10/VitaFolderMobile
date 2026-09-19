@@ -177,9 +177,11 @@ void main() {
         () => auth.signUp(
           email: any(named: 'email'),
           password: any(named: 'password'),
+          data: any(named: 'data'),
         ),
       ).thenAnswer((_) async => response);
       when(() => auth.currentUser).thenReturn(_user());
+      _stubUpdateEq(supabase: supabase);
 
       final user = await build().signUp(
         email: 'a@b.c',
@@ -188,16 +190,24 @@ void main() {
       );
 
       expect(user?.id, 'u1');
-      verify(() => auth.signUp(email: 'a@b.c', password: 'secret')).called(1);
+      verify(
+        () => auth.signUp(
+          email: 'a@b.c',
+          password: 'secret',
+          data: {'full_name': 'Ada'},
+        ),
+      ).called(1);
+      verify(() => supabase.from('profiles')).called(1);
     });
 
-    test('updates the profile when the new user has no email yet', () async {
+    test('ensures the profile with name and email on sign-up', () async {
       final response = _MockAuthResponse();
       when(() => response.user).thenReturn(_user(email: null));
       when(
         () => auth.signUp(
           email: any(named: 'email'),
           password: any(named: 'password'),
+          data: any(named: 'data'),
         ),
       ).thenAnswer((_) async => response);
       when(() => auth.currentUser).thenReturn(_user(email: null));
@@ -210,7 +220,6 @@ void main() {
       );
 
       expect(user?.id, 'u1');
-      verify(() => auth.startAutoRefresh()).called(1);
       verify(() => supabase.from('profiles')).called(1);
     });
 
@@ -221,6 +230,7 @@ void main() {
         () => auth.signUp(
           email: any(named: 'email'),
           password: any(named: 'password'),
+          data: any(named: 'data'),
         ),
       ).thenAnswer((_) async => response);
 
@@ -235,6 +245,7 @@ void main() {
         () => auth.signUp(
           email: any(named: 'email'),
           password: any(named: 'password'),
+          data: any(named: 'data'),
         ),
       ).thenThrow(const AuthException('User already registered'));
 
@@ -255,6 +266,7 @@ void main() {
         () => auth.signUp(
           email: any(named: 'email'),
           password: any(named: 'password'),
+          data: any(named: 'data'),
         ),
       ).thenThrow(const AuthException('Network request failed'));
 
@@ -351,6 +363,7 @@ void main() {
           accessToken: 'google-access-token',
         ),
       );
+      _stubUpdateEq(supabase: supabase);
 
       final user = await build().signInWithGoogle();
 
@@ -362,6 +375,36 @@ void main() {
           accessToken: 'google-access-token',
         ),
       ).called(1);
+    });
+
+    test('ensures the profile email on Google sign-in', () async {
+      final googleUser = User.fromJson({
+        'id': 'u1',
+        'email': 'g@example.com',
+        'user_metadata': {
+          'full_name': 'Google User',
+          'avatar_url': 'http://example.com/a.png',
+        },
+      });
+      if (googleUser == null) throw StateError('Failed to build user');
+      final response = _MockAuthResponse();
+      when(() => response.user).thenReturn(googleUser);
+      when(
+        () => auth.signInWithIdToken(
+          provider: any(named: 'provider'),
+          idToken: any(named: 'idToken'),
+          accessToken: any(named: 'accessToken'),
+        ),
+      ).thenAnswer((_) async => response);
+      when(() => googleHandler.signIn()).thenAnswer(
+        (_) async => const GoogleAuthTokens(idToken: 'token'),
+      );
+      _stubUpdateEq(supabase: supabase);
+
+      final user = await build().signInWithGoogle();
+
+      expect(user?.email, 'g@example.com');
+      verify(() => supabase.from('profiles')).called(1);
     });
 
     test('exchanges the token even without a Google access token', () async {

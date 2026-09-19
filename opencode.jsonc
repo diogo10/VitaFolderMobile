@@ -5,7 +5,7 @@
   "instructions": [
     "AGENTS.md"
   ],
-  "command": {
+  "commands": {
     "test": {
       "template": "Run the full test suite with coverage report and show any failures.\nFocus on the failing tests and suggest fixes.",
       "description": "Run tests with coverage",
@@ -22,26 +22,24 @@
       "agent": "build"
     }
   },
-  "agent": {
+  "agents": {
     "plan": {
       "mode": "primary",
       "model": "opencode/muse-spark-1.3-contributor-free",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
-      }
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" }
+      ]
     },
     "code-reviewer": {
       "description": "Reviews code for best practices and potential issues",
       "model": "opencode/muse-spark-1.3-contributor-free",
       "mode": "subagent",
-      "prompt": "You are a code reviewer. Focus on security, performance, and maintainability.",
-      "tools": {
-        // Disable file modification tools for review-only agent
-        "write": false,
-        "edit": false
-      }
+      "system": "You are a code reviewer. Focus on security, performance, and maintainability.",
+      // Deny file modification tools for review-only agent
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" }
+      ]
     }
   }
 }

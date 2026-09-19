@@ -24,7 +24,7 @@ void main() {
     registerFallbackValue(AndroidScheduleMode.inexactAllowWhileIdle);
     registerFallbackValue(
       const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('@drawable/ic_notification'),
       ),
     );
     registerFallbackValue(
@@ -383,6 +383,32 @@ void main() {
         () => plugin.initialize(settings: any(named: 'settings')),
       ).called(1);
       verify(() => android.createNotificationChannel(any())).called(1);
+    });
+
+    test('initializes with a drawable small icon', () async {
+      final android = _MockAndroidPlugin();
+      when(
+        () => plugin.initialize(settings: any(named: 'settings')),
+      ).thenAnswer((_) async => true);
+      when(
+        () => plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >(),
+      ).thenReturn(android);
+      when(
+        () => android.createNotificationChannel(any()),
+      ).thenAnswer((_) async {});
+
+      await service.init();
+
+      // The small icon must be a drawable silhouette: an adaptive-icon
+      // mipmap is rejected by the OS and notifications never display.
+      final captured = verify(
+        () => plugin.initialize(settings: captureAny(named: 'settings')),
+      ).captured;
+      final settings = captured.single as InitializationSettings;
+      expect(settings.android?.defaultIcon, '@drawable/ic_notification');
     });
 
     test('skips channel setup when platform lookup throws', () async {

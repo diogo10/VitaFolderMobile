@@ -8,7 +8,6 @@ import 'package:house_mira/features/reminders/domain/entities/reminder_entity.da
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 
 class GetHomeDataUsecase {
-
   GetHomeDataUsecase({
     required this.peopleRepository,
     required this.reminderRepository,
@@ -24,33 +23,51 @@ class GetHomeDataUsecase {
     }
 
     final peopleResult = await peopleRepository.getPeople();
-    return peopleResult.fold(Left.new, (people) async {
-      final familyResult = await peopleRepository.getMyFamily();
-      final family = familyResult.getOrElse(
-        (_) => FamilyEntity(name: '', inviteCode: ''),
-      );
+    return peopleResult.fold(
+      (err) async {
+        // A signed-in user without a family membership has no home data yet.
+        // Surface that as empty (same view as logged-out) instead of an error.
+        final userId = authService.currentUserId;
+        if (userId != null) {
+          try {
+            final familyIds = await peopleRepository.getFamilyIdsForUser(
+              userId,
+            );
+            if (familyIds.isEmpty) return Left(NoDataException());
+          } on Object catch (_) {
+            // Fall through to the original error below.
+          }
+        }
+        return Left(err);
+      },
+      (people) async {
+        final familyResult = await peopleRepository.getMyFamily();
+        final family = familyResult.getOrElse(
+          (_) => FamilyEntity(name: '', inviteCode: ''),
+        );
 
-      final roles = await peopleRepository.getMyFamilyRole();
-      final familyIds = await peopleRepository.getFamilyIdsForUser(
-        authService.currentUserId ?? '',
-      );
-      final familyId = familyIds.isEmpty ? null : familyIds.first;
+        final roles = await peopleRepository.getMyFamilyRole();
+        final familyIds = await peopleRepository.getFamilyIdsForUser(
+          authService.currentUserId ?? '',
+        );
+        final familyId = familyIds.isEmpty ? null : familyIds.first;
 
-      final reminders = familyId == null
-          ? const <ReminderEntity>[]
-          : await _fetchReminders(familyId);
+        final reminders = familyId == null
+            ? const <ReminderEntity>[]
+            : await _fetchReminders(familyId);
 
-      return Right(
-        HomeEntity(
-          peopleInCircle: people,
-          familyName: family.name,
-          myRole: roles.isEmpty ? '' : roles.first,
-          activeMembers: people.length,
-          reminders: reminders,
-          hasReminders: reminders.isNotEmpty,
-        ),
-      );
-    });
+        return Right(
+          HomeEntity(
+            peopleInCircle: people,
+            familyName: family.name,
+            myRole: roles.isEmpty ? '' : roles.first,
+            activeMembers: people.length,
+            reminders: reminders,
+            hasReminders: reminders.isNotEmpty,
+          ),
+        );
+      },
+    );
   }
 
   Future<List<ReminderEntity>> _fetchReminders(String familyId) async {

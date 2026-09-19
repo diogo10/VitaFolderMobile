@@ -59,7 +59,7 @@ class RemindersCubit extends Cubit<RemindersState> {
 
     final resolvedFamilyId = familyId ?? await _resolveFamilyId();
     if (resolvedFamilyId == null) {
-      emit(ReminderError(viewMode: _viewMode));
+      emit(EmptyReminders(type: type, viewMode: _viewMode));
       return;
     }
 
@@ -87,6 +87,19 @@ class RemindersCubit extends Cubit<RemindersState> {
     }
     final familyIds = await peopleRepository.getFamilyIdsForUser(userId);
     return familyIds.isEmpty ? null : familyIds.first;
+  }
+
+  /// Whether the current user belongs to a family.
+  ///
+  /// Views use this to gate creation flows: a logged-in user without a
+  /// family sees the same empty state as a logged-out user, and tapping
+  /// create routes them to `/people` instead of the editor.
+  Future<bool> hasFamily() async {
+    try {
+      return await _resolveFamilyId() != null;
+    } on Object catch (_) {
+      return false;
+    }
   }
 
   Future<void> removeReminder(String id) async {

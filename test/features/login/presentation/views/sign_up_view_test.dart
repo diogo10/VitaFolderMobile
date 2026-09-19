@@ -26,6 +26,9 @@ class _FakeAuthService extends AuthService {
   String? lastSignUpPassword;
   String? lastSignUpName;
   bool shouldSucceed = true;
+  int googleSignInCalls = 0;
+  User? googleStubUser;
+  Exception? googleError;
 
   @override
   Future<User?> signUp({
@@ -40,6 +43,13 @@ class _FakeAuthService extends AuthService {
       throw const AuthException('Sign up failed');
     }
     return User.fromJson({'id': 'u1', 'email': email});
+  }
+
+  @override
+  Future<User?> signInWithGoogle() async {
+    googleSignInCalls++;
+    if (googleError != null) throw googleError!;
+    return googleStubUser;
   }
 }
 
@@ -211,6 +221,37 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('account-shell'), findsOneWidget);
+    });
+
+    testWidgets('delegates to Google sign-in from Google button', (
+      tester,
+    ) async {
+      await pumpSignUp(tester);
+
+      await tester.ensureVisible(find.text('Sign up with Google'));
+      await tester.pump();
+      await tester.tap(find.text('Sign up with Google'));
+      await tester.pump();
+
+      expect(authService.googleSignInCalls, 1);
+    });
+
+    testWidgets('navigates home after successful Google sign-in', (
+      tester,
+    ) async {
+      authService.googleStubUser = User.fromJson({
+        'id': 'u1',
+        'email': 'user@example.com',
+      });
+      await pumpSignUp(tester);
+
+      await tester.ensureVisible(find.text('Sign up with Google'));
+      await tester.pump();
+      await tester.tap(find.text('Sign up with Google'));
+      await tester.pumpAndSettle();
+
+      expect(authService.googleSignInCalls, 1);
+      expect(find.text('home-shell'), findsOneWidget);
     });
   });
 }

@@ -61,13 +61,54 @@ void main() {
 
     test('returns people error without querying family/reminders', () async {
       when(() => auth.isLoggedIn()).thenReturn(true);
+      when(() => auth.currentUserId).thenReturn('u1');
       when(
         () => people.getPeople(),
       ).thenAnswer((_) async => Left(Exception('boom')));
+      when(
+        () => people.getFamilyIdsForUser('u1'),
+      ).thenAnswer((_) async => ['f1']);
 
       final result = await build()();
 
       expect(result.isLeft(), isTrue);
+      verifyNever(() => people.getMyFamily());
+    });
+
+    test('returns NoDataException when the user has no family', () async {
+      when(() => auth.isLoggedIn()).thenReturn(true);
+      when(() => auth.currentUserId).thenReturn('u1');
+      when(
+        () => people.getPeople(),
+      ).thenAnswer((_) async => Left(Exception('No families found')));
+      when(
+        () => people.getFamilyIdsForUser('u1'),
+      ).thenAnswer((_) async => <String>[]);
+
+      final result = await build()();
+
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable(), isA<NoDataException>());
+      verifyNever(() => people.getMyFamily());
+    });
+
+    test('propagates the people error when the family lookup throws', () async {
+      when(() => auth.isLoggedIn()).thenReturn(true);
+      when(() => auth.currentUserId).thenReturn('u1');
+      when(
+        () => people.getPeople(),
+      ).thenAnswer((_) async => Left(Exception('boom')));
+      when(
+        () => people.getFamilyIdsForUser('u1'),
+      ).thenThrow(Exception('offline'));
+
+      final result = await build()();
+
+      expect(result.isLeft(), isTrue);
+      expect(
+        result.getLeft().toNullable().toString(),
+        contains('boom'),
+      );
       verifyNever(() => people.getMyFamily());
     });
 

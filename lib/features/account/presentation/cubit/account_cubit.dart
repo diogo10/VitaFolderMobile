@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
@@ -8,11 +11,42 @@ class AccountCubit extends Cubit<AccountState> {
   AccountCubit({
     required AuthService authService,
     required PeopleRepository peopleRepository,
+    Stream<AuthState>? authStateStream,
   }) : _authService = authService,
        _peopleRepository = peopleRepository,
-       super(AccountInitial());
+       super(AccountInitial()) {
+    try {
+      _authSubscription = (authStateStream ?? _authService.authStateChanges)
+          .listen(_onAuthState);
+    } on Object catch (_) {
+      // Best-effort: account still loads on demand via loadAccount().
+    }
+  }
   final AuthService _authService;
   final PeopleRepository _peopleRepository;
+  StreamSubscription<AuthState>? _authSubscription;
+
+  /// Keeps the account tab in sync with the session.
+  ///
+  /// The account branch stays alive in the indexed-stack shell, so a
+  /// registration from `/sign-up` (which navigates to `/home`) would
+  /// otherwise leave a stale `NoAccount` state behind. Reloading on
+  /// sign-in and clearing on sign-out fixes that without the views
+  /// having to coordinate.
+  void _onAuthState(AuthState state) {
+    if (isClosed) return;
+    if (state.session != null) {
+      unawaited(loadAccount());
+    } else {
+      emit(NoAccount());
+    }
+  }
+
+  @override
+  Future<void> close() {
+    unawaited(_authSubscription?.cancel());
+    return super.close();
+  }
 
   Future<void> loadAccount() async {
     emit(AccountLoading());
@@ -28,7 +62,7 @@ class AccountCubit extends Cubit<AccountState> {
             userName: user.name ?? '------',
             email: user.email ?? '',
             familyCode: familyCode,
-            myRole: myRole.first,
+            myRole: myRole.isEmpty ? '' : myRole.first,
           ),
         );
 
@@ -79,15 +113,19 @@ class AccountCubit extends Cubit<AccountState> {
       final user = await _authService.signInWithGoogle();
 
       if (user == null) {
+        debugPrint('[AccountCubit] Google sign-in canceled by the user.');
         emit(NoAccount());
         return;
       }
 
+      debugPrint('[AccountCubit] Google sign-in succeeded (${user.id}).');
       emit(AccountLoginSuccess());
       await loadAccount();
-    } on AuthException {
+    } on AuthException catch (e) {
+      debugPrint('[AccountCubit] Google sign-in failed: ${e.message}');
       emit(LoginFailed());
-    } on Object catch (_) {
+    } on Object catch (e) {
+      debugPrint('[AccountCubit] Google sign-in error: $e');
       emit(NoAccount());
     }
   }

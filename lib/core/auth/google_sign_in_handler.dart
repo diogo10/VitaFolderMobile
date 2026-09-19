@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 /// Google authentication tokens retrieved from the native sign-in flow.
@@ -64,10 +65,20 @@ class GoogleSignInHandler implements IGoogleSignInHandler {
 
   Future<void> _ensureInitialized() async {
     if (_initialized) return;
-    await _googleSignIn.initialize(
-      clientId: clientId,
-      serverClientId: serverClientId,
+    debugPrint(
+      '[GoogleSignIn] initialize '
+      '(clientId: ${clientId == null ? 'null (platform default)' : 'set'}, '
+      'serverClientId: ${serverClientId == null ? 'null' : 'set'})',
     );
+    try {
+      await _googleSignIn.initialize(
+        clientId: clientId,
+        serverClientId: serverClientId,
+      );
+    } on Object catch (e) {
+      debugPrint('[GoogleSignIn] initialize failed: $e');
+      rethrow;
+    }
     _initialized = true;
   }
 
@@ -80,9 +91,14 @@ class GoogleSignInHandler implements IGoogleSignInHandler {
       final lightweight = _googleSignIn.attemptLightweightAuthentication();
       if (lightweight != null) {
         account = await lightweight;
+        debugPrint('[GoogleSignIn] lightweight authentication restored.');
       }
       account ??= await _googleSignIn.authenticate();
     } on GoogleSignInException catch (e) {
+      debugPrint(
+        '[GoogleSignIn] authenticate failed '
+        '(code: ${e.code.name}, description: ${e.description})',
+      );
       if (e.code == GoogleSignInExceptionCode.canceled) {
         return null;
       }
@@ -91,20 +107,35 @@ class GoogleSignInHandler implements IGoogleSignInHandler {
 
     final idToken = account.authentication.idToken;
     if (idToken == null || idToken.isEmpty) {
+      debugPrint('[GoogleSignIn] no ID token returned for ${account.email}.');
       throw const GoogleSignInException(
         code: GoogleSignInExceptionCode.unknownError,
         description: 'No ID Token found.',
       );
     }
 
-    final authorization = await account.authorizationClient
-        .authorizationForScopes(GoogleSignInHandler.scopes);
+    GoogleSignInClientAuthorization? authorization;
+    try {
+      authorization = await account.authorizationClient.authorizationForScopes(
+        GoogleSignInHandler.scopes,
+      );
+    } on Object catch (e) {
+      debugPrint('[GoogleSignIn] authorizationForScopes failed: $e');
+      rethrow;
+    }
 
-    final granted =
-        authorization ??
-        await account.authorizationClient.authorizeScopes(
-          GoogleSignInHandler.scopes,
-        );
+    GoogleSignInClientAuthorization granted;
+    try {
+      granted =
+          authorization ??
+          await account.authorizationClient.authorizeScopes(
+            GoogleSignInHandler.scopes,
+          );
+    } on Object catch (e) {
+      debugPrint('[GoogleSignIn] authorizeScopes failed: $e');
+      rethrow;
+    }
+    debugPrint('[GoogleSignIn] tokens retrieved for ${account.email}.');
 
     return GoogleAuthTokens(idToken: idToken, accessToken: granted.accessToken);
   }

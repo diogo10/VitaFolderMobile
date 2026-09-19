@@ -106,5 +106,25 @@ void main() {
         () => getReminderUsecase('fam-1', type: any(named: 'type')),
       ).called(1);
     });
+
+    testWidgets('shows empty state when a logged-in user has no family', (
+      tester,
+    ) async {
+      when(() => authService.isLoggedIn()).thenReturn(true);
+      when(() => authService.currentUserId).thenReturn('user-1');
+      when(
+        () => peopleRepository.getMyFamilyRole(),
+      ).thenAnswer((_) async => <String>[]);
+      when(
+        () => peopleRepository.getFamilyIdsForUser('user-1'),
+      ).thenAnswer((_) async => <String>[]);
+
+      await tester.pumpWidget(pumpView());
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byType(RemindersEmptyWidget), findsOneWidget);
+      verifyNever(() => getReminderUsecase(any(), type: any(named: 'type')));
+    });
   });
 }

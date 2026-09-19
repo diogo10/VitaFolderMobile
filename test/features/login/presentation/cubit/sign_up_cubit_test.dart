@@ -107,5 +107,64 @@ void main() {
         ),
       ],
     );
+
+    blocTest<SignUpCubit, SignUpState>(
+      'signInWithGoogle emits loading then success',
+      build: build,
+      setUp: () {
+        when(() => auth.signInWithGoogle()).thenAnswer((_) async => _user());
+      },
+      act: (cubit) => cubit.signInWithGoogle(),
+      expect: () => [isA<SignUpLoading>(), isA<SignUpSuccess>()],
+      verify: (_) {
+        verify(() => auth.signInWithGoogle()).called(1);
+      },
+    );
+
+    blocTest<SignUpCubit, SignUpState>(
+      'signInWithGoogle emits initial when the user cancels',
+      build: build,
+      setUp: () {
+        when(() => auth.signInWithGoogle()).thenAnswer((_) async => null);
+      },
+      act: (cubit) => cubit.signInWithGoogle(),
+      expect: () => [isA<SignUpLoading>(), isA<SignUpInitial>()],
+    );
+
+    blocTest<SignUpCubit, SignUpState>(
+      'signInWithGoogle emits message from AuthException',
+      build: build,
+      setUp: () {
+        when(
+          () => auth.signInWithGoogle(),
+        ).thenThrow(const AuthException('Google sign-in failed.'));
+      },
+      act: (cubit) => cubit.signInWithGoogle(),
+      expect: () => [
+        isA<SignUpLoading>(),
+        isA<SignUpError>().having(
+          (e) => e.message,
+          'message',
+          'Google sign-in failed.',
+        ),
+      ],
+    );
+
+    blocTest<SignUpCubit, SignUpState>(
+      'signInWithGoogle emits stringified message on unexpected error',
+      build: build,
+      setUp: () {
+        when(() => auth.signInWithGoogle()).thenThrow(Exception('boom'));
+      },
+      act: (cubit) => cubit.signInWithGoogle(),
+      expect: () => [
+        isA<SignUpLoading>(),
+        isA<SignUpError>().having(
+          (e) => e.message,
+          'message',
+          contains('boom'),
+        ),
+      ],
+    );
   });
 }

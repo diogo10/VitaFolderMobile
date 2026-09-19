@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
@@ -299,6 +301,29 @@ void main() {
     );
 
     blocTest<AccountCubit, AccountState>(
+      'loadAccount emits loaded with empty family when user has no family',
+      build: () {
+        final people = _FakePeopleRepository()
+          ..familyResult = Left(Exception('No families found'))
+          ..roles = const [];
+        return AccountCubit(
+          authService: _FakeAuthService(
+            stubUser: _testUser(),
+            stubPerson: _testPerson(),
+          ),
+          peopleRepository: people,
+        );
+      },
+      act: (cubit) => cubit.loadAccount(),
+      expect: () => [
+        isA<AccountLoading>(),
+        isA<AccountLoaded>()
+            .having((s) => s.familyCode, 'familyCode', '')
+            .having((s) => s.myRole, 'myRole', ''),
+      ],
+    );
+
+    blocTest<AccountCubit, AccountState>(
       'loadAccount emits loading then NoAccount when user is null',
       build: () => AccountCubit(
         authService: _FakeAuthService(),
@@ -448,5 +473,57 @@ void main() {
         isA<AccountLoaded>(),
       ],
     );
+
+    test('reloads the account when the auth stream emits signedIn', () async {
+      final controller = StreamController<AuthState>.broadcast();
+      addTearDown(controller.close);
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubPerson: _testPerson(),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        authStateStream: controller.stream,
+      );
+      addTearDown(cubit.close);
+
+      controller.add(
+        AuthState(
+          AuthChangeEvent.signedIn,
+          Session(
+            accessToken: 'token',
+            tokenType: 'bearer',
+            user: _testUser(),
+          ),
+        ),
+      );
+
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(cubit.state, isA<AccountLoaded>());
+    });
+
+    test('emits NoAccount when the auth stream emits signedOut', () async {
+      final controller = StreamController<AuthState>.broadcast();
+      addTearDown(controller.close);
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubPerson: _testPerson(),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        authStateStream: controller.stream,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.loadAccount();
+      expect(cubit.state, isA<AccountLoaded>());
+
+      controller.add(const AuthState(AuthChangeEvent.signedOut, null));
+
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(cubit.state, isA<NoAccount>());
+    });
   });
 }

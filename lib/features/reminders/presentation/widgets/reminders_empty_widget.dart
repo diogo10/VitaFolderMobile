@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminders_suggestions_cards_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
@@ -16,6 +17,19 @@ class RemindersEmptyWidget extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context)!.needToBeLoggedIn)),
       );
+      return;
+    }
+    final hasFamily = await context.read<RemindersCubit>().hasFamily();
+    if (!context.mounted) return;
+    if (!hasFamily) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.createReminderErrorNoFamily,
+          ),
+        ),
+      );
+      context.go('/people');
       return;
     }
     await context.push('/create-reminder');

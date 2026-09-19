@@ -55,29 +55,46 @@ class AuthService {
     final response = await _client.auth.signUp(
       email: email,
       password: password,
+      data: {'full_name': name},
     );
 
     if (response.user == null) {
       throw const AuthException('An unexpected error occurred.');
     }
 
-    if (response.user != null && response.user!.email == null) {
-      _client.auth.startAutoRefresh();
-      await _updateUser(name, email);
-    }
+    await _ensureProfile(
+      userId: response.user!.id,
+      fullName: name,
+      email: email,
+    );
 
     return response.user;
   }
 
-  Future<void> _updateUser(String name, String email) async {
+  /// Best-effort write of the `profiles` row created by the
+  /// `handle_new_user` trigger.
+  ///
+  /// The trigger inserts the row synchronously with the `auth.users` insert,
+  /// but older trigger versions omit `email`/`full_name`. This update fills
+  /// the gaps without ever failing sign-up: RLS or network errors are logged
+  /// and swallowed so auth always succeeds even if the profile patch fails.
+  Future<void> _ensureProfile({
+    required String userId,
+    String? fullName,
+    String? email,
+    String? avatarUrl,
+  }) async {
+    final values = <String, dynamic>{};
+    if (fullName != null && fullName.isNotEmpty) values['full_name'] = fullName;
+    if (email != null && email.isNotEmpty) values['email'] = email;
+    if (avatarUrl != null && avatarUrl.isNotEmpty) {
+      values['avatar_url'] = avatarUrl;
+    }
+    if (values.isEmpty || userId.isEmpty) return;
     try {
-      final userId = currentUser?.id ?? '';
-      await _client
-          .from('profiles')
-          .update({'full_name': name, 'email': email})
-          .eq('id', userId);
+      await _client.from('profiles').update(values).eq('id', userId);
     } on Object catch (e) {
-      debugPrint('Error creating family: $e');
+      debugPrint('Error ensuring profile: $e');
     }
   }
 
@@ -105,23 +122,49 @@ class AuthService {
     try {
       tokens = await _googleHandler.signIn();
     } on GoogleSignInException catch (e) {
+      debugPrint(
+        '[AuthService] Google sign-in failed '
+        '(code: ${e.code.name}, description: ${e.description})',
+      );
       throw AuthException(e.description ?? 'Google sign-in failed.');
     }
 
     if (tokens == null) {
+      debugPrint('[AuthService] Google sign-in canceled by the user.');
       return null;
     }
 
-    final response = await _client.auth.signInWithIdToken(
-      provider: OAuthProvider.google,
-      idToken: tokens.idToken,
-      accessToken: tokens.accessToken,
-    );
+    debugPrint('[AuthService] exchanging Google ID token with Supabase.');
+    final AuthResponse response;
+    try {
+      response = await _client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: tokens.idToken,
+        accessToken: tokens.accessToken,
+      );
+    } on Object catch (e) {
+      debugPrint('[AuthService] Supabase ID token exchange failed: $e');
+      rethrow;
+    }
 
     if (response.user == null) {
+      debugPrint('[AuthService] Supabase exchange returned no user.');
       throw const AuthException('An unexpected error occurred.');
     }
 
+    final user = response.user!;
+    final metadata = user.userMetadata ?? {};
+    await _ensureProfile(
+      userId: user.id,
+      fullName: metadata['full_name'] as String? ?? metadata['name'] as String?,
+      email: user.email,
+      avatarUrl:
+          metadata['avatar_url'] as String? ?? metadata['picture'] as String?,
+    );
+
+    debugPrint(
+      '[AuthService] Google sign-in succeeded (${response.user!.id}).',
+    );
     return response.user;
   }
 

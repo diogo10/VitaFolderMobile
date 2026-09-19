@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "140355243144-c32uaccg4aom3p5si7s3ffi5ctc7f0fd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.housemira.app",
+            "certificate_hash": "c3a6dc979ac165260d5bb86caaf7b6cf8fd8c296"
+          }
+        },
+        {
           "client_id": "140355243144-e5v8co3dej28784h2g0gcchsuod8vdm5.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -40,10 +48,10 @@
               "client_type": 3
             },
             {
-              "client_id": "140355243144-5qrkdsd7rkovrqjkfm9u6qcrqrjgqp4b.apps.googleusercontent.com",
+              "client_id": "140355243144-jod5i62r34mvfelrd6pn580c50du58me.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.myapp"
+                "bundle_id": "com.housemira.app"
               }
             }
           ]

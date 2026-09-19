@@ -148,7 +148,10 @@ class ReminderNotificationService implements IReminderNotificationService {
     }
 
     const settings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      // Must be a white-on-transparent drawable: an adaptive-icon mipmap
+      // is not a valid small icon and notifications using one are dropped
+      // by the OS at fire time.
+      android: AndroidInitializationSettings('@drawable/ic_notification'),
       // System permission is already requested at startup by
       // NotificationPermissionService; do not prompt again here.
       iOS: DarwinInitializationSettings(

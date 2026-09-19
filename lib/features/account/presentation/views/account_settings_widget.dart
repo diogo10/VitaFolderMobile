@@ -40,27 +40,29 @@ class AccountSettingsWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          _AccountSettingsSection(
-            title: l.accountSettingsFamilySection,
-            items: [
-              if (isAdmin)
+          if (familyCode.isNotEmpty)
+            _AccountSettingsSection(
+              title: l.accountSettingsFamilySection,
+              items: [
+                if (isAdmin)
+                  _AccountSettingsItemData(
+                    icon: Icons.house_rounded,
+                    title: l.accountSettingsFamilySettings,
+                    subtitle: l.accountSettingsFamilySettingsSubtitle,
+                    onTap: () => context.push('/family-settings'),
+                  ),
                 _AccountSettingsItemData(
-                  icon: Icons.house_rounded,
-                  title: l.accountSettingsFamilySettings,
-                  subtitle: l.accountSettingsFamilySettingsSubtitle,
-                  onTap: () => context.push('/family-settings'),
+                  icon: Icons.person_add_alt_1_rounded,
+                  title: l.accountSettingsInviteMembers,
+                  subtitle: l.accountSettingsInviteMembersSubtitleWithCode(
+                    familyCode,
+                    l.accountSettingsInviteMembersSubtitle,
+                  ),
+                  onTap: () => context.go('/people'),
                 ),
-              _AccountSettingsItemData(
-                icon: Icons.person_add_alt_1_rounded,
-                title: l.accountSettingsInviteMembers,
-                subtitle: l.accountSettingsInviteMembersSubtitleWithCode(
-                  familyCode,
-                  l.accountSettingsInviteMembersSubtitle,
-                ),
-                onTap: () => context.go('/people'),
-              ),
-            ],
-          ),
+              ],
+            ),
+          if (familyCode.isNotEmpty) const SizedBox(height: 24),
           const SizedBox(height: 24),
           _AccountSettingsSection(
             title: l.accountSettingsSupportSection,

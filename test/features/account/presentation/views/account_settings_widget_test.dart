@@ -96,8 +96,10 @@ class _FakePeopleRepository implements PeopleRepository {
 void main() {
   Future<void> pumpSettings(
     WidgetTester tester,
-    AccountCubit cubit,
-  ) async {
+    AccountCubit cubit, {
+    String familyCode = 'ABC123',
+    bool isAdmin = false,
+  }) async {
     addTearDown(cubit.close);
     await tester.pumpWidget(
       MaterialApp(
@@ -107,11 +109,11 @@ void main() {
           value: cubit,
           // Mirrors production: AccountLoadedWidget hosts the settings
           // column inside a SingleChildScrollView.
-          child: const Scaffold(
+          child: Scaffold(
             body: SingleChildScrollView(
               child: AccountSettingsWidget(
-                familyCode: 'ABC123',
-                isAdmin: false,
+                familyCode: familyCode,
+                isAdmin: isAdmin,
               ),
             ),
           ),
@@ -166,6 +168,17 @@ void main() {
 
       expect(auth.deleteCalls, 0);
       expect(find.text('Delete Account'), findsOneWidget);
+    });
+
+    testWidgets('hides the family section when there is no family', (
+      tester,
+    ) async {
+      final auth = _FakeAuthService();
+      await pumpSettings(tester, buildCubit(auth), familyCode: '');
+
+      expect(find.text('Delete Account'), findsOneWidget);
+      expect(find.text('Invite Members'), findsNothing);
+      expect(find.text('Family Settings'), findsNothing);
     });
   });
 }

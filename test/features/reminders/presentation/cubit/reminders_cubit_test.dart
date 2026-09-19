@@ -117,7 +117,7 @@ void main() {
     );
 
     blocTest<RemindersCubit, RemindersState>(
-      'emits error when there is no family',
+      'emits empty when there is no family',
       build: buildCubit,
       setUp: () {
         when(() => authService.currentUserId).thenReturn(null);
@@ -126,7 +126,23 @@ void main() {
         ).thenAnswer((_) async => []);
       },
       act: (cubit) => cubit.getReminders(),
-      expect: () => [isA<RemindersLoading>(), isA<ReminderError>()],
+      expect: () => [isA<RemindersLoading>(), isA<EmptyReminders>()],
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      'emits empty when a logged-in user has no family',
+      build: buildCubit,
+      setUp: () {
+        when(() => authService.currentUserId).thenReturn('u1');
+        when(
+          () => peopleRepository.getFamilyIdsForUser('u1'),
+        ).thenAnswer((_) async => <String>[]);
+        when(
+          () => peopleRepository.getMyFamilyRole(),
+        ).thenAnswer((_) async => <String>[]);
+      },
+      act: (cubit) => cubit.getReminders(),
+      expect: () => [isA<RemindersLoading>(), isA<EmptyReminders>()],
     );
 
     blocTest<RemindersCubit, RemindersState>(

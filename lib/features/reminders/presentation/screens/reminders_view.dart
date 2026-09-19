@@ -43,6 +43,19 @@ class _RemindersViewState extends State<RemindersView> {
       );
       return;
     }
+    final hasFamily = await cubit.hasFamily();
+    if (!mounted) return;
+    if (!hasFamily) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.createReminderErrorNoFamily,
+          ),
+        ),
+      );
+      context.go('/people');
+      return;
+    }
     await context.push('/create-reminder');
   }
 
