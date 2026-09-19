@@ -100,6 +100,10 @@ class _FakeNotificationService implements IReminderNotificationService {
         reminderId: reminderId,
         enabled: enabled,
         leadTime: leadTime,
+        dueDate: dueDate,
+        title: title,
+        body: body,
+        repeatRule: repeatRule,
       ),
     );
     stored[reminderId] = ReminderNotificationPrefs(
@@ -120,10 +124,18 @@ class ScheduledCall {
     required this.reminderId,
     required this.enabled,
     required this.leadTime,
+    this.dueDate,
+    this.title = '',
+    this.body = '',
+    this.repeatRule = '',
   });
   final String reminderId;
   final bool enabled;
   final ReminderLeadTime leadTime;
+  final DateTime? dueDate;
+  final String title;
+  final String body;
+  final String repeatRule;
 }
 
 void main() {
@@ -467,6 +479,60 @@ void main() {
         service.scheduled.single.leadTime,
         ReminderLeadTime.fifteenMinutes,
       );
+    });
+
+    testWidgets('edit save reschedules notification with new date and time', (
+      tester,
+    ) async {
+      final service = _FakeNotificationService()
+        ..stored['1'] = const ReminderNotificationPrefs(
+          enabled: true,
+          leadTime: ReminderLeadTime.oneHour,
+        );
+      when(
+        () => updateReminderUsecase.call(any()),
+      ).thenAnswer((_) async => const Right(true));
+      when(
+        () => peopleRepository.getMyFamilyRole(),
+      ).thenAnswer((_) async => <String>[]);
+      when(
+        () => peopleRepository.getFamilyIdsForUser(any()),
+      ).thenAnswer((_) async => ['fam-1']);
+      when(
+        () => getReminderUsecase.call(any(), type: any(named: 'type')),
+      ).thenAnswer((_) async => const Right([]));
+
+      final testRouter = buildTestRouter(
+        notificationService: service,
+        reminder: reminder,
+      );
+      await tester.pumpWidget(pumpRouter(testRouter));
+      await tester.pumpAndSettle();
+
+      unawaited(testRouter.push('/create'));
+      await tester.pumpAndSettle();
+      final l = AppLocalizations.of(
+        tester.element(find.byType(CreateReminderScreen)),
+      )!;
+
+      // Previously enabled choice is pre-filled from prefs.
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
+
+      await tester.tap(find.text(l.createReminderSaveButtonEdit));
+      await tester.pumpAndSettle();
+
+      // Same reminder id, new date/time, title/body and repeat rule flow
+      // into setReminderNotification, which cancels the previous OS alert
+      // (same deterministic id) before scheduling the new one.
+      expect(service.scheduled, hasLength(1));
+      final call = service.scheduled.single;
+      expect(call.reminderId, '1');
+      expect(call.enabled, isTrue);
+      expect(call.leadTime, ReminderLeadTime.oneHour);
+      expect(call.dueDate, DateTime(2026, 8, 22, 15));
+      expect(call.title, 'Test Title');
+      expect(call.body, 'Test Body');
+      expect(call.repeatRule, 'weekly');
     });
 
     testWidgets('save warns when notifications are disabled', (tester) async {

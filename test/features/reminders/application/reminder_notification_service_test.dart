@@ -309,6 +309,61 @@ void main() {
         () => storage.setString('reminder_notify_lead_minutes_r1', '60'),
       ).called(1);
     });
+
+    test(
+      'edit reschedules: cancels previous then schedules new fire time',
+      () async {
+        const reminderId = 'r1';
+        final expectedId =
+            ReminderNotificationService.notificationIdForReminder(reminderId);
+        final firstDue = DateTime(2030, 5, 4, 9);
+        final secondDue = DateTime(2030, 5, 5, 10);
+
+        await service.setReminderNotification(
+          reminderId: reminderId,
+          enabled: true,
+          leadTime: ReminderLeadTime.fifteenMinutes,
+          dueDate: firstDue,
+          title: 'Title',
+          body: 'Body',
+          repeatRule: 'never',
+        );
+        await service.setReminderNotification(
+          reminderId: reminderId,
+          enabled: true,
+          leadTime: ReminderLeadTime.fifteenMinutes,
+          dueDate: secondDue,
+          title: 'Title v2',
+          body: 'Body v2',
+          repeatRule: 'never',
+        );
+
+        // Old alert removed before the new one is scheduled, on the same id:
+        // each set call cancels first (twice total) and schedules once.
+        verify(() => plugin.cancel(id: expectedId)).called(2);
+
+        final scheduledIds = verify(
+          () => plugin.zonedSchedule(
+            id: captureAny(named: 'id'),
+            scheduledDate: captureAny(named: 'scheduledDate'),
+            notificationDetails: any(named: 'notificationDetails'),
+            androidScheduleMode: any(named: 'androidScheduleMode'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+          ),
+        ).captured;
+        // Captured [id, date, id, date] in call order.
+        expect(scheduledIds, hasLength(4));
+        expect(scheduledIds[0], expectedId);
+        expect(scheduledIds[2], expectedId);
+        final scheduled = [scheduledIds[1] as DateTime, scheduledIds[3]];
+        expect(scheduled, hasLength(2));
+        expect(
+          (scheduled[1] as DateTime).millisecondsSinceEpoch,
+          DateTime(2030, 5, 5, 9, 45).millisecondsSinceEpoch,
+        );
+      },
+    );
   });
 
   group('cancelReminderNotification', () {
