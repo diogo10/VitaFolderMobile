@@ -54,7 +54,11 @@ abstract interface class IReminderNotificationService {
   /// When [enabled] is true but [dueDate] is null there is nothing to
   /// schedule yet; the choice is still persisted so a later edit that sets
   /// a date can schedule it.
-  Future<void> setReminderNotification({
+  ///
+  /// Returns true when an alert was scheduled or nothing was requested
+  /// (disabled / no date). Returns false when an alert was requested but
+  /// skipped because the (one-shot) time already passed.
+  Future<bool> setReminderNotification({
     required String reminderId,
     required bool enabled,
     required ReminderLeadTime leadTime,
@@ -240,7 +244,7 @@ class ReminderNotificationService implements IReminderNotificationService {
   }
 
   @override
-  Future<void> setReminderNotification({
+  Future<bool> setReminderNotification({
     required String reminderId,
     required bool enabled,
     required ReminderLeadTime leadTime,
@@ -259,7 +263,7 @@ class ReminderNotificationService implements IReminderNotificationService {
         'ReminderNotifications: skipping $reminderId '
         '(enabled=$enabled, dueDate=$dueDate).',
       );
-      return;
+      return true;
     }
 
     var fireTime = fireTimeFor(dueDate, leadTime);
@@ -284,15 +288,17 @@ class ReminderNotificationService implements IReminderNotificationService {
           'ReminderNotifications: skipping $reminderId '
           '(due date $dueDate already passed).',
         );
-        return;
+        return false;
       }
     }
 
+    final scheduleMode = await _scheduleMode();
+    final scheduledDate = tz.TZDateTime.from(fireTime, tz.local);
     await _plugin.zonedSchedule(
       id: notificationIdForReminder(reminderId),
       title: title,
       body: body,
-      scheduledDate: tz.TZDateTime.from(fireTime, tz.local),
+      scheduledDate: scheduledDate,
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           _channelId,
@@ -303,14 +309,40 @@ class ReminderNotificationService implements IReminderNotificationService {
         ),
         iOS: DarwinNotificationDetails(),
       ),
-      androidScheduleMode: await _scheduleMode(),
+      androidScheduleMode: scheduleMode,
       matchDateTimeComponents: repeatComponent,
     );
+    // Best-effort diagnostics only: zonedSchedule succeeding does NOT mean
+    // the OS will deliver (permission denied / inexact delay / force-stop
+    // all drop silently), so log everything needed to tell those apart.
+    var systemPermission = false;
+    var exactAlarms = false;
+    try {
+      systemPermission = await hasSystemPermission();
+    } on Object catch (_) {
+      // Logged below as false.
+    }
+    try {
+      exactAlarms = await canScheduleExactAlarms();
+    } on Object catch (_) {
+      // Logged below as false.
+    }
+    var pendingCount = -1;
+    try {
+      final pending = await _plugin.pendingNotificationRequests();
+      pendingCount = pending.length;
+    } on Object catch (_) {
+      // Plugin may be uninitialized in tests; leave as -1 (unknown).
+    }
     debugPrint(
       'ReminderNotifications: scheduled $reminderId '
       '(notification #${notificationIdForReminder(reminderId)}) '
-      'at $fireTime (lead ${leadTime.minutes}m, repeat $repeatRule).',
+      'at $fireTime (tz=${tz.local.name}, scheduled=$scheduledDate, '
+      'lead ${leadTime.minutes}m, repeat $repeatRule, mode=$scheduleMode, '
+      'systemPermission=$systemPermission, exactAlarms=$exactAlarms, '
+      'pending=$pendingCount).',
     );
+    return true;
   }
 
   @override

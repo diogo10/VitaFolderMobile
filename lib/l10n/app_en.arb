@@ -323,6 +323,8 @@
   "createReminderNotifyDisabledMessage": "Notifications are disabled. Enable them to receive reminders.",
   "createReminderNotifySavedWithoutPermission": "Reminder saved, but notifications are disabled.",
   "createReminderNotifyUpdatedWithoutPermission": "Reminder updated, but notifications are disabled.",
+  "createReminderNotifySavedTimePassed": "Reminder saved, but the selected time already passed.",
+  "createReminderNotifyUpdatedTimePassed": "Reminder updated, but the selected time already passed.",
   "createReminderNotifyOpenSettings": "Settings",
   "createReminderNotifyExactAlarmMessage": "For on-time alerts, allow exact alarms in Settings.",
   "createReminderSaveButton": "Create Reminder",

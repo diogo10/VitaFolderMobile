@@ -106,10 +106,14 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       );
 
   /// Persists/schedules the notification choice.
-  /// Returns true when alerts will actually fire (or nothing was requested).
-  Future<bool> _syncNotification(String reminderId) async {
+  /// Returns whether alerts will actually fire (or nothing was requested)
+  /// and whether a requested alert was skipped because the time passed.
+  Future<({bool armed, bool timePassed})> _syncNotification(
+    String reminderId,
+  ) async {
+    bool scheduled;
     try {
-      await _notificationService.setReminderNotification(
+      scheduled = await _notificationService.setReminderNotification(
         reminderId: reminderId,
         enabled: _notifyEnabled,
         leadTime: _leadTime,
@@ -120,15 +124,17 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       );
     } on Object catch (_) {
       // Notifications are best-effort; the reminder itself was saved.
-      return false;
+      return (armed: false, timePassed: false);
     }
-    if (!_notifyEnabled) return true;
+    if (!_notifyEnabled) return (armed: true, timePassed: false);
+    if (!scheduled) return (armed: false, timePassed: true);
     // Alerts only fire when the OS allows notifications and a date is set.
     try {
-      return _dueDate != null &&
-          await _notificationService.hasSystemPermission();
+      final armed =
+          _dueDate != null && await _notificationService.hasSystemPermission();
+      return (armed: armed, timePassed: false);
     } on Object catch (_) {
-      return false;
+      return (armed: false, timePassed: false);
     }
   }
 
@@ -186,8 +192,18 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   SnackBar _saveSnackBar({
     required AppLocalizations l,
     required bool notificationsBlocked,
+    required bool timePassed,
     required bool isUpdate,
   }) {
+    if (timePassed) {
+      return SnackBar(
+        content: Text(
+          isUpdate
+              ? l.createReminderNotifyUpdatedTimePassed
+              : l.createReminderNotifySavedTimePassed,
+        ),
+      );
+    }
     if (notificationsBlocked) {
       return SnackBar(
         content: Text(
@@ -330,7 +346,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       body: BlocConsumer<CreateReminderCubit, CreateReminderState>(
         listener: (context, state) async {
           if (state is CreateReminderSuccess) {
-            final alertsArmed = await _syncNotification(state.reminderId);
+            final sync = await _syncNotification(state.reminderId);
             if (!context.mounted) return;
             _refreshLists(context);
             ScaffoldMessenger.of(context)
@@ -338,7 +354,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
               ..showSnackBar(
                 _saveSnackBar(
                   l: l,
-                  notificationsBlocked: _notifyEnabled && !alertsArmed,
+                  notificationsBlocked:
+                      _notifyEnabled && !sync.armed && !sync.timePassed,
+                  timePassed: _notifyEnabled && sync.timePassed,
                   isUpdate: false,
                 ),
               );
@@ -346,9 +364,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           }
           if (state is UpdatedReminderSuccess) {
             final reminder = widget.reminder;
-            var alertsArmed = true;
+            var sync = (armed: true, timePassed: false);
             if (reminder != null) {
-              alertsArmed = await _syncNotification(reminder.id);
+              sync = await _syncNotification(reminder.id);
               if (!context.mounted) return;
             }
             _refreshLists(context);
@@ -357,7 +375,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
               ..showSnackBar(
                 _saveSnackBar(
                   l: l,
-                  notificationsBlocked: _notifyEnabled && !alertsArmed,
+                  notificationsBlocked:
+                      _notifyEnabled && !sync.armed && !sync.timePassed,
+                  timePassed: _notifyEnabled && sync.timePassed,
                   isUpdate: true,
                 ),
               );

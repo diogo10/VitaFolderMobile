@@ -1751,6 +1751,18 @@ abstract class AppLocalizations {
   /// **'Reminder updated, but notifications are disabled.'**
   String get createReminderNotifyUpdatedWithoutPermission;
 
+  /// No description provided for @createReminderNotifySavedTimePassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder saved, but the selected time already passed.'**
+  String get createReminderNotifySavedTimePassed;
+
+  /// No description provided for @createReminderNotifyUpdatedTimePassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder updated, but the selected time already passed.'**
+  String get createReminderNotifyUpdatedTimePassed;
+
   /// No description provided for @createReminderNotifyOpenSettings.
   ///
   /// In en, this message translates to:

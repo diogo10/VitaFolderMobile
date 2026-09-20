@@ -364,6 +364,37 @@ void main() {
         );
       },
     );
+    test('reports whether an alert was scheduled', () async {
+      Future<bool> set({
+        required bool enabled,
+        required DateTime? dueDate,
+      }) => service.setReminderNotification(
+        reminderId: 'r1',
+        enabled: enabled,
+        leadTime: ReminderLeadTime.atTime,
+        dueDate: dueDate,
+        title: 'Title',
+        body: 'Body',
+        repeatRule: 'never',
+      );
+
+      // Scheduled in the future.
+      expect(
+        await set(enabled: true, dueDate: DateTime(2030, 1, 1, 10)),
+        isTrue,
+      );
+      // Requested but the one-shot time already passed.
+      expect(
+        await set(enabled: true, dueDate: DateTime(2020, 1, 1, 10)),
+        isFalse,
+      );
+      // Nothing requested: disabled or no date.
+      expect(
+        await set(enabled: false, dueDate: DateTime(2030, 1, 1, 10)),
+        isTrue,
+      );
+      expect(await set(enabled: true, dueDate: null), isTrue);
+    });
   });
 
   group('cancelReminderNotification', () {

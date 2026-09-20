@@ -895,6 +895,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Reminder updated, but notifications are disabled.';
 
   @override
+  String get createReminderNotifySavedTimePassed =>
+      'Reminder saved, but the selected time already passed.';
+
+  @override
+  String get createReminderNotifyUpdatedTimePassed =>
+      'Reminder updated, but the selected time already passed.';
+
+  @override
   String get createReminderNotifyOpenSettings => 'Settings';
 
   @override

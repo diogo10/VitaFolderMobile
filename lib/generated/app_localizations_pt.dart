@@ -907,6 +907,14 @@ class AppLocalizationsPt extends AppLocalizations {
       'Lembrete atualizado, mas as notificações estão desativadas.';
 
   @override
+  String get createReminderNotifySavedTimePassed =>
+      'Lembrete salvo, mas o horário selecionado já passou.';
+
+  @override
+  String get createReminderNotifyUpdatedTimePassed =>
+      'Lembrete atualizado, mas o horário selecionado já passou.';
+
+  @override
   String get createReminderNotifyOpenSettings => 'Ajustes';
 
   @override

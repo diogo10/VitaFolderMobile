@@ -53,6 +53,7 @@ class _FakeNotificationService implements IReminderNotificationService {
   bool exactAlarms = true;
   int exactChecks = 0;
   int exactRequests = 0;
+  bool scheduleResult = true;
 
   @override
   Future<void> init() async {}
@@ -86,7 +87,7 @@ class _FakeNotificationService implements IReminderNotificationService {
   ) async => stored[reminderId] ?? ReminderNotificationPrefs.disabled;
 
   @override
-  Future<void> setReminderNotification({
+  Future<bool> setReminderNotification({
     required String reminderId,
     required bool enabled,
     required ReminderLeadTime leadTime,
@@ -110,6 +111,7 @@ class _FakeNotificationService implements IReminderNotificationService {
       enabled: enabled,
       leadTime: leadTime,
     );
+    return scheduleResult;
   }
 
   @override
@@ -533,6 +535,54 @@ void main() {
       expect(call.title, 'Test Title');
       expect(call.body, 'Test Body');
       expect(call.repeatRule, 'weekly');
+    });
+
+    testWidgets('edit save warns when the selected time already passed', (
+      tester,
+    ) async {
+      final service = _FakeNotificationService()
+        ..stored['1'] = const ReminderNotificationPrefs(
+          enabled: true,
+          leadTime: ReminderLeadTime.atTime,
+        )
+        ..scheduleResult = false;
+      when(
+        () => updateReminderUsecase.call(any()),
+      ).thenAnswer((_) async => const Right(true));
+      when(
+        () => peopleRepository.getMyFamilyRole(),
+      ).thenAnswer((_) async => <String>[]);
+      when(
+        () => peopleRepository.getFamilyIdsForUser(any()),
+      ).thenAnswer((_) async => ['fam-1']);
+      when(
+        () => getReminderUsecase.call(any(), type: any(named: 'type')),
+      ).thenAnswer((_) async => const Right([]));
+
+      final testRouter = buildTestRouter(
+        notificationService: service,
+        reminder: reminder,
+      );
+      await tester.pumpWidget(pumpRouter(testRouter));
+      await tester.pumpAndSettle();
+
+      unawaited(testRouter.push('/create'));
+      await tester.pumpAndSettle();
+      final l = AppLocalizations.of(
+        tester.element(find.byType(CreateReminderScreen)),
+      )!;
+
+      await tester.tap(find.text(l.createReminderSaveButtonEdit));
+      await tester.pumpAndSettle();
+
+      // The reminder is still saved, but instead of a success message the
+      // user learns no alert was scheduled because the time passed.
+      expect(service.scheduled, hasLength(1));
+      expect(
+        find.text(l.createReminderNotifyUpdatedTimePassed),
+        findsOneWidget,
+      );
+      expect(find.text(l.createReminderUpdatedMessage), findsNothing);
     });
 
     testWidgets('save warns when notifications are disabled', (tester) async {
