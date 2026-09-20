@@ -38,10 +38,17 @@ void main() {
     getReminderUsecase = _FakeGetReminderUsecase();
     reminderRepository = _FakeReminderRepository();
     notificationService = _FakeNotificationService();
+    when(
+      () => notificationService.rescheduleAll(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => notificationService.cancelReminderNotification(any()),
+    ).thenAnswer((_) async {});
   });
 
   setUpAll(() {
     registerFallbackValue(ReminderType.custom);
+    registerFallbackValue(<ReminderEntity>[]);
   });
 
   void stubFamily({String userId = 'u1', String familyId = 'f1'}) {
@@ -62,6 +69,7 @@ void main() {
     peopleRepository: peopleRepository,
     authService: authService,
     reminderRepository: reminderRepository,
+    notificationService: notificationService,
   );
 
   group('RemindersCubit.getReminders', () {
@@ -88,6 +96,23 @@ void main() {
       },
       act: (cubit) => cubit.getReminders(),
       expect: () => [isA<RemindersLoading>(), isA<LoadedReminders>()],
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      'resyncs OS notifications after loading reminders',
+      build: buildCubit,
+      setUp: () {
+        stubFamily();
+        when(
+          () => getReminderUsecase.call('f1', type: any(named: 'type')),
+        ).thenAnswer((_) async => Right([reminder('1', ReminderType.custom)]));
+      },
+      act: (cubit) => cubit.getReminders(),
+      wait: const Duration(milliseconds: 100),
+      expect: () => [isA<RemindersLoading>(), isA<LoadedReminders>()],
+      verify: (_) {
+        verify(() => notificationService.rescheduleAll(any())).called(1);
+      },
     );
 
     blocTest<RemindersCubit, RemindersState>(
@@ -187,6 +212,64 @@ void main() {
         isA<EmptyReminders>().having((s) => s.isLoading, 'isLoading', isTrue),
         isA<EmptyReminders>(),
       ],
+    );
+  });
+
+  group('RemindersCubit.resyncNotifications', () {
+    ReminderEntity reminder(String id) => ReminderEntity(
+      title: 'T $id',
+      body: '',
+      id: id,
+      type: ReminderType.custom,
+      dueDate: '19/08/2026',
+      repeatRule: 'never',
+      status: 'pending',
+      createdBy: 'Mom',
+      createdAt: '',
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      'reschedules silently when reminders are loaded',
+      build: buildCubit,
+      seed: () => LoadedReminders(
+        reminders: [reminder('1')],
+      ),
+      act: (cubit) => cubit.resyncNotifications(),
+      wait: const Duration(milliseconds: 100),
+      expect: () => <RemindersState>[],
+      verify: (_) {
+        verify(() => notificationService.rescheduleAll(any())).called(1);
+      },
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      'reloads when nothing is loaded yet',
+      build: buildCubit,
+      setUp: () {
+        stubFamily();
+        when(
+          () => getReminderUsecase.call('f1', type: any(named: 'type')),
+        ).thenAnswer((_) async => const Right([]));
+      },
+      act: (cubit) => cubit.resyncNotifications(),
+      wait: const Duration(milliseconds: 100),
+      expect: () => [isA<RemindersLoading>(), isA<EmptyReminders>()],
+    );
+
+    blocTest<RemindersCubit, RemindersState>(
+      'never throws when rescheduling fails',
+      build: buildCubit,
+      seed: () => LoadedReminders(
+        reminders: [reminder('1')],
+      ),
+      setUp: () {
+        when(
+          () => notificationService.rescheduleAll(any()),
+        ).thenThrow(Exception('os'));
+      },
+      act: (cubit) => cubit.resyncNotifications(),
+      wait: const Duration(milliseconds: 100),
+      expect: () => <RemindersState>[],
     );
   });
 

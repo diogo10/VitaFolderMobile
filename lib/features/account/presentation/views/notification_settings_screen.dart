@@ -41,16 +41,31 @@ class _NotificationSettingsScreenState
                     NotificationSettingsState
                   >(
                     listener: (context, state) {
-                      if (state is NotificationSettingsLoaded &&
-                          state.permissionDenied != null) {
-                        final message =
-                            state.permissionDenied ==
-                                NotificationPermissionDenied.permanentlyDenied
-                            ? l.notificationSettingsPermissionPermanentlyDenied
-                            : l.notificationSettingsPermissionDenied;
-                        ScaffoldMessenger.of(context)
-                          ..hideCurrentSnackBar()
-                          ..showSnackBar(SnackBar(content: Text(message)));
+                      if (state is NotificationSettingsLoaded) {
+                        if (state.permissionDenied != null) {
+                          final deniedPermanently =
+                              state.permissionDenied ==
+                              NotificationPermissionDenied.permanentlyDenied;
+                          final permanentlyDeniedMessage =
+                              l.notificationSettingsPermissionPermanentlyDenied;
+                          final deniedMessage = deniedPermanently
+                              ? permanentlyDeniedMessage
+                              : l.notificationSettingsPermissionDenied;
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(
+                              SnackBar(content: Text(deniedMessage)),
+                            );
+                        }
+                        if (state.testResult != null) {
+                          final message =
+                              state.testResult == NotificationTestResult.sent
+                              ? l.notificationSettingsTestSent
+                              : l.notificationSettingsTestFailed;
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(SnackBar(content: Text(message)));
+                        }
                       }
                     },
                     builder: (context, state) {
@@ -125,6 +140,62 @@ class _NotificationSettingsScreenState
                                       ),
                                 ),
                               ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: context.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(28),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: context.colorScheme.shadow.withValues(
+                                    alpha: 0.06,
+                                  ),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 8,
+                              ),
+                              leading: _SettingsIcon(
+                                icon: Icons.send_rounded,
+                                color: context.colorScheme.primary,
+                              ),
+                              title: Text(
+                                l.notificationSettingsTestAction,
+                                style: context.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Text(
+                                l.notificationSettingsTestSubtitle,
+                                style: context.textTheme.bodySmall?.copyWith(
+                                  color: context.colorScheme.onSurface
+                                      .withValues(alpha: 0.7),
+                                ),
+                              ),
+                              trailing: const Icon(
+                                Icons.chevron_right_rounded,
+                              ),
+                              onTap: () {
+                                final testTitle =
+                                    l.notificationSettingsTestNotificationTitle;
+                                final testBody =
+                                    l.notificationSettingsTestNotificationBody;
+                                unawaited(
+                                  context
+                                      .read<NotificationSettingsCubit>()
+                                      .sendTestNotification(
+                                        title: testTitle,
+                                        body: testBody,
+                                      ),
+                                );
+                              },
                             ),
                           ),
                         ],

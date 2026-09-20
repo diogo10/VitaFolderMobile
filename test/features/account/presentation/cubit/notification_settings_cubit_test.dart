@@ -4,6 +4,7 @@ import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/features/account/application/notification_permission_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/notification_settings_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/notification_settings_state.dart';
+import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _FakePermissionService extends NotificationPermissionService {
@@ -19,14 +20,25 @@ class _FakePermissionService extends NotificationPermissionService {
 
 class _MockStorage extends Mock implements LocalStorageDatasource {}
 
+class _MockNotificationService extends Mock
+    implements IReminderNotificationService {}
+
 void main() {
   late _MockStorage storage;
+  late _MockNotificationService notificationService;
 
   setUp(() {
     storage = _MockStorage();
+    notificationService = _MockNotificationService();
     when(
       () => storage.setBool(any(), value: any(named: 'value')),
     ).thenAnswer((_) async {});
+    when(
+      () => notificationService.showTestNotification(
+        title: any(named: 'title'),
+        body: any(named: 'body'),
+      ),
+    ).thenAnswer((_) async => true);
   });
 
   NotificationSettingsCubit build({
@@ -35,6 +47,7 @@ void main() {
   }) => NotificationSettingsCubit(
     permissionService: _FakePermissionService(permissionResult),
     storage: storage,
+    notificationService: notificationService,
   );
 
   group('loadSettings', () {
@@ -170,6 +183,71 @@ void main() {
           () => storage.setBool('notifications_enabled', value: false),
         ).called(1);
       },
+    );
+  });
+
+  group('sendTestNotification', () {
+    blocTest<NotificationSettingsCubit, NotificationSettingsState>(
+      'emits sent when the test notification posts',
+      build: build,
+      act: (cubit) => cubit.sendTestNotification(title: 'T', body: 'B'),
+      expect: () => [
+        isA<NotificationSettingsLoaded>().having(
+          (s) => s.testResult,
+          'testResult',
+          NotificationTestResult.sent,
+        ),
+      ],
+      verify: (_) {
+        verify(
+          () => notificationService.showTestNotification(
+            title: 'T',
+            body: 'B',
+          ),
+        ).called(1);
+      },
+    );
+
+    blocTest<NotificationSettingsCubit, NotificationSettingsState>(
+      'emits failed when posting returns false',
+      build: build,
+      setUp: () {
+        when(
+          () => notificationService.showTestNotification(
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => false);
+      },
+      act: (cubit) => cubit.sendTestNotification(title: 'T', body: 'B'),
+      expect: () => [
+        isA<NotificationSettingsLoaded>().having(
+          (s) => s.testResult,
+          'testResult',
+          NotificationTestResult.failed,
+        ),
+      ],
+    );
+
+    blocTest<NotificationSettingsCubit, NotificationSettingsState>(
+      'emits failed when posting throws',
+      build: build,
+      setUp: () {
+        when(
+          () => notificationService.showTestNotification(
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+          ),
+        ).thenThrow(Exception('os'));
+      },
+      act: (cubit) => cubit.sendTestNotification(title: 'T', body: 'B'),
+      expect: () => [
+        isA<NotificationSettingsLoaded>().having(
+          (s) => s.testResult,
+          'testResult',
+          NotificationTestResult.failed,
+        ),
+      ],
     );
   });
 }

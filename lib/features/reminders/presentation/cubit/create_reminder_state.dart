@@ -11,13 +11,31 @@ class CreateReminderLoading extends CreateReminderState {
 }
 
 class CreateReminderSuccess extends CreateReminderState {
-
-  CreateReminderSuccess({required this.reminderId});
+  CreateReminderSuccess({
+    required this.reminderId,
+    this.notificationArmed = true,
+    this.notificationTimePassed = false,
+  });
   final String reminderId;
+
+  /// True when a requested alert will fire (or nothing was requested).
+  final bool notificationArmed;
+
+  /// True when a requested one-shot alert was skipped (time already passed).
+  final bool notificationTimePassed;
 }
 
 class UpdatedReminderSuccess extends CreateReminderState {
-  UpdatedReminderSuccess();
+  UpdatedReminderSuccess({
+    this.notificationArmed = true,
+    this.notificationTimePassed = false,
+  });
+
+  /// True when a requested alert will fire (or nothing was requested).
+  final bool notificationArmed;
+
+  /// True when a requested one-shot alert was skipped (time already passed).
+  final bool notificationTimePassed;
 }
 
 enum CreateReminderErrorCode { noFamily, authRequired }

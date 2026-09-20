@@ -513,6 +513,29 @@ class AppLocalizationsPt extends AppLocalizations {
       'Algo deu errado ao carregar suas configurações.';
 
   @override
+  String get notificationSettingsTestAction => 'Enviar notificação de teste';
+
+  @override
+  String get notificationSettingsTestSubtitle =>
+      'Envia uma na hora, sem agendar';
+
+  @override
+  String get notificationSettingsTestNotificationTitle =>
+      'Notificação de teste';
+
+  @override
+  String get notificationSettingsTestNotificationBody =>
+      'Se você está vendo isto, os lembretes podem alcançar você.';
+
+  @override
+  String get notificationSettingsTestSent =>
+      'Notificação de teste enviada. Verifique sua central de notificações.';
+
+  @override
+  String get notificationSettingsTestFailed =>
+      'Não foi possível enviar a notificação de teste.';
+
+  @override
   String get manageProfileTitle => 'Editar Perfil';
 
   @override

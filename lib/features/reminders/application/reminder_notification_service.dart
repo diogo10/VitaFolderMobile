@@ -1,13 +1,14 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/features/reminders/application/time_zone_provider.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
+import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:timezone/data/latest_all.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 
 /// Per-reminder notification preference, persisted on-device.
 ///
@@ -29,6 +30,13 @@ class ReminderNotificationPrefs {
 
 abstract interface class IReminderNotificationService {
   Future<void> init();
+
+  /// Payloads (`reminderId`s) of tapped notifications.
+  Stream<String?> get onNotificationTap;
+
+  /// Payload that cold-started the app via a notification, if any.
+  /// Returns null (never throws) when there is none or the check fails.
+  Future<String?> getLaunchPayload();
 
   /// Whether the OS allows this app to post notifications.
   /// Returns false (never throws) when the check cannot run.
@@ -69,26 +77,58 @@ abstract interface class IReminderNotificationService {
   });
 
   Future<void> cancelReminderNotification(String reminderId);
+
+  /// Shows an immediate test notification via `show()`, bypassing
+  /// AlarmManager scheduling. Isolates channel/icon delivery problems
+  /// from scheduling problems. Returns true when posted, false otherwise
+  /// (never throws).
+  Future<bool> showTestNotification({
+    required String title,
+    required String body,
+  });
+
+  /// Re-schedules every enabled reminder after reboot, reinstall, or a
+  /// cold start that cleared OS alarms. Best-effort per item: one bad
+  /// entry never aborts the rest. Never throws.
+  Future<void> rescheduleAll(List<ReminderEntity> reminders);
 }
 
 class ReminderNotificationService implements IReminderNotificationService {
   ReminderNotificationService({
     required LocalStorageDatasource storage,
     FlutterLocalNotificationsPlugin? plugin,
+    TimeZoneProvider? timeZoneProvider,
     // Testing seam: Platform.isAndroid is always false on the CI host, so
     // the Android-only branches below would otherwise be uncoverable.
     @visibleForTesting bool? isAndroidOverride,
   }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin(),
        _storage = storage,
+       _timeZoneProvider = timeZoneProvider ?? DeviceTimeZoneProvider(),
        _isAndroid = isAndroidOverride ?? Platform.isAndroid;
   static const _channelId = 'reminders';
   static const _channelName = 'Reminders';
   static const _channelDescription = 'Reminder notifications';
 
+  /// Fixed id for the diagnostic test notification. Below 2^31 so it fits
+  /// Android's int32 notification ids, and far from content-hashed ids.
+  static const _testNotificationId = 2147483000;
+
+  static const _notificationDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      _channelId,
+      _channelName,
+      channelDescription: _channelDescription,
+      importance: Importance.max,
+      priority: Priority.high,
+    ),
+    iOS: DarwinNotificationDetails(),
+  );
+
   final FlutterLocalNotificationsPlugin _plugin;
   final LocalStorageDatasource _storage;
+  final TimeZoneProvider _timeZoneProvider;
   final bool _isAndroid;
-  static bool _timeZonesInitialized = false;
+  final StreamController<String?> _taps = StreamController<String?>.broadcast();
 
   static String _enabledKey(String reminderId) =>
       'reminder_notify_enabled_$reminderId';
@@ -141,15 +181,26 @@ class ReminderNotificationService implements IReminderNotificationService {
   }
 
   @override
-  Future<void> init() async {
-    _ensureTimeZones();
+  Stream<String?> get onNotificationTap => _taps.stream;
+
+  /// Closes the tap stream. Call once when the service is discarded
+  /// (tests, hot-restart of DI).
+  void dispose() => unawaited(_taps.close());
+
+  @override
+  Future<String?> getLaunchPayload() async {
     try {
-      final timeZoneName =
-          (await FlutterTimezone.getLocalTimezone()).identifier;
-      tz.setLocalLocation(tz.getLocation(timeZoneName)); // coverage:ignore-line
+      final details = await _plugin.getNotificationAppLaunchDetails();
+      return details?.notificationResponse?.payload;
     } on Object catch (_) {
-      debugPrint('ReminderNotificationService: using default time zone.');
+      debugPrint('ReminderNotificationService: launch payload check failed.');
+      return null;
     }
+  }
+
+  @override
+  Future<void> init() async {
+    await _ensureLocalTimeZone();
 
     const settings = InitializationSettings(
       // Must be a white-on-transparent drawable: an adaptive-icon mipmap
@@ -164,7 +215,12 @@ class ReminderNotificationService implements IReminderNotificationService {
         requestSoundPermission: false,
       ),
     );
-    await _plugin.initialize(settings: settings);
+    await _plugin.initialize(
+      settings: settings,
+      onDidReceiveNotificationResponse: (response) {
+        _taps.add(response.payload);
+      },
+    );
 
     try {
       final android = _plugin
@@ -253,7 +309,7 @@ class ReminderNotificationService implements IReminderNotificationService {
     required String body,
     required String repeatRule,
   }) async {
-    _ensureTimeZones();
+    await _ensureLocalTimeZone();
     await _plugin.cancel(id: notificationIdForReminder(reminderId));
     await _storage.setBool(_enabledKey(reminderId), value: enabled);
     await _storage.setString(_leadKey(reminderId), '${leadTime.minutes}');
@@ -293,22 +349,14 @@ class ReminderNotificationService implements IReminderNotificationService {
     }
 
     final scheduleMode = await _scheduleMode();
-    final scheduledDate = tz.TZDateTime.from(fireTime, tz.local);
+    final scheduledDate = _timeZoneProvider.fromLocal(fireTime);
     await _plugin.zonedSchedule(
       id: notificationIdForReminder(reminderId),
       title: title,
       body: body,
+      payload: reminderId,
       scheduledDate: scheduledDate,
-      notificationDetails: const NotificationDetails(
-        android: AndroidNotificationDetails(
-          _channelId,
-          _channelName,
-          channelDescription: _channelDescription,
-          importance: Importance.max,
-          priority: Priority.high,
-        ),
-        iOS: DarwinNotificationDetails(),
-      ),
+      notificationDetails: _notificationDetails,
       androidScheduleMode: scheduleMode,
       matchDateTimeComponents: repeatComponent,
     );
@@ -337,7 +385,8 @@ class ReminderNotificationService implements IReminderNotificationService {
     debugPrint(
       'ReminderNotifications: scheduled $reminderId '
       '(notification #${notificationIdForReminder(reminderId)}) '
-      'at $fireTime (tz=${tz.local.name}, scheduled=$scheduledDate, '
+      'at $fireTime (utc=${fireTime.toUtc()}, now=$now, '
+      'scheduled=$scheduledDate, '
       'lead ${leadTime.minutes}m, repeat $repeatRule, mode=$scheduleMode, '
       'systemPermission=$systemPermission, exactAlarms=$exactAlarms, '
       'pending=$pendingCount).',
@@ -346,15 +395,63 @@ class ReminderNotificationService implements IReminderNotificationService {
   }
 
   @override
+  Future<bool> showTestNotification({
+    required String title,
+    required String body,
+  }) async {
+    try {
+      await _plugin.show(
+        id: _testNotificationId,
+        title: title,
+        body: body,
+        notificationDetails: _notificationDetails,
+        payload: 'test',
+      );
+      debugPrint('ReminderNotifications: test notification posted.');
+      return true;
+    } on Object catch (_) {
+      debugPrint('ReminderNotifications: test notification failed.');
+      return false;
+    }
+  }
+
+  @override
   Future<void> cancelReminderNotification(String reminderId) async {
     await _plugin.cancel(id: notificationIdForReminder(reminderId));
     await _storage.setBool(_enabledKey(reminderId), value: false);
   }
 
-  static void _ensureTimeZones() {
-    if (_timeZonesInitialized) return;
-    tz.initializeTimeZones();
-    _timeZonesInitialized = true;
+  @override
+  Future<void> rescheduleAll(List<ReminderEntity> reminders) async {
+    for (final reminder in reminders) {
+      try {
+        final prefs = await getReminderNotification(reminder.id);
+        if (!prefs.enabled) continue;
+        final dueDate = ReminderDateUtils.parseDueDate(reminder.dueDate);
+        if (dueDate == null) continue;
+        await setReminderNotification(
+          reminderId: reminder.id,
+          enabled: true,
+          leadTime: prefs.leadTime,
+          dueDate: dueDate,
+          title: reminder.title,
+          body: reminder.body,
+          repeatRule: reminder.repeatRule,
+        );
+      } on Object catch (_) {
+        debugPrint(
+          'ReminderNotifications: reschedule skipped for ${reminder.id}.',
+        );
+      }
+    }
+  }
+
+  Future<void> _ensureLocalTimeZone() async {
+    try {
+      await _timeZoneProvider.configureLocal();
+    } on Object catch (_) {
+      debugPrint('ReminderNotificationService: using default time zone.');
+    }
   }
 
   Future<AndroidScheduleMode> _scheduleMode() async {

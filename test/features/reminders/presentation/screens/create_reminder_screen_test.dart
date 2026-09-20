@@ -47,6 +47,9 @@ class _FakeNotificationService implements IReminderNotificationService {
   final Map<String, ReminderNotificationPrefs> stored = {};
   final List<ScheduledCall> scheduled = [];
   final List<String> cancelled = [];
+  final List<List<ReminderEntity>> resynced = [];
+  final StreamController<String?> tapController =
+      StreamController<String?>.broadcast();
   bool systemGranted = true;
   int permissionChecks = 0;
   int permissionRequests = 0;
@@ -57,6 +60,12 @@ class _FakeNotificationService implements IReminderNotificationService {
 
   @override
   Future<void> init() async {}
+
+  @override
+  Stream<String?> get onNotificationTap => tapController.stream;
+
+  @override
+  Future<String?> getLaunchPayload() async => null;
 
   @override
   Future<bool> hasSystemPermission() async {
@@ -118,6 +127,17 @@ class _FakeNotificationService implements IReminderNotificationService {
   Future<void> cancelReminderNotification(String reminderId) async {
     cancelled.add(reminderId);
     stored[reminderId] = ReminderNotificationPrefs.disabled;
+  }
+
+  @override
+  Future<bool> showTestNotification({
+    required String title,
+    required String body,
+  }) async => true;
+
+  @override
+  Future<void> rescheduleAll(List<ReminderEntity> reminders) async {
+    resynced.add(reminders);
   }
 }
 
@@ -189,6 +209,7 @@ void main() {
     ReminderEntity? reminder,
     IReminderNotificationService? notificationService,
   }) {
+    final notifications = notificationService ?? _FakeNotificationService();
     return MultiBlocProvider(
       providers: [
         BlocProvider<CreateReminderCubit>(
@@ -197,6 +218,7 @@ void main() {
             updateReminderUsecase: updateReminderUsecase,
             authService: authService,
             peopleRepository: peopleRepository,
+            notificationService: notifications,
           ),
         ),
         BlocProvider<RemindersCubit>(
@@ -205,6 +227,7 @@ void main() {
             peopleRepository: peopleRepository,
             authService: authService,
             reminderRepository: _FakeReminderRepository(),
+            notificationService: notifications,
           ),
         ),
       ],
@@ -253,8 +276,12 @@ void main() {
     );
   }
 
-  Widget pumpRouter(GoRouter router) {
+  Widget pumpRouter(
+    GoRouter router, {
+    IReminderNotificationService? notificationService,
+  }) {
     return buildProviders(
+      notificationService: notificationService,
       child: MaterialApp.router(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -451,7 +478,9 @@ void main() {
       ).thenAnswer((_) async => const Right([]));
 
       final testRouter = buildTestRouter(notificationService: service);
-      await tester.pumpWidget(pumpRouter(testRouter));
+      await tester.pumpWidget(
+        pumpRouter(testRouter, notificationService: service),
+      );
       await tester.pumpAndSettle();
 
       unawaited(testRouter.push('/create'));
@@ -508,7 +537,9 @@ void main() {
         notificationService: service,
         reminder: reminder,
       );
-      await tester.pumpWidget(pumpRouter(testRouter));
+      await tester.pumpWidget(
+        pumpRouter(testRouter, notificationService: service),
+      );
       await tester.pumpAndSettle();
 
       unawaited(testRouter.push('/create'));
@@ -563,7 +594,9 @@ void main() {
         notificationService: service,
         reminder: reminder,
       );
-      await tester.pumpWidget(pumpRouter(testRouter));
+      await tester.pumpWidget(
+        pumpRouter(testRouter, notificationService: service),
+      );
       await tester.pumpAndSettle();
 
       unawaited(testRouter.push('/create'));
@@ -601,7 +634,9 @@ void main() {
       ).thenAnswer((_) async => const Right([]));
 
       final testRouter = buildTestRouter(notificationService: service);
-      await tester.pumpWidget(pumpRouter(testRouter));
+      await tester.pumpWidget(
+        pumpRouter(testRouter, notificationService: service),
+      );
       await tester.pumpAndSettle();
 
       unawaited(testRouter.push('/create'));

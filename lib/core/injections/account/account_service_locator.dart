@@ -34,6 +34,7 @@ class AccountServiceLocator {
           storage: sl<LocalStorageDatasource>(
             instanceName: 'localStorageDatasource',
           ),
+          notificationService: sl(instanceName: 'reminderNotificationService'),
         ),
         instanceName: 'notificationSettingsCubit',
       );

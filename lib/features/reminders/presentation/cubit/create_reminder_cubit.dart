@@ -1,28 +1,36 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/domain/usecase/update_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_state.dart';
 
 class CreateReminderCubit extends Cubit<CreateReminderState> {
-
   CreateReminderCubit({
     required CreateReminderUsecase createReminderUsecase,
     required UpdateReminderUsecase updateReminderUsecase,
     required this.authService,
     required PeopleRepository peopleRepository,
+    required IReminderNotificationService notificationService,
   }) : _createReminderUsecase = createReminderUsecase,
        _updateReminderUsecase = updateReminderUsecase,
        _peopleRepository = peopleRepository,
+       _notificationService = notificationService,
        super(CreateReminderInitial());
   final CreateReminderUsecase _createReminderUsecase;
   final UpdateReminderUsecase _updateReminderUsecase;
   final AuthService authService;
   final PeopleRepository _peopleRepository;
+  final IReminderNotificationService _notificationService;
+
+  /// Exposed so the editor can read prefs/permissions without touching
+  /// GetIt directly.
+  IReminderNotificationService get notificationService => _notificationService;
 
   Future<void> createReminder({
     required String title,
@@ -30,6 +38,8 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
     required ReminderType type,
     required DateTime? dueDate,
     required String repeatRule,
+    bool notifyEnabled = false,
+    ReminderLeadTime leadTime = ReminderLeadTime.defaultLeadTime,
   }) async {
     emit(CreateReminderLoading());
 
@@ -59,9 +69,26 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
 
     final result = await _createReminderUsecase(reminder, familyId);
 
-    result.fold(
-      (err) => emit(CreateReminderError(message: err.message)),
-      (reminderId) => emit(CreateReminderSuccess(reminderId: reminderId)),
+    await result.fold(
+      (err) async => emit(CreateReminderError(message: err.message)),
+      (reminderId) async {
+        final sync = await _syncNotification(
+          reminderId: reminderId,
+          notifyEnabled: notifyEnabled,
+          leadTime: leadTime,
+          dueDate: dueDate,
+          title: title,
+          body: body,
+          repeatRule: repeatRule,
+        );
+        emit(
+          CreateReminderSuccess(
+            reminderId: reminderId,
+            notificationArmed: sync.armed,
+            notificationTimePassed: sync.timePassed,
+          ),
+        );
+      },
     );
   }
 
@@ -72,6 +99,8 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
     required ReminderType type,
     required DateTime? dueDate,
     required String repeatRule,
+    bool notifyEnabled = false,
+    ReminderLeadTime leadTime = ReminderLeadTime.defaultLeadTime,
   }) async {
     emit(CreateReminderLoading());
 
@@ -89,10 +118,106 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
 
     final result = await _updateReminderUsecase(reminderModel);
 
-    result.fold(
-      (err) => emit(CreateReminderError(message: err.message)),
-      (_) => emit(UpdatedReminderSuccess()),
+    await result.fold(
+      (err) async => emit(CreateReminderError(message: err.message)),
+      (_) async {
+        final sync = await _syncNotification(
+          reminderId: reminder.id,
+          notifyEnabled: notifyEnabled,
+          leadTime: leadTime,
+          dueDate: dueDate,
+          title: title,
+          body: body,
+          repeatRule: repeatRule,
+        );
+        emit(
+          UpdatedReminderSuccess(
+            notificationArmed: sync.armed,
+            notificationTimePassed: sync.timePassed,
+          ),
+        );
+      },
     );
+  }
+
+  /// Persists/schedules the notification choice. Best-effort: never throws.
+  /// Returns whether alerts will actually fire (or nothing was requested)
+  /// and whether a requested alert was skipped because the time passed.
+  Future<({bool armed, bool timePassed})> _syncNotification({
+    required String reminderId,
+    required bool notifyEnabled,
+    required ReminderLeadTime leadTime,
+    required DateTime? dueDate,
+    required String title,
+    required String body,
+    required String repeatRule,
+  }) async {
+    bool scheduled;
+    try {
+      scheduled = await _notificationService.setReminderNotification(
+        reminderId: reminderId,
+        enabled: notifyEnabled,
+        leadTime: leadTime,
+        dueDate: dueDate,
+        title: title,
+        body: body,
+        repeatRule: repeatRule,
+      );
+    } on Object catch (_) {
+      // Notifications are best-effort; the reminder itself was saved.
+      return (armed: false, timePassed: false);
+    }
+    if (!notifyEnabled) return (armed: true, timePassed: false);
+    if (!scheduled) return (armed: false, timePassed: true);
+    try {
+      final armed =
+          dueDate != null && await _notificationService.hasSystemPermission();
+      return (armed: armed, timePassed: false);
+    } on Object catch (_) {
+      return (armed: false, timePassed: false);
+    }
+  }
+
+  Future<ReminderNotificationPrefs> getNotificationPrefs(
+    String reminderId,
+  ) async {
+    try {
+      return await _notificationService.getReminderNotification(reminderId);
+    } on Object catch (_) {
+      return ReminderNotificationPrefs.disabled;
+    }
+  }
+
+  Future<bool> hasSystemPermission() async {
+    try {
+      return await _notificationService.hasSystemPermission();
+    } on Object catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> requestSystemPermission() async {
+    try {
+      return await _notificationService.requestSystemPermission();
+    } on Object catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> canScheduleExactAlarms() async {
+    try {
+      return await _notificationService.canScheduleExactAlarms();
+    } on Object catch (_) {
+      return true;
+    }
+  }
+
+  Future<void> requestExactAlarmPermission() async {
+    try {
+      await _notificationService.requestExactAlarmPermission();
+    } on Object catch (_) {
+      // Best-effort only.
+    }
   }
 
   Future<String?> _resolveFamilyId() async {

@@ -1013,6 +1013,42 @@ abstract class AppLocalizations {
   /// **'Something went wrong loading your settings.'**
   String get notificationSettingsError;
 
+  /// No description provided for @notificationSettingsTestAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Send test notification'**
+  String get notificationSettingsTestAction;
+
+  /// No description provided for @notificationSettingsTestSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts one immediately, without scheduling'**
+  String get notificationSettingsTestSubtitle;
+
+  /// No description provided for @notificationSettingsTestNotificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Test notification'**
+  String get notificationSettingsTestNotificationTitle;
+
+  /// No description provided for @notificationSettingsTestNotificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If you see this, reminders can reach you.'**
+  String get notificationSettingsTestNotificationBody;
+
+  /// No description provided for @notificationSettingsTestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Test notification sent. Check your notification tray.'**
+  String get notificationSettingsTestSent;
+
+  /// No description provided for @notificationSettingsTestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not post the test notification.'**
+  String get notificationSettingsTestFailed;
+
   /// No description provided for @manageProfileTitle.
   ///
   /// In en, this message translates to:

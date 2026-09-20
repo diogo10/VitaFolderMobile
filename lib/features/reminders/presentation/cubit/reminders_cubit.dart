@@ -17,13 +17,17 @@ class RemindersCubit extends Cubit<RemindersState> {
     required this.peopleRepository,
     required this.authService,
     required this.reminderRepository,
-    this.notificationService,
-  }) : super(ReminderInitialState());
+    required IReminderNotificationService notificationService,
+  }) : _notificationService = notificationService,
+       super(ReminderInitialState());
   GetReminderUsecase getReminderUsecase;
   PeopleRepository peopleRepository;
   AuthService authService;
   ReminderRepository reminderRepository;
-  final IReminderNotificationService? notificationService;
+  final IReminderNotificationService _notificationService;
+
+  /// Exposed for views that need notification prefs without GetIt.
+  IReminderNotificationService get notificationService => _notificationService;
 
   ReminderType? _selectedType;
   ReminderType? get selectedType => _selectedType;
@@ -76,6 +80,7 @@ class RemindersCubit extends Cubit<RemindersState> {
             viewMode: _viewMode,
           ),
         );
+        unawaited(_resyncNotifications(reminders));
       }
     });
   }
@@ -123,7 +128,7 @@ class RemindersCubit extends Cubit<RemindersState> {
         }
       },
       (_) {
-        unawaited(notificationService?.cancelReminderNotification(id));
+        unawaited(_notificationService.cancelReminderNotification(id));
         if (currentReminders == null) {
           unawaited(getReminders(type: currentType));
           return;
@@ -167,9 +172,31 @@ class RemindersCubit extends Cubit<RemindersState> {
     });
   }
 
+  /// Re-arms OS alarms without touching the visible list: reschedules from
+  /// currently loaded reminders, or reloads (which resyncs after fetch)
+  /// when nothing is loaded yet. Best-effort: never throws.
+  Future<void> resyncNotifications() async {
+    final current = state;
+    if (current is LoadedReminders) {
+      await _resyncNotifications(current.reminders);
+    } else {
+      await getReminders(type: _selectedType);
+    }
+  }
+
   Future<void> _loadMyRole() async {
     final roles = await peopleRepository.getMyFamilyRole();
     _myRole = roles.isEmpty ? null : roles.first;
+  }
+
+  /// Rebuilds OS alarms from persisted prefs. Best-effort: never throws,
+  /// never blocks the list render.
+  Future<void> _resyncNotifications(List<ReminderEntity> reminders) async {
+    try {
+      await _notificationService.rescheduleAll(reminders);
+    } on Object catch (_) {
+      // Notifications are best-effort; the list is already shown.
+    }
   }
 
   void setFilterTypes(Set<ReminderType> types) {

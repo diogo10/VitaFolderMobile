@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
@@ -129,6 +132,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   bool _notificationPermissionRequested = false;
   late final AuthStateNotifier _authStateNotifier;
   bool _ownsAuthStateNotifier = false;
+  late final GoRouter _router;
+  StreamSubscription<String?>? _notificationTapSubscription;
 
   @override
   void initState() {
@@ -145,16 +150,59 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       );
       _ownsAuthStateNotifier = true;
     }
+    final analyticsService = slInstance<AnalyticsService>(
+      instanceName: 'analyticsService',
+    );
+    _router = createRouter(
+      onboardingCompleted: widget.onboardingCompleted,
+      authStateNotifier: _authStateNotifier,
+      observers: [analyticsService.observer],
+    );
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _requestNotificationPermission();
+      await _handleNotificationLaunch();
     });
+    _subscribeNotificationTaps();
+  }
+
+  /// Routes tapped notifications to the reminders list. Best-effort only:
+  /// a missing service or dead context never crashes the app.
+  void _subscribeNotificationTaps() {
+    try {
+      final service = slInstance<IReminderNotificationService>(
+        instanceName: 'reminderNotificationService',
+      );
+      _notificationTapSubscription = service.onNotificationTap.listen((
+        payload,
+      ) {
+        if (payload == null || payload.isEmpty) return;
+        _router.go('/reminders');
+      });
+    } on Object catch (_) {
+      // Notifications are best-effort.
+    }
+  }
+
+  /// Cold start via a notification also lands on the reminders list.
+  Future<void> _handleNotificationLaunch() async {
+    try {
+      final service = slInstance<IReminderNotificationService>(
+        instanceName: 'reminderNotificationService',
+      );
+      final payload = await service.getLaunchPayload();
+      if (payload == null || payload.isEmpty) return;
+      _router.go('/reminders');
+    } on Object catch (_) {
+      // Notifications are best-effort.
+    }
   }
 
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
       await _requestNotificationPermission();
+      await _resyncNotifications();
     }
   }
 
@@ -164,9 +212,22 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     await NotificationPermissionService().requestNotificationPermission();
   }
 
+  /// Re-arms alarms wiped while the app was away (force-stop, reboot,
+  /// time-zone change). Best-effort: never disrupts the UI.
+  Future<void> _resyncNotifications() async {
+    try {
+      await slInstance<RemindersCubit>(
+        instanceName: 'remindersCubit',
+      ).resyncNotifications();
+    } on Object catch (_) {
+      // Notifications are best-effort.
+    }
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    unawaited(_notificationTapSubscription?.cancel());
     if (_ownsAuthStateNotifier) {
       _authStateNotifier.dispose();
     }
@@ -175,18 +236,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final analyticsService = slInstance<AnalyticsService>(
-      instanceName: 'analyticsService',
-    );
     return MaterialApp.router(
       title: 'HouseMira',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      routerConfig: createRouter(
-        onboardingCompleted: widget.onboardingCompleted,
-        authStateNotifier: _authStateNotifier,
-        observers: [analyticsService.observer],
-      ),
+      routerConfig: _router,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

@@ -3,18 +3,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_state.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/generated/app_localizations.dart';
-import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class CreateReminderScreen extends StatefulWidget {
@@ -83,8 +82,11 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       final parsed = _parseDueDate(reminder.dueDate);
       _dueDate = parsed;
       _dueTime = parsed == null ? null : TimeOfDay.fromDateTime(parsed);
+      final cubit = context.read<CreateReminderCubit>();
+      final prefsService =
+          widget.notificationService ?? cubit.notificationService;
       unawaited(
-        _notificationService.getReminderNotification(reminder.id).then((prefs) {
+        prefsService.getReminderNotification(reminder.id).then((prefs) {
           if (!mounted) return;
           setState(() {
             _notifyEnabled = prefs.enabled;
@@ -99,51 +101,15 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
 
   bool get _isEditing => widget.reminder != null;
 
-  IReminderNotificationService get _notificationService =>
-      widget.notificationService ??
-      slInstance<IReminderNotificationService>(
-        instanceName: 'reminderNotificationService',
-      );
-
-  /// Persists/schedules the notification choice.
-  /// Returns whether alerts will actually fire (or nothing was requested)
-  /// and whether a requested alert was skipped because the time passed.
-  Future<({bool armed, bool timePassed})> _syncNotification(
-    String reminderId,
-  ) async {
-    bool scheduled;
-    try {
-      scheduled = await _notificationService.setReminderNotification(
-        reminderId: reminderId,
-        enabled: _notifyEnabled,
-        leadTime: _leadTime,
-        dueDate: _dueDate,
-        title: _titleController.text.trim(),
-        body: _bodyController.text.trim(),
-        repeatRule: _repeatRule,
-      );
-    } on Object catch (_) {
-      // Notifications are best-effort; the reminder itself was saved.
-      return (armed: false, timePassed: false);
-    }
-    if (!_notifyEnabled) return (armed: true, timePassed: false);
-    if (!scheduled) return (armed: false, timePassed: true);
-    // Alerts only fire when the OS allows notifications and a date is set.
-    try {
-      final armed =
-          _dueDate != null && await _notificationService.hasSystemPermission();
-      return (armed: armed, timePassed: false);
-    } on Object catch (_) {
-      return (armed: false, timePassed: false);
-    }
-  }
+  CreateReminderCubit get _editorCubit => context.read<CreateReminderCubit>();
 
   Future<void> _checkNotificationPermission() async {
+    final cubit = _editorCubit;
     var granted = false;
     try {
-      granted = await _notificationService.hasSystemPermission();
+      granted = await cubit.hasSystemPermission();
       if (!granted) {
-        granted = await _notificationService.requestSystemPermission();
+        granted = await cubit.requestSystemPermission();
       }
     } on Object catch (_) {
       granted = false;
@@ -168,7 +134,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
     // significantly, so point the user to the system setting once.
     var exact = true;
     try {
-      exact = await _notificationService.canScheduleExactAlarms();
+      exact = await cubit.canScheduleExactAlarms();
     } on Object catch (_) {
       exact = true;
     }
@@ -181,7 +147,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             action: SnackBarAction(
               label: l.createReminderNotifyOpenSettings,
               onPressed: () async {
-                await _notificationService.requestExactAlarmPermission();
+                await cubit.requestExactAlarmPermission();
               },
             ),
           ),
@@ -226,12 +192,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
     );
   }
 
-  DateTime? _parseDueDate(String dueDate) {
-    final trimmed = dueDate.trim();
-    if (trimmed.isEmpty) return null;
-    return DateFormat('dd/MM/yyyy HH:mm').tryParse(trimmed) ??
-        DateFormat('dd/MM/yyyy').tryParse(trimmed);
-  }
+  DateTime? _parseDueDate(String dueDate) =>
+      ReminderDateUtils.parseDueDate(dueDate);
 
   @override
   void dispose() {
@@ -290,10 +252,16 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   }
 
   DateTime? _mergeDateTime(DateTime date, TimeOfDay? time) {
-    if (time == null) {
-      return DateTime(date.year, date.month, date.day);
-    }
-    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    // A date without a time means "morning": default to 09:00 instead of
+    // midnight so lead-time subtraction stays on the same day.
+    final resolved = time ?? const TimeOfDay(hour: 9, minute: 0);
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      resolved.hour,
+      resolved.minute,
+    );
   }
 
   void _refreshLists(BuildContext context) {
@@ -324,6 +292,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           type: _selectedType,
           dueDate: _dueDate,
           repeatRule: _repeatRule,
+          notifyEnabled: _notifyEnabled,
+          leadTime: _leadTime,
         );
       } else {
         await cubit.createReminder(
@@ -332,6 +302,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           type: _selectedType,
           dueDate: _dueDate,
           repeatRule: _repeatRule,
+          notifyEnabled: _notifyEnabled,
+          leadTime: _leadTime,
         );
       }
     }
@@ -346,7 +318,6 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       body: BlocConsumer<CreateReminderCubit, CreateReminderState>(
         listener: (context, state) async {
           if (state is CreateReminderSuccess) {
-            final sync = await _syncNotification(state.reminderId);
             if (!context.mounted) return;
             _refreshLists(context);
             ScaffoldMessenger.of(context)
@@ -355,20 +326,17 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                 _saveSnackBar(
                   l: l,
                   notificationsBlocked:
-                      _notifyEnabled && !sync.armed && !sync.timePassed,
-                  timePassed: _notifyEnabled && sync.timePassed,
+                      _notifyEnabled &&
+                      !state.notificationArmed &&
+                      !state.notificationTimePassed,
+                  timePassed: _notifyEnabled && state.notificationTimePassed,
                   isUpdate: false,
                 ),
               );
             context.pop();
           }
           if (state is UpdatedReminderSuccess) {
-            final reminder = widget.reminder;
-            var sync = (armed: true, timePassed: false);
-            if (reminder != null) {
-              sync = await _syncNotification(reminder.id);
-              if (!context.mounted) return;
-            }
+            if (!context.mounted) return;
             _refreshLists(context);
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
@@ -376,8 +344,10 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                 _saveSnackBar(
                   l: l,
                   notificationsBlocked:
-                      _notifyEnabled && !sync.armed && !sync.timePassed,
-                  timePassed: _notifyEnabled && sync.timePassed,
+                      _notifyEnabled &&
+                      !state.notificationArmed &&
+                      !state.notificationTimePassed,
+                  timePassed: _notifyEnabled && state.notificationTimePassed,
                   isUpdate: true,
                 ),
               );

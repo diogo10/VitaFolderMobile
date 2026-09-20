@@ -70,6 +70,7 @@ class ReminderServiceLocator {
           peopleRepository: sl<PeopleRepository>(
             instanceName: 'peopleRepositoryImpl',
           ),
+          notificationService: sl(instanceName: 'reminderNotificationService'),
         ),
         instanceName: 'createReminderCubit',
       );

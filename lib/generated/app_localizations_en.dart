@@ -504,6 +504,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Something went wrong loading your settings.';
 
   @override
+  String get notificationSettingsTestAction => 'Send test notification';
+
+  @override
+  String get notificationSettingsTestSubtitle =>
+      'Posts one immediately, without scheduling';
+
+  @override
+  String get notificationSettingsTestNotificationTitle => 'Test notification';
+
+  @override
+  String get notificationSettingsTestNotificationBody =>
+      'If you see this, reminders can reach you.';
+
+  @override
+  String get notificationSettingsTestSent =>
+      'Test notification sent. Check your notification tray.';
+
+  @override
+  String get notificationSettingsTestFailed =>
+      'Could not post the test notification.';
+
+  @override
   String get manageProfileTitle => 'Edit Profile';
 
   @override
