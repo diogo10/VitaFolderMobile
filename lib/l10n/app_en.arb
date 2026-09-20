@@ -331,6 +331,8 @@
   "createReminderNotifyUpdatedWithoutPermission": "Reminder updated, but notifications are disabled.",
   "createReminderNotifySavedTimePassed": "Reminder saved, but the selected time already passed.",
   "createReminderNotifyUpdatedTimePassed": "Reminder updated, but the selected time already passed.",
+  "createReminderNotifySavedInexact": "Reminder saved, but alerts may be delayed. Allow exact alarms for on-time reminders.",
+  "createReminderNotifyUpdatedInexact": "Reminder updated, but alerts may be delayed. Allow exact alarms for on-time reminders.",
   "createReminderNotifyOpenSettings": "Settings",
   "createReminderNotifyExactAlarmMessage": "For on-time alerts, allow exact alarms in Settings.",
   "createReminderSaveButton": "Create Reminder",

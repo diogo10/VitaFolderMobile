@@ -86,6 +86,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
             reminderId: reminderId,
             notificationArmed: sync.armed,
             notificationTimePassed: sync.timePassed,
+            notificationInexact: sync.inexact,
           ),
         );
       },
@@ -134,6 +135,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
           UpdatedReminderSuccess(
             notificationArmed: sync.armed,
             notificationTimePassed: sync.timePassed,
+            notificationInexact: sync.inexact,
           ),
         );
       },
@@ -141,9 +143,10 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
   }
 
   /// Persists/schedules the notification choice. Best-effort: never throws.
-  /// Returns whether alerts will actually fire (or nothing was requested)
-  /// and whether a requested alert was skipped because the time passed.
-  Future<({bool armed, bool timePassed})> _syncNotification({
+  /// Returns whether alerts will actually fire (or nothing was requested),
+  /// whether a requested alert was skipped because the time passed, and
+  /// whether an armed alert may be delayed (inexact fallback).
+  Future<({bool armed, bool timePassed, bool inexact})> _syncNotification({
     required String reminderId,
     required bool notifyEnabled,
     required ReminderLeadTime leadTime,
@@ -165,16 +168,22 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
       );
     } on Object catch (_) {
       // Notifications are best-effort; the reminder itself was saved.
-      return (armed: false, timePassed: false);
+      return (armed: false, timePassed: false, inexact: false);
     }
-    if (!notifyEnabled) return (armed: true, timePassed: false);
-    if (!scheduled) return (armed: false, timePassed: true);
+    if (!notifyEnabled) {
+      return (armed: true, timePassed: false, inexact: false);
+    }
+    if (!scheduled) {
+      return (armed: false, timePassed: true, inexact: false);
+    }
     try {
       final armed =
           dueDate != null && await _notificationService.hasSystemPermission();
-      return (armed: armed, timePassed: false);
+      final inexact =
+          armed && !await _notificationService.canScheduleExactAlarms();
+      return (armed: armed, timePassed: false, inexact: inexact);
     } on Object catch (_) {
-      return (armed: false, timePassed: false);
+      return (armed: false, timePassed: false, inexact: false);
     }
   }
 

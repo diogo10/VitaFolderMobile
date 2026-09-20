@@ -159,6 +159,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
     required AppLocalizations l,
     required bool notificationsBlocked,
     required bool timePassed,
+    required bool inexact,
     required bool isUpdate,
   }) {
     if (timePassed) {
@@ -167,6 +168,19 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           isUpdate
               ? l.createReminderNotifyUpdatedTimePassed
               : l.createReminderNotifySavedTimePassed,
+        ),
+      );
+    }
+    if (inexact) {
+      return SnackBar(
+        content: Text(
+          isUpdate
+              ? l.createReminderNotifyUpdatedInexact
+              : l.createReminderNotifySavedInexact,
+        ),
+        action: SnackBarAction(
+          label: l.createReminderNotifyOpenSettings,
+          onPressed: openAppSettings,
         ),
       );
     }
@@ -330,6 +344,10 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                       !state.notificationArmed &&
                       !state.notificationTimePassed,
                   timePassed: _notifyEnabled && state.notificationTimePassed,
+                  inexact:
+                      _notifyEnabled &&
+                      state.notificationArmed &&
+                      state.notificationInexact,
                   isUpdate: false,
                 ),
               );
@@ -348,6 +366,10 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                       !state.notificationArmed &&
                       !state.notificationTimePassed,
                   timePassed: _notifyEnabled && state.notificationTimePassed,
+                  inexact:
+                      _notifyEnabled &&
+                      state.notificationArmed &&
+                      state.notificationInexact,
                   isUpdate: true,
                 ),
               );

@@ -55,6 +55,9 @@ void main() {
     when(
       () => notificationService.hasSystemPermission(),
     ).thenAnswer((_) async => true);
+    when(
+      () => notificationService.canScheduleExactAlarms(),
+    ).thenAnswer((_) async => true);
   });
 
   setUpAll(() {
@@ -327,7 +330,8 @@ void main() {
         isA<CreateReminderSuccess>()
             .having((s) => s.reminderId, 'reminderId', 'new-id')
             .having((s) => s.notificationArmed, 'armed', isTrue)
-            .having((s) => s.notificationTimePassed, 'timePassed', isFalse),
+            .having((s) => s.notificationTimePassed, 'timePassed', isFalse)
+            .having((s) => s.notificationInexact, 'inexact', isFalse),
       ],
       verify: (_) {
         verify(
@@ -342,6 +346,35 @@ void main() {
           ),
         ).called(1);
       },
+    );
+
+    blocTest<CreateReminderCubit, CreateReminderState>(
+      'reports inexact when exact alarms are denied',
+      build: buildCubit,
+      setUp: () {
+        stubFamily();
+        when(
+          () => createReminderUsecase.call(any(), any()),
+        ).thenAnswer((_) async => const Right('new-id'));
+        when(
+          () => notificationService.canScheduleExactAlarms(),
+        ).thenAnswer((_) async => false);
+      },
+      act: (cubit) => cubit.createReminder(
+        title: 'T',
+        body: 'B',
+        type: ReminderType.chores,
+        dueDate: DateTime(2030, 9, 1, 10, 30),
+        repeatRule: 'never',
+        notifyEnabled: true,
+      ),
+      expect: () => [
+        isA<CreateReminderLoading>(),
+        isA<CreateReminderSuccess>()
+            .having((s) => s.notificationArmed, 'armed', isTrue)
+            .having((s) => s.notificationTimePassed, 'timePassed', isFalse)
+            .having((s) => s.notificationInexact, 'inexact', isTrue),
+      ],
     );
 
     blocTest<CreateReminderCubit, CreateReminderState>(

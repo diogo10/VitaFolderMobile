@@ -1799,6 +1799,18 @@ abstract class AppLocalizations {
   /// **'Reminder updated, but the selected time already passed.'**
   String get createReminderNotifyUpdatedTimePassed;
 
+  /// No description provided for @createReminderNotifySavedInexact.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder saved, but alerts may be delayed. Allow exact alarms for on-time reminders.'**
+  String get createReminderNotifySavedInexact;
+
+  /// No description provided for @createReminderNotifyUpdatedInexact.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder updated, but alerts may be delayed. Allow exact alarms for on-time reminders.'**
+  String get createReminderNotifyUpdatedInexact;
+
   /// No description provided for @createReminderNotifyOpenSettings.
   ///
   /// In en, this message translates to:

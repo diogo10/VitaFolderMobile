@@ -925,6 +925,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Reminder updated, but the selected time already passed.';
 
   @override
+  String get createReminderNotifySavedInexact =>
+      'Reminder saved, but alerts may be delayed. Allow exact alarms for on-time reminders.';
+
+  @override
+  String get createReminderNotifyUpdatedInexact =>
+      'Reminder updated, but alerts may be delayed. Allow exact alarms for on-time reminders.';
+
+  @override
   String get createReminderNotifyOpenSettings => 'Settings';
 
   @override

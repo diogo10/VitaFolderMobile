@@ -28,6 +28,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Receives AlarmManager fires and posts the notification.
+             Without this entry the OS accepts the alarm but drops it at
+             fire time: schedules succeed and `show()` works, yet no
+             scheduled notification is ever displayed (and nothing logs). -->
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
+            android:exported="false" />
         <!-- Reschedules alarms after a reboot; the plugin declares the
              receiver class but not the manifest entry, and this pairs with
              RECEIVE_BOOT_COMPLETED above. Without it, reminders set before

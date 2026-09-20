@@ -310,6 +310,8 @@
   "createReminderNotifyUpdatedWithoutPermission": "Lembrete atualizado, mas as notificações estão desativadas.",
   "createReminderNotifySavedTimePassed": "Lembrete salvo, mas o horário selecionado já passou.",
   "createReminderNotifyUpdatedTimePassed": "Lembrete atualizado, mas o horário selecionado já passou.",
+  "createReminderNotifySavedInexact": "Lembrete salvo, mas os alertas podem atrasar. Permita alarmes exatos para lembretes pontuais.",
+  "createReminderNotifyUpdatedInexact": "Lembrete atualizado, mas os alertas podem atrasar. Permita alarmes exatos para lembretes pontuais.",
   "createReminderNotifyOpenSettings": "Ajustes",
   "createReminderNotifyExactAlarmMessage": "Para alertas pontuais, permita alarmes exatos nos Ajustes.",
   "createReminderSaveButton": "Criar Lembrete",

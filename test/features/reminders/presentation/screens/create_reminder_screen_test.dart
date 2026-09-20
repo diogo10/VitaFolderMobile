@@ -670,5 +670,67 @@ void main() {
       );
       expect(find.text(l.createReminderSuccessMessage), findsNothing);
     });
+
+    testWidgets('edit save warns when alerts may be delayed', (tester) async {
+      final service = _FakeNotificationService()
+        ..exactAlarms = false
+        ..stored['1'] = const ReminderNotificationPrefs(
+          enabled: true,
+          leadTime: ReminderLeadTime.oneHour,
+        );
+      const futureReminder = ReminderEntity(
+        id: '1',
+        title: 'Test Title',
+        body: 'Test Body',
+        type: ReminderType.appointment,
+        dueDate: '22/08/2030 15:00',
+        repeatRule: 'weekly',
+        status: 'pending',
+        createdBy: 'Mom',
+        createdAt: '2026-08-01',
+      );
+      when(
+        () => updateReminderUsecase.call(any()),
+      ).thenAnswer((_) async => const Right(true));
+      when(
+        () => peopleRepository.getMyFamilyRole(),
+      ).thenAnswer((_) async => <String>[]);
+      when(
+        () => peopleRepository.getFamilyIdsForUser(any()),
+      ).thenAnswer((_) async => ['fam-1']);
+      when(
+        () => getReminderUsecase.call(any(), type: any(named: 'type')),
+      ).thenAnswer((_) async => const Right([]));
+
+      final testRouter = buildTestRouter(
+        notificationService: service,
+        reminder: futureReminder,
+      );
+      await tester.pumpWidget(
+        pumpRouter(testRouter, notificationService: service),
+      );
+      await tester.pumpAndSettle();
+
+      unawaited(testRouter.push('/create'));
+      await tester.pumpAndSettle();
+      final l = AppLocalizations.of(
+        tester.element(find.byType(CreateReminderScreen)),
+      )!;
+
+      // Previously enabled choice is pre-filled from prefs.
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
+
+      await tester.tap(find.text(l.createReminderSaveButtonEdit));
+      await tester.pumpAndSettle();
+
+      // Reminder is saved and the alert is armed, but the user learns it
+      // may arrive late without exact alarms.
+      expect(service.scheduled, hasLength(1));
+      expect(
+        find.text(l.createReminderNotifyUpdatedInexact),
+        findsOneWidget,
+      );
+      expect(find.text(l.createReminderUpdatedMessage), findsNothing);
+    });
   });
 }

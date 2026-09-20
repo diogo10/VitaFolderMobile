@@ -15,6 +15,7 @@ class CreateReminderSuccess extends CreateReminderState {
     required this.reminderId,
     this.notificationArmed = true,
     this.notificationTimePassed = false,
+    this.notificationInexact = false,
   });
   final String reminderId;
 
@@ -23,12 +24,17 @@ class CreateReminderSuccess extends CreateReminderState {
 
   /// True when a requested one-shot alert was skipped (time already passed).
   final bool notificationTimePassed;
+
+  /// True when the alert is armed but Android may delay it (exact alarms
+  /// denied, inexact fallback). The UI warns instead of reporting success.
+  final bool notificationInexact;
 }
 
 class UpdatedReminderSuccess extends CreateReminderState {
   UpdatedReminderSuccess({
     this.notificationArmed = true,
     this.notificationTimePassed = false,
+    this.notificationInexact = false,
   });
 
   /// True when a requested alert will fire (or nothing was requested).
@@ -36,6 +42,10 @@ class UpdatedReminderSuccess extends CreateReminderState {
 
   /// True when a requested one-shot alert was skipped (time already passed).
   final bool notificationTimePassed;
+
+  /// True when the alert is armed but Android may delay it (exact alarms
+  /// denied, inexact fallback). The UI warns instead of reporting success.
+  final bool notificationInexact;
 }
 
 enum CreateReminderErrorCode { noFamily, authRequired }

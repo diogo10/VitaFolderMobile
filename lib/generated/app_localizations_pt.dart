@@ -938,6 +938,14 @@ class AppLocalizationsPt extends AppLocalizations {
       'Lembrete atualizado, mas o horário selecionado já passou.';
 
   @override
+  String get createReminderNotifySavedInexact =>
+      'Lembrete salvo, mas os alertas podem atrasar. Permita alarmes exatos para lembretes pontuais.';
+
+  @override
+  String get createReminderNotifyUpdatedInexact =>
+      'Lembrete atualizado, mas os alertas podem atrasar. Permita alarmes exatos para lembretes pontuais.';
+
+  @override
   String get createReminderNotifyOpenSettings => 'Ajustes';
 
   @override
