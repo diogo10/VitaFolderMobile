@@ -12,4 +12,4 @@ RUN curl -fsSL https://opencode.ai/v2/install | bash
 RUN git clone -b '3.41.6' --single-branch https://github.com/flutter/flutter.git --depth 1 /flutter
 ENV PATH="/flutter/bin:$PATH"
 RUN flutter doctor
-curl -fsSL https://opencode.ai/v2/install | bash
+RUN curl -fsSL https://opencode.ai/v2/install | bash
