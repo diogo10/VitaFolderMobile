@@ -44,4 +44,13 @@ void main() {
       contains('android.permission.SCHEDULE_EXACT_ALARM'),
     );
   });
+
+  test('declares the family-invite App Link', () {
+    final manifest = File(manifestPath).readAsStringSync();
+
+    expect(manifest, contains('android.intent.action.VIEW'));
+    expect(manifest, contains('android.intent.category.BROWSABLE'));
+    expect(manifest, contains('android:host="vitafolder.app"'));
+    expect(manifest, contains('android:pathPrefix="/invite"'));
+  });
 }

@@ -7,16 +7,25 @@ class InvitePeopleCubit extends Cubit<InvitePeopleState> {
     : super(InvitePeopleInitial());
   EdgetFunctions edgetFunctions;
 
+  /// Sends a family invite email.
+  ///
+  /// [inviteCode]/[familyName] are optional: when provided they are embedded
+  /// as the mobile App Link in the email body (see [EdgetFunctions]);
+  /// otherwise a generic enroll prompt is sent.
   Future<void> sendInvite({
     required String email,
     required InviteRelationship relationship,
     required String subject,
+    String? inviteCode,
+    String? familyName,
   }) async {
     emit(InvitePeopleLoading());
     try {
       final result = await edgetFunctions.sendEmail(
         to: email,
         subject: subject,
+        inviteCode: inviteCode,
+        familyName: familyName,
       );
 
       if (!result) {

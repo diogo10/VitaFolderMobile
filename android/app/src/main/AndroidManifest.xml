@@ -27,6 +27,19 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Family-invite App Link: https://vitafolder.app/invite/<code>
+                 handled in-app by the `/invite/:code` route (see AppRoutes).
+                 Must stay in sync with the backend invite flow
+                 (EdgetFunctions.sendEmail) and the iOS Associated Domain. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="https"
+                    android:host="vitafolder.app"
+                    android:pathPrefix="/invite"/>
+            </intent-filter>
         </activity>
         <!-- Receives AlarmManager fires and posts the notification.
              Without this entry the OS accepts the alarm but drops it at

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/features/home/domain/entities/home_entity.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/home/presentation/views/widgets/home_circle_widget.dart';
@@ -43,8 +44,8 @@ class HomeViewSuccess extends StatelessWidget {
                 familyName: data.familyName,
                 activeMembers: data.activeMembers,
                 pendingReminders: _pendingReminders,
-                onNotificationsPressed: () => context.go('/account'),
-                onProfilePressed: () => context.go('/account'),
+                onNotificationsPressed: () => context.go(AppRoutes.account),
+                onProfilePressed: () => context.go(AppRoutes.account),
               ),
               const SizedBox(height: 24),
               if (data.peopleInCircle.isNotEmpty) ...[
@@ -56,7 +57,7 @@ class HomeViewSuccess extends StatelessWidget {
               if (data.peopleInCircle.isNotEmpty)
                 HomeCircleWidget(
                   people: data.peopleInCircle,
-                  onManagePressed: () => context.go('/people'),
+                  onManagePressed: () => context.go(AppRoutes.people),
                 )
               else
                 const HomeEmptyFooterWidget(),
@@ -66,7 +67,8 @@ class HomeViewSuccess extends StatelessWidget {
                 title: l.homeSuccessAddTaskTitle,
                 subtitle: l.homeSuccessAddTaskSubtitle,
                 buttonLabel: l.homeSuccessAddTaskButton,
-                onPressed: () => context.push('/create-reminder'),
+                onPressed: () =>
+                    const CreateReminderRoute.create().push(context),
               ),
               const SizedBox(height: 16),
               HomeEmptyActionCardWidget(
@@ -74,7 +76,7 @@ class HomeViewSuccess extends StatelessWidget {
                 title: l.homeSuccessManageActivityTitle,
                 subtitle: l.homeSuccessManageActivitySubtitle,
                 buttonLabel: l.homeSuccessManageActivityButton,
-                onPressed: () => context.go('/reminders'),
+                onPressed: () => context.go(AppRoutes.reminders),
               ),
               const SizedBox(height: 24),
               if (data.reminders.isEmpty)
@@ -82,7 +84,8 @@ class HomeViewSuccess extends StatelessWidget {
               else
                 HomeUpcomingRemindersWidget(
                   reminders: data.reminders,
-                  onAddPressed: () => context.push('/create-reminder'),
+                  onAddPressed: () =>
+                      const CreateReminderRoute.create().push(context),
                 ),
             ],
           ),

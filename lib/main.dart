@@ -12,6 +12,7 @@ import 'package:house_mira/core/config/firebase_options_provider.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/router/app_router.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/features/account/application/notification_permission_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/manage_profile_cubit.dart';
@@ -125,9 +126,19 @@ class MyApp extends StatefulWidget {
     required this.onboardingCompleted,
     super.key,
     this.authStateNotifier,
+    this.notificationService,
+    this.initialLocation,
   });
   final bool onboardingCompleted;
   final AuthStateNotifier? authStateNotifier;
+
+  /// Testing seam (and deep-link entry): overrides the service resolved
+  /// from GetIt for notification tap/launch routing.
+  final IReminderNotificationService? notificationService;
+
+  /// Testing seam (and OS deep-link entry): overrides the router's initial
+  /// location, e.g. an `/invite/<code>` App Link on cold start.
+  final String? initialLocation;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -162,27 +173,47 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       onboardingCompleted: widget.onboardingCompleted,
       authStateNotifier: _authStateNotifier,
       observers: [analyticsService.observer],
+      initialLocation: widget.initialLocation,
     );
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _requestNotificationPermission();
-      await _handleNotificationLaunch();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Independent best-effort tasks: cold-start notification routing
+      // must not wait for the permission dialog to resolve.
+      unawaited(_requestNotificationPermission());
+      unawaited(_handleNotificationLaunch());
     });
     _subscribeNotificationTaps();
   }
 
-  /// Routes tapped notifications to the reminders list. Best-effort only:
-  /// a missing service or dead context never crashes the app.
-  void _subscribeNotificationTaps() {
+  /// Notification service override for tests, else the GetIt singleton.
+  IReminderNotificationService? get _notificationService =>
+      widget.notificationService ?? _optionalNotificationService();
+
+  static IReminderNotificationService? _optionalNotificationService() {
     try {
-      final service = slInstance<IReminderNotificationService>(
+      return slInstance<IReminderNotificationService>(
         instanceName: 'reminderNotificationService',
       );
+    } on Object catch (_) {
+      return null;
+    }
+  }
+
+  /// Routes tapped notifications to the reminders list. Best-effort only:
+  /// a missing service or dead context never crashes the app.
+  ///
+  /// Payloads carry the tapped reminder id; with no reminder-detail screen
+  /// the list is the target — see [notificationLocationFor].
+  void _subscribeNotificationTaps() {
+    final service = _notificationService;
+    if (service == null) return;
+    try {
       _notificationTapSubscription = service.onNotificationTap.listen((
         payload,
       ) {
         if (payload == null || payload.isEmpty) return;
-        _router.go('/reminders');
+        if (!mounted) return;
+        _router.go(notificationLocationFor(payload));
       });
     } on Object catch (_) {
       // Notifications are best-effort.
@@ -192,12 +223,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   /// Cold start via a notification also lands on the reminders list.
   Future<void> _handleNotificationLaunch() async {
     try {
-      final service = slInstance<IReminderNotificationService>(
-        instanceName: 'reminderNotificationService',
-      );
-      final payload = await service.getLaunchPayload();
+      final payload = await _notificationService?.getLaunchPayload();
       if (payload == null || payload.isEmpty) return;
-      _router.go('/reminders');
+      if (!mounted) return;
+      _router.go(notificationLocationFor(payload));
     } on Object catch (_) {
       // Notifications are best-effort.
     }

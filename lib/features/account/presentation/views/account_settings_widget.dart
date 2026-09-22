@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
@@ -29,13 +30,13 @@ class AccountSettingsWidget extends StatelessWidget {
                 icon: Icons.person_rounded,
                 title: l.accountSettingsEditProfile,
                 subtitle: l.accountSettingsEditProfileSubtitle,
-                onTap: () => context.push('/manage-profile'),
+                onTap: () => context.push(AppRoutes.manageProfile),
               ),
               _AccountSettingsItemData(
                 icon: Icons.notifications_rounded,
                 title: l.accountSettingsNotifications,
                 subtitle: l.accountSettingsNotificationsSubtitle,
-                onTap: () => context.push('/notification-settings'),
+                onTap: () => context.push(AppRoutes.notificationSettings),
               ),
             ],
           ),
@@ -49,7 +50,7 @@ class AccountSettingsWidget extends StatelessWidget {
                     icon: Icons.house_rounded,
                     title: l.accountSettingsFamilySettings,
                     subtitle: l.accountSettingsFamilySettingsSubtitle,
-                    onTap: () => context.push('/family-settings'),
+                    onTap: () => context.push(AppRoutes.familySettings),
                   ),
                 _AccountSettingsItemData(
                   icon: Icons.person_add_alt_1_rounded,
@@ -58,7 +59,7 @@ class AccountSettingsWidget extends StatelessWidget {
                     familyCode,
                     l.accountSettingsInviteMembersSubtitle,
                   ),
-                  onTap: () => context.go('/people'),
+                  onTap: () => context.go(AppRoutes.people),
                 ),
               ],
             ),

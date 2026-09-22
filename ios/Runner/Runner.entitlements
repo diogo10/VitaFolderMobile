@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Family-invite Universal Link: https://vitafolder.app/invite/<code>
+	     handled in-app by the `/invite/:code` route (see AppRoutes).
+	     Must stay in sync with the backend invite flow
+	     (EdgetFunctions.sendEmail) and the Android App Link. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:vitafolder.app</string>
+	</array>
+</dict>
+</plist>
