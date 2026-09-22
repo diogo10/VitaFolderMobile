@@ -32,6 +32,10 @@ jobs:
           --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL_PROD }}
           --dart-define=SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY_PROD }}
 
+      - name: Enforce performance budgets + report build
+        run: |
+          bash tool/check_performance_budgets.sh | tee budget-report.md >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
@@ -45,5 +49,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: apk-profile
-          path: build/app/outputs/flutter-apk/*.apk
+          path: |
+            budget-report.md
+            build/app/outputs/flutter-apk/*.apk
           retention-days: 3

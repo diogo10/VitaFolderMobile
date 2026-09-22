@@ -41,73 +41,53 @@ jobs:
         run: flutter test --coverage
 
       - name: Enforce 100% business-logic coverage
+        # Gate lives in tool/check_business_logic_coverage.py (same logic as
+        # the former inline script) so it can also run locally.
+        run: python3 tool/check_business_logic_coverage.py
+
+      - name: Check startup/APK performance budgets
+        # Verifies the host startupBudget constants stay in sync with
+        # tool/performance_budgets.json. APK size is checked here when an
+        # APK exists, and always in the build-apk workflow with reporting.
+        run: bash tool/check_performance_budgets.sh >> "$GITHUB_STEP_SUMMARY"
+  build-budgets:
+    needs: [analyze-and-test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build debug APK for size reporting
+        # Debug build needs no backend secrets; it exists only so the
+        # budget script can measure and report APK size in every PR.
+        run: flutter build apk --debug
+
+      - name: Enforce performance budgets + report build
         run: |
-          python3 - <<'EOF'
-          import sys
+          bash tool/check_performance_budgets.sh | tee budget-report.md >> "$GITHUB_STEP_SUMMARY"
 
-          LCOV = 'coverage/lcov.info'
+      - name: Upload budget report
+        uses: actions/upload-artifact@v4
+        with:
+          name: budget-report
+          path: |
+            budget-report.md
+            build/app/outputs/flutter-apk/*.apk
+          retention-days: 3
 
-          def parse_lcov(path):
-              files = {}
-              current = None
-              try:
-                  with open(path) as f:
-                      for raw in f:
-                          line = raw.strip()
-                          if line.startswith('SF:'):
-                              current = line[3:]
-                              files.setdefault(current, [0, 0])
-                          elif line.startswith('DA:') and current is not None:
-                              parts = line[3:].split(',')
-                              if len(parts) >= 2:
-                                  files[current][1] += 1
-                                  try:
-                                      if int(parts[1]) > 0:
-                                          files[current][0] += 1
-                                  except ValueError:
-                                      pass
-                          elif line == 'end_of_record':
-                              current = None
-              except FileNotFoundError:
-                  print(f'::error::Coverage file not found: {path}')
-                  sys.exit(1)
-              return files
-
-          def is_business_logic(path):
-              # Layer convention: application/ holds use cases/services,
-              # domain/ holds entities/repositories/usecases.
-              return '/domain/' in path or '/application/' in path
-
-          files = parse_lcov(LCOV)
-          business = {k: v for k, v in files.items() if is_business_logic(k)}
-
-          if not business:
-              print('::error::No business-logic files found in coverage.')
-              sys.exit(1)
-
-          failures = []
-          total_hit = 0
-          total_found = 0
-          for path in sorted(business):
-              hit, found = business[path]
-              total_hit += hit
-              total_found += found
-              pct = 100.0 * hit / found if found else 100.0
-              print(f'{pct:6.2f}% ({hit}/{found}) {path}')
-              if pct < 100.0:
-                  failures.append(path)
-
-          total_pct = 100.0 * total_hit / total_found if total_found else 100.0
-          print(f'TOTAL business logic: {total_pct:.2f}% ({total_hit}/{total_found})')
-
-          if failures:
-              print('::error::Business-logic coverage below 100% for:')
-              for path in failures:
-                  print(f'::error:: - {path}')
-              sys.exit(1)
-
-          print('Business-logic coverage is 100%.')
-          EOF
   call-bob:
     needs: [analyze-and-test]
     permissions:
