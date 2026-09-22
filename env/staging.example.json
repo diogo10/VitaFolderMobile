@@ -1,0 +1,5 @@
+{
+  "APP_FLAVOR": "staging",
+  "SUPABASE_URL": "https://your-staging-project.supabase.co",
+  "SUPABASE_PUBLISHABLE_KEY": "paste-staging-publishable-key-here"
+}

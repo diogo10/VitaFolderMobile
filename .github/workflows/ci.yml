@@ -5,7 +5,16 @@ on:
     branches: [main]
 
 jobs:
+  check-no-hardcoded-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for hardcoded secrets
+        run: bash tool/check_no_hardcoded_secrets.sh
+
   analyze-and-test:
+    needs: [check-no-hardcoded-secrets]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

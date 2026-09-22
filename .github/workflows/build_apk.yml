@@ -23,8 +23,14 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK
-        run: flutter build apk --profile
+      - name: Build APK (prod)
+        # Prod backend credentials come from GitHub secrets (never hardcoded).
+        # See README "Environments & secrets" for the required secrets.
+        run: >
+          flutter build apk --profile
+          --dart-define=APP_FLAVOR=prod
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL_PROD }}
+          --dart-define=SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY_PROD }}
 
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
