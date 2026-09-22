@@ -1,0 +1,6 @@
+{
+  "comment": "Performance budgets enforced in CI. Host-side startup is asserted in test/integration/critical_path_test.dart (startupBudget) and integration_test/critical_path_test.dart; APK sizes are checked after builds. Bump only with justification in the PR.",
+  "test_host_startup_s": 15,
+  "apk_debug_mb_max": 150,
+  "apk_profile_mb_max": 80
+}

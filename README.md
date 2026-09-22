@@ -25,6 +25,15 @@ fvm flutter test
 # Run tests with coverage
 fvm flutter test --coverage
 
+# Update golden baselines (sand design system + theme showcase)
+fvm flutter test --update-goldens test/core/widgets/sand test/theme
+
+# Check the 100% domain/application coverage gate locally
+python3 tool/check_business_logic_coverage.py
+
+# Check startup/APK performance budgets locally
+bash tool/check_performance_budgets.sh
+
 # Generate code (after changing models)
 fvm dart run build_runner build --delete-conflicting-outputs
 
