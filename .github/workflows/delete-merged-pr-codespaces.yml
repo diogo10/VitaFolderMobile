@@ -1,0 +1,49 @@
+name: Delete merged pull request Codespaces
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: Pull request number to clean up
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  delete-codespaces:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.merged == true
+
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ secrets.GH_CODESPACES_TOKEN }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Codespaces token
+        shell: bash
+        run: |
+          if [[ -z "${GH_TOKEN:-}" ]]; then
+            echo "GH_CODESPACES_TOKEN is not configured." >&2
+            echo "Add a repository secret named GH_CODESPACES_TOKEN." >&2
+            exit 1
+          fi
+
+      - name: Delete Codespaces for merged pull request
+        shell: bash
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pull_request_number }}
+        run: |
+          chmod +x scripts/delete-merged-pr-codespace.sh
+          ./scripts/delete-merged-pr-codespace.sh \
+            "$PR_NUMBER" \
+            "$GITHUB_REPOSITORY"
