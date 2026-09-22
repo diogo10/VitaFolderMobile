@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
+import 'package:house_mira/core/config/app_config.dart';
+import 'package:house_mira/core/config/firebase_options_provider.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/router/app_router.dart';
@@ -23,7 +25,6 @@ import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart'
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
-import 'package:house_mira/firebase_options.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/app_theme.dart';
 import 'package:provider/provider.dart';
@@ -31,12 +32,16 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Backend credentials come from --dart-define / env/<flavor>.json
+  // (see README "Environments & secrets"). Missing or invalid values
+  // throw StateError here so the app never runs against the wrong backend.
+  final config = AppConfig.fromEnvironment();
   await Supabase.initialize(
-    url: 'https://jheqalwrnztavzxjsdcj.supabase.co',
-    publishableKey: 'sb_publishable_CD4bacDoKowxJ4QLLn7y-A_0ftYBnHb',
+    url: config.supabaseUrl,
+    publishableKey: config.supabasePublishableKey,
   );
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(options: firebaseOptionsFor(config.flavor));
 
   final serviceLocator = ServiceLocator();
   await serviceLocator.init();

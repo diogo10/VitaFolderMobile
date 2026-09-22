@@ -105,6 +105,12 @@ unlinked_spec.ds
 # Coverage
 coverage/
 
+# Local backend config: real per-flavor credentials. Only env/*.example.json
+# templates are committed; copy one to env/<flavor>.json and fill it in.
+# CI builds inject the same keys via --dart-define from GitHub secrets.
+env/*.json
+!env/*.example.json
+
 # Symbols
 app.*.symbols
 

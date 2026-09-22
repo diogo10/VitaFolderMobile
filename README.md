@@ -39,6 +39,89 @@ fvm dart run build_runner watch --delete-conflicting-outputs
 - Never fallback to default values when parsing fails — always return `null`
 - Use generated `l10n` translations for displayed text
 
+## Environments & secrets (dev/staging/prod)
+
+Each flavor points at a **separate Supabase project** so dev/staging traffic
+never touches prod data. No backend credentials live in `lib/` — the app
+reads them at startup from compile-time `--dart-define`s via
+`AppConfig.fromEnvironment()` (`lib/core/config/`). Missing or invalid values
+throw `StateError` immediately so the app never runs against the wrong backend.
+
+| Flavor | Supabase project | Used by |
+| --- | --- | --- |
+| `dev` | Your dev project (`<dev-project-ref>`) | `flutter run` during development |
+| `staging` | Your staging project (`<staging-project-ref>`) | Pre-release verification |
+| `prod` | Your prod project (`<prod-project-ref>`) | Store / App Distribution builds |
+
+### Local setup
+
+```bash
+# One-time per flavor: copy the template and fill in the real values
+# (Supabase dashboard → Project Settings → API → Project URL + publishable key).
+cp env/dev.example.json env/dev.json
+cp env/staging.example.json env/staging.json
+cp env/prod.example.json env/prod.json
+```
+
+`env/*.json` (real credentials) is gitignored — only `env/*.example.json`
+templates are committed. CI rejects committed `env/*.json` files. Never put a
+`service-role` key in these files or anywhere in `lib/`; it is server-only
+(edge-function secret).
+
+### Flavored run/build commands
+
+```bash
+# Run
+fvm flutter run --dart-define-from-file=env/dev.json
+fvm flutter run --dart-define-from-file=env/staging.json
+
+# Build
+fvm flutter build apk --dart-define-from-file=env/prod.json
+fvm flutter build appbundle --dart-define-from-file=env/prod.json
+fvm flutter build ipa --dart-define-from-file=env/prod.json
+
+# Equivalent without a file (this is what CI uses, with GitHub secrets):
+fvm flutter run \
+  --dart-define=APP_FLAVOR=dev \
+  --dart-define=SUPABASE_URL=https://<project-ref>.supabase.co \
+  --dart-define=SUPABASE_PUBLISHABLE_KEY=<publishable-key>
+```
+
+Tests need no defines: they pump widgets directly with fakes
+(`https://mock.supabase.co`, `mock-anon-key`).
+
+### Firebase options per flavor
+
+There is currently one Firebase project, so `firebaseOptionsFor()`
+(`lib/core/config/firebase_options_provider.dart`) resolves every flavor to
+`DefaultFirebaseOptions.currentPlatform`. That function is the seam for
+per-flavor Firebase apps. To provision separate projects:
+
+1. Create `dev`/`staging` Firebase projects (or apps) in the Firebase console.
+2. Generate one options file per project:
+   `flutterfire configure --out=lib/firebase_options_dev.dart` (repeat per flavor).
+3. Switch on the flavor in `firebaseOptionsFor()` and return the matching options.
+4. Natively: per-flavor `google-services.json` (Android product flavors) and
+   `GoogleService-Info.plist` (Xcode schemes/targets).
+
+### Key rotation policy
+
+- The publishable key is public by design (RLS protects data), but treat it
+  as replaceable: rotate it in the Supabase dashboard
+  (Project Settings → API → Rotate key) if it leaks or when rotating on a
+  schedule, then update every copy: local `env/*.json` files, GitHub secrets
+  (`SUPABASE_URL_PROD`, `SUPABASE_PUBLISHABLE_KEY_PROD`, staging/dev
+  equivalents), and rebuild/redeploy all distributed builds.
+- Note: a prod publishable key was previously hardcoded in `lib/main.dart`
+  and is therefore in git history — rotate it once now that it is removed.
+- `service-role` keys stay server-side only (Supabase function secrets /
+  dashboard). They must never appear in the repo; the CI secrets check fails
+  the build if `service_role` is referenced anywhere under `lib/`.
+- CI (`check-no-hardcoded-secrets` job, `tool/check_no_hardcoded_secrets.sh`)
+  fails on: `sb_publishable_`/`sb_secret_` literals in Dart source,
+  hardcoded `*.supabase.co` URLs in `lib/`, `service_role` references in
+  `lib/`, and committed real `env/*.json` files.
+
 ### Pull Request Process
 
 1. Create a feature branch from `main`
@@ -64,6 +147,8 @@ Set these in GitHub repo → Settings → Secrets → Actions:
 | --- | --- |
 | `FIREBASE_SERVICE_ACCOUNT` | Service account JSON with `Firebase App Distribution Admin` role |
 | `FIREBASE_TESTERS` | Comma-separated tester emails |
+| `SUPABASE_URL_PROD` | Prod Supabase project URL (injected as `--dart-define=SUPABASE_URL`) |
+| `SUPABASE_PUBLISHABLE_KEY_PROD` | Prod Supabase publishable key (injected as `--dart-define=SUPABASE_PUBLISHABLE_KEY`) |
 
 ### Firebase Setup (one-time)
 

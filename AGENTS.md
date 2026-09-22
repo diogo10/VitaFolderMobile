@@ -43,6 +43,22 @@ and enforces **100% per-file coverage** under `lib/**/domain/` and
   No silent `DateTime.now()`, `''`, or placeholders. Explicit failure beats
   wrong data.
 
+## Environments & secrets
+
+- No backend credentials in `lib/`: Supabase URL/key arrive via
+  `--dart-define` (`APP_FLAVOR`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`)
+  through `AppConfig.fromEnvironment()` (`lib/core/config/`). Startup throws
+  `StateError` on missing/invalid values — never add fallbacks.
+- Local: `cp env/<flavor>.example.json env/<flavor>.json`, fill in, run with
+  `fvm flutter run --dart-define-from-file=env/<flavor>.json`. Real
+  `env/*.json` files are gitignored and CI rejects them if committed.
+- Firebase: one project today; `firebaseOptionsFor()` is the per-flavor seam
+  (provisioning steps in README "Environments & secrets").
+- CI `check-no-hardcoded-secrets` (`tool/check_no_hardcoded_secrets.sh`)
+  fails on `sb_publishable_`/`sb_secret_` literals, hardcoded
+  `*.supabase.co` URLs in `lib/`, or `service_role` references in `lib/`.
+  Keep `test/` fakes on `mock.supabase.co` / `mock-anon-key`.
+
 ## Testing
 
 New code ships with tests: cubit state sequences (incl. cancel + failure),

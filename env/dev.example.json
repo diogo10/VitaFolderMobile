@@ -1,0 +1,5 @@
+{
+  "APP_FLAVOR": "dev",
+  "SUPABASE_URL": "https://your-dev-project.supabase.co",
+  "SUPABASE_PUBLISHABLE_KEY": "paste-dev-publishable-key-here"
+}
