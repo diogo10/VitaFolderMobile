@@ -21,7 +21,10 @@ jobs:
       github.event.pull_request.merged == true
 
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
+    # GH_CODESPACES_TOKEN must be a PAT with `repo` scope (to read PR metadata)
+    # and `codespace` scope (to list/delete codespaces owned by the token user).
     env:
       GH_TOKEN: ${{ secrets.GH_CODESPACES_TOKEN }}
 
