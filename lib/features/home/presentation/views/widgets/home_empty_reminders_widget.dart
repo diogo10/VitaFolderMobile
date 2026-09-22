@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
 
@@ -72,7 +73,7 @@ class HomeEmptyRemindersWidget extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => context.go('/reminders'),
+                  onPressed: () => context.go(AppRoutes.reminders),
                   icon: const Icon(
                     Icons.add_rounded,
                     size: 18,

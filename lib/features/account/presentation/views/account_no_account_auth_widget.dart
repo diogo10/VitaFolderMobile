@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/core/widgets/sand/google_g_icon.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/core/widgets/sand/sand_social_button.dart';
@@ -98,7 +99,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
         const SizedBox(height: 24),
         Center(
           child: TextButton(
-            onPressed: () => context.push('/sign-up'),
+            onPressed: () => context.push(AppRoutes.signUp),
             child: Text.rich(
               TextSpan(
                 style: Theme.of(

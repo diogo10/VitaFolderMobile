@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
 
@@ -24,7 +25,7 @@ class HomeEmptyFooterWidget extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: () => context.go('/people'),
+                onPressed: () => context.go(AppRoutes.people),
                 style: TextButton.styleFrom(
                   foregroundColor: context.colorScheme.onSurface,
                   padding: const EdgeInsets.symmetric(
@@ -103,7 +104,7 @@ class HomeEmptyFooterWidget extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => context.go('/people'),
+                  onPressed: () => context.go(AppRoutes.people),
                   icon: const Icon(Icons.add_rounded, size: 18),
                   label: Text(l.homeEmptyFooterAddMemberButton),
                   style: ElevatedButton.styleFrom(

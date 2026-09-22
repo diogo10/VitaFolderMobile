@@ -10,7 +10,12 @@ import 'package:house_mira/features/people/presentation/widgets/people_loaded_wi
 import 'package:house_mira/generated/app_localizations.dart';
 
 class PeopleView extends StatefulWidget {
-  const PeopleView({super.key});
+  const PeopleView({super.key, this.pendingInviteCode});
+
+  /// Invite code from a `/invite/<code>` deep link, pre-filled into the
+  /// join form so the recipient can join with one tap. `null` (or blank)
+  /// means no deep link is pending.
+  final String? pendingInviteCode;
 
   @override
   State<PeopleView> createState() => _PeopleViewState();
@@ -98,6 +103,7 @@ class _PeopleViewState extends State<PeopleView> {
 
         if (state is PeopleEmpty || state is PeopleInvalidFamilyCode) {
           return PeopleEmptyWidget(
+            initialInviteCode: widget.pendingInviteCode,
             onCreateFamilyPressed: _onCreateFamilyPressed,
             onJoinFamilyPressed: (code) =>
                 context.read<PeopleCubit>().joinFamily(familyCode: code),

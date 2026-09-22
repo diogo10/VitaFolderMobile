@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/widgets/reminders_suggestions_cards_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
@@ -29,10 +30,10 @@ class RemindersEmptyWidget extends StatelessWidget {
           ),
         ),
       );
-      context.go('/people');
+      context.go(AppRoutes.people);
       return;
     }
-    await context.push('/create-reminder');
+    await const CreateReminderRoute.create().push(context);
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/core/widgets/sand/google_g_icon.dart';
 import 'package:house_mira/core/widgets/sand/sand_brand_mark.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
@@ -62,7 +63,7 @@ class _SignUpViewState extends State<SignUpView> {
                 ScaffoldMessenger.of(
                   context,
                 ).showSnackBar(SnackBar(content: Text(l.signUpSuccessMessage)));
-                context.go('/home');
+                context.go(AppRoutes.home);
               }
               if (state is SignUpError) {
                 final message = state.code == SignUpErrorCode.unexpected
@@ -209,7 +210,7 @@ class _SignUpViewState extends State<SignUpView> {
                     const SizedBox(height: 24),
                     Center(
                       child: TextButton(
-                        onPressed: () => context.go('/account'),
+                        onPressed: () => context.go(AppRoutes.account),
                         child: Text.rich(
                           TextSpan(
                             style: Theme.of(context).textTheme.bodyMedium

@@ -5,13 +5,17 @@ import 'package:house_mira/generated/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PeopleEmptyWidget extends StatefulWidget {
-
   const PeopleEmptyWidget({
     super.key,
+    this.initialInviteCode,
     this.onCreateFamilyPressed,
     this.onJoinFamilyPressed,
     this.onRefresh,
   });
+
+  /// Invite code from a `/invite/<code>` deep link, pre-filled so the
+  /// recipient can join with one tap. `null`/blank means manual entry.
+  final String? initialInviteCode;
   final VoidCallback? onCreateFamilyPressed;
   final ValueChanged<String>? onJoinFamilyPressed;
   final RefreshCallback? onRefresh;
@@ -22,6 +26,15 @@ class PeopleEmptyWidget extends StatefulWidget {
 
 class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
   final _inviteCodeController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initialInviteCode?.trim() ?? '';
+    if (initial.isNotEmpty) {
+      _inviteCodeController.text = initial;
+    }
+  }
 
   @override
   void dispose() {

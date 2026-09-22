@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.dart';
@@ -151,7 +151,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
           cubit: cubit,
           onEdit: () async {
             Navigator.of(context).pop();
-            await context.push('/create-reminder', extra: reminder);
+            await CreateReminderRoute.forEdit(reminder).push(context);
           },
           onRemove: () async {
             Navigator.of(context).pop();

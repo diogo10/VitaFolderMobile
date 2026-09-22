@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/people/presentation/widgets/add_family_member_card_widget.dart';
@@ -177,8 +177,8 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
                       l.peopleLoadedInviteCodeCopied,
                     ),
                     onSharePressed: () => _copyToClipboard(
-                      'https://vitafolder.app/invite/'
-                      '${widget.inviteCode.replaceAll('•', '')}',
+                      AppRoutes.inviteLink(widget.inviteCode) ??
+                          widget.inviteCode,
                       l.peopleLoadedInviteLinkCopied,
                     ),
                     onClose: _closeInviteCodeCardClicked,
@@ -205,8 +205,9 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
               ..._buildMemberCards(l),
               const SizedBox(height: 12),
               AddFamilyMemberCardWidget(
-                onPressed: () =>
-                    context.push('/invite-people', extra: widget.familyName),
+                onPressed: () => InvitePeopleRoute(
+                  familyName: widget.familyName,
+                ).push(context),
               ),
               const SizedBox(height: 16),
             ],

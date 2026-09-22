@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
@@ -53,10 +54,10 @@ class _RemindersViewState extends State<RemindersView> {
           ),
         ),
       );
-      context.go('/people');
+      context.go(AppRoutes.people);
       return;
     }
-    await context.push('/create-reminder');
+    await const CreateReminderRoute.create().push(context);
   }
 
   @override
@@ -86,8 +87,9 @@ class _RemindersViewState extends State<RemindersView> {
                       onCategoryChanged: (type) =>
                           cubit.getReminders(type: type),
                       onCalendarPressed: cubit.toggleViewMode,
-                      onNotificationsPressed: () => context.go('/account'),
-                      onProfilePressed: () => context.go('/account'),
+                      onNotificationsPressed: () =>
+                          context.go(AppRoutes.account),
+                      onProfilePressed: () => context.go(AppRoutes.account),
                       onAddPressed: _handleAddPressed,
                       onFilterPressed: () => _showFilterSheet(context),
                       hasActiveFilters: hasActiveFilters,

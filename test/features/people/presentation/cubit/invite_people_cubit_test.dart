@@ -20,6 +20,8 @@ void main() {
         () => functions.sendEmail(
           to: any(named: 'to'),
           subject: any(named: 'subject'),
+          inviteCode: any(named: 'inviteCode'),
+          familyName: any(named: 'familyName'),
         ),
       ).thenThrow(result);
     } else {
@@ -27,6 +29,8 @@ void main() {
         () => functions.sendEmail(
           to: any(named: 'to'),
           subject: any(named: 'subject'),
+          inviteCode: any(named: 'inviteCode'),
+          familyName: any(named: 'familyName'),
         ),
       ).thenAnswer((_) async => result! as bool);
     }
@@ -52,7 +56,36 @@ void main() {
     expect: () => [isA<InvitePeopleLoading>(), isA<InvitePeopleSuccess>()],
     verify: (_) {
       verify(
-        () => functions.sendEmail(to: 'ana@example.com', subject: 'Join us'),
+        () => functions.sendEmail(
+          to: 'ana@example.com',
+          subject: 'Join us',
+          inviteCode: null,
+          familyName: null,
+        ),
+      ).called(1);
+    },
+  );
+
+  blocTest<InvitePeopleCubit, InvitePeopleState>(
+    'forwards the invite code and family name to the email body',
+    build: build,
+    setUp: () => stubSendEmail(true),
+    act: (cubit) => cubit.sendInvite(
+      email: 'ana@example.com',
+      relationship: InviteRelationship.spouse,
+      subject: 'Join us',
+      inviteCode: 'ABC123',
+      familyName: 'Fam',
+    ),
+    expect: () => [isA<InvitePeopleLoading>(), isA<InvitePeopleSuccess>()],
+    verify: (_) {
+      verify(
+        () => functions.sendEmail(
+          to: 'ana@example.com',
+          subject: 'Join us',
+          inviteCode: 'ABC123',
+          familyName: 'Fam',
+        ),
       ).called(1);
     },
   );

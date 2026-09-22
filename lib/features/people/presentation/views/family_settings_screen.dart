@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/core/widgets/sand/sand_header.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/core/widgets/sand/sand_text_field.dart';
@@ -55,7 +56,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(content: Text(l.deleteSuccess)));
-          context.go('/account');
+          context.go(AppRoutes.account);
         }
         if (state is FamilySettingsError) {
           ScaffoldMessenger.of(context)

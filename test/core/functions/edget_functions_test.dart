@@ -117,5 +117,65 @@ void main() {
         throwsA(isA<FunctionException>()),
       );
     });
+
+    test('embeds the mobile App Link when an invite code is given', () async {
+      when(
+        () => functions.invoke(any(), body: any(named: 'body')),
+      ).thenAnswer(
+        (_) async => const FunctionResponse(
+          data: {'success': true},
+          status: 200,
+        ),
+      );
+
+      final result = await build().sendEmail(
+        to: 'a@b.c',
+        subject: 'Join Fam',
+        inviteCode: 'ABC123',
+        familyName: 'Fam',
+      );
+
+      expect(result, isTrue);
+      final captured =
+          verify(
+                () => functions.invoke(
+                  'resend-email-v1',
+                  body: captureAny(named: 'body'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(
+        captured['html'],
+        contains('https://vitafolder.app/invite/ABC123'),
+      );
+      expect(captured['html'], contains('Fam'));
+    });
+
+    test('sends a generic prompt without fabricating a link', () async {
+      when(
+        () => functions.invoke(any(), body: any(named: 'body')),
+      ).thenAnswer(
+        (_) async => const FunctionResponse(
+          data: {'success': true},
+          status: 200,
+        ),
+      );
+
+      final result = await build().sendEmail(
+        to: 'a@b.c',
+        subject: 'Join us',
+      );
+
+      expect(result, isTrue);
+      final captured =
+          verify(
+                () => functions.invoke(
+                  'resend-email-v1',
+                  body: captureAny(named: 'body'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(captured['html'], isNot(contains('vitafolder.app/invite/')));
+    });
   });
 }
