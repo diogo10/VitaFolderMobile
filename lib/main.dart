@@ -70,7 +70,11 @@ void main() async {
   }
 
   final serviceLocator = ServiceLocator();
-  await serviceLocator.init();
+  await serviceLocator.init(
+    crashReporter: crashReporter,
+    logger: logger,
+    tracer: tracer,
+  );
 
   try {
     await slInstance<IReminderNotificationService>(
@@ -242,11 +246,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   static T? _optional<T extends Object>(String instanceName) {
-    try {
+    if (slInstance.isRegistered<T>(instanceName: instanceName)) {
       return slInstance<T>(instanceName: instanceName);
-    } on Object catch (_) {
-      return null;
     }
+    return null;
   }
 
   AppLogger get _logger => _optional<AppLogger>('appLogger') ?? AppLogger();

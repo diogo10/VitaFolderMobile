@@ -17,35 +17,48 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final GetIt slInstance = GetIt.instance;
 
 class ServiceLocator {
-  Future<void> init() async {
-    final crashReporter = FirebaseCrashReporter();
-    final logger = AppLogger(crashReporter: crashReporter);
-    final tracer = FirebasePerformanceTracer();
+  /// Registers core singletons and feature graphs.
+  ///
+  /// Observability instances are created once in `main` and passed in so
+  /// the app and every service share the same [CrashReporter], [AppLogger],
+  /// and [PerformanceTracer] instead of each building their own.
+  Future<void> init({
+    CrashReporter? crashReporter,
+    AppLogger? logger,
+    PerformanceTracer? tracer,
+  }) async {
+    final effectiveCrashReporter = crashReporter ?? FirebaseCrashReporter();
+    final effectiveLogger =
+        logger ?? AppLogger(crashReporter: effectiveCrashReporter);
+    final effectiveTracer = tracer ?? FirebasePerformanceTracer();
     slInstance
       ..registerSingleton<CrashReporter>(
-        crashReporter,
+        effectiveCrashReporter,
         instanceName: 'crashReporter',
       )
-      ..registerSingleton<AppLogger>(logger, instanceName: 'appLogger')
+      ..registerSingleton<AppLogger>(
+        effectiveLogger,
+        instanceName: 'appLogger',
+      )
       ..registerSingleton<PerformanceTracer>(
-        tracer,
+        effectiveTracer,
         instanceName: 'performanceTracer',
       )
       ..registerSingleton<AnalyticsService>(
-        AnalyticsService(crashReporter: crashReporter),
+        AnalyticsService(crashReporter: effectiveCrashReporter),
         instanceName: 'analyticsService',
       )
       ..registerSingleton<AuthService>(
         AuthService(
           supabaseClient: Supabase.instance.client,
           googleSignInHandler: GoogleSignInHandler(),
-          logger: logger,
-          tracer: tracer,
+          logger: effectiveLogger,
+          tracer: effectiveTracer,
         ),
         instanceName: 'authService',
       )
       ..registerSingleton<EdgetFunctions>(
-        EdgetFunctions(logger: logger, tracer: tracer),
+        EdgetFunctions(logger: effectiveLogger, tracer: effectiveTracer),
         instanceName: 'edgetFunctions',
       )
       ..registerSingleton<OnboardingLocalDatasource>(

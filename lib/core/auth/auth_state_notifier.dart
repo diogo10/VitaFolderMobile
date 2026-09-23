@@ -88,7 +88,23 @@ class AuthStateNotifier extends ChangeNotifier {
     _isInitialized = true;
     if (isFirstEvent && !_recoveryReported) {
       _recoveryReported = true;
-      unawaited(_reportSessionRecovery(state));
+      if (_recoveryStopwatch.isRunning) {
+        _recoveryStopwatch.stop();
+      }
+      unawaited(
+        () async {
+          try {
+            await _reportSessionRecovery(state);
+          } on Object catch (error, stackTrace) {
+            _logger.error(
+              'session recovery reporting failed',
+              tag: 'auth',
+              error: error,
+              stackTrace: stackTrace,
+            );
+          }
+        }(),
+      );
     } else {
       _logger.debug(
         'auth transition',
@@ -162,6 +178,9 @@ class AuthStateNotifier extends ChangeNotifier {
     );
     if (!_isInitialized) {
       _isInitialized = true;
+      if (_recoveryStopwatch.isRunning) {
+        _recoveryStopwatch.stop();
+      }
       notifyListeners();
     }
   }

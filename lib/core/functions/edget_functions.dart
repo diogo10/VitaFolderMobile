@@ -59,7 +59,10 @@ class EdgetFunctions {
           final data = res.data;
           final ok = data is Map && data['success'] == true;
           await trace.putAttribute('success', '$ok');
-          await trace.putMetric('status', res.status);
+          final dynamic status = res.status;
+          if (status is int) {
+            await trace.putMetric('status', status);
+          }
           return ok;
         },
         attributes: {'function': 'resend-email-v1'},

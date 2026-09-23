@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 
@@ -60,9 +62,9 @@ class FirebaseCrashReporter implements CrashReporter {
   /// `Firebase.initializeApp`, before `runApp`.
   static void installGlobalHandlers() {
     final instance = FirebaseCrashlytics.instance;
-    FlutterError.onError = instance.recordFlutterFatalError;
+    FlutterError.onError = instance.recordFlutterError;
     PlatformDispatcher.instance.onError = (error, stack) {
-      instance.recordError(error, stack, fatal: true);
+      unawaited(instance.recordError(error, stack, fatal: true));
       return true;
     };
   }
