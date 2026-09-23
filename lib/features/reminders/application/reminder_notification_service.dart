@@ -4,6 +4,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/core/observability/app_logger.dart';
+import 'package:house_mira/core/observability/crash_reporter.dart';
+import 'package:house_mira/core/observability/performance_tracer.dart';
 import 'package:house_mira/features/reminders/application/time_zone_provider.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
@@ -98,12 +101,17 @@ class ReminderNotificationService implements IReminderNotificationService {
     required LocalStorageDatasource storage,
     FlutterLocalNotificationsPlugin? plugin,
     TimeZoneProvider? timeZoneProvider,
+    CrashReporter? crashReporter,
+    AppLogger? logger,
+    PerformanceTracer? tracer,
     // Testing seam: Platform.isAndroid is always false on the CI host, so
     // the Android-only branches below would otherwise be uncoverable.
     @visibleForTesting bool? isAndroidOverride,
   }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin(),
        _storage = storage,
        _timeZoneProvider = timeZoneProvider ?? DeviceTimeZoneProvider(),
+       _logger = logger ?? AppLogger(crashReporter: crashReporter),
+       _tracer = tracer ?? NoOpPerformanceTracer(),
        _isAndroid = isAndroidOverride ?? Platform.isAndroid;
   static const _channelId = 'reminders';
   static const _channelName = 'Reminders';
@@ -127,6 +135,8 @@ class ReminderNotificationService implements IReminderNotificationService {
   final FlutterLocalNotificationsPlugin _plugin;
   final LocalStorageDatasource _storage;
   final TimeZoneProvider _timeZoneProvider;
+  final AppLogger _logger;
+  final PerformanceTracer _tracer;
   final bool _isAndroid;
   final StreamController<String?> _taps = StreamController<String?>.broadcast();
 
@@ -423,27 +433,65 @@ class ReminderNotificationService implements IReminderNotificationService {
 
   @override
   Future<void> rescheduleAll(List<ReminderEntity> reminders) async {
-    for (final reminder in reminders) {
-      try {
-        final prefs = await getReminderNotification(reminder.id);
-        if (!prefs.enabled) continue;
-        final dueDate = ReminderDateUtils.parseDueDate(reminder.dueDate);
-        if (dueDate == null) continue;
-        await setReminderNotification(
-          reminderId: reminder.id,
-          enabled: true,
-          leadTime: prefs.leadTime,
-          dueDate: dueDate,
-          title: reminder.title,
-          body: reminder.body,
-          repeatRule: reminder.repeatRule,
+    await _tracer.trace(
+      'reminder-resync',
+      (trace) async {
+        var scheduled = 0;
+        var skipped = 0;
+        var failed = 0;
+        for (final reminder in reminders) {
+          try {
+            final prefs = await getReminderNotification(reminder.id);
+            if (!prefs.enabled) {
+              skipped++;
+              continue;
+            }
+            final dueDate = ReminderDateUtils.parseDueDate(reminder.dueDate);
+            if (dueDate == null) {
+              skipped++;
+              continue;
+            }
+            final ok = await setReminderNotification(
+              reminderId: reminder.id,
+              enabled: true,
+              leadTime: prefs.leadTime,
+              dueDate: dueDate,
+              title: reminder.title,
+              body: reminder.body,
+              repeatRule: reminder.repeatRule,
+            );
+            if (ok) {
+              scheduled++;
+            } else {
+              skipped++;
+            }
+          } on Object catch (error, stackTrace) {
+            failed++;
+            _logger.warning(
+              'reminder resync skipped entry',
+              tag: 'reminder-resync',
+              context: {'reminder_id': reminder.id},
+              error: error,
+              stackTrace: stackTrace,
+            );
+          }
+        }
+        await trace.putMetric('total', reminders.length);
+        await trace.putMetric('scheduled', scheduled);
+        await trace.putMetric('skipped', skipped);
+        await trace.putMetric('failed', failed);
+        _logger.info(
+          'reminder resync completed',
+          tag: 'reminder-resync',
+          context: {
+            'total': reminders.length,
+            'scheduled': scheduled,
+            'skipped': skipped,
+            'failed': failed,
+          },
         );
-      } on Object catch (_) {
-        debugPrint(
-          'ReminderNotifications: reschedule skipped for ${reminder.id}.',
-        );
-      }
-    }
+      },
+    );
   }
 
   Future<void> _ensureLocalTimeZone() async {

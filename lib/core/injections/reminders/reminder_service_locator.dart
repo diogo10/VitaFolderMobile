@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/core/observability/app_logger.dart';
+import 'package:house_mira/core/observability/performance_tracer.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/repository/reminder_repository_impl.dart';
@@ -16,12 +18,26 @@ class ReminderServiceLocator {
   final GetIt sl;
 
   void init() {
+    AppLogger? logger;
+    PerformanceTracer? tracer;
+    try {
+      logger = sl<AppLogger>(instanceName: 'appLogger');
+    } on Object catch (_) {
+      logger = null;
+    }
+    try {
+      tracer = sl<PerformanceTracer>(instanceName: 'performanceTracer');
+    } on Object catch (_) {
+      tracer = null;
+    }
     sl
       ..registerSingleton<IReminderNotificationService>(
         ReminderNotificationService(
           storage: sl<LocalStorageDatasource>(
             instanceName: 'localStorageDatasource',
           ),
+          logger: logger,
+          tracer: tracer,
         ),
         instanceName: 'reminderNotificationService',
       )

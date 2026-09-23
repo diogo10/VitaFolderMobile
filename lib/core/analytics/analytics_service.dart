@@ -1,14 +1,16 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:house_mira/core/observability/crash_reporter.dart';
 
 class AnalyticsService {
-
-  AnalyticsService()
-    : _observer = FirebaseAnalyticsObserver(
+  AnalyticsService({CrashReporter? crashReporter})
+    : _crashReporter = crashReporter ?? NoOpCrashReporter(),
+      _observer = FirebaseAnalyticsObserver(
         analytics: FirebaseAnalytics.instance,
       );
   final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
   final FirebaseAnalyticsObserver _observer;
+  final CrashReporter _crashReporter;
 
   FirebaseAnalytics get analytics => _analytics;
 
@@ -24,6 +26,9 @@ class AnalyticsService {
 
   Future<void> setUserId(String userId) async {
     await _analytics.setUserId(id: userId);
+    // Crash reports are only actionable when they carry the user id, so
+    // every analytics identity update mirrors into Crashlytics.
+    await _crashReporter.setUserId(userId);
   }
 
   Future<void> setUserProperty({
@@ -146,6 +151,15 @@ class AnalyticsService {
     await logEvent(
       name: 'app_error',
       parameters: {'error_code': errorCode, 'error_message': errorMessage},
+    );
+    // Analytics alone cannot surface stack-less production errors:
+    // mirror them as Crashlytics breadcrumbs plus a non-fatal report.
+    await _crashReporter.log('app_error code=$errorCode message=$errorMessage');
+    await _crashReporter.recordError(
+      StateError('app_error: $errorCode $errorMessage'),
+      StackTrace.current,
+      reason: 'app_error',
+      context: {'error_code': errorCode},
     );
   }
 
