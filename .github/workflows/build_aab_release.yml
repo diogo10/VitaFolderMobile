@@ -1,0 +1,88 @@
+name: Build AAB (Production Release)
+
+# Production-only release pipeline. Versioning/build-number logic lives in
+# the "Resolve release version" step (tool/resolve_release_version.py) and is
+# never applied to development or profile builds.
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: >
+          Version name (e.g. 1.0.0). Leave empty to use pubspec.yaml.
+        required: false
+        default: ""
+      build_number:
+        description: >
+          Build number / Android versionCode (e.g. 1). Leave empty to use
+          pubspec.yaml.
+        required: false
+        default: ""
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Resolve release version
+        # Single source of truth: pubspec.yaml `version: <name>+<number>`
+        # (e.g. `1.0.0+1`). Optional workflow inputs override it; anything
+        # malformed fails the job instead of guessing a default.
+        id: version
+        run: |
+          python3 tool/resolve_release_version.py \
+            --version-name "${{ inputs.version_name }}" \
+            --build-number "${{ inputs.build_number }}" | tee version.env
+          {
+            echo "version_name=$(grep '^VERSION_NAME=' version.env | cut -d= -f2)"
+            echo "build_number=$(grep '^BUILD_NUMBER=' version.env | cut -d= -f2)"
+          } >> "$GITHUB_OUTPUT"
+          cat version.env >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build AAB (prod release)
+        # Prod backend credentials come from GitHub secrets (never hardcoded).
+        # See README "Environments & secrets" for the required secrets.
+        run: >
+          flutter build appbundle --release
+          --build-name=${{ steps.version.outputs.version_name }}
+          --build-number=${{ steps.version.outputs.build_number }}
+          --dart-define=APP_FLAVOR=prod
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL_PROD }}
+          --dart-define=SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY_PROD }}
+
+      - name: Enforce performance budgets + report build
+        run: |
+          bash tool/check_performance_budgets.sh | tee budget-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: 1:140355243144:android:a6ac1f14183172f272633d
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          testers: ${{ secrets.FIREBASE_TESTERS }}
+          file: build/app/outputs/bundle/release/app-release.aab
+          releaseNotes: ${{ github.sha }}
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: aab-release-${{ steps.version.outputs.version_name }}+${{ steps.version.outputs.build_number }}
+          path: |
+            budget-report.md
+            version.env
+            build/app/outputs/bundle/release/*.aab
+          retention-days: 30
