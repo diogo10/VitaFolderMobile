@@ -5,6 +5,9 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart'
     show AuthStateNotifier;
 import 'package:house_mira/core/auth/google_sign_in_handler.dart';
+import 'package:house_mira/core/observability/app_logger.dart';
+import 'package:house_mira/core/observability/crash_reporter.dart';
+import 'package:house_mira/core/observability/performance_tracer.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -24,11 +27,18 @@ class AuthService {
   AuthService({
     required SupabaseClient supabaseClient,
     required IGoogleSignInHandler googleSignInHandler,
+    CrashReporter? crashReporter,
+    AppLogger? logger,
+    PerformanceTracer? tracer,
   }) : _client = supabaseClient,
-       _googleHandler = googleSignInHandler;
+       _googleHandler = googleSignInHandler,
+       _logger = logger ?? AppLogger(crashReporter: crashReporter),
+       _tracer = tracer ?? NoOpPerformanceTracer();
 
   final SupabaseClient _client;
   final IGoogleSignInHandler _googleHandler;
+  final AppLogger _logger;
+  final PerformanceTracer _tracer;
 
   User? get currentUser => _client.auth.currentUser;
 
@@ -196,12 +206,51 @@ class AuthService {
     if (currentUserId == null) {
       throw const AuthException('Not signed in.');
     }
+    const context = <String, Object?>{'function': 'delete-account'};
+    _logger.debug('invoking edge function', tag: 'edge', context: context);
     try {
-      await _client.functions.invoke(
-        'delete-account',
+      await _tracer.trace(
+        'edge-invoke-delete-account',
+        (trace) async {
+          await _client.functions.invoke('delete-account');
+          await trace.putAttribute('success', 'true');
+        },
+        attributes: {'function': 'delete-account'},
       );
-    } on FunctionException catch (e) {
-      throw _mapFunctionException(e);
+      _logger.info(
+        'edge function completed',
+        tag: 'edge',
+        context: {...context, 'success': true},
+      );
+    } on FunctionException catch (e, stackTrace) {
+      final mapped = _mapFunctionException(e);
+      // Expected rejections (not signed in, sole owner) are control flow;
+      // only unexpected server failures become non-fatal crash reports.
+      if (mapped is DeleteAccountException) {
+        _logger.error(
+          'edge function failed',
+          tag: 'edge',
+          context: {...context, 'status': e.status},
+          error: e,
+          stackTrace: stackTrace,
+        );
+      } else {
+        _logger.info(
+          'edge function rejected',
+          tag: 'edge',
+          context: {...context, 'status': e.status},
+        );
+      }
+      throw mapped;
+    } on Object catch (error, stackTrace) {
+      _logger.error(
+        'edge function failed',
+        tag: 'edge',
+        context: context,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
     }
   }
 

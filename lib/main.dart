@@ -11,6 +11,9 @@ import 'package:house_mira/core/config/app_config.dart';
 import 'package:house_mira/core/config/firebase_options_provider.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
+import 'package:house_mira/core/observability/app_logger.dart';
+import 'package:house_mira/core/observability/crash_reporter.dart';
+import 'package:house_mira/core/observability/performance_tracer.dart';
 import 'package:house_mira/core/router/app_router.dart';
 import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/features/account/application/notification_permission_service.dart';
@@ -37,28 +40,70 @@ void main() async {
   // (see README "Environments & secrets"). Missing or invalid values
   // throw StateError here so the app never runs against the wrong backend.
   final config = AppConfig.fromEnvironment();
-  await Supabase.initialize(
-    url: config.supabaseUrl,
-    publishableKey: config.supabasePublishableKey,
-  );
 
+  // Firebase first: Crashlytics handlers must be installed before any other
+  // async init so startup failures become visible instead of silent.
   await Firebase.initializeApp(options: firebaseOptionsFor(config.flavor));
+  FirebaseCrashReporter.installGlobalHandlers();
+
+  final crashReporter = FirebaseCrashReporter();
+  final logger = AppLogger(crashReporter: crashReporter);
+  final tracer = FirebasePerformanceTracer();
+
+  try {
+    await tracer.trace('startup-supabase-init', (trace) async {
+      await Supabase.initialize(
+        url: config.supabaseUrl,
+        publishableKey: config.supabasePublishableKey,
+      );
+      await trace.putAttribute('flavor', config.flavor.name);
+    });
+  } on Object catch (error, stackTrace) {
+    logger.error(
+      'supabase init failed',
+      tag: 'startup',
+      context: {'flavor': config.flavor.name},
+      error: error,
+      stackTrace: stackTrace,
+    );
+    rethrow;
+  }
 
   final serviceLocator = ServiceLocator();
-  await serviceLocator.init();
+  await serviceLocator.init(
+    crashReporter: crashReporter,
+    logger: logger,
+    tracer: tracer,
+  );
 
   try {
     await slInstance<IReminderNotificationService>(
       instanceName: 'reminderNotificationService',
     ).init();
-  } on Object catch (_) {
-    // Notifications are best-effort; never block app startup.
+  } on Object catch (error, stackTrace) {
+    // Notifications are best-effort; never block app startup — but report
+    // the failure instead of swallowing it silently.
+    logger.warning(
+      'notification init failed',
+      tag: 'startup',
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
   final analyticsService = slInstance<AnalyticsService>(
     instanceName: 'analyticsService',
   );
-  await analyticsService.initialize();
+  try {
+    await analyticsService.initialize();
+  } on Object catch (error, stackTrace) {
+    logger.warning(
+      'analytics init failed',
+      tag: 'startup',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
 
   final datasource = slInstance<OnboardingLocalDatasource>(
     instanceName: 'onboardingLocalDatasource',
@@ -163,9 +208,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       // router synchronized with every later auth transition.
       _authStateNotifier = AuthStateNotifier.fromSupabase(
         Supabase.instance.client,
+        crashReporter: _optional<CrashReporter>('crashReporter'),
+        logger: _optional<AppLogger>('appLogger'),
+        tracer: _optional<PerformanceTracer>('performanceTracer'),
       );
       _ownsAuthStateNotifier = true;
     }
+    _syncCrashUserId();
+    _authStateNotifier.addListener(_syncCrashUserId);
     final analyticsService = slInstance<AnalyticsService>(
       instanceName: 'analyticsService',
     );
@@ -190,12 +240,36 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       widget.notificationService ?? _optionalNotificationService();
 
   static IReminderNotificationService? _optionalNotificationService() {
+    return _optional<IReminderNotificationService>(
+      'reminderNotificationService',
+    );
+  }
+
+  static T? _optional<T extends Object>(String instanceName) {
+    if (slInstance.isRegistered<T>(instanceName: instanceName)) {
+      return slInstance<T>(instanceName: instanceName);
+    }
+    return null;
+  }
+
+  AppLogger get _logger => _optional<AppLogger>('appLogger') ?? AppLogger();
+
+  PerformanceTracer get _tracer =>
+      _optional<PerformanceTracer>('performanceTracer') ??
+      NoOpPerformanceTracer();
+
+  /// Keeps crash reports attributable: every auth transition mirrors the
+  /// current user id into Crashlytics. Best-effort only.
+  void _syncCrashUserId() {
     try {
-      return slInstance<IReminderNotificationService>(
-        instanceName: 'reminderNotificationService',
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      unawaited(
+        _optional<CrashReporter>(
+          'crashReporter',
+        )?.setUserId(userId ?? _authStateNotifier.session?.user.id),
       );
     } on Object catch (_) {
-      return null;
+      // Identity sync is best-effort.
     }
   }
 
@@ -215,8 +289,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         if (!mounted) return;
         _router.go(notificationLocationFor(payload));
       });
-    } on Object catch (_) {
+    } on Object catch (error, stackTrace) {
       // Notifications are best-effort.
+      _logger.warning(
+        'notification tap subscription failed',
+        tag: 'notifications',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -227,8 +307,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       if (payload == null || payload.isEmpty) return;
       if (!mounted) return;
       _router.go(notificationLocationFor(payload));
-    } on Object catch (_) {
+    } on Object catch (error, stackTrace) {
       // Notifications are best-effort.
+      _logger.warning(
+        'notification launch routing failed',
+        tag: 'notifications',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -247,20 +333,31 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   /// Re-arms alarms wiped while the app was away (force-stop, reboot,
-  /// time-zone change). Best-effort: never disrupts the UI.
+  /// time-zone change). Best-effort: never disrupts the UI. Traced so
+  /// silent alarm loss shows up in Performance, failures in Crashlytics.
   Future<void> _resyncNotifications() async {
     try {
-      await slInstance<RemindersCubit>(
-        instanceName: 'remindersCubit',
-      ).resyncNotifications();
-    } on Object catch (_) {
+      await _tracer.trace('reminder-resync-resume', (trace) async {
+        await slInstance<RemindersCubit>(
+          instanceName: 'remindersCubit',
+        ).resyncNotifications();
+        await trace.putAttribute('trigger', 'app_resume');
+      });
+    } on Object catch (error, stackTrace) {
       // Notifications are best-effort.
+      _logger.warning(
+        'resume resync failed',
+        tag: 'reminder-resync',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _authStateNotifier.removeListener(_syncCrashUserId);
     unawaited(_notificationTapSubscription?.cancel());
     if (_ownsAuthStateNotifier) {
       _authStateNotifier.dispose();

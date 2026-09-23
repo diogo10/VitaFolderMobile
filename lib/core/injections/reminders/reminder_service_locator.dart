@@ -1,6 +1,9 @@
 import 'package:get_it/get_it.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/core/observability/app_logger.dart';
+import 'package:house_mira/core/observability/crash_reporter.dart';
+import 'package:house_mira/core/observability/performance_tracer.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/repository/reminder_repository_impl.dart';
@@ -16,12 +19,25 @@ class ReminderServiceLocator {
   final GetIt sl;
 
   void init() {
+    final logger = sl.isRegistered<AppLogger>(instanceName: 'appLogger')
+        ? sl<AppLogger>(instanceName: 'appLogger')
+        : null;
+    final tracer =
+        sl.isRegistered<PerformanceTracer>(instanceName: 'performanceTracer')
+        ? sl<PerformanceTracer>(instanceName: 'performanceTracer')
+        : null;
+    final crashReporter =
+        sl.isRegistered<CrashReporter>(instanceName: 'crashReporter')
+        ? sl<CrashReporter>(instanceName: 'crashReporter')
+        : null;
     sl
       ..registerSingleton<IReminderNotificationService>(
         ReminderNotificationService(
           storage: sl<LocalStorageDatasource>(
             instanceName: 'localStorageDatasource',
           ),
+          logger: logger,
+          tracer: tracer,
         ),
         instanceName: 'reminderNotificationService',
       )
@@ -59,6 +75,8 @@ class ReminderServiceLocator {
           authService: sl<AuthService>(instanceName: 'authService'),
           reminderRepository: sl(instanceName: 'reminderRepositoryImpl'),
           notificationService: sl(instanceName: 'reminderNotificationService'),
+          logger: logger,
+          crashReporter: crashReporter,
         ),
         instanceName: 'remindersCubit',
       )

@@ -8,27 +8,57 @@ import 'package:house_mira/core/injections/home/home_service_locator.dart';
 import 'package:house_mira/core/injections/people/people_service_locator.dart';
 import 'package:house_mira/core/injections/reminders/reminder_service_locator.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/core/observability/app_logger.dart';
+import 'package:house_mira/core/observability/crash_reporter.dart';
+import 'package:house_mira/core/observability/performance_tracer.dart';
 import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final GetIt slInstance = GetIt.instance;
 
 class ServiceLocator {
-  Future<void> init() async {
+  /// Registers core singletons and feature graphs.
+  ///
+  /// Observability instances are created once in `main` and passed in so
+  /// the app and every service share the same [CrashReporter], [AppLogger],
+  /// and [PerformanceTracer] instead of each building their own.
+  Future<void> init({
+    CrashReporter? crashReporter,
+    AppLogger? logger,
+    PerformanceTracer? tracer,
+  }) async {
+    final effectiveCrashReporter = crashReporter ?? FirebaseCrashReporter();
+    final effectiveLogger =
+        logger ?? AppLogger(crashReporter: effectiveCrashReporter);
+    final effectiveTracer = tracer ?? FirebasePerformanceTracer();
     slInstance
+      ..registerSingleton<CrashReporter>(
+        effectiveCrashReporter,
+        instanceName: 'crashReporter',
+      )
+      ..registerSingleton<AppLogger>(
+        effectiveLogger,
+        instanceName: 'appLogger',
+      )
+      ..registerSingleton<PerformanceTracer>(
+        effectiveTracer,
+        instanceName: 'performanceTracer',
+      )
       ..registerSingleton<AnalyticsService>(
-        AnalyticsService(),
+        AnalyticsService(crashReporter: effectiveCrashReporter),
         instanceName: 'analyticsService',
       )
       ..registerSingleton<AuthService>(
         AuthService(
           supabaseClient: Supabase.instance.client,
           googleSignInHandler: GoogleSignInHandler(),
+          logger: effectiveLogger,
+          tracer: effectiveTracer,
         ),
         instanceName: 'authService',
       )
       ..registerSingleton<EdgetFunctions>(
-        EdgetFunctions(),
+        EdgetFunctions(logger: effectiveLogger, tracer: effectiveTracer),
         instanceName: 'edgetFunctions',
       )
       ..registerSingleton<OnboardingLocalDatasource>(

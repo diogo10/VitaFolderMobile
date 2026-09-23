@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/observability/app_logger.dart';
+import 'package:house_mira/core/observability/crash_reporter.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -18,13 +20,17 @@ class RemindersCubit extends Cubit<RemindersState> {
     required this.authService,
     required this.reminderRepository,
     required IReminderNotificationService notificationService,
+    CrashReporter? crashReporter,
+    AppLogger? logger,
   }) : _notificationService = notificationService,
+       _logger = logger ?? AppLogger(crashReporter: crashReporter),
        super(ReminderInitialState());
   GetReminderUsecase getReminderUsecase;
   PeopleRepository peopleRepository;
   AuthService authService;
   ReminderRepository reminderRepository;
   final IReminderNotificationService _notificationService;
+  final AppLogger _logger;
 
   /// Exposed for views that need notification prefs without GetIt.
   IReminderNotificationService get notificationService => _notificationService;
@@ -190,12 +196,19 @@ class RemindersCubit extends Cubit<RemindersState> {
   }
 
   /// Rebuilds OS alarms from persisted prefs. Best-effort: never throws,
-  /// never blocks the list render.
+  /// never blocks the list render. Failures are reported (not swallowed)
+  /// so silent alarm loss stays visible in Crashlytics.
   Future<void> _resyncNotifications(List<ReminderEntity> reminders) async {
     try {
       await _notificationService.rescheduleAll(reminders);
-    } on Object catch (_) {
-      // Notifications are best-effort; the list is already shown.
+    } on Object catch (error, stackTrace) {
+      _logger.warning(
+        'reminder resync failed',
+        tag: 'reminder-resync',
+        context: {'count': reminders.length},
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
