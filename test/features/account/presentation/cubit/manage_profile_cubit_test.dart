@@ -12,19 +12,23 @@ class _MockSupabaseClient extends Mock implements SupabaseClient {}
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
 
 class _FakeAuthService extends AuthService {
-  _FakeAuthService({this.updateError})
+  _FakeAuthService({this.updateError, this.profileName})
     : super(
         supabaseClient: _MockSupabaseClient(),
         googleSignInHandler: _MockGoogleSignInHandler(),
       );
   Exception? updateError;
   String? lastName;
+  String? profileName;
 
   @override
   Future<void> updateName(String name) async {
     lastName = name;
     if (updateError != null) throw updateError!;
   }
+
+  @override
+  Future<String?> getProfileName() async => profileName;
 }
 
 void main() {
@@ -54,6 +58,22 @@ void main() {
       await cubit.saveName('  Ana  ');
 
       expect(auth.lastName, 'Ana');
+    });
+
+    test('currentName returns the profile name', () async {
+      final cubit = ManageProfileCubit(
+        authService: _FakeAuthService(profileName: 'Ana'),
+      );
+      addTearDown(cubit.close);
+
+      expect(await cubit.currentName(), 'Ana');
+    });
+
+    test('currentName returns null when the profile has no name', () async {
+      final cubit = ManageProfileCubit(authService: _FakeAuthService());
+      addTearDown(cubit.close);
+
+      expect(await cubit.currentName(), isNull);
     });
 
     blocTest<ManageProfileCubit, ManageProfileState>(

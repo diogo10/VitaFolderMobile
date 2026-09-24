@@ -254,31 +254,43 @@ void main() {
         authService: authService,
       );
       // Swap in the counting fresh factory: create-owned routes must call it
-      // on every visit (never reuse a closed instance).
+      // on every visit (never reuse a closed instance). Tab factories stay
+      // shared per the factory contract: same instance on every call,
+      // closed here since BlocProvider.value never closes.
+      final homeCubit = HomeCubit(
+        getHomeDataUsecase: getHomeData,
+        hasRemindersUsecase: hasReminders,
+      );
+      final peopleCubit = PeopleCubit(
+        getPeopleUsecase: _MockGetPeopleUsecase(),
+        createFamilyUsecase: _MockCreateFamilyUsecase(),
+        joinFamilyUsecase: _MockJoinFamilyUsecase(),
+        authService: authService,
+      );
+      final remindersCubit = RemindersCubit(
+        getReminderUsecase: _MockGetReminderUsecase(),
+        peopleRepository: _MockPeopleRepository(),
+        authService: authService,
+        reminderRepository: _MockReminderRepository(),
+        notificationService: _FakeNotificationService(),
+      );
+      final accountCubit = AccountCubit(
+        authService: authService,
+        peopleRepository: _MockPeopleRepository(),
+      );
+      addTearDown(() async {
+        await homeCubit.close();
+        await peopleCubit.close();
+        await remindersCubit.close();
+        await accountCubit.close();
+      });
       final freshRouter = createRouter(
         onboardingCompleted: true,
         authStateNotifier: notifier,
-        homeCubitFactory: () => HomeCubit(
-          getHomeDataUsecase: getHomeData,
-          hasRemindersUsecase: hasReminders,
-        ),
-        peopleCubitFactory: () => PeopleCubit(
-          getPeopleUsecase: _MockGetPeopleUsecase(),
-          createFamilyUsecase: _MockCreateFamilyUsecase(),
-          joinFamilyUsecase: _MockJoinFamilyUsecase(),
-          authService: authService,
-        ),
-        remindersCubitFactory: () => RemindersCubit(
-          getReminderUsecase: _MockGetReminderUsecase(),
-          peopleRepository: _MockPeopleRepository(),
-          authService: authService,
-          reminderRepository: _MockReminderRepository(),
-          notificationService: _FakeNotificationService(),
-        ),
-        accountCubitFactory: () => AccountCubit(
-          authService: authService,
-          peopleRepository: _MockPeopleRepository(),
-        ),
+        homeCubitFactory: () => homeCubit,
+        peopleCubitFactory: () => peopleCubit,
+        remindersCubitFactory: () => remindersCubit,
+        accountCubitFactory: () => accountCubit,
         createReminderCubitFactory: buildEditor,
         signUpCubitFactory: () => SignUpCubit(authService),
       );

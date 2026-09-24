@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +15,10 @@ class ManageProfileScreen extends StatefulWidget {
 
   /// Display name captured from the account tab at route-build time.
   /// The manage-profile route no longer shares the account cubit instance,
-  /// so the initial value travels as immutable data instead.
+  /// so the initial value travels as immutable data instead. When `null`
+  /// (e.g. deep-link entry with the account tab unbuilt), the screen
+  /// preloads the name from the profile via [ManageProfileCubit] instead
+  /// of leaving the field empty.
   final String? initialName;
 
   /// Refreshes the account tab after a successful save. Wired by the route
@@ -35,6 +40,24 @@ class _ManageProfileScreenState extends State<ManageProfileScreen> {
     final initial = widget.initialName;
     if (initial != null && initial.isNotEmpty) {
       _nameController.text = initial;
+    } else {
+      // Deep-link entry bypasses the account tab, so no coordinator
+      // snapshot exists: preload from the profile via the cubit instead
+      // of leaving the field empty.
+      unawaited(_preloadName());
+    }
+  }
+
+  /// Best-effort preload: failures keep the field empty but editable.
+  Future<void> _preloadName() async {
+    try {
+      final name = await context.read<ManageProfileCubit>().currentName();
+      if (!mounted) return;
+      if (name != null && name.isNotEmpty && _nameController.text.isEmpty) {
+        _nameController.text = name;
+      }
+    } on Object catch (_) {
+      // Best-effort preload.
     }
   }
 
