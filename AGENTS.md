@@ -15,13 +15,15 @@ Setup command:
 fvm flutter pub get
 ```
 
-Lint command (must be clean: 0 errors, 0 warnings):
+Lint command (must be clean: 0 errors, 0 warnings) — run
+`fvm flutter analyze` before pushing:
 
 ```bash
 fvm flutter analyze
 ```
 
-Test command (or pass a scope such as test/features/account):
+Test command (or pass a scope such as test/features/account) — run
+`fvm flutter test` for the full suite:
 
 ```bash
 fvm flutter test
@@ -69,18 +71,24 @@ with public_member_api_docs off — fix lints, do not add ignore comments.
 ## Environments & secrets
 
 - No backend credentials in `lib/`: Supabase URL/key arrive via
-  `--dart-define` (`APP_FLAVOR`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`)
-  through `AppConfig.fromEnvironment()` (`lib/core/config/`). Startup throws
-  `StateError` on missing/invalid values — never add fallbacks.
-- Local: `cp env/<flavor>.example.json env/<flavor>.json`, fill in, run with
-  `fvm flutter run --dart-define-from-file=env/<flavor>.json`. Real
-  `env/*.json` files are gitignored and CI rejects them if committed.
-- Firebase: one project today; `firebaseOptionsFor()` is the per-flavor seam
+  dart-define flags (APP_FLAVOR, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+  through AppConfig.fromEnvironment in `lib/core/config/app_config.dart`.
+  Startup throws StateError on missing/invalid values — never add fallbacks.
+- Local: copy an example file from `env/` (e.g.
+  `env/dev.example.json`) to a sibling env JSON file, fill in, then run:
+
+```bash
+fvm flutter run --dart-define-from-file=env/dev.json
+```
+
+  Real env JSON files are gitignored and CI rejects them if committed.
+- Firebase: one project today; firebaseOptionsFor in
+  `lib/core/config/firebase_options_provider.dart` is the per-flavor seam
   (provisioning steps in README "Environments & secrets").
-- CI `check-no-hardcoded-secrets` (`tool/check_no_hardcoded_secrets.sh`)
-  fails on `sb_publishable_`/`sb_secret_` literals, hardcoded
-  `*.supabase.co` URLs in `lib/`, or `service_role` references in `lib/`.
-  Keep `test/` fakes on `mock.supabase.co` / `mock-anon-key`.
+- CI check-no-hardcoded-secrets (`tool/check_no_hardcoded_secrets.sh`)
+  fails on publishable/secret key literals, hardcoded Supabase project URLs
+  in `lib/`, or service_role references in `lib/`. Keep `test/` fakes on
+  reserved example hosts with mock anon keys (see test/widget_test.dart).
 
 ## Testing
 
