@@ -286,7 +286,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   // cubits live in their own StatefulShellBranch subtrees. The route builder
   // injects [onSaved], which refreshes only visited tabs — unvisited tabs
   // stay unbuilt and load on first visit instead.
-  void _refreshLists(BuildContext context) {
+  void _refreshLists() {
     widget.onSaved?.call();
   }
 
@@ -336,7 +336,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
         listener: (context, state) async {
           if (state is CreateReminderSuccess) {
             if (!context.mounted) return;
-            _refreshLists(context);
+            _refreshLists();
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -358,7 +358,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           }
           if (state is UpdatedReminderSuccess) {
             if (!context.mounted) return;
-            _refreshLists(context);
+            _refreshLists();
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(

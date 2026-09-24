@@ -340,7 +340,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     if (resync == null) return;
     try {
       await _tracer.trace('reminder-resync-resume', (trace) async {
-        resync();
+        await resync();
         await trace.putAttribute('trigger', 'app_resume');
       });
     } on Object catch (error, stackTrace) {

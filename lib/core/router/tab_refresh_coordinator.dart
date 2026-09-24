@@ -34,9 +34,17 @@ class TabRefreshCoordinator {
 
   /// Re-arms OS alarms without building the reminders graph when the tab
   /// was never visited. Set by the reminders tab builder on first visit.
-  void Function()? resyncReminderNotifications;
+  /// Returns a future so `MyApp` can await it inside a performance trace;
+  /// resync failures then reach the resume-resync error report instead of
+  /// escaping as unhandled async errors.
+  Future<void> Function()? resyncReminderNotifications;
 
   /// Refreshes every visited tab. Unvisited tabs stay unbuilt.
+  ///
+  /// The account tab is deliberately excluded: it originates auth changes
+  /// (its cubit just signed in/out or deleted the account and already
+  /// holds the post-auth state), so reloading it from its own callback
+  /// would be redundant.
   void refreshAll() {
     refreshHome?.call();
     refreshPeople?.call();

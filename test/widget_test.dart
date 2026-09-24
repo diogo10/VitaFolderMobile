@@ -27,6 +27,7 @@ import 'package:house_mira/features/people/domain/usecase/join_family_usecase.da
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_state.dart'
     show PeopleEmpty;
+import 'package:house_mira/features/people/presentation/views/invite_people_screen.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -310,6 +311,12 @@ Widget _pumpApp() {
     authService: fakeAuth,
     peopleRepository: fakePeople,
   );
+  // Tab factories return shared instances via BlocProvider.value (never
+  // closed by the provider), so close them manually like other suites.
+  addTearDown(homeCubit.close);
+  addTearDown(remindersCubit.close);
+  addTearDown(peopleCubit.close);
+  addTearDown(accountCubit.close);
   return MyApp(
     onboardingCompleted: true,
     homeCubitFactory: () => homeCubit,
@@ -353,6 +360,10 @@ Widget _pumpAppWithOnboarding() {
     authService: fakeAuth,
     peopleRepository: fakePeople,
   );
+  addTearDown(homeCubit.close);
+  addTearDown(remindersCubit.close);
+  addTearDown(peopleCubit.close);
+  addTearDown(accountCubit.close);
   return MyApp(
     onboardingCompleted: false,
     homeCubitFactory: () => homeCubit,
@@ -454,6 +465,9 @@ void main() {
       await tester.pump();
       await tester.pump();
       expect(find.text('Fam'), findsOneWidget);
+      // Tab taps switch shell branches; invite screens must never be
+      // pushed over the shell by bottom-navigation.
+      expect(find.byType(InvitePeopleScreen), findsNothing);
     });
   });
 

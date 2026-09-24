@@ -33,13 +33,15 @@ void main() {
       expect(calls, ['reminders', 'home']);
     });
 
-    test('resync stays null until the reminders tab builds', () {
+    test('resync stays null until the reminders tab builds', () async {
       final coordinator = TabRefreshCoordinator();
       expect(coordinator.resyncReminderNotifications, isNull);
 
       var resynced = false;
-      coordinator.resyncReminderNotifications = () => resynced = true;
-      coordinator.resyncReminderNotifications?.call();
+      coordinator.resyncReminderNotifications = () async {
+        resynced = true;
+      };
+      await coordinator.resyncReminderNotifications?.call();
 
       expect(resynced, isTrue);
     });

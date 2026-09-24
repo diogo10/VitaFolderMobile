@@ -285,7 +285,7 @@ GoRouter createRouter({
                   coordinator.refreshReminders = () =>
                       unawaited(cubit.getReminders(type: cubit.selectedType));
                   coordinator.resyncReminderNotifications = () =>
-                      unawaited(cubit.resyncNotifications());
+                      cubit.resyncNotifications();
                   return BlocProvider<RemindersCubit>.value(
                     value: cubit,
                     child: const RemindersView(),
