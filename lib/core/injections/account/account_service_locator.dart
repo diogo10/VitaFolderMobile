@@ -13,8 +13,8 @@ class AccountServiceLocator {
 
   void init() {
     sl
-      ..registerSingleton<AccountCubit>(
-        AccountCubit(
+      ..registerLazySingleton<AccountCubit>(
+        () => AccountCubit(
           authService: sl<AuthService>(instanceName: 'authService'),
           peopleRepository: sl<PeopleRepository>(
             instanceName: 'peopleRepositoryImpl',
@@ -22,14 +22,14 @@ class AccountServiceLocator {
         ),
         instanceName: 'accountCubit',
       )
-      ..registerSingleton<ManageProfileCubit>(
-        ManageProfileCubit(
+      ..registerLazySingleton<ManageProfileCubit>(
+        () => ManageProfileCubit(
           authService: sl<AuthService>(instanceName: 'authService'),
         ),
         instanceName: 'manageProfileCubit',
       )
-      ..registerSingleton<NotificationSettingsCubit>(
-        NotificationSettingsCubit(
+      ..registerLazySingleton<NotificationSettingsCubit>(
+        () => NotificationSettingsCubit(
           permissionService: NotificationPermissionService(),
           storage: sl<LocalStorageDatasource>(
             instanceName: 'localStorageDatasource',

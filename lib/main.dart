@@ -2,14 +2,12 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/config/app_config.dart';
 import 'package:house_mira/core/config/firebase_options_provider.dart';
-import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/observability/crash_reporter.dart';
@@ -111,56 +109,12 @@ void main() async {
   final onboardingCompleted = await datasource.isOnboardingCompleted();
 
   runApp(
-    MultiBlocProvider(
-      providers: [
-        Provider(
-          create: (_) => slInstance<AuthService>(instanceName: 'authService'),
-        ),
-        BlocProvider(
-          create: (_) =>
-              slInstance<RemindersCubit>(instanceName: 'remindersCubit'),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<CreateReminderCubit>(
-            instanceName: 'createReminderCubit',
-          ),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<HomeCubit>(instanceName: 'homeCubit'),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<PeopleCubit>(instanceName: 'peopleCubit'),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<AccountCubit>(instanceName: 'accountCubit'),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<ManageProfileCubit>(
-            instanceName: 'manageProfileCubit',
-          ),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<NotificationSettingsCubit>(
-            instanceName: 'notificationSettingsCubit',
-          ),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<FamilySettingsCubit>(
-            instanceName: 'familySettingsCubit',
-          ),
-        ),
-        BlocProvider(
-          create: (_) =>
-              SignUpCubit(slInstance<AuthService>(instanceName: 'authService')),
-        ),
-        BlocProvider(
-          create: (_) => InvitePeopleCubit(
-            edgetFunctions: slInstance<EdgetFunctions>(
-              instanceName: 'edgetFunctions',
-            ),
-          ),
-        ),
-      ],
+    // Cold start stays lean: only the global AuthService (guest gating in
+    // every tab) is provided here. Feature cubits are scoped to their
+    // StatefulShellBranch / screen route in [createRouter] and first built
+    // when that route is visited.
+    Provider(
+      create: (_) => slInstance<AuthService>(instanceName: 'authService'),
       child: MyApp(onboardingCompleted: onboardingCompleted),
     ),
   );
@@ -173,6 +127,16 @@ class MyApp extends StatefulWidget {
     this.authStateNotifier,
     this.notificationService,
     this.initialLocation,
+    this.homeCubitFactory,
+    this.peopleCubitFactory,
+    this.remindersCubitFactory,
+    this.accountCubitFactory,
+    this.createReminderCubitFactory,
+    this.signUpCubitFactory,
+    this.invitePeopleCubitFactory,
+    this.familySettingsCubitFactory,
+    this.notificationSettingsCubitFactory,
+    this.manageProfileCubitFactory,
   });
   final bool onboardingCompleted;
   final AuthStateNotifier? authStateNotifier;
@@ -184,6 +148,19 @@ class MyApp extends StatefulWidget {
   /// Testing seam (and OS deep-link entry): overrides the router's initial
   /// location, e.g. an `/invite/<code>` App Link on cold start.
   final String? initialLocation;
+
+  /// Testing seams for the route-scoped cubits (see [createRouter]): each
+  /// factory defaults to the GetIt graph in production.
+  final HomeCubit Function()? homeCubitFactory;
+  final PeopleCubit Function()? peopleCubitFactory;
+  final RemindersCubit Function()? remindersCubitFactory;
+  final AccountCubit Function()? accountCubitFactory;
+  final CreateReminderCubit Function()? createReminderCubitFactory;
+  final SignUpCubit Function()? signUpCubitFactory;
+  final InvitePeopleCubit Function()? invitePeopleCubitFactory;
+  final FamilySettingsCubit Function()? familySettingsCubitFactory;
+  final NotificationSettingsCubit Function()? notificationSettingsCubitFactory;
+  final ManageProfileCubit Function()? manageProfileCubitFactory;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -224,6 +201,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       authStateNotifier: _authStateNotifier,
       observers: [analyticsService.observer],
       initialLocation: widget.initialLocation,
+      homeCubitFactory: widget.homeCubitFactory,
+      peopleCubitFactory: widget.peopleCubitFactory,
+      remindersCubitFactory: widget.remindersCubitFactory,
+      accountCubitFactory: widget.accountCubitFactory,
+      createReminderCubitFactory: widget.createReminderCubitFactory,
+      signUpCubitFactory: widget.signUpCubitFactory,
+      invitePeopleCubitFactory: widget.invitePeopleCubitFactory,
+      familySettingsCubitFactory: widget.familySettingsCubitFactory,
+      notificationSettingsCubitFactory: widget.notificationSettingsCubitFactory,
+      manageProfileCubitFactory: widget.manageProfileCubitFactory,
     );
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {

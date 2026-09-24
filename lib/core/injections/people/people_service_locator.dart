@@ -63,8 +63,8 @@ class PeopleServiceLocator {
         ),
         instanceName: 'deleteFamilyUsecase',
       )
-      ..registerSingleton<PeopleCubit>(
-        PeopleCubit(
+      ..registerLazySingleton<PeopleCubit>(
+        () => PeopleCubit(
           getPeopleUsecase: sl(instanceName: 'getPeopleUsecase'),
           createFamilyUsecase: sl(instanceName: 'createFamilyUsecase'),
           joinFamilyUsecase: sl(instanceName: 'joinFamilyUsecase'),
@@ -72,8 +72,8 @@ class PeopleServiceLocator {
         ),
         instanceName: 'peopleCubit',
       )
-      ..registerSingleton<FamilySettingsCubit>(
-        FamilySettingsCubit(
+      ..registerLazySingleton<FamilySettingsCubit>(
+        () => FamilySettingsCubit(
           getPeopleUsecase: sl(instanceName: 'getPeopleUsecase'),
           getMyFamilyIdUsecase: sl(instanceName: 'getMyFamilyIdUsecase'),
           updateFamilyNameUsecase: sl(instanceName: 'updateFamilyNameUsecase'),
@@ -83,8 +83,10 @@ class PeopleServiceLocator {
         ),
         instanceName: 'familySettingsCubit',
       )
-      ..registerSingleton<InvitePeopleCubit>(
-        InvitePeopleCubit(edgetFunctions: sl(instanceName: 'edgetFunctions')),
+      ..registerLazySingleton<InvitePeopleCubit>(
+        () => InvitePeopleCubit(
+          edgetFunctions: sl(instanceName: 'edgetFunctions'),
+        ),
         instanceName: 'invitePeopleCubit',
       );
   }

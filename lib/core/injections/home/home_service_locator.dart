@@ -34,8 +34,8 @@ class HomeServiceLocator {
         ),
         instanceName: 'hasRemindersUsecase',
       )
-      ..registerSingleton<HomeCubit>(
-        HomeCubit(
+      ..registerLazySingleton<HomeCubit>(
+        () => HomeCubit(
           getHomeDataUsecase: sl(instanceName: 'getHomeDataUsecase'),
           hasRemindersUsecase: sl(instanceName: 'hasRemindersUsecase'),
         ),

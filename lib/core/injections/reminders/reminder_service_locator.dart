@@ -66,8 +66,8 @@ class ReminderServiceLocator {
         ),
         instanceName: 'updateReminderUsecase',
       )
-      ..registerSingleton<RemindersCubit>(
-        RemindersCubit(
+      ..registerLazySingleton<RemindersCubit>(
+        () => RemindersCubit(
           getReminderUsecase: sl(instanceName: 'getReminderUsecase'),
           peopleRepository: sl<PeopleRepository>(
             instanceName: 'peopleRepositoryImpl',
@@ -80,8 +80,8 @@ class ReminderServiceLocator {
         ),
         instanceName: 'remindersCubit',
       )
-      ..registerSingleton<CreateReminderCubit>(
-        CreateReminderCubit(
+      ..registerLazySingleton<CreateReminderCubit>(
+        () => CreateReminderCubit(
           createReminderUsecase: sl(instanceName: 'createReminderUsecase'),
           updateReminderUsecase: sl(instanceName: 'updateReminderUsecase'),
           authService: sl<AuthService>(instanceName: 'authService'),

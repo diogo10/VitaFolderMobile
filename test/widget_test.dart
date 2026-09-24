@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
@@ -279,48 +278,44 @@ Widget _pumpApp() {
     familyName: '',
     inviteCode: '',
   );
-  return MultiBlocProvider(
-    providers: [
-      BlocProvider<HomeCubit>(
-        create: (_) => HomeCubit(
-          getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
-            instanceName: 'getHomeDataUsecase',
-          ),
-          hasRemindersUsecase: HasRemindersUsecase(
-            authService: fakeAuth,
-            peopleRepository: fakePeople,
-            reminderRepository: fakeReminders,
-          ),
-        ),
-      ),
-      BlocProvider<RemindersCubit>(
-        create: (_) => RemindersCubit(
-          getReminderUsecase: GetReminderUsecase(
-            repository: fakeReminders,
-            peopleRepository: fakePeople,
-          ),
-          peopleRepository: fakePeople,
-          authService: fakeAuth,
-          reminderRepository: fakeReminders,
-          notificationService: _NoopNotificationService(),
-        ),
-      ),
-      BlocProvider<PeopleCubit>(
-        create: (_) => PeopleCubit(
-          getPeopleUsecase: GetPeopleUsecase(repository: emptyFamilyPeople),
-          createFamilyUsecase: CreateFamilyUsecase(
-            repository: emptyFamilyPeople,
-          ),
-          joinFamilyUsecase: JoinFamilyUsecase(repository: emptyFamilyPeople),
-          authService: fakeAuth,
-        ),
-      ),
-      BlocProvider<AccountCubit>(
-        create: (_) =>
-            AccountCubit(authService: fakeAuth, peopleRepository: fakePeople),
-      ),
-    ],
-    child: const MyApp(onboardingCompleted: true),
+  // Route-scoped cubits (see createRouter): factories resolve when the
+  // shell builds its branches instead of eagerly at cold start.
+  final homeCubit = HomeCubit(
+    getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
+      instanceName: 'getHomeDataUsecase',
+    ),
+    hasRemindersUsecase: HasRemindersUsecase(
+      authService: fakeAuth,
+      peopleRepository: fakePeople,
+      reminderRepository: fakeReminders,
+    ),
+  );
+  final remindersCubit = RemindersCubit(
+    getReminderUsecase: GetReminderUsecase(
+      repository: fakeReminders,
+      peopleRepository: fakePeople,
+    ),
+    peopleRepository: fakePeople,
+    authService: fakeAuth,
+    reminderRepository: fakeReminders,
+    notificationService: _NoopNotificationService(),
+  );
+  final peopleCubit = PeopleCubit(
+    getPeopleUsecase: GetPeopleUsecase(repository: emptyFamilyPeople),
+    createFamilyUsecase: CreateFamilyUsecase(repository: emptyFamilyPeople),
+    joinFamilyUsecase: JoinFamilyUsecase(repository: emptyFamilyPeople),
+    authService: fakeAuth,
+  );
+  final accountCubit = AccountCubit(
+    authService: fakeAuth,
+    peopleRepository: fakePeople,
+  );
+  return MyApp(
+    onboardingCompleted: true,
+    homeCubitFactory: () => homeCubit,
+    remindersCubitFactory: () => remindersCubit,
+    peopleCubitFactory: () => peopleCubit,
+    accountCubitFactory: () => accountCubit,
   );
 }
 
@@ -328,46 +323,42 @@ Widget _pumpAppWithOnboarding() {
   final fakeAuth = _FakeAuthService();
   final fakePeople = _FakePeopleRepository();
   final fakeReminders = _FakeReminderRepository();
-  return MultiBlocProvider(
-    providers: [
-      BlocProvider<HomeCubit>(
-        create: (_) => HomeCubit(
-          getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
-            instanceName: 'getHomeDataUsecase',
-          ),
-          hasRemindersUsecase: HasRemindersUsecase(
-            authService: fakeAuth,
-            peopleRepository: fakePeople,
-            reminderRepository: fakeReminders,
-          ),
-        ),
-      ),
-      BlocProvider<RemindersCubit>(
-        create: (_) => RemindersCubit(
-          getReminderUsecase: GetReminderUsecase(
-            repository: fakeReminders,
-            peopleRepository: fakePeople,
-          ),
-          peopleRepository: fakePeople,
-          authService: fakeAuth,
-          reminderRepository: fakeReminders,
-          notificationService: _NoopNotificationService(),
-        ),
-      ),
-      BlocProvider<PeopleCubit>(
-        create: (_) => PeopleCubit(
-          getPeopleUsecase: GetPeopleUsecase(repository: fakePeople),
-          createFamilyUsecase: CreateFamilyUsecase(repository: fakePeople),
-          joinFamilyUsecase: JoinFamilyUsecase(repository: fakePeople),
-          authService: fakeAuth,
-        ),
-      ),
-      BlocProvider<AccountCubit>(
-        create: (_) =>
-            AccountCubit(authService: fakeAuth, peopleRepository: fakePeople),
-      ),
-    ],
-    child: const MyApp(onboardingCompleted: false),
+  final homeCubit = HomeCubit(
+    getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
+      instanceName: 'getHomeDataUsecase',
+    ),
+    hasRemindersUsecase: HasRemindersUsecase(
+      authService: fakeAuth,
+      peopleRepository: fakePeople,
+      reminderRepository: fakeReminders,
+    ),
+  );
+  final remindersCubit = RemindersCubit(
+    getReminderUsecase: GetReminderUsecase(
+      repository: fakeReminders,
+      peopleRepository: fakePeople,
+    ),
+    peopleRepository: fakePeople,
+    authService: fakeAuth,
+    reminderRepository: fakeReminders,
+    notificationService: _NoopNotificationService(),
+  );
+  final peopleCubit = PeopleCubit(
+    getPeopleUsecase: GetPeopleUsecase(repository: fakePeople),
+    createFamilyUsecase: CreateFamilyUsecase(repository: fakePeople),
+    joinFamilyUsecase: JoinFamilyUsecase(repository: fakePeople),
+    authService: fakeAuth,
+  );
+  final accountCubit = AccountCubit(
+    authService: fakeAuth,
+    peopleRepository: fakePeople,
+  );
+  return MyApp(
+    onboardingCompleted: false,
+    homeCubitFactory: () => homeCubit,
+    remindersCubitFactory: () => remindersCubit,
+    peopleCubitFactory: () => peopleCubit,
+    accountCubitFactory: () => accountCubit,
   );
 }
 

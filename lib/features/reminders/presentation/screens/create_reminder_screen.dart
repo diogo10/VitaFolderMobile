@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
@@ -278,12 +279,36 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
     );
   }
 
+  // The create-reminder route only provides its editor cubit; the tab
+  // cubits live in their own StatefulShellBranch subtrees. Refresh them
+  // through the shared GetIt singletons so a save is visible when the user
+  // returns to a tab. Tabs never visited load on first visit instead.
   void _refreshLists(BuildContext context) {
-    unawaited(context.read<RemindersCubit>().getReminders());
+    try {
+      unawaited(context.read<RemindersCubit>().getReminders());
+    } on Object catch (_) {
+      try {
+        unawaited(
+          slInstance<RemindersCubit>(
+            instanceName: 'remindersCubit',
+          ).getReminders(),
+        );
+      } on Object catch (_) {
+        // Reminders tab never visited: it loads on first visit.
+      }
+    }
     try {
       unawaited(context.read<HomeCubit>().getHomeData(isRefresh: true));
     } on Object catch (_) {
-      // HomeCubit is not in scope when opened from Reminders tab.
+      try {
+        unawaited(
+          slInstance<HomeCubit>(
+            instanceName: 'homeCubit',
+          ).getHomeData(isRefresh: true),
+        );
+      } on Object catch (_) {
+        // HomeCubit is not in scope when opened from Reminders tab.
+      }
     }
   }
 
