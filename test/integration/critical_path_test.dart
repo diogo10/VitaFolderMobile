@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
@@ -10,6 +9,7 @@ import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
@@ -185,38 +185,46 @@ void main() {
     when(
       () => hasReminders(),
     ).thenAnswer((_) async => const Right(false));
-    return MultiBlocProvider(
-      providers: [
-        Provider<AuthService>.value(value: authService),
-        BlocProvider<HomeCubit>(
-          create: (_) => HomeCubit(
-            getHomeDataUsecase: getHomeData,
-            hasRemindersUsecase: hasReminders,
-          ),
-        ),
-        BlocProvider<RemindersCubit>(
-          create: (_) => RemindersCubit(
-            getReminderUsecase: getReminderUsecase,
-            peopleRepository: peopleRepository,
-            authService: authService,
-            reminderRepository: _MockReminderRepository(),
-            notificationService: notifications,
-          ),
-        ),
-        BlocProvider<PeopleCubit>(
-          create: (_) => PeopleCubit(
-            getPeopleUsecase: getPeopleUsecase,
-            createFamilyUsecase: _MockCreateFamilyUsecase(),
-            joinFamilyUsecase: _MockJoinFamilyUsecase(),
-            authService: authService,
-          ),
-        ),
-      ],
+    // Route-scoped cubits: only the visited route's factory is resolved,
+    // so untouched tabs stay unbuilt until first navigation.
+    final homeCubit = HomeCubit(
+      getHomeDataUsecase: getHomeData,
+      hasRemindersUsecase: hasReminders,
+    );
+    final remindersCubit = RemindersCubit(
+      getReminderUsecase: getReminderUsecase,
+      peopleRepository: peopleRepository,
+      authService: authService,
+      reminderRepository: _MockReminderRepository(),
+      notificationService: notifications,
+    );
+    final peopleCubit = PeopleCubit(
+      getPeopleUsecase: getPeopleUsecase,
+      createFamilyUsecase: _MockCreateFamilyUsecase(),
+      joinFamilyUsecase: _MockJoinFamilyUsecase(),
+      authService: authService,
+    );
+    final accountCubit = AccountCubit(
+      authService: authService,
+      peopleRepository: peopleRepository,
+    );
+    addTearDown(() async {
+      await homeCubit.close();
+      await remindersCubit.close();
+      await peopleCubit.close();
+      await accountCubit.close();
+    });
+    return Provider<AuthService>.value(
+      value: authService,
       child: MyApp(
         onboardingCompleted: onboardingCompleted,
         authStateNotifier: authStateNotifier,
         notificationService: notifications,
         initialLocation: initialLocation,
+        homeCubitFactory: () => homeCubit,
+        remindersCubitFactory: () => remindersCubit,
+        peopleCubitFactory: () => peopleCubit,
+        accountCubitFactory: () => accountCubit,
       ),
     );
   }

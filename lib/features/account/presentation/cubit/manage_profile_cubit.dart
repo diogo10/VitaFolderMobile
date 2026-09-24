@@ -18,4 +18,10 @@ class ManageProfileCubit extends Cubit<ManageProfileState> {
       emit(ManageProfileError(message: e.toString()));
     }
   }
+
+  /// Returns the current display name for pre-filling the manage-profile
+  /// form when the route was reached without a coordinator snapshot (e.g.
+  /// deep-link entry while the account tab is unbuilt). Best-effort:
+  /// `null` keeps the field empty but editable.
+  Future<String?> currentName() => _authService.getProfileName();
 }

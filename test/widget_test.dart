@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
@@ -28,6 +27,7 @@ import 'package:house_mira/features/people/domain/usecase/join_family_usecase.da
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_state.dart'
     show PeopleEmpty;
+import 'package:house_mira/features/people/presentation/views/invite_people_screen.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -279,48 +279,50 @@ Widget _pumpApp() {
     familyName: '',
     inviteCode: '',
   );
-  return MultiBlocProvider(
-    providers: [
-      BlocProvider<HomeCubit>(
-        create: (_) => HomeCubit(
-          getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
-            instanceName: 'getHomeDataUsecase',
-          ),
-          hasRemindersUsecase: HasRemindersUsecase(
-            authService: fakeAuth,
-            peopleRepository: fakePeople,
-            reminderRepository: fakeReminders,
-          ),
-        ),
-      ),
-      BlocProvider<RemindersCubit>(
-        create: (_) => RemindersCubit(
-          getReminderUsecase: GetReminderUsecase(
-            repository: fakeReminders,
-            peopleRepository: fakePeople,
-          ),
-          peopleRepository: fakePeople,
-          authService: fakeAuth,
-          reminderRepository: fakeReminders,
-          notificationService: _NoopNotificationService(),
-        ),
-      ),
-      BlocProvider<PeopleCubit>(
-        create: (_) => PeopleCubit(
-          getPeopleUsecase: GetPeopleUsecase(repository: emptyFamilyPeople),
-          createFamilyUsecase: CreateFamilyUsecase(
-            repository: emptyFamilyPeople,
-          ),
-          joinFamilyUsecase: JoinFamilyUsecase(repository: emptyFamilyPeople),
-          authService: fakeAuth,
-        ),
-      ),
-      BlocProvider<AccountCubit>(
-        create: (_) =>
-            AccountCubit(authService: fakeAuth, peopleRepository: fakePeople),
-      ),
-    ],
-    child: const MyApp(onboardingCompleted: true),
+  // Route-scoped cubits (see createRouter): factories resolve when the
+  // shell builds its branches instead of eagerly at cold start.
+  final homeCubit = HomeCubit(
+    getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
+      instanceName: 'getHomeDataUsecase',
+    ),
+    hasRemindersUsecase: HasRemindersUsecase(
+      authService: fakeAuth,
+      peopleRepository: fakePeople,
+      reminderRepository: fakeReminders,
+    ),
+  );
+  final remindersCubit = RemindersCubit(
+    getReminderUsecase: GetReminderUsecase(
+      repository: fakeReminders,
+      peopleRepository: fakePeople,
+    ),
+    peopleRepository: fakePeople,
+    authService: fakeAuth,
+    reminderRepository: fakeReminders,
+    notificationService: _NoopNotificationService(),
+  );
+  final peopleCubit = PeopleCubit(
+    getPeopleUsecase: GetPeopleUsecase(repository: emptyFamilyPeople),
+    createFamilyUsecase: CreateFamilyUsecase(repository: emptyFamilyPeople),
+    joinFamilyUsecase: JoinFamilyUsecase(repository: emptyFamilyPeople),
+    authService: fakeAuth,
+  );
+  final accountCubit = AccountCubit(
+    authService: fakeAuth,
+    peopleRepository: fakePeople,
+  );
+  // Tab factories return shared instances via BlocProvider.value (never
+  // closed by the provider), so close them manually like other suites.
+  addTearDown(homeCubit.close);
+  addTearDown(remindersCubit.close);
+  addTearDown(peopleCubit.close);
+  addTearDown(accountCubit.close);
+  return MyApp(
+    onboardingCompleted: true,
+    homeCubitFactory: () => homeCubit,
+    remindersCubitFactory: () => remindersCubit,
+    peopleCubitFactory: () => peopleCubit,
+    accountCubitFactory: () => accountCubit,
   );
 }
 
@@ -328,46 +330,46 @@ Widget _pumpAppWithOnboarding() {
   final fakeAuth = _FakeAuthService();
   final fakePeople = _FakePeopleRepository();
   final fakeReminders = _FakeReminderRepository();
-  return MultiBlocProvider(
-    providers: [
-      BlocProvider<HomeCubit>(
-        create: (_) => HomeCubit(
-          getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
-            instanceName: 'getHomeDataUsecase',
-          ),
-          hasRemindersUsecase: HasRemindersUsecase(
-            authService: fakeAuth,
-            peopleRepository: fakePeople,
-            reminderRepository: fakeReminders,
-          ),
-        ),
-      ),
-      BlocProvider<RemindersCubit>(
-        create: (_) => RemindersCubit(
-          getReminderUsecase: GetReminderUsecase(
-            repository: fakeReminders,
-            peopleRepository: fakePeople,
-          ),
-          peopleRepository: fakePeople,
-          authService: fakeAuth,
-          reminderRepository: fakeReminders,
-          notificationService: _NoopNotificationService(),
-        ),
-      ),
-      BlocProvider<PeopleCubit>(
-        create: (_) => PeopleCubit(
-          getPeopleUsecase: GetPeopleUsecase(repository: fakePeople),
-          createFamilyUsecase: CreateFamilyUsecase(repository: fakePeople),
-          joinFamilyUsecase: JoinFamilyUsecase(repository: fakePeople),
-          authService: fakeAuth,
-        ),
-      ),
-      BlocProvider<AccountCubit>(
-        create: (_) =>
-            AccountCubit(authService: fakeAuth, peopleRepository: fakePeople),
-      ),
-    ],
-    child: const MyApp(onboardingCompleted: false),
+  final homeCubit = HomeCubit(
+    getHomeDataUsecase: GetIt.instance<GetHomeDataUsecase>(
+      instanceName: 'getHomeDataUsecase',
+    ),
+    hasRemindersUsecase: HasRemindersUsecase(
+      authService: fakeAuth,
+      peopleRepository: fakePeople,
+      reminderRepository: fakeReminders,
+    ),
+  );
+  final remindersCubit = RemindersCubit(
+    getReminderUsecase: GetReminderUsecase(
+      repository: fakeReminders,
+      peopleRepository: fakePeople,
+    ),
+    peopleRepository: fakePeople,
+    authService: fakeAuth,
+    reminderRepository: fakeReminders,
+    notificationService: _NoopNotificationService(),
+  );
+  final peopleCubit = PeopleCubit(
+    getPeopleUsecase: GetPeopleUsecase(repository: fakePeople),
+    createFamilyUsecase: CreateFamilyUsecase(repository: fakePeople),
+    joinFamilyUsecase: JoinFamilyUsecase(repository: fakePeople),
+    authService: fakeAuth,
+  );
+  final accountCubit = AccountCubit(
+    authService: fakeAuth,
+    peopleRepository: fakePeople,
+  );
+  addTearDown(homeCubit.close);
+  addTearDown(remindersCubit.close);
+  addTearDown(peopleCubit.close);
+  addTearDown(accountCubit.close);
+  return MyApp(
+    onboardingCompleted: false,
+    homeCubitFactory: () => homeCubit,
+    remindersCubitFactory: () => remindersCubit,
+    peopleCubitFactory: () => peopleCubit,
+    accountCubitFactory: () => accountCubit,
   );
 }
 
@@ -463,6 +465,9 @@ void main() {
       await tester.pump();
       await tester.pump();
       expect(find.text('Fam'), findsOneWidget);
+      // Tab taps switch shell branches; invite screens must never be
+      // pushed over the shell by bottom-navigation.
+      expect(find.byType(InvitePeopleScreen), findsNothing);
     });
   });
 

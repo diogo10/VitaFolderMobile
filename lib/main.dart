@@ -2,20 +2,19 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/config/app_config.dart';
 import 'package:house_mira/core/config/firebase_options_provider.dart';
-import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/observability/crash_reporter.dart';
 import 'package:house_mira/core/observability/performance_tracer.dart';
 import 'package:house_mira/core/router/app_router.dart';
 import 'package:house_mira/core/router/app_routes.dart';
+import 'package:house_mira/core/router/tab_refresh_coordinator.dart';
 import 'package:house_mira/features/account/application/notification_permission_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/manage_profile_cubit.dart';
@@ -111,56 +110,12 @@ void main() async {
   final onboardingCompleted = await datasource.isOnboardingCompleted();
 
   runApp(
-    MultiBlocProvider(
-      providers: [
-        Provider(
-          create: (_) => slInstance<AuthService>(instanceName: 'authService'),
-        ),
-        BlocProvider(
-          create: (_) =>
-              slInstance<RemindersCubit>(instanceName: 'remindersCubit'),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<CreateReminderCubit>(
-            instanceName: 'createReminderCubit',
-          ),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<HomeCubit>(instanceName: 'homeCubit'),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<PeopleCubit>(instanceName: 'peopleCubit'),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<AccountCubit>(instanceName: 'accountCubit'),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<ManageProfileCubit>(
-            instanceName: 'manageProfileCubit',
-          ),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<NotificationSettingsCubit>(
-            instanceName: 'notificationSettingsCubit',
-          ),
-        ),
-        BlocProvider(
-          create: (_) => slInstance<FamilySettingsCubit>(
-            instanceName: 'familySettingsCubit',
-          ),
-        ),
-        BlocProvider(
-          create: (_) =>
-              SignUpCubit(slInstance<AuthService>(instanceName: 'authService')),
-        ),
-        BlocProvider(
-          create: (_) => InvitePeopleCubit(
-            edgetFunctions: slInstance<EdgetFunctions>(
-              instanceName: 'edgetFunctions',
-            ),
-          ),
-        ),
-      ],
+    // Cold start stays lean: only the global AuthService (guest gating in
+    // every tab) is provided here. Feature cubits are scoped to their
+    // StatefulShellBranch / screen route in [createRouter] and first built
+    // when that route is visited.
+    Provider(
+      create: (_) => slInstance<AuthService>(instanceName: 'authService'),
       child: MyApp(onboardingCompleted: onboardingCompleted),
     ),
   );
@@ -173,6 +128,17 @@ class MyApp extends StatefulWidget {
     this.authStateNotifier,
     this.notificationService,
     this.initialLocation,
+    this.refreshCoordinator,
+    this.homeCubitFactory,
+    this.peopleCubitFactory,
+    this.remindersCubitFactory,
+    this.accountCubitFactory,
+    this.createReminderCubitFactory,
+    this.signUpCubitFactory,
+    this.invitePeopleCubitFactory,
+    this.familySettingsCubitFactory,
+    this.notificationSettingsCubitFactory,
+    this.manageProfileCubitFactory,
   });
   final bool onboardingCompleted;
   final AuthStateNotifier? authStateNotifier;
@@ -185,6 +151,26 @@ class MyApp extends StatefulWidget {
   /// location, e.g. an `/invite/<code>` App Link on cold start.
   final String? initialLocation;
 
+  /// Cross-tab refresh coordinator shared with [createRouter]. When omitted
+  /// a fresh coordinator is created; its reminders callback stays `null`
+  /// until the reminders tab builds, so resume-resync never instantiates an
+  /// unvisited tab graph.
+  final TabRefreshCoordinator? refreshCoordinator;
+
+  /// Testing seams for the route-scoped cubits (see [createRouter] factory
+  /// contract): tab factories must return a shared instance, one-shot
+  /// factories must return a fresh instance per call.
+  final HomeCubit Function()? homeCubitFactory;
+  final PeopleCubit Function()? peopleCubitFactory;
+  final RemindersCubit Function()? remindersCubitFactory;
+  final AccountCubit Function()? accountCubitFactory;
+  final CreateReminderCubit Function()? createReminderCubitFactory;
+  final SignUpCubit Function()? signUpCubitFactory;
+  final InvitePeopleCubit Function()? invitePeopleCubitFactory;
+  final FamilySettingsCubit Function()? familySettingsCubitFactory;
+  final NotificationSettingsCubit Function()? notificationSettingsCubitFactory;
+  final ManageProfileCubit Function()? manageProfileCubitFactory;
+
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -194,6 +180,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late final AuthStateNotifier _authStateNotifier;
   bool _ownsAuthStateNotifier = false;
   late final GoRouter _router;
+  late final TabRefreshCoordinator _refreshCoordinator;
   StreamSubscription<String?>? _notificationTapSubscription;
 
   @override
@@ -214,6 +201,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       );
       _ownsAuthStateNotifier = true;
     }
+    _refreshCoordinator = widget.refreshCoordinator ?? TabRefreshCoordinator();
     _syncCrashUserId();
     _authStateNotifier.addListener(_syncCrashUserId);
     final analyticsService = slInstance<AnalyticsService>(
@@ -224,6 +212,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       authStateNotifier: _authStateNotifier,
       observers: [analyticsService.observer],
       initialLocation: widget.initialLocation,
+      refreshCoordinator: _refreshCoordinator,
+      homeCubitFactory: widget.homeCubitFactory,
+      peopleCubitFactory: widget.peopleCubitFactory,
+      remindersCubitFactory: widget.remindersCubitFactory,
+      accountCubitFactory: widget.accountCubitFactory,
+      createReminderCubitFactory: widget.createReminderCubitFactory,
+      signUpCubitFactory: widget.signUpCubitFactory,
+      invitePeopleCubitFactory: widget.invitePeopleCubitFactory,
+      familySettingsCubitFactory: widget.familySettingsCubitFactory,
+      notificationSettingsCubitFactory: widget.notificationSettingsCubitFactory,
+      manageProfileCubitFactory: widget.manageProfileCubitFactory,
     );
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -333,14 +332,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   /// Re-arms alarms wiped while the app was away (force-stop, reboot,
-  /// time-zone change). Best-effort: never disrupts the UI. Traced so
-  /// silent alarm loss shows up in Performance, failures in Crashlytics.
+  /// time-zone change). Best-effort: never disrupts the UI. Guarded by the
+  /// coordinator so an unvisited reminders tab stays unbuilt; failures are
+  /// reported instead of swallowed silently.
   Future<void> _resyncNotifications() async {
+    final resync = _refreshCoordinator.resyncReminderNotifications;
+    if (resync == null) return;
     try {
       await _tracer.trace('reminder-resync-resume', (trace) async {
-        await slInstance<RemindersCubit>(
-          instanceName: 'remindersCubit',
-        ).resyncNotifications();
+        await resync();
         await trace.putAttribute('trigger', 'app_resume');
       });
     } on Object catch (error, stackTrace) {

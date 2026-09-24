@@ -5,15 +5,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/widgets/sand/sand_header.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
-import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
-import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
 import 'package:house_mira/features/account/presentation/cubit/manage_profile_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/manage_profile_state.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class ManageProfileScreen extends StatefulWidget {
-  const ManageProfileScreen({super.key});
+  const ManageProfileScreen({super.key, this.initialName, this.onProfileSaved});
+
+  /// Display name captured from the account tab at route-build time.
+  /// The manage-profile route no longer shares the account cubit instance,
+  /// so the initial value travels as immutable data instead. When `null`
+  /// (e.g. deep-link entry with the account tab unbuilt), the screen
+  /// preloads the name from the profile via [ManageProfileCubit] instead
+  /// of leaving the field empty.
+  final String? initialName;
+
+  /// Refreshes the account tab after a successful save. Wired by the route
+  /// builder to the coordinator's visited-tab refresh; no-op when the
+  /// account tab is somehow unbuilt.
+  final void Function()? onProfileSaved;
 
   @override
   State<ManageProfileScreen> createState() => _ManageProfileScreenState();
@@ -26,9 +37,27 @@ class _ManageProfileScreenState extends State<ManageProfileScreen> {
   @override
   void initState() {
     super.initState();
-    final accountState = context.read<AccountCubit>().state;
-    if (accountState is AccountLoaded) {
-      _nameController.text = accountState.userName;
+    final initial = widget.initialName;
+    if (initial != null && initial.isNotEmpty) {
+      _nameController.text = initial;
+    } else {
+      // Deep-link entry bypasses the account tab, so no coordinator
+      // snapshot exists: preload from the profile via the cubit instead
+      // of leaving the field empty.
+      unawaited(_preloadName());
+    }
+  }
+
+  /// Best-effort preload: failures keep the field empty but editable.
+  Future<void> _preloadName() async {
+    try {
+      final name = await context.read<ManageProfileCubit>().currentName();
+      if (!mounted) return;
+      if (name != null && name.isNotEmpty && _nameController.text.isEmpty) {
+        _nameController.text = name;
+      }
+    } on Object catch (_) {
+      // Best-effort preload.
     }
   }
 
@@ -52,7 +81,7 @@ class _ManageProfileScreenState extends State<ManageProfileScreen> {
       body: BlocConsumer<ManageProfileCubit, ManageProfileState>(
         listener: (context, state) {
           if (state is ManageProfileSuccess) {
-            unawaited(context.read<AccountCubit>().loadAccount());
+            widget.onProfileSaved?.call();
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(

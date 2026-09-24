@@ -6,13 +6,16 @@ import 'package:house_mira/features/account/presentation/cubit/account_cubit.dar
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
 import 'package:house_mira/features/account/presentation/views/account_loaded_widget.dart';
 import 'package:house_mira/features/account/presentation/views/no_account_view.dart';
-import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
-import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
-import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class AccountView extends StatefulWidget {
-  const AccountView({super.key});
+  const AccountView({super.key, this.onAuthChanged});
+
+  /// Refreshes the visited tabs after sign-in/out or account deletion.
+  /// Wired by the route builder to the coordinator's refreshAll; `null`
+  /// until a tab has been visited, in which case there is nothing to refresh
+  /// (tabs load on first visit).
+  final void Function()? onAuthChanged;
 
   @override
   State<AccountView> createState() => _AccountViewState();
@@ -25,14 +28,12 @@ class _AccountViewState extends State<AccountView> {
     unawaited(context.read<AccountCubit>().loadAccount());
   }
 
+  // Sibling tab cubits live in their own StatefulShellBranch subtrees, so
+  // they are not in this view's provider scope. The route builder injects
+  // [onAuthChanged], which refreshes only visited tabs (unvisited tabs stay
+  // unbuilt and load on first visit).
   void _refreshAllTabs() {
-    unawaited(context.read<HomeCubit>().getHomeData(isRefresh: true));
-    unawaited(context.read<PeopleCubit>().getPeople(isRefresh: true));
-
-    final remindersCubit = context.read<RemindersCubit>();
-    unawaited(
-      remindersCubit.getReminders(type: remindersCubit.selectedType),
-    );
+    widget.onAuthChanged?.call();
   }
 
   @override

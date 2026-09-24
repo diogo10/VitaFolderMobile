@@ -11,7 +11,6 @@ import 'package:house_mira/features/reminders/domain/repository/reminder_reposit
 import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/domain/usecase/update_reminder_usecase.dart';
-import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 
 class ReminderServiceLocator {
@@ -66,8 +65,12 @@ class ReminderServiceLocator {
         ),
         instanceName: 'updateReminderUsecase',
       )
-      ..registerSingleton<RemindersCubit>(
-        RemindersCubit(
+      // Tab cubits stay shared lazy singletons (see createRouter factory
+      // contract). One-shot editor cubits (CreateReminderCubit) are built
+      // fresh per visit by the route's default factory, never registered
+      // here, so a prior Success/Error cannot leak into the next visit.
+      ..registerLazySingleton<RemindersCubit>(
+        () => RemindersCubit(
           getReminderUsecase: sl(instanceName: 'getReminderUsecase'),
           peopleRepository: sl<PeopleRepository>(
             instanceName: 'peopleRepositoryImpl',
@@ -79,18 +82,6 @@ class ReminderServiceLocator {
           crashReporter: crashReporter,
         ),
         instanceName: 'remindersCubit',
-      )
-      ..registerSingleton<CreateReminderCubit>(
-        CreateReminderCubit(
-          createReminderUsecase: sl(instanceName: 'createReminderUsecase'),
-          updateReminderUsecase: sl(instanceName: 'updateReminderUsecase'),
-          authService: sl<AuthService>(instanceName: 'authService'),
-          peopleRepository: sl<PeopleRepository>(
-            instanceName: 'peopleRepositoryImpl',
-          ),
-          notificationService: sl(instanceName: 'reminderNotificationService'),
-        ),
-        instanceName: 'createReminderCubit',
       );
   }
 }

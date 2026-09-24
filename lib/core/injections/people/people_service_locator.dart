@@ -9,8 +9,6 @@ import 'package:house_mira/features/people/domain/usecase/get_people_usecase.dar
 import 'package:house_mira/features/people/domain/usecase/join_family_usecase.dart';
 import 'package:house_mira/features/people/domain/usecase/remove_member_usecase.dart';
 import 'package:house_mira/features/people/domain/usecase/update_family_name_usecase.dart';
-import 'package:house_mira/features/people/presentation/cubit/family_settings_cubit.dart';
-import 'package:house_mira/features/people/presentation/cubit/invite_people_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 
 class PeopleServiceLocator {
@@ -63,29 +61,17 @@ class PeopleServiceLocator {
         ),
         instanceName: 'deleteFamilyUsecase',
       )
-      ..registerSingleton<PeopleCubit>(
-        PeopleCubit(
+      ..registerLazySingleton<PeopleCubit>(
+        () => PeopleCubit(
           getPeopleUsecase: sl(instanceName: 'getPeopleUsecase'),
           createFamilyUsecase: sl(instanceName: 'createFamilyUsecase'),
           joinFamilyUsecase: sl(instanceName: 'joinFamilyUsecase'),
           authService: sl(instanceName: 'authService'),
         ),
         instanceName: 'peopleCubit',
-      )
-      ..registerSingleton<FamilySettingsCubit>(
-        FamilySettingsCubit(
-          getPeopleUsecase: sl(instanceName: 'getPeopleUsecase'),
-          getMyFamilyIdUsecase: sl(instanceName: 'getMyFamilyIdUsecase'),
-          updateFamilyNameUsecase: sl(instanceName: 'updateFamilyNameUsecase'),
-          removeMemberUsecase: sl(instanceName: 'removeMemberUsecase'),
-          deleteFamilyUsecase: sl(instanceName: 'deleteFamilyUsecase'),
-          authService: sl(instanceName: 'authService'),
-        ),
-        instanceName: 'familySettingsCubit',
-      )
-      ..registerSingleton<InvitePeopleCubit>(
-        InvitePeopleCubit(edgetFunctions: sl(instanceName: 'edgetFunctions')),
-        instanceName: 'invitePeopleCubit',
       );
+    // One-shot cubits (FamilySettingsCubit, InvitePeopleCubit) are built
+    // fresh per visit by the route's default factory (see createRouter
+    // factory contract) and never registered here.
   }
 }

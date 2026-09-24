@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +9,7 @@ import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/core/router/app_router.dart';
+import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
@@ -25,9 +25,12 @@ import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart'
 import 'package:house_mira/features/people/presentation/views/invite_people_screen.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
+import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/domain/usecase/update_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/screens/create_reminder_screen.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -43,6 +46,10 @@ class _MockCreateFamilyUsecase extends Mock implements CreateFamilyUsecase {}
 class _MockJoinFamilyUsecase extends Mock implements JoinFamilyUsecase {}
 
 class _MockEdgetFunctions extends Mock implements EdgetFunctions {}
+
+class _MockGetReminderUsecase extends Mock implements GetReminderUsecase {}
+
+class _MockReminderRepository extends Mock implements ReminderRepository {}
 
 class _MockCreateReminderUsecase extends Mock
     implements CreateReminderUsecase {}
@@ -73,6 +80,24 @@ void main() {
   });
 
   Widget pumpRouter(GoRouter router) {
+    return Provider<AuthService>.value(
+      value: authService,
+      child: MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
+    );
+  }
+
+  /// Builds a router with route-scoped test cubits. Only the visited
+  /// route's factory is resolved: go_router builds just the active branch,
+  /// so untouched tabs and one-shot screens stay unbuilt until navigated
+  /// to (pinned by 'route-scoped cubit laziness' in app_router_test).
+  GoRouter buildRouter({
+    required AuthStateNotifier notifier,
+    String? initialLocation,
+  }) {
     final getHomeData = _MockGetHomeDataUsecase();
     final hasReminders = _MockHasRemindersUsecase();
     when(
@@ -81,45 +106,67 @@ void main() {
     when(
       () => hasReminders(),
     ).thenAnswer((_) async => const Right(false));
-    return MultiBlocProvider(
-      providers: [
-        Provider<AuthService>.value(value: authService),
-        BlocProvider<HomeCubit>(
-          create: (_) => HomeCubit(
-            getHomeDataUsecase: getHomeData,
-            hasRemindersUsecase: hasReminders,
-          ),
-        ),
-        BlocProvider<SignUpCubit>(
-          create: (_) => SignUpCubit(authService),
-        ),
-        BlocProvider<PeopleCubit>(
-          create: (_) => PeopleCubit(
-            getPeopleUsecase: getPeopleUsecase,
-            createFamilyUsecase: _MockCreateFamilyUsecase(),
-            joinFamilyUsecase: _MockJoinFamilyUsecase(),
-            authService: authService,
-          ),
-        ),
-        BlocProvider<InvitePeopleCubit>(
-          create: (_) =>
-              InvitePeopleCubit(edgetFunctions: _MockEdgetFunctions()),
-        ),
-        BlocProvider<CreateReminderCubit>(
-          create: (_) => CreateReminderCubit(
-            createReminderUsecase: _MockCreateReminderUsecase(),
-            updateReminderUsecase: _MockUpdateReminderUsecase(),
-            authService: authService,
-            peopleRepository: _FakePeopleRepository(),
-            notificationService: _FakeNotificationService(),
-          ),
-        ),
-      ],
-      child: MaterialApp.router(
-        routerConfig: router,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-      ),
+    final getReminderUsecase = _MockGetReminderUsecase();
+    when(
+      () => getReminderUsecase(any(), type: any(named: 'type')),
+    ).thenAnswer((_) async => const Right([]));
+    final peopleRepository = _FakePeopleRepository();
+    when(
+      () => peopleRepository.getFamilyIdsForUser(any()),
+    ).thenAnswer((_) async => ['fake-family']);
+    when(
+      () => peopleRepository.getMyFamilyRole(),
+    ).thenAnswer((_) async => ['member']);
+    final homeCubit = HomeCubit(
+      getHomeDataUsecase: getHomeData,
+      hasRemindersUsecase: hasReminders,
+    );
+    final peopleCubit = PeopleCubit(
+      getPeopleUsecase: getPeopleUsecase,
+      createFamilyUsecase: _MockCreateFamilyUsecase(),
+      joinFamilyUsecase: _MockJoinFamilyUsecase(),
+      authService: authService,
+    );
+    final remindersCubit = RemindersCubit(
+      getReminderUsecase: getReminderUsecase,
+      peopleRepository: peopleRepository,
+      authService: authService,
+      reminderRepository: _MockReminderRepository(),
+      notificationService: _FakeNotificationService(),
+    );
+    final accountCubit = AccountCubit(
+      authService: authService,
+      peopleRepository: peopleRepository,
+    );
+    // Factory contract (see createRouter): tab factories are shared (single
+    // instance, BlocProvider.value, closed here); one-shot factories are
+    // fresh per call (BlocProvider(create:) owns and closes them — never
+    // close manually, never return the same instance twice).
+    CreateReminderCubit buildCreateCubit() => CreateReminderCubit(
+      createReminderUsecase: _MockCreateReminderUsecase(),
+      updateReminderUsecase: _MockUpdateReminderUsecase(),
+      authService: authService,
+      peopleRepository: _FakePeopleRepository(),
+      notificationService: _FakeNotificationService(),
+    );
+    addTearDown(() async {
+      await homeCubit.close();
+      await peopleCubit.close();
+      await remindersCubit.close();
+      await accountCubit.close();
+    });
+    return createRouter(
+      onboardingCompleted: true,
+      authStateNotifier: notifier,
+      initialLocation: initialLocation,
+      homeCubitFactory: () => homeCubit,
+      peopleCubitFactory: () => peopleCubit,
+      remindersCubitFactory: () => remindersCubit,
+      accountCubitFactory: () => accountCubit,
+      signUpCubitFactory: () => SignUpCubit(authService),
+      invitePeopleCubitFactory: () =>
+          InvitePeopleCubit(edgetFunctions: _MockEdgetFunctions()),
+      createReminderCubitFactory: buildCreateCubit,
     );
   }
 
@@ -143,9 +190,8 @@ void main() {
     ) async {
       final notifier = AuthStateNotifier();
       addTearDown(notifier.dispose);
-      final router = createRouter(
-        onboardingCompleted: true,
-        authStateNotifier: notifier,
+      final router = buildRouter(
+        notifier: notifier,
         initialLocation: '/invite/ABC123',
       );
 
@@ -159,9 +205,8 @@ void main() {
     testWidgets('query code is accepted as well', (tester) async {
       final notifier = AuthStateNotifier();
       addTearDown(notifier.dispose);
-      final router = createRouter(
-        onboardingCompleted: true,
-        authStateNotifier: notifier,
+      final router = buildRouter(
+        notifier: notifier,
         initialLocation: '/invite?code=XYZ789',
       );
 
@@ -176,9 +221,8 @@ void main() {
     ) async {
       final notifier = AuthStateNotifier();
       addTearDown(notifier.dispose);
-      final router = createRouter(
-        onboardingCompleted: true,
-        authStateNotifier: notifier,
+      final router = buildRouter(
+        notifier: notifier,
         initialLocation: '/invite/!!!',
       );
 
@@ -198,9 +242,8 @@ void main() {
         authStateStream: authEvents.stream,
       );
       addTearDown(notifier.dispose);
-      final router = createRouter(
-        onboardingCompleted: true,
-        authStateNotifier: notifier,
+      final router = buildRouter(
+        notifier: notifier,
         initialLocation: '/invite/ABC123',
       );
 
@@ -227,10 +270,7 @@ void main() {
     ) async {
       final notifier = AuthStateNotifier();
       addTearDown(notifier.dispose);
-      final router = createRouter(
-        onboardingCompleted: true,
-        authStateNotifier: notifier,
-      );
+      final router = buildRouter(notifier: notifier);
 
       await tester.pumpWidget(pumpRouter(router));
       await settle(tester);
@@ -244,10 +284,7 @@ void main() {
     testWidgets('reminder-type extras pre-select the type', (tester) async {
       final notifier = AuthStateNotifier();
       addTearDown(notifier.dispose);
-      final router = createRouter(
-        onboardingCompleted: true,
-        authStateNotifier: notifier,
-      );
+      final router = buildRouter(notifier: notifier);
 
       await tester.pumpWidget(pumpRouter(router));
       await settle(tester);
@@ -267,10 +304,7 @@ void main() {
     testWidgets('reminder-type query param opens the form', (tester) async {
       final notifier = AuthStateNotifier();
       addTearDown(notifier.dispose);
-      final router = createRouter(
-        onboardingCompleted: true,
-        authStateNotifier: notifier,
-      );
+      final router = buildRouter(notifier: notifier);
 
       await tester.pumpWidget(pumpRouter(router));
       await settle(tester);
@@ -293,10 +327,7 @@ void main() {
       when(() => authService.isLoggedIn()).thenReturn(true);
       final notifier = AuthStateNotifier();
       addTearDown(notifier.dispose);
-      final router = createRouter(
-        onboardingCompleted: true,
-        authStateNotifier: notifier,
-      );
+      final router = buildRouter(notifier: notifier);
 
       await tester.pumpWidget(pumpRouter(router));
       await settle(tester);
