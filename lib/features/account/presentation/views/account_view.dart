@@ -2,18 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
 import 'package:house_mira/features/account/presentation/views/account_loaded_widget.dart';
 import 'package:house_mira/features/account/presentation/views/no_account_view.dart';
-import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
-import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
-import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class AccountView extends StatefulWidget {
-  const AccountView({super.key});
+  const AccountView({super.key, this.onAuthChanged});
+
+  /// Refreshes the visited tabs after sign-in/out or account deletion.
+  /// Wired by the route builder to the coordinator's refreshAll; `null`
+  /// until a tab has been visited, in which case there is nothing to refresh
+  /// (tabs load on first visit).
+  final void Function()? onAuthChanged;
 
   @override
   State<AccountView> createState() => _AccountViewState();
@@ -26,72 +28,12 @@ class _AccountViewState extends State<AccountView> {
     unawaited(context.read<AccountCubit>().loadAccount());
   }
 
-  // Each tab owns its cubit inside its StatefulShellBranch, so sibling
-  // cubits are not in this view's provider scope. Refresh them through the
-  // shared GetIt singletons instead; when a tab was never visited there is
-  // nothing to refresh (it loads on first visit).
+  // Sibling tab cubits live in their own StatefulShellBranch subtrees, so
+  // they are not in this view's provider scope. The route builder injects
+  // [onAuthChanged], which refreshes only visited tabs (unvisited tabs stay
+  // unbuilt and load on first visit).
   void _refreshAllTabs() {
-    _refreshHomeTab();
-    _refreshPeopleTab();
-    _refreshRemindersTab();
-  }
-
-  void _refreshHomeTab() {
-    try {
-      unawaited(context.read<HomeCubit>().getHomeData(isRefresh: true));
-      return;
-    } on Object catch (_) {
-      // Not an ancestor provider: fall back to the shared singleton.
-    }
-    try {
-      unawaited(
-        slInstance<HomeCubit>(
-          instanceName: 'homeCubit',
-        ).getHomeData(isRefresh: true),
-      );
-    } on Object catch (_) {
-      // Home tab never visited: it loads on first visit.
-    }
-  }
-
-  void _refreshPeopleTab() {
-    try {
-      unawaited(context.read<PeopleCubit>().getPeople(isRefresh: true));
-      return;
-    } on Object catch (_) {
-      // Not an ancestor provider: fall back to the shared singleton.
-    }
-    try {
-      unawaited(
-        slInstance<PeopleCubit>(
-          instanceName: 'peopleCubit',
-        ).getPeople(isRefresh: true),
-      );
-    } on Object catch (_) {
-      // People tab never visited: it loads on first visit.
-    }
-  }
-
-  void _refreshRemindersTab() {
-    try {
-      final remindersCubit = context.read<RemindersCubit>();
-      unawaited(
-        remindersCubit.getReminders(type: remindersCubit.selectedType),
-      );
-      return;
-    } on Object catch (_) {
-      // Not an ancestor provider: fall back to the shared singleton.
-    }
-    try {
-      final remindersCubit = slInstance<RemindersCubit>(
-        instanceName: 'remindersCubit',
-      );
-      unawaited(
-        remindersCubit.getReminders(type: remindersCubit.selectedType),
-      );
-    } on Object catch (_) {
-      // Reminders tab never visited: it loads on first visit.
-    }
+    widget.onAuthChanged?.call();
   }
 
   @override

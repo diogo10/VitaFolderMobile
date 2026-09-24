@@ -14,6 +14,7 @@ import 'package:house_mira/core/observability/crash_reporter.dart';
 import 'package:house_mira/core/observability/performance_tracer.dart';
 import 'package:house_mira/core/router/app_router.dart';
 import 'package:house_mira/core/router/app_routes.dart';
+import 'package:house_mira/core/router/tab_refresh_coordinator.dart';
 import 'package:house_mira/features/account/application/notification_permission_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/manage_profile_cubit.dart';
@@ -127,6 +128,7 @@ class MyApp extends StatefulWidget {
     this.authStateNotifier,
     this.notificationService,
     this.initialLocation,
+    this.refreshCoordinator,
     this.homeCubitFactory,
     this.peopleCubitFactory,
     this.remindersCubitFactory,
@@ -149,8 +151,15 @@ class MyApp extends StatefulWidget {
   /// location, e.g. an `/invite/<code>` App Link on cold start.
   final String? initialLocation;
 
-  /// Testing seams for the route-scoped cubits (see [createRouter]): each
-  /// factory defaults to the GetIt graph in production.
+  /// Cross-tab refresh coordinator shared with [createRouter]. When omitted
+  /// a fresh coordinator is created; its reminders callback stays `null`
+  /// until the reminders tab builds, so resume-resync never instantiates an
+  /// unvisited tab graph.
+  final TabRefreshCoordinator? refreshCoordinator;
+
+  /// Testing seams for the route-scoped cubits (see [createRouter] factory
+  /// contract): tab factories must return a shared instance, one-shot
+  /// factories must return a fresh instance per call.
   final HomeCubit Function()? homeCubitFactory;
   final PeopleCubit Function()? peopleCubitFactory;
   final RemindersCubit Function()? remindersCubitFactory;
@@ -171,6 +180,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late final AuthStateNotifier _authStateNotifier;
   bool _ownsAuthStateNotifier = false;
   late final GoRouter _router;
+  late final TabRefreshCoordinator _refreshCoordinator;
   StreamSubscription<String?>? _notificationTapSubscription;
 
   @override
@@ -191,6 +201,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       );
       _ownsAuthStateNotifier = true;
     }
+    _refreshCoordinator = widget.refreshCoordinator ?? TabRefreshCoordinator();
     _syncCrashUserId();
     _authStateNotifier.addListener(_syncCrashUserId);
     final analyticsService = slInstance<AnalyticsService>(
@@ -201,6 +212,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       authStateNotifier: _authStateNotifier,
       observers: [analyticsService.observer],
       initialLocation: widget.initialLocation,
+      refreshCoordinator: _refreshCoordinator,
       homeCubitFactory: widget.homeCubitFactory,
       peopleCubitFactory: widget.peopleCubitFactory,
       remindersCubitFactory: widget.remindersCubitFactory,
@@ -320,14 +332,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   /// Re-arms alarms wiped while the app was away (force-stop, reboot,
-  /// time-zone change). Best-effort: never disrupts the UI. Traced so
-  /// silent alarm loss shows up in Performance, failures in Crashlytics.
+  /// time-zone change). Best-effort: never disrupts the UI. Guarded by the
+  /// coordinator so an unvisited reminders tab stays unbuilt; failures are
+  /// reported instead of swallowed silently.
   Future<void> _resyncNotifications() async {
+    final resync = _refreshCoordinator.resyncReminderNotifications;
+    if (resync == null) return;
     try {
       await _tracer.trace('reminder-resync-resume', (trace) async {
-        await slInstance<RemindersCubit>(
-          instanceName: 'remindersCubit',
-        ).resyncNotifications();
+        resync();
         await trace.putAttribute('trigger', 'app_resume');
       });
     } on Object catch (error, stackTrace) {

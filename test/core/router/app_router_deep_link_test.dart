@@ -138,28 +138,22 @@ void main() {
       authService: authService,
       peopleRepository: peopleRepository,
     );
-    final signUpCubit = SignUpCubit(authService);
-    final inviteCubit = InvitePeopleCubit(
-      edgetFunctions: _MockEdgetFunctions(),
-    );
-    final createCubit = CreateReminderCubit(
+    // Factory contract (see createRouter): tab factories are shared (single
+    // instance, BlocProvider.value, closed here); one-shot factories are
+    // fresh per call (BlocProvider(create:) owns and closes them — never
+    // close manually, never return the same instance twice).
+    CreateReminderCubit buildCreateCubit() => CreateReminderCubit(
       createReminderUsecase: _MockCreateReminderUsecase(),
       updateReminderUsecase: _MockUpdateReminderUsecase(),
       authService: authService,
       peopleRepository: _FakePeopleRepository(),
       notificationService: _FakeNotificationService(),
     );
-    // NOTE: inviteCubit is owned by the router's BlocProvider(create:)
-    // and closed on disposal — never close it manually (double-close
-    // hangs). The .value-provided cubits have no owner, so close them here.
-    // signUpCubit is likewise create-owned; it is never read on these
-    // routes, so nothing closes it (inert, no listeners).
     addTearDown(() async {
       await homeCubit.close();
       await peopleCubit.close();
       await remindersCubit.close();
       await accountCubit.close();
-      await createCubit.close();
     });
     return createRouter(
       onboardingCompleted: true,
@@ -169,9 +163,10 @@ void main() {
       peopleCubitFactory: () => peopleCubit,
       remindersCubitFactory: () => remindersCubit,
       accountCubitFactory: () => accountCubit,
-      signUpCubitFactory: () => signUpCubit,
-      invitePeopleCubitFactory: () => inviteCubit,
-      createReminderCubitFactory: () => createCubit,
+      signUpCubitFactory: () => SignUpCubit(authService),
+      invitePeopleCubitFactory: () =>
+          InvitePeopleCubit(edgetFunctions: _MockEdgetFunctions()),
+      createReminderCubitFactory: buildCreateCubit,
     );
   }
 

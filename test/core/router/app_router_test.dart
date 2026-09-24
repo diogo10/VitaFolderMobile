@@ -9,7 +9,9 @@ import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/router/app_router.dart';
 import 'package:house_mira/core/router/splash_view.dart';
+import 'package:house_mira/core/router/tab_refresh_coordinator.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira/features/account/presentation/views/account_view.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
@@ -26,8 +28,12 @@ import 'package:house_mira/features/people/domain/usecase/join_family_usecase.da
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
+import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecase.dart';
+import 'package:house_mira/features/reminders/domain/usecase/update_reminder_usecase.dart';
+import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
+import 'package:house_mira/features/reminders/presentation/screens/create_reminder_screen.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -49,6 +55,12 @@ class _MockJoinFamilyUsecase extends Mock implements JoinFamilyUsecase {}
 class _MockPeopleRepository extends Mock implements PeopleRepository {}
 
 class _MockGetReminderUsecase extends Mock implements GetReminderUsecase {}
+
+class _MockCreateReminderUsecase extends Mock
+    implements CreateReminderUsecase {}
+
+class _MockUpdateReminderUsecase extends Mock
+    implements UpdateReminderUsecase {}
 
 class _MockReminderRepository extends Mock implements ReminderRepository {}
 
@@ -138,11 +150,10 @@ void main() {
       authService: resolvedAuth,
       peopleRepository: peopleRepository,
     );
-    final signUpCubit = SignUpCubit(resolvedAuth);
-    // NOTE: signUpCubit is owned by the router's BlocProvider(create:) and
-    // closed on disposal — never close it manually (double-close hangs).
-    // The tab cubits use BlocProvider.value (no ownership) so they are
-    // closed here.
+    // Factory contract (see createRouter): tab factories are shared (single
+    // instance, BlocProvider.value, closed here), one-shot factories are
+    // fresh per call (BlocProvider(create:) owns and closes them — never
+    // close manually, and never return the same instance twice).
     addTearDown(() async {
       await homeCubit.close();
       await peopleCubit.close();
@@ -156,7 +167,7 @@ void main() {
       peopleCubitFactory: () => peopleCubit,
       remindersCubitFactory: () => remindersCubit,
       accountCubitFactory: () => accountCubit,
-      signUpCubitFactory: () => signUpCubit,
+      signUpCubitFactory: () => SignUpCubit(resolvedAuth),
     );
   }
 
@@ -217,6 +228,186 @@ void main() {
       // tab + one-shot graph. Must stay within the host startup budget
       // (tool/performance_budgets.json: test_host_startup_s).
       expect(resolved, ['home']);
+    });
+
+    testWidgets('one-shot editors get a fresh cubit per visit', (
+      tester,
+    ) async {
+      final notifier = AuthStateNotifier();
+      addTearDown(notifier.dispose);
+      final authService = _MockAuthService();
+      final built = <CreateReminderCubit>[];
+      CreateReminderCubit buildEditor() {
+        final cubit = CreateReminderCubit(
+          createReminderUsecase: _MockCreateReminderUsecase(),
+          updateReminderUsecase: _MockUpdateReminderUsecase(),
+          authService: authService,
+          peopleRepository: _MockPeopleRepository(),
+          notificationService: _FakeNotificationService(),
+        );
+        built.add(cubit);
+        return cubit;
+      }
+
+      final router = buildRouter(
+        notifier: notifier,
+        authService: authService,
+      );
+      // Swap in the counting fresh factory: create-owned routes must call it
+      // on every visit (never reuse a closed instance).
+      final freshRouter = createRouter(
+        onboardingCompleted: true,
+        authStateNotifier: notifier,
+        homeCubitFactory: () => HomeCubit(
+          getHomeDataUsecase: getHomeData,
+          hasRemindersUsecase: hasReminders,
+        ),
+        peopleCubitFactory: () => PeopleCubit(
+          getPeopleUsecase: _MockGetPeopleUsecase(),
+          createFamilyUsecase: _MockCreateFamilyUsecase(),
+          joinFamilyUsecase: _MockJoinFamilyUsecase(),
+          authService: authService,
+        ),
+        remindersCubitFactory: () => RemindersCubit(
+          getReminderUsecase: _MockGetReminderUsecase(),
+          peopleRepository: _MockPeopleRepository(),
+          authService: authService,
+          reminderRepository: _MockReminderRepository(),
+          notificationService: _FakeNotificationService(),
+        ),
+        accountCubitFactory: () => AccountCubit(
+          authService: authService,
+          peopleRepository: _MockPeopleRepository(),
+        ),
+        createReminderCubitFactory: buildEditor,
+        signUpCubitFactory: () => SignUpCubit(authService),
+      );
+
+      await pumpRouter(tester, freshRouter);
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+
+      // Sanity: the shared-router helper still builds (guards the refactor).
+      expect(router, isNotNull);
+
+      unawaited(freshRouter.push('/create-reminder'));
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+      expect(find.byType(CreateReminderScreen), findsOneWidget);
+      expect(built, hasLength(1));
+
+      freshRouter.pop();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+
+      unawaited(freshRouter.push('/create-reminder'));
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+      expect(find.byType(CreateReminderScreen), findsOneWidget);
+      // Fresh per visit: a second instance, never a reused closed cubit.
+      expect(built, hasLength(2));
+      expect(identical(built[0], built[1]), isFalse);
+    });
+
+    testWidgets('unvisited tabs stay unbuilt on coordinator refresh', (
+      tester,
+    ) async {
+      final notifier = AuthStateNotifier();
+      addTearDown(notifier.dispose);
+      final coordinator = TabRefreshCoordinator();
+      final resolved = <String>[];
+      Never unexpected(String name) =>
+          throw StateError('$name must stay lazy until visited');
+      final homeCubit = HomeCubit(
+        getHomeDataUsecase: getHomeData,
+        hasRemindersUsecase: hasReminders,
+      );
+      addTearDown(homeCubit.close);
+      final router = createRouter(
+        onboardingCompleted: true,
+        authStateNotifier: notifier,
+        initialLocation: '/home',
+        refreshCoordinator: coordinator,
+        homeCubitFactory: () {
+          resolved.add('home');
+          return homeCubit;
+        },
+        peopleCubitFactory: () => unexpected('people'),
+        remindersCubitFactory: () => unexpected('reminders'),
+        accountCubitFactory: () => unexpected('account'),
+        createReminderCubitFactory: () => unexpected('createReminder'),
+        signUpCubitFactory: () => unexpected('signUp'),
+        invitePeopleCubitFactory: () => unexpected('invitePeople'),
+        familySettingsCubitFactory: () => unexpected('familySettings'),
+        notificationSettingsCubitFactory: () =>
+            unexpected('notificationSettings'),
+        manageProfileCubitFactory: () => unexpected('manageProfile'),
+      );
+
+      await pumpRouter(tester, router);
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+
+      expect(find.byType(HomeView), findsOneWidget);
+      // Only home built; coordinator callbacks for the other tabs are still
+      // null, so a cross-tab refresh must not instantiate them.
+      coordinator.refreshAll();
+      coordinator.refreshAfterReminderSave();
+      coordinator.resyncReminderNotifications?.call();
+      await tester.pump();
+
+      expect(resolved, ['home']);
+      expect(find.byType(HomeView), findsOneWidget);
+    });
+
+    testWidgets('account view receives its refresh callback from the router', (
+      tester,
+    ) async {
+      final notifier = AuthStateNotifier();
+      addTearDown(notifier.dispose);
+      final coordinator = TabRefreshCoordinator();
+      var refreshed = false;
+      coordinator.refreshHome = () => refreshed = true;
+      final authService = _MockAuthService();
+      final accountCubit = AccountCubit(
+        authService: authService,
+        peopleRepository: _MockPeopleRepository(),
+      );
+      addTearDown(accountCubit.close);
+      final router = createRouter(
+        onboardingCompleted: true,
+        authStateNotifier: notifier,
+        initialLocation: '/account',
+        refreshCoordinator: coordinator,
+        homeCubitFactory: () => HomeCubit(
+          getHomeDataUsecase: getHomeData,
+          hasRemindersUsecase: hasReminders,
+        ),
+        peopleCubitFactory: () => PeopleCubit(
+          getPeopleUsecase: _MockGetPeopleUsecase(),
+          createFamilyUsecase: _MockCreateFamilyUsecase(),
+          joinFamilyUsecase: _MockJoinFamilyUsecase(),
+          authService: authService,
+        ),
+        remindersCubitFactory: () => RemindersCubit(
+          getReminderUsecase: _MockGetReminderUsecase(),
+          peopleRepository: _MockPeopleRepository(),
+          authService: authService,
+          reminderRepository: _MockReminderRepository(),
+          notificationService: _FakeNotificationService(),
+        ),
+        accountCubitFactory: () => accountCubit,
+        signUpCubitFactory: () => SignUpCubit(authService),
+      );
+
+      await pumpRouter(tester, router);
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+
+      final view = tester.widget<AccountView>(find.byType(AccountView));
+      expect(view.onAuthChanged, isNotNull);
+      view.onAuthChanged!.call();
+      expect(refreshed, isTrue);
     });
   });
 

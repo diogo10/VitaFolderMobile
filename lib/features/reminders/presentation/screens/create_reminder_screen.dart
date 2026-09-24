@@ -3,9 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
-import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
@@ -13,7 +11,6 @@ import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart
 import 'package:house_mira/features/reminders/domain/utils/reminder_date_utils.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_state.dart';
-import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -23,10 +20,16 @@ class CreateReminderScreen extends StatefulWidget {
     this.initialType,
     this.reminder,
     this.notificationService,
+    this.onSaved,
   });
   final ReminderType? initialType;
   final ReminderEntity? reminder;
   final IReminderNotificationService? notificationService;
+
+  /// Refreshes the visited lists after a save. Wired by the route builder to
+  /// `TabRefreshCoordinator.refreshAfterReminderSave`; `null` until a tab
+  /// has been visited, in which case there is nothing to refresh.
+  final void Function()? onSaved;
 
   @override
   State<CreateReminderScreen> createState() => _CreateReminderScreenState();
@@ -280,36 +283,11 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
   }
 
   // The create-reminder route only provides its editor cubit; the tab
-  // cubits live in their own StatefulShellBranch subtrees. Refresh them
-  // through the shared GetIt singletons so a save is visible when the user
-  // returns to a tab. Tabs never visited load on first visit instead.
+  // cubits live in their own StatefulShellBranch subtrees. The route builder
+  // injects [onSaved], which refreshes only visited tabs — unvisited tabs
+  // stay unbuilt and load on first visit instead.
   void _refreshLists(BuildContext context) {
-    try {
-      unawaited(context.read<RemindersCubit>().getReminders());
-    } on Object catch (_) {
-      try {
-        unawaited(
-          slInstance<RemindersCubit>(
-            instanceName: 'remindersCubit',
-          ).getReminders(),
-        );
-      } on Object catch (_) {
-        // Reminders tab never visited: it loads on first visit.
-      }
-    }
-    try {
-      unawaited(context.read<HomeCubit>().getHomeData(isRefresh: true));
-    } on Object catch (_) {
-      try {
-        unawaited(
-          slInstance<HomeCubit>(
-            instanceName: 'homeCubit',
-          ).getHomeData(isRefresh: true),
-        );
-      } on Object catch (_) {
-        // HomeCubit is not in scope when opened from Reminders tab.
-      }
-    }
+    widget.onSaved?.call();
   }
 
   Future<void> _onSave() async {

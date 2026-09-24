@@ -1,10 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
-import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
-import 'package:house_mira/features/account/application/notification_permission_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
-import 'package:house_mira/features/account/presentation/cubit/manage_profile_cubit.dart';
-import 'package:house_mira/features/account/presentation/cubit/notification_settings_cubit.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 
 class AccountServiceLocator {
@@ -12,31 +8,18 @@ class AccountServiceLocator {
   final GetIt sl;
 
   void init() {
-    sl
-      ..registerLazySingleton<AccountCubit>(
-        () => AccountCubit(
-          authService: sl<AuthService>(instanceName: 'authService'),
-          peopleRepository: sl<PeopleRepository>(
-            instanceName: 'peopleRepositoryImpl',
-          ),
+    // The account tab cubit stays a shared lazy singleton (see createRouter
+    // factory contract). One-shot cubits (ManageProfileCubit,
+    // NotificationSettingsCubit) are built fresh per visit by the route's
+    // default factory and never registered here.
+    sl.registerLazySingleton<AccountCubit>(
+      () => AccountCubit(
+        authService: sl<AuthService>(instanceName: 'authService'),
+        peopleRepository: sl<PeopleRepository>(
+          instanceName: 'peopleRepositoryImpl',
         ),
-        instanceName: 'accountCubit',
-      )
-      ..registerLazySingleton<ManageProfileCubit>(
-        () => ManageProfileCubit(
-          authService: sl<AuthService>(instanceName: 'authService'),
-        ),
-        instanceName: 'manageProfileCubit',
-      )
-      ..registerLazySingleton<NotificationSettingsCubit>(
-        () => NotificationSettingsCubit(
-          permissionService: NotificationPermissionService(),
-          storage: sl<LocalStorageDatasource>(
-            instanceName: 'localStorageDatasource',
-          ),
-          notificationService: sl(instanceName: 'reminderNotificationService'),
-        ),
-        instanceName: 'notificationSettingsCubit',
-      );
+      ),
+      instanceName: 'accountCubit',
+    );
   }
 }
