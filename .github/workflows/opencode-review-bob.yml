@@ -18,7 +18,8 @@ on:
         required: false
         type: string
 
-# Least-privilege default; the review job escalates only pull-requests.
+# Least-privilege default; the review job escalates only pull-requests
+# (plus issues, for managing the automerge label on the PR).
 permissions:
   contents: read
 
@@ -32,6 +33,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      issues: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -199,7 +201,7 @@ jobs:
           echo "Parsed grade: ${GRADE:-<none>} (first line: '$FIRST_LINE')"
           echo "grade=${GRADE:-}" >> "$GITHUB_OUTPUT"
 
-      - name: Publish review and approve/merge on grade A or B
+      - name: Publish review, label automerge, and approve/merge on grade A or B
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -222,7 +224,11 @@ jobs:
           # ^GRADE: [ABCD]$, so reaching "A"/"B" here is equivalent to a
           # strict ^GRADE: [AB]$ match on line 1.
           if [ "$GRADE" = "A" ] || [ "$GRADE" = "B" ]; then
-            echo "Grade $GRADE is merge-ready: approving and merging."
+            echo "Grade $GRADE is merge-ready: labeling automerge, approving and merging."
+            gh label create automerge \
+              --description "Merge-ready per automated review; eligible for automerge." \
+              --color "0E8A16" 2>/dev/null || true
+            gh pr edit "$PR_NUMBER" --add-label "automerge"
             gh pr review "$PR_NUMBER" --approve \
               --body "OpenCode v2 review grade: $GRADE. Approving per review policy."
             gh pr merge "$PR_NUMBER" --squash || \
