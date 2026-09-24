@@ -24,7 +24,7 @@ void main() {
     );
   });
 
-  Widget pumpScreen({String? familyName}) {
+  Widget pumpScreen({String? familyName, String? inviteCode}) {
     return MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -36,7 +36,10 @@ void main() {
               supabaseClient: Supabase.instance.client,
               googleSignInHandler: _MockGoogleSignInHandler(),
             ),
-            child: InvitePeopleScreen(familyName: familyName),
+            child: InvitePeopleScreen(
+              familyName: familyName,
+              inviteCode: inviteCode,
+            ),
           ),
         ),
       ),

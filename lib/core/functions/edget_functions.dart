@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/observability/crash_reporter.dart';
 import 'package:house_mira/core/observability/performance_tracer.dart';
-import 'package:house_mira/core/router/app_routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EdgetFunctions {
@@ -24,23 +23,25 @@ class EdgetFunctions {
   final AppLogger _logger;
   final PerformanceTracer _tracer;
 
-  /// Sends a family-invite email via the `resend-email-v1` edge function.
+  /// Sends the HouseMira family-invite email via the `resend-email-v1`
+  /// edge function, which renders the subject and HTML server-side from
+  /// [locale] (`en`/`pt`, English fallback) and the invite data.
   ///
-  /// When [inviteCode] is provided, the email embeds the same App Link the
-  /// mobile app handles ([AppRoutes.inviteLink],
-  /// e.g. `https://vitafolder.app/invite/<code>`) so tapping it on a
-  /// device deep-links into the join flow. Without a code the email falls
-  /// back to a generic enroll prompt — never a fabricated link.
+  /// When [inviteCode] is provided, the email CTA points at the web join
+  /// page with the code appended; without a code it falls back to the
+  /// generic join page — never a fabricated link.
   Future<bool> sendEmail({
     required String to,
-    required String subject,
-    String? inviteCode,
+    required String locale,
+    String? inviterName,
     String? familyName,
+    String? inviteCode,
   }) async {
-    // Never log the recipient address: PII stays out of logs and crash
-    // reports; only shape flags are recorded.
+    // Never log the recipient address or names: PII stays out of logs and
+    // crash reports; only shape flags are recorded.
     final context = <String, Object?>{
       'function': 'resend-email-v1',
+      'locale': locale,
       'has_invite_code': inviteCode != null,
     };
     _logger.debug('invoking edge function', tag: 'edge', context: context);
@@ -52,8 +53,10 @@ class EdgetFunctions {
             'resend-email-v1',
             body: {
               'to': to,
-              'subject': subject,
-              'html': _inviteHtml(inviteCode, familyName),
+              'locale': locale,
+              'inviterName': ?inviterName,
+              'familyName': ?familyName,
+              'inviteCode': ?inviteCode,
             },
           );
           final data = res.data;
@@ -83,29 +86,5 @@ class EdgetFunctions {
       );
       rethrow;
     }
-  }
-
-  static String _inviteHtml(String? inviteCode, String? familyName) {
-    final link = AppRoutes.inviteLink(inviteCode);
-    final family = (familyName ?? '').trim();
-    final who = family.isEmpty ? 'your family' : family;
-    if (link == null) {
-      return '''
-          <html>
-            <body>
-              <p>You have been invited to join $who on VitaFolder.</p>
-              <p>Open the app and enter your invite code to enroll.</p>
-            </body>
-          </html>
-        ''';
-    }
-    return '''
-          <html>
-            <body>
-              <p>You have been invited to join $who on VitaFolder.</p>
-              <p>Click <a href="$link">here</a> to enroll.</p>
-            </body>
-          </html>
-        ''';
   }
 }

@@ -207,6 +207,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
               AddFamilyMemberCardWidget(
                 onPressed: () => InvitePeopleRoute(
                   familyName: widget.familyName,
+                  inviteCode: widget.inviteCode,
                 ).push(context),
               ),
               const SizedBox(height: 16),

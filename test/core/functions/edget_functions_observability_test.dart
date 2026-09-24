@@ -123,7 +123,7 @@ void main() {
       );
 
       expect(
-        await build().sendEmail(to: 'a@b.c', subject: 'Invite'),
+        await build().sendEmail(to: 'a@b.c', locale: 'en'),
         isTrue,
       );
       await Future<void>.delayed(Duration.zero);
@@ -146,7 +146,7 @@ void main() {
       );
 
       await expectLater(
-        () => build().sendEmail(to: 'a@b.c', subject: 'Invite'),
+        () => build().sendEmail(to: 'a@b.c', locale: 'en'),
         throwsA(isA<FunctionException>()),
       );
       await Future<void>.delayed(Duration.zero);

@@ -13,8 +13,9 @@ import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class InvitePeopleScreen extends StatefulWidget {
-  const InvitePeopleScreen({super.key, this.familyName});
+  const InvitePeopleScreen({super.key, this.familyName, this.inviteCode});
   final String? familyName;
+  final String? inviteCode;
 
   @override
   State<InvitePeopleScreen> createState() => _InvitePeopleScreenState();
@@ -43,10 +44,20 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
 
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final email = _emailController.text.trim();
-    await context.read<InvitePeopleCubit>().sendInvite(
+    final locale = Localizations.localeOf(context).languageCode;
+    final cubit = context.read<InvitePeopleCubit>();
+    final emailPrefix = authService.currentUser?.email?.split('@').first;
+    final inviterName =
+        await authService.getProfileName() ??
+        (emailPrefix?.isNotEmpty == true ? emailPrefix : null);
+    if (!mounted) return;
+    await cubit.sendInvite(
       email: email,
       relationship: InviteRelationship.other,
-      subject: l.invitePeopleEmailSubject(l.invitePeopleRelationshipOther),
+      locale: locale,
+      inviterName: inviterName,
+      familyName: widget.familyName,
+      inviteCode: widget.inviteCode,
     );
   }
 

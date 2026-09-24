@@ -168,34 +168,54 @@ String notificationLocationFor(String? payload) {
 
 /// Typed wrapper for the send-invite screen.
 ///
-/// Carries an optional family name for the hero copy. Parses from `extra`
-/// (legacy `String` cast centralized here) or the `familyName` query
-/// parameter. `null` family name means the generic copy.
+/// Carries an optional family name for the hero copy plus the optional
+/// invite code forwarded to the edge function for the email CTA. Parses
+/// from `extra` (record or legacy `String`) or the `familyName`/`code`
+/// query parameters. `null` values mean the generic copy / join page.
 @immutable
 class InvitePeopleRoute {
-  const InvitePeopleRoute({this.familyName});
+  const InvitePeopleRoute({this.familyName, this.inviteCode});
 
   factory InvitePeopleRoute.fromState(GoRouterState state) {
     final extra = state.extra;
+    if (extra is ({String? familyName, String? inviteCode})) {
+      return InvitePeopleRoute(
+        familyName: extra.familyName,
+        inviteCode: extra.inviteCode,
+      );
+    }
     if (extra is String && extra.trim().isNotEmpty) {
       return InvitePeopleRoute(familyName: extra.trim());
     }
-    final query =
-        state.uri.queryParameters[AppRoutes.familyNameParam]?.trim() ?? '';
-    return InvitePeopleRoute(familyName: query.isEmpty ? null : query);
+    final params = state.uri.queryParameters;
+    final name = params[AppRoutes.familyNameParam]?.trim() ?? '';
+    final code = params[AppRoutes.inviteCodeParam]?.trim() ?? '';
+    return InvitePeopleRoute(
+      familyName: name.isEmpty ? null : name,
+      inviteCode: code.isEmpty ? null : code,
+    );
   }
 
   final String? familyName;
+  final String? inviteCode;
 
   String get location {
+    final query = <String, String>{};
     final name = familyName?.trim() ?? '';
-    if (name.isEmpty) return AppRoutes.invitePeople;
-    final encoded = Uri.encodeComponent(name);
-    return '${AppRoutes.invitePeople}?${AppRoutes.familyNameParam}=$encoded';
+    if (name.isNotEmpty) query[AppRoutes.familyNameParam] = name;
+    final code = inviteCode?.trim() ?? '';
+    if (code.isNotEmpty) query[AppRoutes.inviteCodeParam] = code;
+    if (query.isEmpty) return AppRoutes.invitePeople;
+    return Uri(
+      path: AppRoutes.invitePeople,
+      queryParameters: query,
+    ).toString();
   }
 
-  Future<T?> push<T extends Object?>(BuildContext context) =>
-      context.push<T>(location, extra: familyName);
+  Future<T?> push<T extends Object?>(BuildContext context) => context.push<T>(
+    location,
+    extra: (familyName: familyName, inviteCode: inviteCode),
+  );
 }
 
 /// Typed wrapper for the create/edit reminder screen.

@@ -73,7 +73,10 @@ GoRouter createRouter({
         path: AppRoutes.invitePeople,
         builder: (context, state) {
           final route = InvitePeopleRoute.fromState(state);
-          return InvitePeopleScreen(familyName: route.familyName);
+          return InvitePeopleScreen(
+            familyName: route.familyName,
+            inviteCode: route.inviteCode,
+          );
         },
       ),
       GoRoute(

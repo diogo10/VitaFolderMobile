@@ -7,41 +7,64 @@ References: [architecture](.agents/references/architecture.md) ·
 [cubit](.agents/references/cubit.md) · [testing](.agents/references/testing.md) ·
 [supabase](.agents/references/supabase.md)
 
-## Commands (always `fvm`, never bare `flutter`/`dart`)
+## Commands (always use fvm, never bare flutter or dart)
+
+Setup command:
 
 ```bash
 fvm flutter pub get
-fvm flutter analyze          # must be clean: 0 errors, 0 warnings
-fvm flutter test             # or test/<path> for a scope
-fvm flutter test --coverage  # before touching domain/ or application/
 ```
 
-CI (`ci.yml`) runs `dart analyze --fatal-warnings`,
-`flutter analyze --no-fatal-infos --fatal-warnings`, tests with coverage,
-and enforces **100% per-file coverage** under `lib/**/domain/` and
-`lib/**/application/`. Strict `very_good_analysis` set
-(`public_member_api_docs` off) — fix lints, don't add `// ignore:`.
+Lint command (must be clean: 0 errors, 0 warnings):
+
+```bash
+fvm flutter analyze
+```
+
+Test command (or pass a scope such as test/features/account):
+
+```bash
+fvm flutter test
+```
+
+Coverage command (run before touching business-logic layers):
+
+```bash
+fvm flutter test --coverage
+```
+
+CI is defined in `.github/workflows/ci.yml` and runs dart analyze
+with fatal warnings, flutter analyze with fatal warnings (infos allowed),
+tests with coverage, and enforces 100 percent per-file coverage for
+business-logic layers (see below). The lint set is very_good_analysis
+with public_member_api_docs off — fix lints, do not add ignore comments.
 
 ## Code rules
 
-- Feature-first layers (`application/`, `domain/`, `data/`, `presentation/`);
-  shared code in `lib/core/`. Details: [architecture](.agents/references/architecture.md).
-- State: one Cubit per concern, sealed states, `Loading` → outcome,
-  services injected, no Supabase imports in cubits. Details: [cubit](.agents/references/cubit.md).
-- Repositories return `Either<Failure, T>`; entities immutable with
-  `copyWith`/`from` (returns `null` on bad input).
-- Displayed text via `AppLocalizations` (`lib/l10n/*.arb`) — never hardcode.
-- Name things: `*View`, `*Widget`, `*Cubit`, `*State`, `*Usecase`,
-  `*Entity`, `*Repository`, `*Service`, `*ServiceLocator`; files `snake_case`.
-- Async: `await` in async fns; sync callbacks go `async`+`await` or
-  `unawaited()` for fire-and-forget. Catches: `on Object catch` (never bare
-  `catch`, never narrow silently).
+- Feature-first layers under lib/features/<feature>/ with domain, data,
+  application, and presentation subfolders; shared code in `lib/core/`.
+  Concrete examples: `lib/features/reminders/domain`,
+  `lib/features/reminders/application`, `lib/features/people/data`,
+  `lib/features/people/presentation`.
+  Details: [architecture](.agents/references/architecture.md).
+- State: one Cubit per concern, sealed states, Loading first then exactly
+  one outcome state, services injected, no Supabase imports in cubits.
+  Details: [cubit](.agents/references/cubit.md).
+- Repositories return Either of Failure or success; entities are immutable
+  with copyWith and a from constructor that returns null on bad input.
+- Displayed text via AppLocalizations backed by `lib/l10n/app_en.arb`
+  (and `lib/l10n/app_pt.arb`) — never hardcode user-visible strings.
+- Naming: suffix View, Widget, Cubit, State, Usecase, Entity, Repository,
+  Service, ServiceLocator; files are snake_case.
+- Async: await inside async functions; sync callbacks either become async
+  with await or use unawaited for fire-and-forget. Catch with on Object
+  catch (never a bare catch, never narrow silently).
 
 ## Error handling — never fake data
 
-- **Never fall back to defaults** on parse/validation failure: return `null`.
-  No silent `DateTime.now()`, `''`, or placeholders. Explicit failure beats
-  wrong data.
+- Never fall back to defaults on parse/validation failure: return null.
+  No silent current-time fallback, empty-string fallback, or placeholders.
+  Explicit failure beats wrong data.
 
 ## Environments & secrets
 
@@ -61,13 +84,26 @@ and enforces **100% per-file coverage** under `lib/**/domain/` and
 
 ## Testing
 
-New code ships with tests: cubit state sequences (incl. cancel + failure),
-unit tests for use-case/entity branches (coverage gate), widget tests for
-button wiring. Throwaway repro tests go in `/tmp`, not `test/`. Details:
-[testing](.agents/references/testing.md).
+New code ships with tests: cubit state sequences (including cancel and
+failure paths), unit tests for use-case and entity branches (coverage
+gate), widget tests for button wiring. Throwaway repro tests go in the
+system temp directory outside the repo, not in `test/`.
+Test runner and coverage gate details live in
+`.github/workflows/ci.yml` and `test/`.
+Details: [testing](.agents/references/testing.md).
 
 ## Supabase & git
 
-Backend + edge functions: [supabase](.agents/references/supabase.md);
-function docs live in `README.md`. Never expose service-role keys.
-Commit/push/PR only when explicitly asked.
+- Backend and edge functions: see [supabase](.agents/references/supabase.md);
+  function source lives in `supabase/functions/delete-account`,
+  `supabase/functions/resend-email-v1`, and its docs
+  live in `README.md`. Auth flows live in
+  `lib/core/auth/auth_service.dart` and DI is wired in
+  `lib/core/injections/service_locator.dart`.
+- Supabase project: VitaFolderMobileBackend, project ref
+  jheqalwrnztavzxjsdcj, region West EU (Ireland). Link with
+  supabase link --project-ref jheqalwrnztavzxjsdcj, then deploy with
+  supabase functions deploy <name> (e.g. resend-email-v1).
+  Required function secret RESEND_API_KEY is already set on the project.
+- Never expose service-role keys. Commit, push, or open a PR only when
+  explicitly asked.

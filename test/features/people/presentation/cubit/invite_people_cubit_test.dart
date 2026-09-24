@@ -19,18 +19,20 @@ void main() {
       when(
         () => functions.sendEmail(
           to: any(named: 'to'),
-          subject: any(named: 'subject'),
-          inviteCode: any(named: 'inviteCode'),
+          locale: any(named: 'locale'),
+          inviterName: any(named: 'inviterName'),
           familyName: any(named: 'familyName'),
+          inviteCode: any(named: 'inviteCode'),
         ),
       ).thenThrow(result);
     } else {
       when(
         () => functions.sendEmail(
           to: any(named: 'to'),
-          subject: any(named: 'subject'),
-          inviteCode: any(named: 'inviteCode'),
+          locale: any(named: 'locale'),
+          inviterName: any(named: 'inviterName'),
           familyName: any(named: 'familyName'),
+          inviteCode: any(named: 'inviteCode'),
         ),
       ).thenAnswer((_) async => result! as bool);
     }
@@ -51,16 +53,20 @@ void main() {
     act: (cubit) => cubit.sendInvite(
       email: 'ana@example.com',
       relationship: InviteRelationship.spouse,
-      subject: 'Join us',
+      locale: 'en',
+      inviterName: 'Ana',
+      familyName: 'Smith',
+      inviteCode: 'ABC-123',
     ),
     expect: () => [isA<InvitePeopleLoading>(), isA<InvitePeopleSuccess>()],
     verify: (_) {
       verify(
         () => functions.sendEmail(
           to: 'ana@example.com',
-          subject: 'Join us',
-          inviteCode: null,
-          familyName: null,
+          locale: 'en',
+          inviterName: 'Ana',
+          familyName: 'Smith',
+          inviteCode: 'ABC-123',
         ),
       ).called(1);
     },
@@ -73,18 +79,19 @@ void main() {
     act: (cubit) => cubit.sendInvite(
       email: 'ana@example.com',
       relationship: InviteRelationship.spouse,
-      subject: 'Join us',
-      inviteCode: 'ABC123',
+      locale: 'en',
       familyName: 'Fam',
+      inviteCode: 'ABC123',
     ),
     expect: () => [isA<InvitePeopleLoading>(), isA<InvitePeopleSuccess>()],
     verify: (_) {
       verify(
         () => functions.sendEmail(
           to: 'ana@example.com',
-          subject: 'Join us',
-          inviteCode: 'ABC123',
+          locale: 'en',
+          inviterName: null,
           familyName: 'Fam',
+          inviteCode: 'ABC123',
         ),
       ).called(1);
     },
@@ -97,7 +104,7 @@ void main() {
     act: (cubit) => cubit.sendInvite(
       email: 'ana@example.com',
       relationship: InviteRelationship.child,
-      subject: 'Join us',
+      locale: 'pt',
     ),
     expect: () => [
       isA<InvitePeopleLoading>(),
@@ -116,7 +123,7 @@ void main() {
     act: (cubit) => cubit.sendInvite(
       email: 'ana@example.com',
       relationship: InviteRelationship.other,
-      subject: 'Join us',
+      locale: 'en',
     ),
     expect: () => [
       isA<InvitePeopleLoading>(),

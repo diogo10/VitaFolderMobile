@@ -32,7 +32,10 @@ void main() {
 
       final result = await build().sendEmail(
         to: 'a@b.c',
-        subject: 'Invite',
+        locale: 'en',
+        inviterName: 'Ana',
+        familyName: 'Smith',
+        inviteCode: 'ABC-123',
       );
 
       expect(result, isTrue);
@@ -41,14 +44,37 @@ void main() {
           'resend-email-v1',
           body: any(
             named: 'body',
-            that: isA<Map<String, dynamic>>().having(
-              (b) => b['to'],
-              'to',
-              'a@b.c',
-            ),
+            that: isA<Map<String, dynamic>>()
+                .having((b) => b['to'], 'to', 'a@b.c')
+                .having((b) => b['locale'], 'locale', 'en')
+                .having((b) => b['inviterName'], 'inviterName', 'Ana')
+                .having((b) => b['familyName'], 'familyName', 'Smith')
+                .having((b) => b['inviteCode'], 'inviteCode', 'ABC-123'),
           ),
         ),
       ).called(1);
+    });
+
+    test('omits optional invite fields when not provided', () async {
+      Map<String, dynamic>? sentBody;
+      when(
+        () => functions.invoke(any(), body: any(named: 'body')),
+      ).thenAnswer((invocation) async {
+        sentBody =
+            invocation.namedArguments[const Symbol('body')]
+                as Map<String, dynamic>;
+        return const FunctionResponse(
+          data: {'success': true},
+          status: 200,
+        );
+      });
+
+      await build().sendEmail(to: 'a@b.c', locale: 'pt');
+
+      expect(sentBody?['locale'], 'pt');
+      expect(sentBody?.containsKey('inviterName'), isFalse);
+      expect(sentBody?.containsKey('familyName'), isFalse);
+      expect(sentBody?.containsKey('inviteCode'), isFalse);
     });
 
     test('returns false when the edge function reports failure', () async {
@@ -62,7 +88,7 @@ void main() {
       );
 
       expect(
-        await build().sendEmail(to: 'a@b.c', subject: 'Invite'),
+        await build().sendEmail(to: 'a@b.c', locale: 'en'),
         isFalse,
       );
     });
@@ -73,7 +99,7 @@ void main() {
       ).thenAnswer((_) async => const FunctionResponse(status: 200));
 
       expect(
-        await build().sendEmail(to: 'a@b.c', subject: 'Invite'),
+        await build().sendEmail(to: 'a@b.c', locale: 'en'),
         isFalse,
       );
     });
@@ -89,7 +115,7 @@ void main() {
       );
 
       expect(
-        await build().sendEmail(to: 'a@b.c', subject: 'Invite'),
+        await build().sendEmail(to: 'a@b.c', locale: 'en'),
         isFalse,
       );
     });
@@ -100,7 +126,7 @@ void main() {
       ).thenThrow(Exception('Network error'));
 
       expect(
-        () => build().sendEmail(to: 'a@b.c', subject: 'Invite'),
+        () => build().sendEmail(to: 'a@b.c', locale: 'en'),
         throwsException,
       );
     });
@@ -113,12 +139,12 @@ void main() {
       );
 
       expect(
-        () => build().sendEmail(to: 'a@b.c', subject: 'Invite'),
+        () => build().sendEmail(to: 'a@b.c', locale: 'en'),
         throwsA(isA<FunctionException>()),
       );
     });
 
-    test('embeds the mobile App Link when an invite code is given', () async {
+    test('forwards locale and invite data for server rendering', () async {
       when(
         () => functions.invoke(any(), body: any(named: 'body')),
       ).thenAnswer(
@@ -130,7 +156,8 @@ void main() {
 
       final result = await build().sendEmail(
         to: 'a@b.c',
-        subject: 'Join Fam',
+        locale: 'pt',
+        inviterName: 'Ana',
         inviteCode: 'ABC123',
         familyName: 'Fam',
       );
@@ -144,14 +171,16 @@ void main() {
                 ),
               ).captured.single
               as Map<String, dynamic>;
-      expect(
-        captured['html'],
-        contains('https://vitafolder.app/invite/ABC123'),
-      );
-      expect(captured['html'], contains('Fam'));
+      expect(captured['locale'], 'pt');
+      expect(captured['inviterName'], 'Ana');
+      expect(captured['inviteCode'], 'ABC123');
+      expect(captured['familyName'], 'Fam');
+      // Subject and HTML are rendered server-side — never sent by the client.
+      expect(captured.containsKey('subject'), isFalse);
+      expect(captured.containsKey('html'), isFalse);
     });
 
-    test('sends a generic prompt without fabricating a link', () async {
+    test('sends only to and locale without invite data', () async {
       when(
         () => functions.invoke(any(), body: any(named: 'body')),
       ).thenAnswer(
@@ -161,10 +190,7 @@ void main() {
         ),
       );
 
-      final result = await build().sendEmail(
-        to: 'a@b.c',
-        subject: 'Join us',
-      );
+      final result = await build().sendEmail(to: 'a@b.c', locale: 'en');
 
       expect(result, isTrue);
       final captured =
@@ -175,7 +201,7 @@ void main() {
                 ),
               ).captured.single
               as Map<String, dynamic>;
-      expect(captured['html'], isNot(contains('vitafolder.app/invite/')));
+      expect(captured, {'to': 'a@b.c', 'locale': 'en'});
     });
   });
 }
