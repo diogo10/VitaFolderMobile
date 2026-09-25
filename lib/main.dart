@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/config/app_config.dart';
+import 'package:house_mira/core/config/app_flavor.dart';
 import 'package:house_mira/core/config/firebase_options_provider.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/observability/app_logger.dart';
@@ -116,7 +118,14 @@ void main() async {
     // when that route is visited.
     Provider(
       create: (_) => slInstance<AuthService>(instanceName: 'authService'),
-      child: MyApp(onboardingCompleted: onboardingCompleted),
+      child: MyApp(
+        onboardingCompleted: onboardingCompleted,
+        // Dev-only diagnostics (e.g. the send-test-notification action):
+        // visible on dev-flavor debug builds only, never staging/prod and
+        // never profile/release.
+        showNotificationTestAction:
+            kDebugMode && config.flavor == AppFlavor.dev,
+      ),
     ),
   );
 }
@@ -125,6 +134,7 @@ class MyApp extends StatefulWidget {
   const MyApp({
     required this.onboardingCompleted,
     super.key,
+    this.showNotificationTestAction = false,
     this.authStateNotifier,
     this.notificationService,
     this.initialLocation,
@@ -142,6 +152,11 @@ class MyApp extends StatefulWidget {
   });
   final bool onboardingCompleted;
   final AuthStateNotifier? authStateNotifier;
+
+  /// Dev-only diagnostics gate, forwarded to [createRouter] for the
+  /// notification-settings test action. Set from the flavor in `main`;
+  /// defaults to false so tests and forgotten wiring hide the action.
+  final bool showNotificationTestAction;
 
   /// Testing seam (and deep-link entry): overrides the service resolved
   /// from GetIt for notification tap/launch routing.
@@ -223,6 +238,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       familySettingsCubitFactory: widget.familySettingsCubitFactory,
       notificationSettingsCubitFactory: widget.notificationSettingsCubitFactory,
       manageProfileCubitFactory: widget.manageProfileCubitFactory,
+      showNotificationTestAction: widget.showNotificationTestAction,
     );
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {

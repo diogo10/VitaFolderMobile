@@ -104,6 +104,10 @@ GoRouter createRouter({
   FamilySettingsCubit Function()? familySettingsCubitFactory,
   NotificationSettingsCubit Function()? notificationSettingsCubitFactory,
   ManageProfileCubit Function()? manageProfileCubitFactory,
+  // Dev-only diagnostics gate: true only for dev-flavor debug builds
+  // (passed from `main`, where the flavor is known). Staging/prod and
+  // profile/release always pass false.
+  bool showNotificationTestAction = false,
 }) {
   final notifier = authStateNotifier;
   final coordinator = refreshCoordinator ?? TabRefreshCoordinator();
@@ -181,7 +185,9 @@ GoRouter createRouter({
         path: AppRoutes.notificationSettings,
         builder: (context, state) => BlocProvider<NotificationSettingsCubit>(
           create: (_) => resolveNotificationSettingsCubit(),
-          child: const NotificationSettingsScreen(),
+          child: NotificationSettingsScreen(
+            showTestAction: showNotificationTestAction,
+          ),
         ),
       ),
       GoRoute(

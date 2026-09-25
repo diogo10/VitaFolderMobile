@@ -10,7 +10,15 @@ import 'package:house_mira/theme/sand_palette.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
-  const NotificationSettingsScreen({super.key});
+  const NotificationSettingsScreen({super.key, this.showTestAction = false});
+
+  /// Dev-only diagnostic gate for the "send test notification" action.
+  ///
+  /// True only for dev-flavor debug builds (wired in `main`); staging/prod
+  /// and profile/release builds always pass false so the action stays
+  /// hidden. Defaults to false so forgetting to wire it hides the action
+  /// instead of leaking it.
+  final bool showTestAction;
 
   @override
   State<NotificationSettingsScreen> createState() =>
@@ -23,6 +31,15 @@ class _NotificationSettingsScreenState
   void initState() {
     super.initState();
     unawaited(context.read<NotificationSettingsCubit>().loadSettings());
+  }
+
+  void _sendTestNotification(BuildContext context, AppLocalizations l) {
+    unawaited(
+      context.read<NotificationSettingsCubit>().sendTestNotification(
+        title: l.notificationSettingsTestNotificationTitle,
+        body: l.notificationSettingsTestNotificationBody,
+      ),
+    );
   }
 
   @override
@@ -143,61 +160,52 @@ class _NotificationSettingsScreenState
                             ),
                           ),
                           const SizedBox(height: 16),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: context.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(28),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: context.colorScheme.shadow.withValues(
-                                    alpha: 0.06,
+                          if (widget.showTestAction) ...[
+                            Container(
+                              decoration: BoxDecoration(
+                                color: context.colorScheme.surface,
+                                borderRadius: BorderRadius.circular(28),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: context.colorScheme.shadow
+                                        .withValues(
+                                          alpha: 0.06,
+                                        ),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 8),
                                   ),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 8),
+                                ],
+                              ),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 8,
                                 ),
-                              ],
-                            ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 8,
-                              ),
-                              leading: _SettingsIcon(
-                                icon: Icons.send_rounded,
-                                color: context.colorScheme.primary,
-                              ),
-                              title: Text(
-                                l.notificationSettingsTestAction,
-                                style: context.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
+                                leading: _SettingsIcon(
+                                  icon: Icons.send_rounded,
+                                  color: context.colorScheme.primary,
                                 ),
-                              ),
-                              subtitle: Text(
-                                l.notificationSettingsTestSubtitle,
-                                style: context.textTheme.bodySmall?.copyWith(
-                                  color: context.colorScheme.onSurface
-                                      .withValues(alpha: 0.7),
-                                ),
-                              ),
-                              trailing: const Icon(
-                                Icons.chevron_right_rounded,
-                              ),
-                              onTap: () {
-                                final testTitle =
-                                    l.notificationSettingsTestNotificationTitle;
-                                final testBody =
-                                    l.notificationSettingsTestNotificationBody;
-                                unawaited(
-                                  context
-                                      .read<NotificationSettingsCubit>()
-                                      .sendTestNotification(
-                                        title: testTitle,
-                                        body: testBody,
+                                title: Text(
+                                  l.notificationSettingsTestAction,
+                                  style: context.textTheme.titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                );
-                              },
+                                ),
+                                subtitle: Text(
+                                  l.notificationSettingsTestSubtitle,
+                                  style: context.textTheme.bodySmall?.copyWith(
+                                    color: context.colorScheme.onSurface
+                                        .withValues(alpha: 0.7),
+                                  ),
+                                ),
+                                trailing: const Icon(
+                                  Icons.chevron_right_rounded,
+                                ),
+                                onTap: () => _sendTestNotification(context, l),
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       );
                     },

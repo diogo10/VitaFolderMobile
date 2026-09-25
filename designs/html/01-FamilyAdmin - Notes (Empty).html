@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes (Empty)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes floatSoft {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .card-slide { animation: slideInUp 0.45s ease both; }
+
+        .fade-in { animation: fadeIn 0.5s ease both; }
+        .scale-in { animation: scaleIn 0.4s ease both; }
+        .float-anim { animation: floatSoft 5s ease-in-out infinite; }
+
+        .nav-item { transition: transform 0.18s ease, color 0.18s ease; }
+        .nav-item.active { transform: scale(1.12); }
+
+        .action-btn { transition: transform 0.15s ease; }
+        .action-btn:active { transform: scale(0.94); }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                        figtree: ['Figtree', 'sans-serif'],
+                    },
+                    colors: {
+                        sand: {
+                            50: '#faf8f5',
+                            100: '#f0ebe3',
+                            200: '#e4dace',
+                            300: '#c9b99a',
+                            400: '#b8a080',
+                            500: '#8b7355',
+                            600: '#7a6348',
+                            700: '#634f39',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sand-50 font-figtree" style="max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative;">
+
+    <!-- STATUS BAR -->
+    <div id="status-bar" class="bg-sand-50 px-5 pt-3 pb-1 flex justify-between items-center">
+        <span class="text-sand-500 text-xs font-outfit font-medium">9:41 AM</span>
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-wifi text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-signal text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-battery-three-quarters text-sand-500 text-xs"></i>
+        </div>
+    </div>
+
+    <!-- TOP NAV -->
+    <header id="header" class="bg-sand-50 px-5 pt-2 pb-3 flex justify-between items-center fade-in sticky top-0 z-30">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-sand-500 flex items-center justify-center">
+                <i class="fa-solid fa-house-chimney text-sand-50 text-sm"></i>
+            </div>
+            <span class="font-outfit font-semibold text-sand-600 text-base tracking-tight">FamilyAdmin</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="action-btn w-10 h-10 rounded-full bg-sand-100 flex items-center justify-center">
+                <i class="fa-solid fa-magnifying-glass text-sand-500 text-base"></i>
+            </button>
+            <button class="action-btn w-10 h-10 rounded-full bg-sand-100 border border-sand-200 flex items-center justify-center">
+                <i class="fa-solid fa-user text-sand-400 text-base"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- SCROLLABLE CONTENT -->
+    <main id="main-content" class="pb-36 overflow-y-auto flex flex-col" style="min-height: calc(100vh - 220px);">
+
+        <!-- EMPTY ILLUSTRATION (matches notes_design_empty_state.pdf) -->
+        <section id="empty-hero" class="px-5 flex flex-col items-center pt-12 scale-in">
+            <div class="relative float-anim" style="width: 260px; height: 200px;">
+                <!-- Cream sticky note -->
+                <div class="absolute rounded-3xl bg-amber-100 p-4" style="width: 96px; height: 95px; left: 2px; top: 0; transform: rotate(-5deg); box-shadow: 0 6px 20px rgba(217,119,6,0.14);">
+                    <div class="rounded-full bg-amber-400 mb-2" style="height: 5px; width: 70%;"></div>
+                    <div class="rounded-full bg-amber-200 mb-2" style="height: 5px; width: 92%;"></div>
+                    <div class="rounded-full bg-amber-200" style="height: 5px; width: 55%;"></div>
+                </div>
+                <!-- Blue note -->
+                <div class="absolute rounded-3xl bg-blue-100 p-4" style="width: 118px; height: 112px; left: 128px; top: 80px; transform: rotate(7deg); box-shadow: 0 6px 20px rgba(96,165,250,0.20);">
+                    <div class="rounded-full bg-blue-400 mb-2.5" style="height: 6px; width: 45%;"></div>
+                    <div class="rounded-full bg-blue-300 mb-2.5" style="height: 6px; width: 80%;"></div>
+                    <div class="rounded-full bg-blue-300" style="height: 6px; width: 60%;"></div>
+                </div>
+                <!-- White circle with note icon -->
+                <div class="absolute rounded-full bg-white flex items-center justify-center" style="width: 80px; height: 80px; left: 87px; top: 64px; box-shadow: 0 10px 28px rgba(139,115,85,0.18);">
+                    <i class="fa-solid fa-note-sticky text-sand-400" style="font-size: 1.9rem;"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- EMPTY COPY -->
+        <section id="empty-copy" class="px-5 fade-in flex flex-col items-center mt-10">
+            <h1 class="font-outfit font-bold text-sand-700 text-center leading-tight" style="font-size: 1.85rem; line-height: 1.15;">Shared Notes</h1>
+            <p class="font-figtree text-sand-400 text-sm text-center mt-3 leading-relaxed" style="max-width: 280px;">
+                Sign in to create, share, and organize notes with your family circle.
+            </p>
+        </section>
+
+        <!-- SIGNED-OUT ACTIONS -->
+        <section id="empty-actions" class="px-5 mt-10 fade-in">
+            <button class="action-btn w-full bg-sand-500 text-sand-50 font-outfit font-semibold text-sm rounded-full flex items-center justify-center" style="height: 76px; box-shadow: 0 8px 24px rgba(139,115,85,0.30);">
+                Sign In to Start
+            </button>
+            <button class="action-btn w-full bg-white text-sand-600 font-outfit font-semibold text-sm rounded-full border border-sand-200 flex items-center justify-center mt-3" style="height: 62px; box-shadow: 0 4px 16px rgba(139,115,85,0.10);">
+                Join a Family
+            </button>
+        </section>
+
+        <!-- SIGNED-OUT CTA -->
+        <section id="empty-cta" class="px-5 mt-8 pb-6 fade-in flex flex-col items-center">
+            <p class="font-figtree text-sand-300 text-xs mb-2">New to FamilyAdmin?</p>
+            <button class="action-btn font-figtree font-medium text-sand-500 text-sm underline underline-offset-4">
+                Create an account
+            </button>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav id="bottom-nav" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full bg-sand-50 border-t border-sand-200 flex items-center justify-around px-2 pt-3 pb-6 z-30" style="max-width: 430px; box-shadow: 0 -8px 32px rgba(139,115,85,0.12);">
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[52px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-house text-sand-400 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Home</span>
+        </button>
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[52px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-people-group text-sand-400 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">People</span>
+        </button>
+
+        <button class="nav-item active flex flex-col items-center gap-1 min-w-[52px] min-h-[44px] relative">
+            <div class="w-10 h-10 rounded-2xl bg-sand-500 flex items-center justify-center relative">
+                <i class="fa-solid fa-note-sticky text-sand-50 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-600 font-semibold" style="font-size: 10px;">Notes</span>
+        </button>
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[52px] min-h-[44px] relative">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center relative">
+                <i class="fa-solid fa-bell text-sand-400 text-base"></i>
+                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-400 rounded-full border border-sand-50"></span>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Reminders</span>
+        </button>
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[52px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-circle-user text-sand-400 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Account</span>
+        </button>
+
+    </nav>
+
+    <script>
+        // Bottom nav tab switching
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach((item, index) => {
+            item.addEventListener('click', () => {
+                navItems.forEach((nav, i) => {
+                    const iconWrap = nav.querySelector('div');
+                    const label = nav.querySelector('span');
+                    if (i === index) {
+                        nav.classList.add('active');
+                        iconWrap.classList.add('bg-sand-500');
+                        const fa = iconWrap.querySelector('i');
+                        if (fa) { fa.classList.remove('text-sand-400'); fa.classList.add('text-sand-50'); }
+                        label.classList.remove('text-sand-400', 'font-medium');
+                        label.classList.add('text-sand-600', 'font-semibold');
+                    } else {
+                        nav.classList.remove('active');
+                        iconWrap.classList.remove('bg-sand-500');
+                        const fa = iconWrap.querySelector('i');
+                        if (fa) { fa.classList.add('text-sand-400'); fa.classList.remove('text-sand-50'); }
+                        label.classList.add('text-sand-400', 'font-medium');
+                        label.classList.remove('text-sand-600', 'font-semibold');
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

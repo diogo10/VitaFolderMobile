@@ -1,0 +1,12 @@
+{
+    // Run practices (AGENTS.md): always use FVM, never bare flutter/dart.
+    // Pin the Dart-Code extension to the FVM-managed SDK so F5 uses
+    // Flutter 3.41.6 from .fvmrc instead of a globally installed SDK.
+    "dart.flutterSdkPath": ".fvm/flutter_sdk",
+    "search.exclude": {
+        "**/.fvm": true
+    },
+    "files.watcherExclude": {
+        "**/.fvm": true
+    }
+}

@@ -36,7 +36,7 @@ void main() {
     ).thenAnswer((_) async => true);
   });
 
-  Widget pumpApp() {
+  Widget pumpScreen(NotificationSettingsScreen screen) {
     return MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -46,20 +46,53 @@ void main() {
           storage: storage,
           notificationService: notificationService,
         ),
-        child: const NotificationSettingsScreen(),
+        child: screen,
       ),
     );
   }
+
+  Widget pumpApp({bool showTestAction = false}) => pumpScreen(
+    NotificationSettingsScreen(showTestAction: showTestAction),
+  );
 
   AppLocalizations l10n(WidgetTester tester) => AppLocalizations.of(
     tester.element(find.byType(NotificationSettingsScreen)),
   )!;
 
+  group('NotificationSettingsScreen test action visibility', () {
+    testWidgets('hides the test action by default', (tester) async {
+      await tester.pumpWidget(pumpScreen(const NotificationSettingsScreen()));
+      await tester.pumpAndSettle();
+      final l = l10n(tester);
+
+      expect(find.text(l.notificationSettingsTestAction), findsNothing);
+      expect(find.text(l.notificationSettingsTestSubtitle), findsNothing);
+    });
+
+    testWidgets('hides the test action when explicitly disabled', (
+      tester,
+    ) async {
+      await tester.pumpWidget(pumpApp());
+      await tester.pumpAndSettle();
+      final l = l10n(tester);
+
+      expect(find.text(l.notificationSettingsTestAction), findsNothing);
+    });
+
+    testWidgets('shows the test action when enabled', (tester) async {
+      await tester.pumpWidget(pumpApp(showTestAction: true));
+      await tester.pumpAndSettle();
+      final l = l10n(tester);
+
+      expect(find.text(l.notificationSettingsTestAction), findsOneWidget);
+    });
+  });
+
   group('NotificationSettingsScreen test notification', () {
     testWidgets('tapping sends a test notification and confirms', (
       tester,
     ) async {
-      await tester.pumpWidget(pumpApp());
+      await tester.pumpWidget(pumpApp(showTestAction: true));
       await tester.pumpAndSettle();
       final l = l10n(tester);
 
@@ -83,7 +116,7 @@ void main() {
         ),
       ).thenAnswer((_) async => false);
 
-      await tester.pumpWidget(pumpApp());
+      await tester.pumpWidget(pumpApp(showTestAction: true));
       await tester.pumpAndSettle();
       final l = l10n(tester);
 

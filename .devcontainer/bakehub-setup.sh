@@ -67,4 +67,4 @@ TASK_DESCRIPTION=$(echo "$pending_task" | jq -r '.description')
 
 echo "RUN opencode tasks"
 
-opencode run --title "$TASK_TITLE" "$TASK_DESCRIPTION - do the task and create a pull request with the changes."
+opencode run --title "$TASK_TITLE" "$TASK_DESCRIPTION - do the task and create a pull request with the changes. When you are done, remove the codespaces after the pull request is created: gh codespace delete --codespace $CODESPACE_NAME --force"

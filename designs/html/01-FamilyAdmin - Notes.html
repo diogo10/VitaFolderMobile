@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes fabPulse {
+            0%, 100% { box-shadow: 0 8px 32px rgba(139,115,85,0.38); }
+            50% { box-shadow: 0 8px 40px rgba(139,115,85,0.55); }
+        }
+
+        .card-slide { animation: slideInUp 0.45s ease both; }
+        .card-slide:nth-child(1) { animation-delay: 0.04s; }
+        .card-slide:nth-child(2) { animation-delay: 0.10s; }
+        .card-slide:nth-child(3) { animation-delay: 0.16s; }
+        .card-slide:nth-child(4) { animation-delay: 0.22s; }
+
+        .fade-in { animation: fadeIn 0.5s ease both; }
+        .scale-in { animation: scaleIn 0.4s ease both; }
+
+        .nav-item { transition: transform 0.18s ease, color 0.18s ease; }
+        .nav-item.active { transform: scale(1.12); }
+
+        .action-btn { transition: transform 0.15s ease; }
+        .action-btn:active { transform: scale(0.94); }
+
+        .note-card { transition: transform 0.15s ease, box-shadow 0.15s ease; break-inside: avoid; }
+        .note-card:active { transform: scale(0.985); }
+
+        .fab-btn {
+            animation: fabPulse 3s ease-in-out infinite;
+            transition: transform 0.15s ease;
+        }
+        .fab-btn:active { transform: scale(0.93); }
+
+        .note-fade {
+            position: relative;
+        }
+        .note-fade::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 28px;
+            background: linear-gradient(to bottom, rgba(255,251,235,0), #fffbeb);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                        figtree: ['Figtree', 'sans-serif'],
+                    },
+                    colors: {
+                        sand: {
+                            50: '#faf8f5',
+                            100: '#f0ebe3',
+                            200: '#e4dace',
+                            300: '#c9b99a',
+                            400: '#b8a080',
+                            500: '#8b7355',
+                            600: '#7a6348',
+                            700: '#634f39',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sand-50 font-figtree" style="max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative;">
+
+    <!-- STATUS BAR -->
+    <div id="status-bar" class="bg-sand-50 px-5 pt-3 pb-1 flex justify-between items-center">
+        <span class="text-sand-500 text-xs font-outfit font-medium">9:41 AM</span>
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-wifi text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-signal text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-battery-three-quarters text-sand-500 text-xs"></i>
+        </div>
+    </div>
+
+    <!-- TOP NAV -->
+    <header id="header" class="bg-sand-50 px-5 pt-2 pb-3 flex justify-between items-center fade-in sticky top-0 z-30">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-sand-500 flex items-center justify-center">
+                <i class="fa-solid fa-house-chimney text-sand-50 text-sm"></i>
+            </div>
+            <span class="font-outfit font-semibold text-sand-600 text-base tracking-tight">FamilyAdmin</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="action-btn w-10 h-10 rounded-full bg-sand-100 flex items-center justify-center">
+                <i class="fa-solid fa-magnifying-glass text-sand-500 text-base"></i>
+            </button>
+            <button class="action-btn w-10 h-10 rounded-full overflow-hidden border-2 border-sand-300">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" class="w-full h-full object-cover" alt="Admin">
+            </button>
+        </div>
+    </header>
+
+    <!-- SCROLLABLE CONTENT -->
+    <main id="main-content" class="pb-36 overflow-y-auto">
+
+        <!-- PAGE HEADING -->
+        <section id="page-heading" class="px-5 pt-1 pb-4 fade-in">
+            <div class="flex items-end justify-between">
+                <div>
+                    <h1 class="font-outfit font-bold text-sand-700 leading-tight" style="font-size: 1.85rem; line-height: 1.15;">Notes</h1>
+                    <p class="font-figtree text-sand-400 text-sm mt-1">Shared with Smith Family</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="action-btn w-11 h-11 rounded-2xl bg-sand-50 border border-sand-200 flex items-center justify-center">
+                        <i class="fa-solid fa-list-ul text-sand-500 text-base"></i>
+                    </button>
+                    <button class="action-btn w-11 h-11 rounded-2xl bg-sand-100 border border-sand-200 flex items-center justify-center">
+                        <i class="fa-solid fa-plus text-sand-500 text-base"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- NOTES GRID -->
+        <section id="notes-grid" class="px-5">
+            <div class="columns-2 gap-3">
+
+                <!-- Note: Weekly Groceries (matches notes_design.pdf) -->
+                <div id="note-1" class="note-card card-slide rounded-3xl p-4 mb-3 border border-amber-100" style="background: #fffbeb; box-shadow: 0 4px 18px rgba(217,119,6,0.10);">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-11 h-11 rounded-2xl bg-amber-100 border border-amber-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-basket-shopping text-amber-600 text-lg"></i>
+                        </div>
+                        <span class="font-figtree font-semibold text-amber-600" style="font-size: 10px;">2m ago</span>
+                    </div>
+                    <p class="font-outfit font-bold text-sand-700 text-sm mb-2">Weekly Groceries</p>
+                    <div class="note-fade max-h-24 overflow-hidden mb-3">
+                        <p class="font-figtree text-sand-600 text-xs leading-relaxed">• Oat milk</p>
+                        <p class="font-figtree text-sand-600 text-xs leading-relaxed">• Avocados</p>
+                        <p class="font-figtree text-sand-600 text-xs leading-relaxed">• Coffee beans</p>
+                        <p class="font-figtree text-sand-600 text-xs leading-relaxed">• Greek yogurt</p>
+                        <p class="font-figtree text-sand-600 text-xs leading-relaxed">• Honey</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" class="w-5 h-5 rounded-full object-cover border border-sand-200" alt="Sarah">
+                        <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Sarah</span>
+                    </div>
+                </div>
+
+                <!-- Note: Cabin Weekend -->
+                <div id="note-2" class="note-card card-slide bg-white rounded-3xl p-4 mb-3 border border-sand-100" style="box-shadow: 0 4px 18px rgba(139,115,85,0.10);">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-mountain-sun text-blue-400 text-lg"></i>
+                        </div>
+                        <span class="font-figtree font-semibold text-sand-400" style="font-size: 10px;">1h ago</span>
+                    </div>
+                    <p class="font-outfit font-bold text-sand-700 text-sm mb-2">Cabin Weekend</p>
+                    <p class="font-figtree text-sand-600 text-xs leading-relaxed mb-3">Book the cabin before Friday. Check ski gear in the garage.</p>
+                    <div class="flex items-center gap-2">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg" class="w-5 h-5 rounded-full object-cover border border-sand-200" alt="James">
+                        <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">James</span>
+                    </div>
+                </div>
+
+                <!-- Note: Mom's Birthday -->
+                <div id="note-3" class="note-card card-slide bg-white rounded-3xl p-4 mb-3 border border-sand-100" style="box-shadow: 0 4px 18px rgba(139,115,85,0.10);">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-gift text-rose-400 text-lg"></i>
+                        </div>
+                        <span class="font-figtree font-semibold text-sand-400" style="font-size: 10px;">Yesterday</span>
+                    </div>
+                    <p class="font-outfit font-bold text-sand-700 text-sm mb-2">Mom's Birthday</p>
+                    <p class="font-figtree text-sand-600 text-xs leading-relaxed">• Order chocolate cake</p>
+                    <p class="font-figtree text-sand-600 text-xs leading-relaxed mb-3">• Card from the kids</p>
+                    <div class="flex items-center gap-2">
+                        <div class="flex -space-x-1">
+                            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg" class="w-5 h-5 rounded-full object-cover border border-white" alt="Lily">
+                            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" class="w-5 h-5 rounded-full object-cover border border-white" alt="Max">
+                        </div>
+                        <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Lily & Max</span>
+                    </div>
+                </div>
+
+                <!-- Note: Movie Night -->
+                <div id="note-4" class="note-card card-slide bg-white rounded-3xl p-4 mb-3 border border-sand-100" style="box-shadow: 0 4px 18px rgba(139,115,85,0.10);">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-11 h-11 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-film text-purple-400 text-lg"></i>
+                        </div>
+                        <span class="font-figtree font-semibold text-sand-400" style="font-size: 10px;">Tue</span>
+                    </div>
+                    <p class="font-outfit font-bold text-sand-700 text-sm mb-2">Movie Night</p>
+                    <p class="font-figtree text-sand-600 text-xs leading-relaxed mb-3">Popcorn, blankets, and the new adventure film.</p>
+                    <div class="flex items-center gap-2">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" class="w-5 h-5 rounded-full object-cover border border-sand-200" alt="Max">
+                        <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Max</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FAB -->
+    <button id="fab-btn" class="fab-btn fixed z-40 w-14 h-14 rounded-full bg-sand-500 flex items-center justify-center" style="bottom: 120px;">
+        <i class="fa-solid fa-plus text-sand-50 text-lg"></i>
+    </button>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav id="bottom-nav" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full bg-sand-50 border-t border-sand-200 flex items-center justify-around px-2 pt-3 pb-6 z-30" style="max-width: 430px; box-shadow: 0 -8px 32px rgba(139,115,85,0.12);">
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[52px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-house text-sand-400 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Home</span>
+        </button>
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[52px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-people-group text-sand-400 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">People</span>
+        </button>
+
+        <button class="nav-item active flex flex-col items-center gap-1 min-w-[52px] min-h-[44px] relative">
+            <div class="w-10 h-10 rounded-2xl bg-sand-500 flex items-center justify-center relative">
+                <i class="fa-solid fa-note-sticky text-sand-50 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-600 font-semibold" style="font-size: 10px;">Notes</span>
+        </button>
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[52px] min-h-[44px] relative">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center relative">
+                <i class="fa-solid fa-bell text-sand-400 text-base"></i>
+                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-400 rounded-full border border-sand-50"></span>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Reminders</span>
+        </button>
+
+        <button class="nav-item flex flex-col items-center gap-1 min-w-[52px] min-h-[44px]">
+            <div class="w-10 h-10 rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-circle-user text-sand-400 text-base"></i>
+            </div>
+            <span class="font-figtree text-sand-400 font-medium" style="font-size: 10px;">Account</span>
+        </button>
+
+    </nav>
+
+    <script>
+        // Bottom nav tab switching
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach((item, index) => {
+            item.addEventListener('click', () => {
+                navItems.forEach((nav, i) => {
+                    const iconWrap = nav.querySelector('div');
+                    const label = nav.querySelector('span');
+                    if (i === index) {
+                        nav.classList.add('active');
+                        iconWrap.classList.add('bg-sand-500');
+                        const fa = iconWrap.querySelector('i');
+                        if (fa) { fa.classList.remove('text-sand-400'); fa.classList.add('text-sand-50'); }
+                        label.classList.remove('text-sand-400', 'font-medium');
+                        label.classList.add('text-sand-600', 'font-semibold');
+                    } else {
+                        nav.classList.remove('active');
+                        iconWrap.classList.remove('bg-sand-500');
+                        const fa = iconWrap.querySelector('i');
+                        if (fa) { fa.classList.add('text-sand-400'); fa.classList.remove('text-sand-50'); }
+                        label.classList.add('text-sand-400', 'font-medium');
+                        label.classList.remove('text-sand-600', 'font-semibold');
+                    }
+                });
+            });
+        });
+
+        // FAB responsive positioning
+        function positionFab() {
+            const fab = document.getElementById('fab-btn');
+            const bodyMaxW = 430;
+            const windowW = window.innerWidth;
+            const containerW = Math.min(windowW, bodyMaxW);
+            const rightEdge = (windowW - containerW) / 2 + 16;
+            fab.style.right = rightEdge + 'px';
+        }
+        positionFab();
+        window.addEventListener('resize', positionFab);
+    </script>
+
+</body>
+</html>
