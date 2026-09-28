@@ -54,16 +54,23 @@ After a change, run in order and expect:
 2. `fvm flutter test` → `All tests passed!`
 3. `fvm flutter test --coverage` (business-logic change only) →
    `python3 tool/check_business_logic_coverage.py` reports 100% per file
-   under `lib/features/<feature>/domain/` and
-   `lib/features/<feature>/application/` (e.g.
+   under each feature's domain/ and application/ layers (e.g.
    `lib/features/reminders/domain`,
    `lib/features/reminders/application`).
 
-CI is defined in `.github/workflows/ci.yml` and runs dart analyze
-with fatal warnings, flutter analyze with fatal warnings (infos allowed),
-tests with coverage, and enforces 100 percent per-file coverage for
-business-logic layers (see below). The lint set is very_good_analysis
-with public_member_api_docs off — fix lints, do not add ignore comments.
+CI (`.github/workflows/ci.yml`) runs the same steps with bare flutter/dart
+because the runner pre-installs Flutter — locally always use the fvm
+commands above, never bare flutter or dart:
+
+```bash
+dart analyze --fatal-warnings
+flutter analyze --no-fatal-infos --fatal-warnings
+flutter test --coverage
+python3 tool/check_business_logic_coverage.py
+```
+
+The lint set is very_good_analysis with public_member_api_docs off —
+fix lints, do not add ignore comments.
 
 ## Code rules
 
