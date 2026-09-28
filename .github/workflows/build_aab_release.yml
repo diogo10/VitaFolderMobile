@@ -18,6 +18,9 @@ on:
         required: false
         default: ""
 
+env:
+  PROPERTIES_PATH: "./android/key.properties"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -53,6 +56,29 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           cat version.env >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Setup Android signing
+        # Decodes the upload keystore (base64) and writes key.properties
+        # consumed by android/app/build.gradle.kts. Required secrets:
+        # ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
+        # ANDROID_KEY_PASSWORD, ANDROID_KEY_ALIAS.
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 secret is not set"
+            exit 1
+          fi
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/android.keystore
+          {
+            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyPassword=$ANDROID_KEY_PASSWORD"
+            echo "keyAlias=$ANDROID_KEY_ALIAS"
+            echo "storeFile=android.keystore"
+          } > "$PROPERTIES_PATH"
+
       - name: Build AAB (prod release)
         # Prod backend credentials come from GitHub secrets (never hardcoded).
         # See README "Environments & secrets" for the required secrets.
@@ -68,15 +94,6 @@ jobs:
         run: |
           bash tool/check_performance_budgets.sh | tee budget-report.md >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1
-        with:
-          appId: 1:140355243144:android:a6ac1f14183172f272633d
-          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          testers: ${{ secrets.FIREBASE_TESTERS }}
-          file: build/app/outputs/bundle/release/app-release.aab
-          releaseNotes: ${{ github.sha }}
-
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
@@ -86,3 +103,12 @@ jobs:
             version.env
             build/app/outputs/bundle/release/*.aab
           retention-days: 30
+
+      - name: Release app to Internal
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAYSTORE_ACCOUNT_KEY }}
+          packageName: com.housemira.app
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          status: completed
+          track: internal
