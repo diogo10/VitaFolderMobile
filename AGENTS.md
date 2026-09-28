@@ -9,11 +9,11 @@ References: [architecture](.agents/references/architecture.md) ·
 
 ## Commands (always use fvm, never bare flutter or dart)
 
-Quick reference:
+Quick reference (run from repo root):
 
 - Setup: `fvm flutter pub get`
-- Lint: `fvm flutter analyze`
-- Test: `fvm flutter test`
+- Lint command: `fvm flutter analyze`
+- Test command: `fvm flutter test`
 - Coverage: `fvm flutter test --coverage`
 
 ### Setup
@@ -24,7 +24,7 @@ fvm flutter pub get
 
 ### Lint
 
-Must be clean: 0 errors, 0 warnings. Run before pushing:
+Lint command. Must be clean: 0 errors, 0 warnings. Run before pushing:
 
 ```bash
 fvm flutter analyze
@@ -32,7 +32,7 @@ fvm flutter analyze
 
 ### Test
 
-Full suite (or pass a scope such as test/features/account):
+Test command. Full suite (or pass a scope such as test/features/account):
 
 ```bash
 fvm flutter test
@@ -54,7 +54,10 @@ After a change, run in order and expect:
 2. `fvm flutter test` → `All tests passed!`
 3. `fvm flutter test --coverage` (business-logic change only) →
    `python3 tool/check_business_logic_coverage.py` reports 100% per file
-   under `lib/**/domain/` and `lib/**/application/`.
+   under `lib/features/<feature>/domain/` and
+   `lib/features/<feature>/application/` (e.g.
+   `lib/features/reminders/domain`,
+   `lib/features/reminders/application`).
 
 CI is defined in `.github/workflows/ci.yml` and runs dart analyze
 with fatal warnings, flutter analyze with fatal warnings (infos allowed),
