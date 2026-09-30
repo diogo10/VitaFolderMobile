@@ -15,6 +15,8 @@ abstract final class AppRoutes {
   static const signUp = '/sign-up';
   static const home = '/home';
   static const people = '/people';
+  static const notes = '/notes';
+  static const noteEditor = '/notes/edit';
   static const reminders = '/reminders';
   static const account = '/account';
   static const invitePeople = '/invite-people';
@@ -67,7 +69,7 @@ abstract final class AppRoutes {
   );
 
   /// Tabs that guests may browse without signing in.
-  static const guestTabs = <String>{home, people, reminders, account};
+  static const guestTabs = <String>{home, people, notes, reminders, account};
 }
 
 /// Validated redirect matrix for the router.

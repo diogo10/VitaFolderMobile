@@ -21,6 +21,9 @@ class TabRefreshCoordinator {
   /// Set by the people tab builder on first visit.
   void Function()? refreshPeople;
 
+  /// Set by the notes tab builder on first visit.
+  void Function()? refreshNotes;
+
   /// Set by the reminders tab builder on first visit.
   void Function()? refreshReminders;
 
@@ -48,6 +51,7 @@ class TabRefreshCoordinator {
   void refreshAll() {
     refreshHome?.call();
     refreshPeople?.call();
+    refreshNotes?.call();
     refreshReminders?.call();
   }
 
@@ -55,6 +59,12 @@ class TabRefreshCoordinator {
   /// unbuilt and load fresh on first visit instead.
   void refreshAfterReminderSave() {
     refreshReminders?.call();
+    refreshHome?.call();
+  }
+
+  /// Refreshes the lists affected by a note save.
+  void refreshAfterNoteSave() {
+    refreshNotes?.call();
     refreshHome?.call();
   }
 }

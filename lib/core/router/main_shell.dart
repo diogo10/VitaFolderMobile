@@ -3,20 +3,20 @@ import 'package:go_router/go_router.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
 class MainShell extends StatelessWidget {
-
   const MainShell({required this.navigationShell, super.key});
   final StatefulNavigationShell navigationShell;
 
   static const List<IconData> _tabIcons = [
     Icons.home_rounded,
     Icons.groups_rounded,
+    Icons.note_rounded,
     Icons.notifications_rounded,
     Icons.account_circle_rounded,
   ];
 
   List<String> _tabLabels(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    return [l.navHome, l.navPeople, l.navReminders, l.navAccount];
+    return [l.navHome, l.navPeople, l.navNotes, l.navReminders, l.navAccount];
   }
 
   Widget _buildNavigationIcon(int index, {required bool isSelected}) {
@@ -25,7 +25,7 @@ class MainShell extends StatelessWidget {
       size: 24,
       color: isSelected ? Colors.white : const Color(0xFFC2B299),
     );
-    final iconWithBadge = index == 2
+    final iconWithBadge = index == 3
         ? Badge(
             backgroundColor: const Color(0xFFC2B299),
             smallSize: 7,

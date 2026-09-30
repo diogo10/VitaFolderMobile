@@ -2212,6 +2212,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Family not found'**
   String get familySettingsErrorNotFound;
+
+  /// No description provided for @navNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get navNotes;
+
+  /// No description provided for @notesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notesTitle;
+
+  /// No description provided for @notesTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get notesTitleLabel;
+
+  /// No description provided for @notesTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Note Title'**
+  String get notesTitleHint;
+
+  /// No description provided for @notesContentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get notesContentLabel;
+
+  /// No description provided for @notesContentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Start typing here...'**
+  String get notesContentHint;
+
+  /// No description provided for @notesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes yet'**
+  String get notesEmptyTitle;
+
+  /// No description provided for @notesEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared thoughts, grocery lists, or important family info will appear here.'**
+  String get notesEmptyMessage;
+
+  /// No description provided for @notesUnauthenticatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared Notes'**
+  String get notesUnauthenticatedTitle;
+
+  /// No description provided for @notesUnauthenticatedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to create, share, and organize notes with your family circle.'**
+  String get notesUnauthenticatedMessage;
+
+  /// No description provided for @notesTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a title'**
+  String get notesTitleRequired;
+
+  /// No description provided for @notesTitleTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Title must be at most 100 characters'**
+  String get notesTitleTooLong;
+
+  /// No description provided for @notesContentRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter some content'**
+  String get notesContentRequired;
+
+  /// No description provided for @notesContentTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Content must be at most 300 characters'**
+  String get notesContentTooLong;
+
+  /// No description provided for @notesCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Note'**
+  String get notesCreateTitle;
+
+  /// No description provided for @notesEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Note'**
+  String get notesEditTitle;
+
+  /// No description provided for @notesSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get notesSave;
+
+  /// No description provided for @notesDeleteDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove note'**
+  String get notesDeleteDialogTitle;
+
+  /// No description provided for @notesDeleteDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove this note?'**
+  String get notesDeleteDialogMessage;
+
+  /// No description provided for @notesDeleteDialogConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get notesDeleteDialogConfirm;
+
+  /// No description provided for @notesDeleteDialogCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get notesDeleteDialogCancel;
+
+  /// No description provided for @notesErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load notes'**
+  String get notesErrorGeneric;
+
+  /// No description provided for @notesErrorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Note not found'**
+  String get notesErrorNotFound;
+
+  /// No description provided for @notesErrorOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'You appear to be offline'**
+  String get notesErrorOffline;
+
+  /// No description provided for @notesEmptyCreateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your First Note'**
+  String get notesEmptyCreateButton;
+
+  /// No description provided for @notesSignInToStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In to Start'**
+  String get notesSignInToStart;
+
+  /// No description provided for @notesJoinFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Join a Family'**
+  String get notesJoinFamily;
+
+  /// No description provided for @notesNewToApp.
+  ///
+  /// In en, this message translates to:
+  /// **'New to FamilyAdmin?'**
+  String get notesNewToApp;
+
+  /// No description provided for @notesCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account'**
+  String get notesCreateAccount;
+
+  /// No description provided for @notesSharedWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared with {family}'**
+  String notesSharedWith(String family);
+
+  /// No description provided for @notesSharedWithYourFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared with your family'**
+  String get notesSharedWithYourFamily;
+
+  /// No description provided for @notesNoteColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Note Color'**
+  String get notesNoteColor;
+
+  /// No description provided for @notesToolbarBold.
+  ///
+  /// In en, this message translates to:
+  /// **'Bold'**
+  String get notesToolbarBold;
+
+  /// No description provided for @notesToolbarList.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get notesToolbarList;
+
+  /// No description provided for @notesColorYellow.
+  ///
+  /// In en, this message translates to:
+  /// **'Yellow'**
+  String get notesColorYellow;
+
+  /// No description provided for @notesColorPink.
+  ///
+  /// In en, this message translates to:
+  /// **'Pink'**
+  String get notesColorPink;
+
+  /// No description provided for @notesColorBlue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get notesColorBlue;
+
+  /// No description provided for @notesColorGreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get notesColorGreen;
+
+  /// No description provided for @notesColorOrange.
+  ///
+  /// In en, this message translates to:
+  /// **'Orange'**
+  String get notesColorOrange;
+
+  /// No description provided for @notesTimeMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 min ago} other{{count} min ago}}'**
+  String notesTimeMinutesAgo(int count);
+
+  /// No description provided for @notesTimeHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1h ago} other{{count}h ago}}'**
+  String notesTimeHoursAgo(int count);
+
+  /// No description provided for @notesTimeYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get notesTimeYesterday;
+
+  /// No description provided for @notesErrorNoFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'No family found. Join or create a family first.'**
+  String get notesErrorNoFamily;
 }
 
 class _AppLocalizationsDelegate

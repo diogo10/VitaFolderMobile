@@ -412,5 +412,69 @@
   },
   "createReminderErrorNoFamily": "Nenhuma família encontrada",
   "createReminderErrorAuthRequired": "Autenticação necessária",
-  "familySettingsErrorNotFound": "Família não encontrada"
+  "familySettingsErrorNotFound": "Família não encontrada",
+  "navNotes": "Notas",
+  "notesTitle": "Notas",
+  "notesTitleLabel": "Título",
+  "notesTitleHint": "Título da Nota",
+  "notesContentLabel": "Conteúdo",
+  "notesContentHint": "Comece a digitar aqui...",
+  "notesEmptyTitle": "Nenhuma nota ainda",
+  "notesEmptyMessage": "Pensamentos compartilhados, listas de compras ou informações importantes da família aparecerão aqui.",
+  "notesUnauthenticatedTitle": "Notas Compartilhadas",
+  "notesUnauthenticatedMessage": "Entre para criar, compartilhar e organizar notas com seu círculo familiar.",
+  "notesTitleRequired": "Digite um título",
+  "notesTitleTooLong": "O título deve ter no máximo 100 caracteres",
+  "notesContentRequired": "Digite algum conteúdo",
+  "notesContentTooLong": "O conteúdo deve ter no máximo 300 caracteres",
+  "notesCreateTitle": "Nova Nota",
+  "notesEditTitle": "Editar Nota",
+  "notesSave": "Salvar",
+  "notesDeleteDialogTitle": "Remover nota",
+  "notesDeleteDialogMessage": "Tem certeza que deseja remover esta nota?",
+  "notesDeleteDialogConfirm": "Remover",
+  "notesDeleteDialogCancel": "Cancelar",
+  "notesErrorGeneric": "Não foi possível carregar as notas",
+  "notesErrorNotFound": "Nota não encontrada",
+  "notesErrorOffline": "Você parece estar offline",
+  "notesEmptyCreateButton": "Crie Sua Primeira Nota",
+  "notesSignInToStart": "Entrar para Começar",
+  "notesJoinFamily": "Entrar em uma Família",
+  "notesNewToApp": "Novo no FamilyAdmin?",
+  "notesCreateAccount": "Crie uma conta",
+  "notesSharedWith": "Compartilhado com {family}",
+  "@notesSharedWith": {
+    "placeholders": {
+      "family": {
+        "type": "String"
+      }
+    }
+  },
+  "notesSharedWithYourFamily": "Compartilhado com sua família",
+  "notesNoteColor": "Cor da Nota",
+  "notesToolbarBold": "Negrito",
+  "notesToolbarList": "Lista",
+  "notesColorYellow": "Amarelo",
+  "notesColorPink": "Rosa",
+  "notesColorBlue": "Azul",
+  "notesColorGreen": "Verde",
+  "notesColorOrange": "Laranja",
+  "notesTimeMinutesAgo": "{count, plural, =1{há 1 min} other{há {count} min}}",
+  "@notesTimeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notesTimeHoursAgo": "{count, plural, =1{há 1 h} other{há {count} h}}",
+  "@notesTimeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notesTimeYesterday": "Ontem",
+  "notesErrorNoFamily": "Nenhuma família encontrada. Entre ou crie uma família primeiro."
 }

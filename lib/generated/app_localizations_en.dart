@@ -1144,4 +1144,155 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get familySettingsErrorNotFound => 'Family not found';
+
+  @override
+  String get navNotes => 'Notes';
+
+  @override
+  String get notesTitle => 'Notes';
+
+  @override
+  String get notesTitleLabel => 'Title';
+
+  @override
+  String get notesTitleHint => 'Note Title';
+
+  @override
+  String get notesContentLabel => 'Content';
+
+  @override
+  String get notesContentHint => 'Start typing here...';
+
+  @override
+  String get notesEmptyTitle => 'No notes yet';
+
+  @override
+  String get notesEmptyMessage =>
+      'Shared thoughts, grocery lists, or important family info will appear here.';
+
+  @override
+  String get notesUnauthenticatedTitle => 'Shared Notes';
+
+  @override
+  String get notesUnauthenticatedMessage =>
+      'Sign in to create, share, and organize notes with your family circle.';
+
+  @override
+  String get notesTitleRequired => 'Enter a title';
+
+  @override
+  String get notesTitleTooLong => 'Title must be at most 100 characters';
+
+  @override
+  String get notesContentRequired => 'Enter some content';
+
+  @override
+  String get notesContentTooLong => 'Content must be at most 300 characters';
+
+  @override
+  String get notesCreateTitle => 'New Note';
+
+  @override
+  String get notesEditTitle => 'Edit Note';
+
+  @override
+  String get notesSave => 'Save';
+
+  @override
+  String get notesDeleteDialogTitle => 'Remove note';
+
+  @override
+  String get notesDeleteDialogMessage =>
+      'Are you sure you want to remove this note?';
+
+  @override
+  String get notesDeleteDialogConfirm => 'Remove';
+
+  @override
+  String get notesDeleteDialogCancel => 'Cancel';
+
+  @override
+  String get notesErrorGeneric => 'Could not load notes';
+
+  @override
+  String get notesErrorNotFound => 'Note not found';
+
+  @override
+  String get notesErrorOffline => 'You appear to be offline';
+
+  @override
+  String get notesEmptyCreateButton => 'Create Your First Note';
+
+  @override
+  String get notesSignInToStart => 'Sign In to Start';
+
+  @override
+  String get notesJoinFamily => 'Join a Family';
+
+  @override
+  String get notesNewToApp => 'New to FamilyAdmin?';
+
+  @override
+  String get notesCreateAccount => 'Create an account';
+
+  @override
+  String notesSharedWith(String family) {
+    return 'Shared with $family';
+  }
+
+  @override
+  String get notesSharedWithYourFamily => 'Shared with your family';
+
+  @override
+  String get notesNoteColor => 'Note Color';
+
+  @override
+  String get notesToolbarBold => 'Bold';
+
+  @override
+  String get notesToolbarList => 'List';
+
+  @override
+  String get notesColorYellow => 'Yellow';
+
+  @override
+  String get notesColorPink => 'Pink';
+
+  @override
+  String get notesColorBlue => 'Blue';
+
+  @override
+  String get notesColorGreen => 'Green';
+
+  @override
+  String get notesColorOrange => 'Orange';
+
+  @override
+  String notesTimeMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count min ago',
+      one: '1 min ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notesTimeHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '${count}h ago',
+      one: '1h ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notesTimeYesterday => 'Yesterday';
+
+  @override
+  String get notesErrorNoFamily =>
+      'No family found. Join or create a family first.';
 }

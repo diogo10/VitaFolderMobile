@@ -23,6 +23,9 @@ import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/home/presentation/views/home_view.dart';
 import 'package:house_mira/features/login/presentation/cubit/sign_up_cubit.dart';
 import 'package:house_mira/features/login/presentation/views/sign_up_screen.dart';
+import 'package:house_mira/features/notes/presentation/cubit/notes_cubit.dart';
+import 'package:house_mira/features/notes/presentation/views/note_editor_screen.dart';
+import 'package:house_mira/features/notes/presentation/views/notes_view.dart';
 import 'package:house_mira/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:house_mira/features/people/presentation/cubit/family_settings_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/invite_people_cubit.dart';
@@ -70,7 +73,8 @@ import 'package:house_mira/features/reminders/presentation/screens/reminders_vie
 /// tab reads it for guest gating.
 ///
 /// Factory contract:
-/// * Tab factories (`home`, `people`, `reminders`, `account`) are **shared**.
+/// * Tab factories (`home`, `people`, `notes`, `reminders`, `account`) are
+///   **shared**.
 ///   They must return the same lazy-singleton instance on every call and the
 ///   provider uses `BlocProvider.value` (never closes). Tests must return a
 ///   single shared instance and close it manually in `addTearDown`.
@@ -96,6 +100,7 @@ GoRouter createRouter({
   TabRefreshCoordinator? refreshCoordinator,
   HomeCubit Function()? homeCubitFactory,
   PeopleCubit Function()? peopleCubitFactory,
+  NotesCubit Function()? notesCubitFactory,
   RemindersCubit Function()? remindersCubitFactory,
   AccountCubit Function()? accountCubitFactory,
   CreateReminderCubit Function()? createReminderCubitFactory,
@@ -113,6 +118,7 @@ GoRouter createRouter({
   final coordinator = refreshCoordinator ?? TabRefreshCoordinator();
   final resolveHomeCubit = homeCubitFactory ?? _defaultHomeCubitFactory;
   final resolvePeopleCubit = peopleCubitFactory ?? _defaultPeopleCubitFactory;
+  final resolveNotesCubit = notesCubitFactory ?? _defaultNotesCubitFactory;
   final resolveRemindersCubit =
       remindersCubitFactory ?? _defaultRemindersCubitFactory;
   final resolveAccountCubit =
@@ -212,6 +218,21 @@ GoRouter createRouter({
         },
       ),
       GoRoute(
+        path: AppRoutes.noteEditor,
+        builder: (context, state) {
+          final route = NoteEditorRoute.fromState(state);
+          // Single-cubit requirement (FR-102): the editor reuses the
+          // shared NotesCubit instance methods via BlocProvider.value.
+          return BlocProvider<NotesCubit>.value(
+            value: resolveNotesCubit(),
+            child: NoteEditorScreen(
+              note: route.note,
+              onSaved: coordinator.refreshAfterNoteSave,
+            ),
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.onboarding,
         builder: (context, state) => const OnboardingPage(),
       ),
@@ -285,6 +306,21 @@ GoRouter createRouter({
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: AppRoutes.notes,
+                builder: (context, state) {
+                  final cubit = resolveNotesCubit();
+                  coordinator.refreshNotes = () => unawaited(cubit.loadNotes());
+                  return BlocProvider<NotesCubit>.value(
+                    value: cubit,
+                    child: const NotesView(),
+                  );
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: AppRoutes.reminders,
                 builder: (context, state) {
                   final cubit = resolveRemindersCubit();
@@ -331,6 +367,9 @@ HomeCubit _defaultHomeCubitFactory() =>
 
 PeopleCubit _defaultPeopleCubitFactory() =>
     slInstance<PeopleCubit>(instanceName: 'peopleCubit');
+
+NotesCubit _defaultNotesCubitFactory() =>
+    slInstance<NotesCubit>(instanceName: 'notesCubit');
 
 RemindersCubit _defaultRemindersCubitFactory() =>
     slInstance<RemindersCubit>(instanceName: 'remindersCubit');

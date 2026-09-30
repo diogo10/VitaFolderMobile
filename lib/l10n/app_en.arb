@@ -433,5 +433,69 @@
   },
   "createReminderErrorNoFamily": "No family found",
   "createReminderErrorAuthRequired": "Authentication required",
-  "familySettingsErrorNotFound": "Family not found"
+  "familySettingsErrorNotFound": "Family not found",
+  "navNotes": "Notes",
+  "notesTitle": "Notes",
+  "notesTitleLabel": "Title",
+  "notesTitleHint": "Note Title",
+  "notesContentLabel": "Content",
+  "notesContentHint": "Start typing here...",
+  "notesEmptyTitle": "No notes yet",
+  "notesEmptyMessage": "Shared thoughts, grocery lists, or important family info will appear here.",
+  "notesUnauthenticatedTitle": "Shared Notes",
+  "notesUnauthenticatedMessage": "Sign in to create, share, and organize notes with your family circle.",
+  "notesTitleRequired": "Enter a title",
+  "notesTitleTooLong": "Title must be at most 100 characters",
+  "notesContentRequired": "Enter some content",
+  "notesContentTooLong": "Content must be at most 300 characters",
+  "notesCreateTitle": "New Note",
+  "notesEditTitle": "Edit Note",
+  "notesSave": "Save",
+  "notesDeleteDialogTitle": "Remove note",
+  "notesDeleteDialogMessage": "Are you sure you want to remove this note?",
+  "notesDeleteDialogConfirm": "Remove",
+  "notesDeleteDialogCancel": "Cancel",
+  "notesErrorGeneric": "Could not load notes",
+  "notesErrorNotFound": "Note not found",
+  "notesErrorOffline": "You appear to be offline",
+  "notesEmptyCreateButton": "Create Your First Note",
+  "notesSignInToStart": "Sign In to Start",
+  "notesJoinFamily": "Join a Family",
+  "notesNewToApp": "New to FamilyAdmin?",
+  "notesCreateAccount": "Create an account",
+  "notesSharedWith": "Shared with {family}",
+  "@notesSharedWith": {
+    "placeholders": {
+      "family": {
+        "type": "String"
+      }
+    }
+  },
+  "notesSharedWithYourFamily": "Shared with your family",
+  "notesNoteColor": "Note Color",
+  "notesToolbarBold": "Bold",
+  "notesToolbarList": "List",
+  "notesColorYellow": "Yellow",
+  "notesColorPink": "Pink",
+  "notesColorBlue": "Blue",
+  "notesColorGreen": "Green",
+  "notesColorOrange": "Orange",
+  "notesTimeMinutesAgo": "{count, plural, =1{1 min ago} other{{count} min ago}}",
+  "@notesTimeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notesTimeHoursAgo": "{count, plural, =1{1h ago} other{{count}h ago}}",
+  "@notesTimeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notesTimeYesterday": "Yesterday",
+  "notesErrorNoFamily": "No family found. Join or create a family first."
 }
