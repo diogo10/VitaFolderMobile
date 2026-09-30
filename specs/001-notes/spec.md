@@ -52,12 +52,17 @@ Implement a shared Notes feature allowing family members to create, edit, view, 
 - **FR-105**: Database schema MUST be stored in `sqls/notes_schema.sql` with `id: uuid PK`, `family_id: uuid NOT NULL REFERENCES families(id) ON DELETE CASCADE`, `created_by: uuid NOT NULL DEFAULT auth.uid()`, `title/content/color: text NOT NULL`, `created_at/updated_at: timestamptz NOT NULL DEFAULT now()`, color allowlist `CHECK`, length `CHECK (char_length(trim(...)) BETWEEN 1 AND ...)` (trim-aware, see Key Entities), RLS + `updated_at` trigger.
 - **FR-106**: Text fields MUST enforce trim-then-check-empty + length limits: Title (100), Note Body (300) — enforced in UI validation and `Note.from` null-on-invalid, mirrored in DB via trim-aware `CHECK (char_length(trim(...)))`.
 - **FR-107**: All user-visible strings MUST come via AppLocalizations backed by `lib/l10n/app_en.arb` and `lib/l10n/app_pt.arb` — never hardcode; new keys required for titles, empty/unauthenticated/error states, validation errors (US2), and delete-confirm dialog (US4).
+- **FR-108**: Notes list has no search, filter, or alternate sort; ordering is `created_at DESC` only.
+- **FR-109**: Note body supports rich-text formatting (bold/lists) in create/edit/view; image/file attachments are out of scope (no storage columns or upload flows).
 
 ## Edge Cases
 - User loses internet connection while saving: Cubit should emit `NotesFailure` with localized error message.
+- Offline viewing: no cache; opening the list or saving while offline emits localized `NotesFailure` until pull-to-refresh succeeds online. No local persistence or queued retry.
 - Note is deleted by another user while current user is viewing it: pull-to-refresh re-syncs to `NotesLoaded`; edit/delete on a stale note surfaces localized `NotesFailure` (not-found) and triggers list reload rather than crashing or showing fake data.
 - User changes family context: Notes list must refresh to the new `family_id`.
 - Permission model: any current `family_members` member may create notes and edit/delete any note in their `family_id` scope (shared family space); RLS denies non-members on all operations and the cubit maps denial to `NotesUnauthenticated`/`NotesFailure` with localized message. `created_by` confers no extra edit/delete privilege.
+- Concurrent edits: last-write-wins applies; the later update overwrites silently with `updated_at` bumped via trigger, with no version check or conflict UI.
+- Deletion is hard delete: confirm-dialog confirm permanently erases the row with no trash, restore, or `deleted_at` column.
 
 ## Success Criteria
 - **SC-100**: 100% test coverage on `domain/` and `application/` layers. Explicit test list: cubit tests (`loadNotes` empty → `NotesLoaded([])`, populated → `NotesLoaded(notes)`, unauthenticated → `NotesUnauthenticated`, failure → `NotesFailure`, `create/update/deleteNote` success → `NoteActionSuccess` + reload, failure paths, family-context switch refresh); entity tests (`Note.from` valid, null-on-invalid per field, `copyWith`, color allowlist); use-case tests (`GetNotesUsecase`, `CreateNoteUsecase`, `UpdateNoteUsecase`, `DeleteNoteUsecase` success + `Left(Failure)` paths).
@@ -70,3 +75,8 @@ Implement a shared Notes feature allowing family members to create, edit, view, 
 - **A**: Title should have 100 characters and notes should have 300 characters.
 - **Q**: Real-time sync required or pull-to-refresh?
 - **A**: Add a pull-to-refresh.
+- Q: How should the app handle two family members editing the same note at the same time? → A: Last-write-wins
+- Q: What should the user see when opening Notes with no internet connection? → A: Error only, no cache
+- Q: Does the Notes list need search, filtering, or sorting beyond newest-first order? → A: No search/filter; created_at DESC only
+- Q: Should deleting a note permanently erase it or move it to a recoverable trash? → A: Hard delete immediately with confirm dialog, no restore
+- Q: Are attachments, images, or rich-text formatting part of this Notes release? → A: Rich-text formatting (bold/lists) only, no files
