@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Note</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .animate-up { animation: slideInUp 0.4s ease both; }
+        .delay-1 { animation-delay: 0.08s; }
+        .delay-2 { animation-delay: 0.16s; }
+        .delay-3 { animation-delay: 0.24s; }
+        .fade-in { animation: fadeIn 0.5s ease both; }
+
+        .action-btn { transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.2s ease; }
+        .action-btn:active { transform: scale(0.94); }
+
+        .title-input::placeholder, .body-input::placeholder { color: #e4dace; }
+
+        .title-input:focus, .body-input:focus { outline: none; }
+
+        .color-swatch { transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; cursor: pointer; }
+        .color-swatch:active { transform: scale(0.92); }
+        .color-swatch.selected { border-color: #8b7355 !important; box-shadow: 0 0 0 2px rgba(139,115,85,0.18); }
+
+        #save-btn { transition: opacity 0.2s ease, transform 0.15s ease, background-color 0.2s ease; }
+        #save-btn:disabled { opacity: 0.45; }
+        #save-btn:not(:disabled):active { transform: scale(0.96); }
+
+        .tool-btn { transition: transform 0.15s ease, background-color 0.2s ease, color 0.2s ease; }
+        .tool-btn:active { transform: scale(0.9); }
+        .tool-btn.active { background-color: #8b7355; color: #faf8f5; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                        figtree: ['Figtree', 'sans-serif'],
+                    },
+                    colors: {
+                        sand: {
+                            50: '#faf8f5',
+                            100: '#f0ebe3',
+                            200: '#e4dace',
+                            300: '#c9b99a',
+                            400: '#b8a080',
+                            500: '#8b7355',
+                            600: '#7a6348',
+                            700: '#634f39',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body id="page-body" class="bg-sand-50 font-figtree" style="max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative; transition: background-color 0.25s ease;">
+
+    <!-- STATUS BAR -->
+    <div id="status-bar" class="bg-transparent px-5 pt-3 pb-1 flex justify-between items-center">
+        <span class="text-sand-500 text-xs font-outfit font-medium">9:41 AM</span>
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-wifi text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-signal text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-battery-three-quarters text-sand-500 text-xs"></i>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header id="header" class="px-5 py-3 flex items-center justify-between sticky top-0 z-30 fade-in" style="background: inherit;">
+        <button id="close-btn" aria-label="Close" class="action-btn w-12 h-12 rounded-3xl bg-white border border-sand-100 flex items-center justify-center" style="box-shadow: 0 4px 16px rgba(139,115,85,0.10);">
+            <i class="fa-solid fa-xmark text-sand-400 text-lg"></i>
+        </button>
+        <h1 class="font-outfit font-bold text-sand-700 text-lg tracking-tight">New Note</h1>
+        <button id="save-btn" disabled class="action-btn bg-sand-500 text-sand-50 font-outfit font-semibold text-sm rounded-2xl px-7 flex items-center justify-center" style="height: 48px; min-width: 84px; box-shadow: 0 8px 24px rgba(139,115,85,0.30);">
+            Save
+        </button>
+    </header>
+
+    <!-- EDITOR -->
+    <main id="main-content" class="px-6 pb-48">
+        <!-- Title -->
+        <div class="animate-up pt-4">
+            <input id="note-title" type="text" placeholder="Note Title" maxlength="80"
+                class="title-input w-full bg-transparent font-outfit font-bold text-sand-700 placeholder:font-bold"
+                style="font-size: 1.7rem; line-height: 1.2;" autocomplete="off">
+        </div>
+
+        <!-- Body -->
+        <div class="animate-up delay-1 mt-3">
+            <textarea id="note-body" rows="8" placeholder="Start typing here..."
+                class="body-input w-full bg-transparent font-figtree text-sand-600 resize-none"
+                style="font-size: 1.05rem; line-height: 1.6; min-height: 220px;"></textarea>
+        </div>
+
+        <!-- NOTE COLOR -->
+        <div class="animate-up delay-2 mt-8">
+            <p class="font-figtree font-bold text-sand-400 uppercase tracking-widest" style="font-size: 11px; letter-spacing: 0.12em;">Note Color</p>
+            <div id="color-row" class="flex items-center gap-4 mt-4">
+                <button class="color-swatch selected w-16 h-16 rounded-3xl border" data-color="#fffbeb" data-name="Cream"
+                    style="background: #fffbeb; border-color: #8b7355;" aria-label="Cream"></button>
+                <button class="color-swatch w-16 h-16 rounded-3xl border border-blue-100" data-color="#eff6ff" data-name="Sky"
+                    style="background: #eff6ff;" aria-label="Sky"></button>
+                <button class="color-swatch w-16 h-16 rounded-3xl border border-purple-100" data-color="#faf5ff" data-name="Lilac"
+                    style="background: #faf5ff;" aria-label="Lilac"></button>
+                <button class="color-swatch w-16 h-16 rounded-3xl border border-rose-100" data-color="#fff1f2" data-name="Blush"
+                    style="background: #fff1f2;" aria-label="Blush"></button>
+            </div>
+            <p id="color-name" class="font-figtree text-sand-400 text-xs mt-3">Cream</p>
+        </div>
+    </main>
+
+    <!-- BOTTOM TOOLBAR -->
+    <div id="bottom-toolbar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full px-6 pt-4 pb-8 flex items-center justify-between z-30" style="max-width: 430px; background: inherit;">
+        <button id="checklist-btn" aria-label="Checklist" class="tool-btn w-11 h-11 rounded-2xl flex items-center justify-center text-sand-400">
+            <i class="fa-solid fa-list-check text-xl"></i>
+        </button>
+        <button id="more-btn" aria-label="More options" class="tool-btn w-11 h-11 rounded-2xl flex items-center justify-center text-sand-400">
+            <i class="fa-solid fa-ellipsis text-xl"></i>
+        </button>
+    </div>
+
+    <!-- MORE SHEET -->
+    <div id="more-sheet" class="hidden fixed inset-0 z-40 flex items-end justify-center" style="max-width: 430px; margin: 0 auto;">
+        <div id="more-backdrop" class="absolute inset-0 bg-sand-700/30"></div>
+        <div class="relative w-full bg-white rounded-t-3xl px-6 pt-4 pb-8" style="box-shadow: 0 -12px 40px rgba(139,115,85,0.20);">
+            <div class="w-10 h-1 rounded-full bg-sand-200 mx-auto mb-4"></div>
+            <button class="action-btn w-full flex items-center gap-3 py-3.5 text-left">
+                <i class="fa-solid fa-thumbtack text-sand-400"></i>
+                <span class="font-figtree font-semibold text-sand-600 text-sm">Pin note</span>
+            </button>
+            <button class="action-btn w-full flex items-center gap-3 py-3.5 text-left">
+                <i class="fa-solid fa-share-nodes text-sand-400"></i>
+                <span class="font-figtree font-semibold text-sand-600 text-sm">Share with family</span>
+            </button>
+            <button class="action-btn w-full flex items-center gap-3 py-3.5 text-left">
+                <i class="fa-solid fa-trash-can text-rose-400"></i>
+                <span class="font-figtree font-semibold text-rose-400 text-sm">Discard note</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const body = document.getElementById('page-body');
+        const titleInput = document.getElementById('note-title');
+        const bodyInput = document.getElementById('note-body');
+        const saveBtn = document.getElementById('save-btn');
+        const colorName = document.getElementById('color-name');
+        const swatches = document.querySelectorAll('.color-swatch');
+        const defaultBg = '#faf8f5';
+
+        function autoGrow(el) {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
+
+        function refreshSave() {
+            const hasContent = titleInput.value.trim().length > 0 || bodyInput.value.trim().length > 0;
+            saveBtn.disabled = !hasContent;
+        }
+
+        titleInput.addEventListener('input', refreshSave);
+        bodyInput.addEventListener('input', () => { autoGrow(bodyInput); refreshSave(); });
+        autoGrow(bodyInput);
+
+        // Color selection tints the page background like a note canvas
+        swatches.forEach((sw) => {
+            sw.addEventListener('click', () => {
+                swatches.forEach((s) => s.classList.remove('selected'));
+                sw.classList.add('selected');
+                colorName.textContent = sw.dataset.name;
+                const c = sw.dataset.color;
+                body.style.backgroundColor = (c === '#fffbeb') ? defaultBg : c;
+            });
+        });
+
+        // Close: clear and reset
+        document.getElementById('close-btn').addEventListener('click', () => {
+            titleInput.value = '';
+            bodyInput.value = '';
+            autoGrow(bodyInput);
+            refreshSave();
+            titleInput.focus();
+        });
+
+        // Save: brief pressed feedback
+        saveBtn.addEventListener('click', () => {
+            if (saveBtn.disabled) return;
+            const original = saveBtn.textContent;
+            saveBtn.textContent = 'Saved';
+            setTimeout(() => { saveBtn.textContent = original; }, 1200);
+        });
+
+        // Checklist: insert a bullet line
+        const checklistBtn = document.getElementById('checklist-btn');
+        checklistBtn.addEventListener('click', () => {
+            checklistBtn.classList.toggle('active');
+            const prefix = '• ';
+            if (checklistBtn.classList.contains('active')) {
+                if (!bodyInput.value.includes(prefix)) {
+                    bodyInput.value = bodyInput.value ? bodyInput.value.replace(/\s+$/, '') + '\n' + prefix : prefix;
+                    autoGrow(bodyInput);
+                    refreshSave();
+                }
+                bodyInput.focus();
+            }
+        });
+
+        // More sheet
+        const sheet = document.getElementById('more-sheet');
+        document.getElementById('more-btn').addEventListener('click', () => sheet.classList.remove('hidden'));
+        document.getElementById('more-backdrop').addEventListener('click', () => sheet.classList.add('hidden'));
+
+        titleInput.focus();
+    </script>
+
+</body>
+</html>
