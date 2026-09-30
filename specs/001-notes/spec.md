@@ -18,7 +18,7 @@ Implement a shared Notes feature allowing family members to create, edit, view, 
 **so that** I can stay informed about family updates.
 - **SC-001**: Display empty state if no notes exist.
 - **SC-002**: Show unauthenticated state if the user is not logged in.
-- **SC-003**: Render notes with their assigned background colors, following the list layout in `designs/notes_design.pdf`.
+- **SC-003**: Render notes with their assigned background colors, following the list layout in `designs/html/01-FamilyAdmin - Notes.html`.
 - **SC-008**: Support pull-to-refresh to manually sync the list with the backend: the pull gesture shows the platform refresh indicator, the cubit emits `NotesLoading`, then exactly one outcome (`NotesLoaded` on success, localized `NotesFailure` when offline).
 - **SC-009**: Tapping a note opens a bottom sheet with Edit + Remove actions only (no detail screen; full content is visible in the list card).
 - **Given** I am on the Notes screen, **When** data is loaded, **Then** I see the list of family notes.
@@ -69,7 +69,7 @@ Implement a shared Notes feature allowing family members to create, edit, view, 
 ## Success Criteria
 - **SC-100**: 100% test coverage on `domain/` and `application/` layers. Explicit test list: cubit tests (`loadNotes` empty → `NotesLoaded([])`, populated → `NotesLoaded(notes)`, unauthenticated → `NotesUnauthenticated`, failure → `NotesFailure`, `create/update/deleteNote` success → `NoteActionSuccess` + reload, failure paths, family-context switch refresh); entity tests (`Note.from` valid, null-on-invalid per field, `copyWith`, color allowlist); use-case tests (`GetNotesUsecase`, `CreateNoteUsecase`, `UpdateNoteUsecase`, `DeleteNoteUsecase` success + `Left(Failure)` paths).
 - **SC-101**: `fvm flutter analyze` reports no issues.
-- **SC-102**: UI matches design assets, accepted by reviewer sign-off per asset: `designs/notes_design.pdf` (populated list, also governs list layout for SC-003), `designs/notes_design_empty_list.pdf` (empty list), `designs/notes_design_create_note.pdf` (create form US2, reused as-is for the US3 edit form), `designs/notes_design_empty_state_for_unlogged_user.pdf` (unauthenticated, SC-002); bottom sheet follows the reminders bottom-sheet design; additionally `designs/html/01-FamilyAdmin - Notes.html`, `designs/html/01-FamilyAdmin - Notes (Empty).html`, `designs/html/01-FamilyAdmin - Notes (Create).html`.
+- **SC-102**: UI matches the HTML design assets in `designs/html/`, accepted by reviewer sign-off per asset: `01-FamilyAdmin - Notes.html` (populated list, also governs list layout for SC-003), `01-FamilyAdmin - Notes (Empty).html` (empty list), `01-FamilyAdmin - Notes (Create).html` (create form US2, reused as-is for the US3 edit form), `01-FamilyAdmin - Notes for Unlogged User.html` (unauthenticated, SC-002); bottom sheet mirrors `lib/features/reminders/presentation/widgets/reminder_widget.dart` (`_showMenu` → `_ReminderMenuSheet`: transparent modal sheet, Edit + Remove rows, `AlertDialog` confirm). PDF exports under `designs/` are not governing.
 
 ## Clarifications
 ### Session 2026-09-30 with User

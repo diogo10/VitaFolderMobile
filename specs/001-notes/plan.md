@@ -18,7 +18,7 @@ Implement shared, color-coded family Notes (CRUD, `created_at DESC`, pull-to-ref
 **Localization**: AppLocalizations via `lib/l10n/app_en.arb` + `lib/l10n/app_pt.arb` — new keys: `navNotes`, `notesTitle`, `notesEmptyTitle/Message`, `notesUnauthenticatedTitle/Message`, `notesTitleRequired/TooLong`, `notesContentRequired/TooLong`, `notesDeleteDialogTitle/Message/Confirm/Cancel`, `notesCreateTitle/EditTitle`, `notesSave`, `notesError*`
 **Navigation**: `go_router` only — insert Notes `StatefulShellBranch` (`/notes`) between the People and Reminders branches (existing indices after it shift by one; deep links/tests updated accordingly) with shared `NotesCubit` lazy-singleton factory + one-shot create/edit route (`/notes/edit`) with fresh cubit or same cubit method; `MainShell` gains `Icons.note_rounded` tab between People and Reminders; follow `createRouter` factory contract (tab shared via `BlocProvider.value`, one-shot fresh via `BlocProvider(create:)`)
 **Rich-text (FR-109)**: content stored as plain `text` (lightweight markdown subset: `**bold**`, `- list` lines); render with `Text.rich`/custom parser in view, edit with plain `TextField` + exactly two toolbar buttons (bold, list) inserting markers. No new dependency (`flutter_quill` rejected — heavy, Delta JSON breaks 300-char `CHECK` semantics and ARB/size expectations). 300-char limit counts raw stored string including markers (documented in quickstart).
-**Bottom sheet & acceptance (SC-009/SC-102)**: tap note → bottom sheet with Edit + Remove only (follows reminders bottom-sheet design); edit form reuses create design as-is; acceptance is reviewer sign-off per asset.
+**Bottom sheet & acceptance (SC-009/SC-102)**: tap note → bottom sheet with Edit + Remove only, mirroring `reminder_widget.dart` `_showMenu`/`_ReminderMenuSheet` (transparent modal sheet + `AlertDialog` confirm); edit form reuses create design as-is; acceptance is reviewer sign-off per asset.
 **Locale layout (FR-110)**: screens render overflow-free in EN + PT (~30% PT expansion); long titles/bodies wrap/ellipsize; widget tests pump both locales with no `RenderFlex` overflow.
 **Family scope**: resolve `familyId` via `PeopleRepository.getFamilyIdsForUser(authService.currentUserId)` (same as `RemindersCubit._resolveFamilyId`); unauthenticated (`currentUserId == null`) → `NotesUnauthenticated`; RLS denial → `NotesFailure` localized.
 **Ordering**: `created_at DESC` only (`order('created_at', ascending: false)`); no search/filter/sort UI.
@@ -57,6 +57,18 @@ lib/core/router/ (notes branch between People and Reminders + MainShell tab)
 lib/l10n/app_en.arb + app_pt.arb (new notes keys)
 sqls/notes_schema.sql (new table + RLS + trigger)
 ```
+
+### HTML → Screens & Widgets
+
+All sources live in `designs/html/` (PDF exports under `designs/` are not governing):
+
+| HTML source | Screen | Widgets built from it |
+|---|---|---|
+| `01-FamilyAdmin - Notes.html` | `notes_view.dart` (populated) | `note_card_widget.dart` (palette background, title, `Text.rich` body, author row), add button opening the editor |
+| `01-FamilyAdmin - Notes (Empty).html` | `notes_view.dart` (empty state) | `notes_empty_widget.dart` |
+| `01-FamilyAdmin - Notes for Unlogged User.html` | `notes_view.dart` (unauthenticated) | Unauthenticated state block in the same view (`NotesUnauthenticated`) |
+| `01-FamilyAdmin - Notes (Create).html` | `note_editor_screen.dart` (create; reused as-is for edit) | Title field, body field, exactly-two-button toolbar (bold, list), `note_color_picker_widget.dart` (5 allowlist swatches), Save (disabled until valid) |
+| `reminder_widget.dart` `_ReminderMenuSheet` (code pattern, no Notes HTML) | Bottom sheet + delete dialog | Sheet with Edit + Remove rows (SC-009); `AlertDialog` confirm with ARB strings (SC-007) |
 
 ## Complexity Tracking
 

@@ -28,7 +28,7 @@
 - [ ] T007 [US1] Create `NoteModel` in `lib/features/notes/data/models/note_model.dart` (`fromMap`/`toCreate`/`toUpdate`) and `NotesRepositoryImpl` in `lib/features/notes/data/repository/notes_repository_impl.dart` (`.eq('family_id', familyId).order('created_at', ascending: false)`; Supabase errors → `Failure` at boundary, `on Object` catch)
 - [ ] T008 [US1] Create `GetNotesUsecase` in `lib/features/notes/domain/usecase/get_notes_usecase.dart`
 - [ ] T009 [US1] Create sealed states in `lib/features/notes/presentation/cubit/notes_state.dart` and `NotesCubit.loadNotes` in `lib/features/notes/presentation/cubit/notes_cubit.dart` (`NotesLoading` first then exactly one of `NotesLoaded`/`NotesUnauthenticated`/`NotesFailure`; no Supabase imports)
-- [ ] T010 [US1] Create `NotesView` in `lib/features/notes/presentation/views/notes_view.dart` + `note_card_widget.dart` (palette background, `Text.rich` markdown render; titles ellipsize max 2 lines, bodies wrap per FR-110), `notes_empty_widget.dart`, bottom sheet with Edit + Remove (SC-009; button handlers land in T015/T019/T022), pull-to-refresh (SC-008 transitions)
+- [ ] T010 [US1] Create `NotesView` in `lib/features/notes/presentation/views/notes_view.dart` + `note_card_widget.dart` (palette background, `Text.rich` markdown render; titles ellipsize max 2 lines, bodies wrap per FR-110), `notes_empty_widget.dart`, bottom sheet with Edit + Remove per `_ReminderMenuSheet` in `lib/features/reminders/presentation/widgets/reminder_widget.dart` (SC-009; button handlers land in T015/T019/T022), pull-to-refresh (SC-008 transitions). HTML sources: `designs/html/01-FamilyAdmin - Notes.html` (populated cards + add button), `Notes (Empty).html` (empty state), `Notes for Unlogged User.html` (unauthenticated state)
 - [ ] T011 [US1] Register `NotesRepository`, `GetNotesUsecase`, and lazy-singleton `NotesCubit` in `lib/core/injections/notes/notes_service_locator.dart`
 - [ ] T012 [US1] Insert `/notes` branch between People and Reminders in `lib/core/router/app_router.dart`; add `Icons.note_rounded` tab with `navNotes` label in `lib/core/router/main_shell.dart`; register refresh callback on `TabRefreshCoordinator`
 - [ ] T013 [US1] Tests in `test/features/notes/` (entity valid + null-per-field + `copyWith` + allowlist; `GetNotesUsecase` success + `Left`; cubit `loadNotes` empty → `NotesLoaded([])`, populated, unauthenticated, failure, family-context switch → reload; widget smoke EN + PT)
@@ -40,7 +40,7 @@
 
 - [ ] T014 [US2] Create `CreateNoteUsecase` in `lib/features/notes/domain/usecase/create_note_usecase.dart`
 - [ ] T015 [US2] Add `NotesCubit.createNote` in `lib/features/notes/presentation/cubit/notes_cubit.dart` (`NotesLoading` → `NoteActionSuccess` → re-`loadNotes()`); register `CreateNoteUsecase` in `lib/core/injections/notes/notes_service_locator.dart`
-- [ ] T016 [US2] Create editor in `lib/features/notes/presentation/views/note_editor_screen.dart` + `note_color_picker_widget.dart` (exactly two toolbar buttons bold/list per FR-109; labels/hints via `notesTitleLabel/Hint`, `notesContentLabel/Hint`; validators `value.trim().isEmpty` → required, `trimmed.length > 100/300` → too-long; markers count toward limit)
+- [ ] T016 [US2] Create editor in `lib/features/notes/presentation/views/note_editor_screen.dart` + `note_color_picker_widget.dart` (exactly two toolbar buttons bold/list per FR-109; labels/hints via `notesTitleLabel/Hint`, `notesContentLabel/Hint`; validators `value.trim().isEmpty` → required, `trimmed.length > 100/300` → too-long; markers count toward limit). HTML source: `designs/html/01-FamilyAdmin - Notes (Create).html` (title/body fields, toolbar, swatches, Save disabled-until-valid)
 - [ ] T017 [US2] Tests in `test/features/notes/` (`CreateNoteUsecase` success + `Left`; cubit create success → `NoteActionSuccess` + reload, failure → `NotesFailure`, dismissed form → neutral state; widget form validation + save wiring)
 
 ## Phase 5: US3 Edit Note (Priority: P2)
@@ -58,7 +58,7 @@
 **Independent test**: Sheet → Remove → dialog → confirm → row gone; cancel/dismiss → unchanged list, no failure state.
 
 - [ ] T021 [US4] Create `DeleteNoteUsecase` in `lib/features/notes/domain/usecase/delete_note_usecase.dart`
-- [ ] T022 [US4] Add `NotesCubit.deleteNote` in `lib/features/notes/presentation/cubit/notes_cubit.dart` (confirm dialog strings `notesDeleteDialogTitle/Message/Confirm/Cancel`; confirm → hard `DELETE` + reload; dismiss → re-emit `NotesLoaded`); register `DeleteNoteUsecase` in `lib/core/injections/notes/notes_service_locator.dart`
+- [ ] T022 [US4] Add `NotesCubit.deleteNote` in `lib/features/notes/presentation/cubit/notes_cubit.dart` (confirm dialog strings `notesDeleteDialogTitle/Message/Confirm/Cancel`, mirroring `_onRemove`'s `AlertDialog` in `reminder_widget.dart` — no Notes HTML for the dialog; confirm → hard `DELETE` + reload; dismiss → re-emit `NotesLoaded`); register `DeleteNoteUsecase` in `lib/core/injections/notes/notes_service_locator.dart`
 - [ ] T023 [US4] Tests in `test/features/notes/` (`DeleteNoteUsecase` success + `Left`; cubit delete success/cancel/failure paths; widget dialog confirm/cancel wiring)
 
 ## Phase 7: Polish & Cross-Cutting Concerns
@@ -67,7 +67,7 @@
 - [ ] T025 [P] Markdown render tests in `test/features/notes/` (`**bold**` spans, `- ` bullet rows, plain text passthrough)
 - [ ] T026 [P] Failure-path audit across `lib/features/notes/` (every `Left(Failure)` → distinct UI state; no fake-data fallbacks; `on Object` catches; absence check: no search/filter/sort UI per FR-108)
 - [ ] T027 Run gates in order: `fvm flutter analyze` (No issues found!) → `fvm flutter test` (All tests passed!) → `fvm flutter test --coverage` + `python3 tool/check_business_logic_coverage.py` (100% per file under `lib/**/domain/`, no `application/` layer) → `bash tool/check_no_hardcoded_secrets.sh`
-- [ ] T028 Reviewer sign-off walkthrough per SC-102 assets (`designs/notes_design*.pdf`, `designs/html/01-FamilyAdmin - Notes*.html`) and update spec/plan/tasks docs for any drift
+- [ ] T028 Reviewer sign-off walkthrough per SC-102 HTML assets (`designs/html/01-FamilyAdmin - Notes.html`, `Notes (Empty).html`, `Notes (Create).html`, `Notes for Unlogged User.html`; PDFs not governing) and update spec/plan/tasks docs for any drift
 
 ## Dependencies
 

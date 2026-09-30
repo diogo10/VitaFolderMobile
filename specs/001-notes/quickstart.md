@@ -9,10 +9,10 @@
 ## Scenarios (manual + test mapping)
 
 1. **Empty list (SC-001)**: sign in as member with no notes → Notes tab shows `notesEmptyTitle/Message`. Tests: `loadNotes` empty → `NotesLoaded([])`.
-2. **Unauthenticated (SC-002)**: sign out → Notes tab shows `notesUnauthenticatedTitle/Message` (design `notes_design_empty_state_for_unlogged_user.pdf`). Tests: no `currentUserId` → `NotesUnauthenticated`.
-3. **Create (US2)**: tap add → form (design `notes_design_create_note.pdf`) → pick color swatch, enter title ≤100 / body ≤300 (markers `**`/`- ` count), Save → returns to the list with new card in `created_at DESC` position. Over-limit/whitespace-only → localized inline errors, no save. Tests: success → `NoteActionSuccess` + reload `NotesLoaded`; failure → `NotesFailure`.
+2. **Unauthenticated (SC-002)**: sign out → Notes tab shows `notesUnauthenticatedTitle/Message` (design `designs/html/01-FamilyAdmin - Notes for Unlogged User.html`). Tests: no `currentUserId` → `NotesUnauthenticated`.
+3. **Create (US2)**: tap add → form (design `designs/html/01-FamilyAdmin - Notes (Create).html`) → pick color swatch, enter title ≤100 / body ≤300 (markers `**`/`- ` count), Save → returns to the list with new card in `created_at DESC` position. Over-limit/whitespace-only → localized inline errors, no save. Tests: success → `NoteActionSuccess` + reload `NotesLoaded`; failure → `NotesFailure`.
 4. **Pull-to-refresh (SC-008)**: pull list → platform indicator → `NotesLoading` → `NotesLoaded` re-synced (insert a row directly in Supabase first to prove sync). Offline pull → localized `NotesFailure`.
-5. **Edit (US3)**: tap note → bottom sheet (reminders styling, Edit + Remove only) → Edit → pre-populated form reusing the create design → save → updated card + `updated_at` bumped. Concurrent edit from second user → last-write-wins, no conflict UI.
+5. **Edit (US3)**: tap note → bottom sheet (Edit + Remove only, per `_ReminderMenuSheet`) → Edit → pre-populated form reusing the create design → save → updated card + `updated_at` bumped. Concurrent edit from second user → last-write-wins, no conflict UI.
 6. **Delete (US4)**: sheet → Remove → localized confirm dialog → confirm → row gone (hard delete, no restore). Cancel/dismiss → unchanged list, no failure state.
 7. **Offline**: airplane mode → open list or save → localized `NotesFailure`; reconnect + pull-to-refresh → `NotesLoaded`.
 8. **Family switch**: change family context → list refreshes to new `family_id` (no cross-family leakage).
@@ -27,4 +27,4 @@ python3 tool/check_business_logic_coverage.py
 bash tool/check_no_hardcoded_secrets.sh
 ```
 
-Expect: `No issues found!`, `All tests passed!`, 100% per file under `lib/features/notes/domain/` (no `application/` layer exists), secrets check passes. Visual check is reviewer sign-off per asset (SC-102) against `designs/notes_design*.pdf` + `designs/html/01-FamilyAdmin - Notes*.html`. Widget tests pump EN + PT locales with no `RenderFlex` overflow (FR-110).
+Expect: `No issues found!`, `All tests passed!`, 100% per file under `lib/features/notes/domain/` (no `application/` layer exists), secrets check passes. Visual check is reviewer sign-off per asset (SC-102) against `designs/html/01-FamilyAdmin - Notes.html`, `Notes (Empty).html`, `Notes (Create).html`, `Notes for Unlogged User.html` (PDF exports under `designs/` are not governing). Widget tests pump EN + PT locales with no `RenderFlex` overflow (FR-110).

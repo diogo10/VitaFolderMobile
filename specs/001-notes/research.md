@@ -42,7 +42,7 @@ All Technical Context unknowns resolved. No NEEDS CLARIFICATION remains.
 
 ## R8: Bottom sheet, design reuse, acceptance (SC-009/SC-102, FR-110)
 
-- **Decision**: Tap → bottom sheet with Edit + Remove only, styled on the existing reminders bottom sheet (no new sheet component); edit form reuses the create-note screen as-is (pre-populated per SC-006); acceptance is reviewer sign-off per design asset (SC-102), not pixel-diff automation; FR-110 dual-locale overflow coverage comes from widget tests pumping EN + PT with no `RenderFlex` overflow (no golden tests).
+- **Decision**: Tap → bottom sheet with Edit + Remove only, mirroring `lib/features/reminders/presentation/widgets/reminder_widget.dart` (`_showMenu` → `_ReminderMenuSheet`: transparent `showModalBottomSheet`, Edit + Remove rows, `AlertDialog` confirm via `_onRemove`) — no new sheet component; edit form reuses the create-note screen as-is (pre-populated per SC-006); acceptance is reviewer sign-off per design asset (SC-102), not pixel-diff automation; FR-110 dual-locale overflow coverage comes from widget tests pumping EN + PT with no `RenderFlex` overflow (no golden tests).
 - **Rationale**: Reuse keeps the new-widget surface to card/picker/empty states; sign-off fits the project's manual design-review practice and the pre-implementation UX checklist (10/10); locale overflow is a layout invariant best pinned by widget tests in both locales.
 - **Alternatives considered**: New bespoke sheet component — rejected (duplicates reminders pattern); golden/screenshot tests — rejected (brittle across fonts/locales, no precedent in repo); pixel-tolerance automation — rejected (no harness; sign-off is the specified method).
 

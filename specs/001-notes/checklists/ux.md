@@ -11,7 +11,7 @@
 ## Requirement Completeness
 
 - [x] CHK001 - Is each screen/state mapped to its governing design asset (populated list, empty list, create form, unauthenticated, HTML variants)? [Completeness, Spec SC-102]
-  - Resolved: SC-102 now maps edit form to the create design and bottom sheet to the reminders bottom-sheet design.
+  - Resolved: SC-102 now maps edit form to the create design and bottom sheet to `_ReminderMenuSheet` in `reminder_widget.dart`.
 - [x] CHK002 - Is the ARB key inventory specified for every user-visible string (titles, empty/unauthenticated/error states, validation errors, delete dialog) in both EN and PT? [Completeness, Spec FR-107]
 - [x] CHK003 - Are the markdown editor toolbar capabilities specified (which formatting buttons exist and how markers are inserted)? [Completeness, Spec FR-109]
   - Resolved: FR-109 pins exactly two buttons (bold, list).
@@ -21,7 +21,7 @@
 - [x] CHK004 - Is "matches design assets exactly" quantified with measurable acceptance criteria, or is exactness left unverifiable? [Clarity, Spec SC-102]
   - Resolved: acceptance is reviewer sign-off per asset (SC-102).
 - [x] CHK005 - Is the list layout unambiguously specified, or does "grid/list" leave the rendering choice open? [Ambiguity, Spec SC-003]
-  - Resolved: SC-003 now defers layout to `designs/notes_design.pdf`.
+  - Resolved: SC-003 now defers layout to `designs/html/01-FamilyAdmin - Notes.html`.
 
 ## Requirement Consistency
 
