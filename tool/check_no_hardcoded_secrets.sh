@@ -32,6 +32,14 @@ if [ -n "$tracked" ]; then
   fail=1
 fi
 
+# 5. RevenueCat public API keys must never be hardcoded in lib/.
+#    (Tests use 'fake-apple-key' / 'fake-google-key' placeholders, which
+#    carry no key material and do not match the appl_/goog_ key prefixes.)
+if grep -rEn --include='*.dart' '(appl|goog|amzn)_[A-Za-z0-9]{6,}' lib/; then
+  echo "::error::Hardcoded RevenueCat API key found in lib/. Inject keys via --dart-define / env/<flavor>.json instead."
+  fail=1
+fi
+
 if [ "$fail" -eq 0 ]; then
   echo 'No hardcoded secrets detected.'
 fi

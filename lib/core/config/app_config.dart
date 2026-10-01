@@ -12,6 +12,8 @@ class AppConfig {
     required this.flavor,
     required this.supabaseUrl,
     required this.supabasePublishableKey,
+    this.revenueCatAppleApiKey = '',
+    this.revenueCatGoogleApiKey = '',
   });
 
   /// Reads the configuration from `--dart-define` values.
@@ -20,11 +22,24 @@ class AppConfig {
   /// (https URL of the flavor's Supabase project),
   /// `SUPABASE_PUBLISHABLE_KEY` (the project's publishable key).
   /// Throws [StateError] when any key is missing or invalid.
+  ///
+  /// Optional keys: `REVENUECAT_APPLE_API_KEY` (RevenueCat public Apple key,
+  /// dashboard → Project Settings → API keys → App specific keys) and
+  /// `REVENUECAT_GOOGLE_API_KEY` (RevenueCat public Google key). Empty means
+  /// billing is unconfigured and the RevenueCat SDK init is skipped —
+  /// unlike Supabase, billing is best-effort so the app still runs without
+  /// store keys (e.g. before the store listings exist).
   factory AppConfig.fromEnvironment() => AppConfig.fromDefines(
     flavorRaw: const String.fromEnvironment('APP_FLAVOR'),
     supabaseUrl: const String.fromEnvironment('SUPABASE_URL'),
     supabasePublishableKey: const String.fromEnvironment(
       'SUPABASE_PUBLISHABLE_KEY',
+    ),
+    revenueCatAppleApiKey: const String.fromEnvironment(
+      'REVENUECAT_APPLE_API_KEY',
+    ),
+    revenueCatGoogleApiKey: const String.fromEnvironment(
+      'REVENUECAT_GOOGLE_API_KEY',
     ),
   );
 
@@ -37,6 +52,8 @@ class AppConfig {
     required String flavorRaw,
     required String supabaseUrl,
     required String supabasePublishableKey,
+    required String revenueCatAppleApiKey,
+    required String revenueCatGoogleApiKey,
   }) {
     final flavor = parseAppFlavor(flavorRaw);
     if (flavor == null) {
@@ -69,10 +86,18 @@ class AppConfig {
       flavor: flavor,
       supabaseUrl: supabaseUrl,
       supabasePublishableKey: supabasePublishableKey,
+      revenueCatAppleApiKey: revenueCatAppleApiKey,
+      revenueCatGoogleApiKey: revenueCatGoogleApiKey,
     );
   }
 
   final AppFlavor flavor;
   final String supabaseUrl;
   final String supabasePublishableKey;
+
+  /// RevenueCat public Apple API key (`appl_…`). Empty when unconfigured.
+  final String revenueCatAppleApiKey;
+
+  /// RevenueCat public Google API key (`goog_…`). Empty when unconfigured.
+  final String revenueCatGoogleApiKey;
 }

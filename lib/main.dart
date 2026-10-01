@@ -17,6 +17,7 @@ import 'package:house_mira/core/observability/performance_tracer.dart';
 import 'package:house_mira/core/router/app_router.dart';
 import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/core/router/tab_refresh_coordinator.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/application/notification_permission_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/manage_profile_cubit.dart';
@@ -76,6 +77,28 @@ void main() async {
     logger: logger,
     tracer: tracer,
   );
+
+  try {
+    await tracer.trace('startup-revenuecat-init', (trace) async {
+      final initialized =
+          await slInstance<SubscriptionService>(
+            instanceName: 'subscriptionService',
+          ).initialize(
+            appleApiKey: config.revenueCatAppleApiKey,
+            googleApiKey: config.revenueCatGoogleApiKey,
+          );
+      await trace.putAttribute('initialized', '$initialized');
+    });
+  } on Object catch (error, stackTrace) {
+    // Billing is best-effort; never block app startup — but report
+    // the failure instead of swallowing it silently.
+    logger.warning(
+      'revenuecat init failed',
+      tag: 'startup',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
 
   try {
     await slInstance<IReminderNotificationService>(

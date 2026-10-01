@@ -1,5 +1,7 @@
 {
   "APP_FLAVOR": "staging",
   "SUPABASE_URL": "https://your-staging-project.supabase.co",
-  "SUPABASE_PUBLISHABLE_KEY": "paste-staging-publishable-key-here"
+  "SUPABASE_PUBLISHABLE_KEY": "paste-staging-publishable-key-here",
+  "REVENUECAT_APPLE_API_KEY": "",
+  "REVENUECAT_GOOGLE_API_KEY": ""
 }
