@@ -12,6 +12,7 @@ import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/observability/crash_reporter.dart';
 import 'package:house_mira/core/observability/performance_tracer.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -27,6 +28,7 @@ class ServiceLocator {
     CrashReporter? crashReporter,
     AppLogger? logger,
     PerformanceTracer? tracer,
+    SubscriptionService? subscriptionService,
   }) async {
     final effectiveCrashReporter = crashReporter ?? FirebaseCrashReporter();
     final effectiveLogger =
@@ -37,10 +39,7 @@ class ServiceLocator {
         effectiveCrashReporter,
         instanceName: 'crashReporter',
       )
-      ..registerSingleton<AppLogger>(
-        effectiveLogger,
-        instanceName: 'appLogger',
-      )
+      ..registerSingleton<AppLogger>(effectiveLogger, instanceName: 'appLogger')
       ..registerSingleton<PerformanceTracer>(
         effectiveTracer,
         instanceName: 'performanceTracer',
@@ -69,6 +68,10 @@ class ServiceLocator {
       ..registerSingleton<LocalStorageDatasource>(
         LocalStorageDatasource(),
         instanceName: 'localStorageDatasource',
+      )
+      ..registerSingleton<SubscriptionService>(
+        subscriptionService ?? SubscriptionService(logger: effectiveLogger),
+        instanceName: 'subscriptionService',
       );
 
     PeopleServiceLocator(slInstance).init();

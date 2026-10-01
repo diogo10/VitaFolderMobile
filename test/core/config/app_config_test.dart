@@ -12,11 +12,15 @@ void main() {
         flavorRaw: 'dev',
         supabaseUrl: validUrl,
         supabasePublishableKey: validKey,
+        revenueCatAppleApiKey: '',
+        revenueCatGoogleApiKey: '',
       );
 
       expect(config.flavor, AppFlavor.dev);
       expect(config.supabaseUrl, validUrl);
       expect(config.supabasePublishableKey, validKey);
+      expect(config.revenueCatAppleApiKey, isEmpty);
+      expect(config.revenueCatGoogleApiKey, isEmpty);
     });
 
     test('resolves each flavor', () {
@@ -25,6 +29,8 @@ void main() {
           flavorRaw: flavor.name,
           supabaseUrl: validUrl,
           supabasePublishableKey: validKey,
+          revenueCatAppleApiKey: '',
+          revenueCatGoogleApiKey: '',
         );
         expect(config.flavor, flavor);
       }
@@ -36,6 +42,8 @@ void main() {
           flavorRaw: '',
           supabaseUrl: validUrl,
           supabasePublishableKey: validKey,
+          revenueCatAppleApiKey: '',
+          revenueCatGoogleApiKey: '',
         ),
         throwsStateError,
       );
@@ -44,6 +52,8 @@ void main() {
           flavorRaw: 'production',
           supabaseUrl: validUrl,
           supabasePublishableKey: validKey,
+          revenueCatAppleApiKey: '',
+          revenueCatGoogleApiKey: '',
         ),
         throwsStateError,
       );
@@ -62,6 +72,8 @@ void main() {
             flavorRaw: 'staging',
             supabaseUrl: badUrl,
             supabasePublishableKey: validKey,
+            revenueCatAppleApiKey: '',
+            revenueCatGoogleApiKey: '',
           ),
           throwsStateError,
           reason: 'URL: "$badUrl"',
@@ -75,9 +87,24 @@ void main() {
           flavorRaw: 'prod',
           supabaseUrl: validUrl,
           supabasePublishableKey: '',
+          revenueCatAppleApiKey: '',
+          revenueCatGoogleApiKey: '',
         ),
         throwsStateError,
       );
+    });
+
+    test('stores RevenueCat keys from defines', () {
+      final config = AppConfig.fromDefines(
+        flavorRaw: 'prod',
+        supabaseUrl: validUrl,
+        supabasePublishableKey: validKey,
+        revenueCatAppleApiKey: 'fake-apple-key',
+        revenueCatGoogleApiKey: 'fake-google-key',
+      );
+
+      expect(config.revenueCatAppleApiKey, 'fake-apple-key');
+      expect(config.revenueCatGoogleApiKey, 'fake-google-key');
     });
   });
 }

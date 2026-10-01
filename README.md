@@ -99,6 +99,32 @@ fvm flutter run \
 Tests need no defines: they pump widgets directly with fakes
 (`https://mock.supabase.co`, `mock-anon-key`).
 
+### RevenueCat (in-app purchases)
+
+Billing uses the [RevenueCat Flutter SDK](https://www.revenuecat.com/docs/getting-started/installation/flutter)
+(`purchases_flutter`), initialized at startup via `SubscriptionService`
+(`lib/core/subscriptions/`). One public API key per store, from the
+RevenueCat dashboard → Project Settings → API keys → App specific keys:
+
+| Key | Value |
+| --- | --- |
+| `REVENUECAT_APPLE_API_KEY` | Public Apple key (`appl_…`), used on iOS/macOS |
+| `REVENUECAT_GOOGLE_API_KEY` | Public Google key (`goog_…`), used on Android |
+
+Both keys are optional `--dart-define`s (already present as empty strings
+in `env/*.example.json`). Empty means billing is unconfigured and SDK init
+is skipped with a warning — the app still runs, which keeps development
+unblocked before the store listings exist. Never hardcode keys in `lib/`;
+the CI secrets check (`tool/check_no_hardcoded_secrets.sh`) fails on
+`appl_`/`goog_` key literals in Dart source.
+
+Native setup already done: Android `MainActivity` subclasses
+`FlutterFragmentActivity` (required by RevenueCat Paywalls) and keeps
+`launchMode="singleTop"`; iOS targets 15.0 (above the 13.0 minimum).
+Before store submission, enable the In-App Purchase capability in Xcode.
+Paywalls and entitlement checks are out of scope for the initial setup and
+land in a follow-up task.
+
 ### Firebase options per flavor
 
 There is currently one Firebase project, so `firebaseOptionsFor()`
