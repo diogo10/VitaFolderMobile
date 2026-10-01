@@ -142,16 +142,14 @@ void main() {
       act: (cubit) => cubit.signInWithGoogle(),
       expect: () => [
         isA<SignUpLoading>(),
-        isA<SignUpError>().having(
-          (e) => e.message,
-          'message',
-          'Google sign-in failed.',
-        ),
+        isA<SignUpError>()
+            .having((e) => e.message, 'message', 'Google sign-in failed.')
+            .having((e) => e.code, 'code', SignUpErrorCode.googleSignInFailed),
       ],
     );
 
     blocTest<SignUpCubit, SignUpState>(
-      'signInWithGoogle emits stringified message on unexpected error',
+      'signInWithGoogle emits unexpected code on unexpected error',
       build: build,
       setUp: () {
         when(() => auth.signInWithGoogle()).thenThrow(Exception('boom'));
@@ -160,9 +158,9 @@ void main() {
       expect: () => [
         isA<SignUpLoading>(),
         isA<SignUpError>().having(
-          (e) => e.message,
-          'message',
-          contains('boom'),
+          (e) => e.code,
+          'code',
+          SignUpErrorCode.unexpected,
         ),
       ],
     );

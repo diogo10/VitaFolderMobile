@@ -104,8 +104,10 @@ class AccountCubit extends Cubit<AccountState> {
   ///
   /// Delegates to [AuthService.signInWithGoogle]. Emits [NoAccount] when
   /// the user cancels the Google flow (nothing happened, back to the
-  /// form), [LoginFailed] when the exchange fails, and loads the account
-  /// on success like [signIn] does.
+  /// form), [LoginFailed] with the failure message when the exchange
+  /// fails, and loads the account on success like [signIn] does.
+  /// Unexpected errors also emit [LoginFailed] so the view can show
+  /// actionable feedback instead of silently returning to the form.
   Future<void> signInWithGoogle() async {
     emit(AccountLoading());
 
@@ -123,10 +125,10 @@ class AccountCubit extends Cubit<AccountState> {
       await loadAccount();
     } on AuthException catch (e) {
       debugPrint('[AccountCubit] Google sign-in failed: ${e.message}');
-      emit(LoginFailed());
+      emit(LoginFailed(message: e.message));
     } on Object catch (e) {
       debugPrint('[AccountCubit] Google sign-in error: $e');
-      emit(NoAccount());
+      emit(LoginFailed());
     }
   }
 

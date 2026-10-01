@@ -253,5 +253,27 @@ void main() {
       expect(authService.googleSignInCalls, 1);
       expect(find.text('home-shell'), findsOneWidget);
     });
+
+    testWidgets('shows actionable feedback when Google sign-in fails', (
+      tester,
+    ) async {
+      authService.googleError = const AuthException('Google sign-in failed.');
+      await pumpSignUp(tester);
+
+      await tester.ensureVisible(find.text('Sign up with Google'));
+      await tester.pump();
+      await tester.tap(find.text('Sign up with Google'));
+      await tester.pumpAndSettle();
+
+      expect(authService.googleSignInCalls, 1);
+      expect(
+        find.text(
+          'Google sign-in failed. '
+          'Please check your connection and try again.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('home-shell'), findsNothing);
+    });
   });
 }

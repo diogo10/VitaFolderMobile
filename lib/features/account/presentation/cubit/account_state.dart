@@ -11,7 +11,6 @@ class AccountLoading extends AccountState {
 }
 
 class AccountLoaded extends AccountState {
-
   AccountLoaded({
     required this.userName,
     required this.email,
@@ -33,7 +32,8 @@ class AccountLogoutSuccess extends AccountState {
 }
 
 class LoginFailed extends AccountState {
-  LoginFailed();
+  LoginFailed({this.message});
+  final String? message;
 }
 
 class PasswordResetSent extends AccountState {

@@ -141,10 +141,8 @@ void main() {
     when(() => supabase.auth).thenReturn(auth);
   });
 
-  AuthService build() => AuthService(
-    supabaseClient: supabase,
-    googleSignInHandler: googleHandler,
-  );
+  AuthService build() =>
+      AuthService(supabaseClient: supabase, googleSignInHandler: googleHandler);
 
   group('currentUser / isLoggedIn / currentUserId', () {
     test('exposes the current user when signed in', () {
@@ -396,9 +394,9 @@ void main() {
           accessToken: any(named: 'accessToken'),
         ),
       ).thenAnswer((_) async => response);
-      when(() => googleHandler.signIn()).thenAnswer(
-        (_) async => const GoogleAuthTokens(idToken: 'token'),
-      );
+      when(
+        () => googleHandler.signIn(),
+      ).thenAnswer((_) async => const GoogleAuthTokens(idToken: 'token'));
       _stubUpdateEq(supabase: supabase);
 
       final user = await build().signInWithGoogle();
@@ -481,7 +479,7 @@ void main() {
             isA<AuthException>().having(
               (e) => e.message,
               'message',
-              'Google sign-in failed.',
+              'Google sign-in failed. Please try again.',
             ),
           ),
         );
@@ -519,6 +517,51 @@ void main() {
 
       expect(() => build().signInWithGoogle(), throwsA(isA<AuthException>()));
     });
+
+    test(
+      'wraps unexpected handler errors in an actionable AuthException',
+      () async {
+        when(() => googleHandler.signIn()).thenThrow(Exception('boom'));
+
+        expect(
+          () => build().signInWithGoogle(),
+          throwsA(
+            isA<AuthException>().having(
+              (e) => e.message,
+              'message',
+              'Google sign-in failed. Please try again.',
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'wraps unexpected exchange errors in an actionable AuthException',
+      () async {
+        when(
+          () => googleHandler.signIn(),
+        ).thenAnswer((_) async => const GoogleAuthTokens(idToken: 'token'));
+        when(
+          () => auth.signInWithIdToken(
+            provider: any(named: 'provider'),
+            idToken: any(named: 'idToken'),
+            accessToken: any(named: 'accessToken'),
+          ),
+        ).thenThrow(Exception('boom'));
+
+        expect(
+          () => build().signInWithGoogle(),
+          throwsA(
+            isA<AuthException>().having(
+              (e) => e.message,
+              'message',
+              'Google sign-in failed. Please try again.',
+            ),
+          ),
+        );
+      },
+    );
   });
 
   group('AuthService passwords', () {
@@ -677,10 +720,8 @@ void main() {
 
     void stubInvokeSuccess() {
       when(() => functions.invoke(any())).thenAnswer(
-        (_) async => const FunctionResponse(
-          data: {'success': true},
-          status: 200,
-        ),
+        (_) async =>
+            const FunctionResponse(data: {'success': true}, status: 200),
       );
     }
 

@@ -125,18 +125,38 @@ class AuthService {
   /// it for a Supabase session with `auth.signInWithIdToken`.
   ///
   /// Returns the signed-in [User], or `null` when the user cancels the
-  /// Google flow. Throws [AuthException] when the ID token is missing or
-  /// the exchange fails.
+  /// Google flow. Throws [AuthException] with an actionable message when
+  /// the ID token is missing or the exchange fails. Every failure is
+  /// logged (without PII) so Firebase Test Lab / Crashlytics captures the
+  /// specific cause while the UI shows a localized, actionable message.
   Future<User?> signInWithGoogle() async {
     final GoogleAuthTokens? tokens;
     try {
       tokens = await _googleHandler.signIn();
-    } on GoogleSignInException catch (e) {
+    } on GoogleSignInException catch (e, stackTrace) {
+      _logger.error(
+        'Google sign-in failed',
+        tag: 'auth',
+        context: {'code': e.code.name},
+        error: e,
+        stackTrace: stackTrace,
+      );
       debugPrint(
         '[AuthService] Google sign-in failed '
         '(code: ${e.code.name}, description: ${e.description})',
       );
-      throw AuthException(e.description ?? 'Google sign-in failed.');
+      throw AuthException(
+        e.description ?? 'Google sign-in failed. Please try again.',
+      );
+    } on Object catch (e, stackTrace) {
+      _logger.error(
+        'Google sign-in failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      debugPrint('[AuthService] Google sign-in error: $e');
+      throw AuthException('Google sign-in failed. Please try again.');
     }
 
     if (tokens == null) {
@@ -152,14 +172,30 @@ class AuthService {
         idToken: tokens.idToken,
         accessToken: tokens.accessToken,
       );
-    } on Object catch (e) {
+    } on AuthException catch (e, stackTrace) {
+      _logger.error(
+        'Supabase ID token exchange failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
       debugPrint('[AuthService] Supabase ID token exchange failed: $e');
       rethrow;
+    } on Object catch (e, stackTrace) {
+      _logger.error(
+        'Supabase ID token exchange failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      debugPrint('[AuthService] Supabase ID token exchange failed: $e');
+      throw AuthException('Google sign-in failed. Please try again.');
     }
 
     if (response.user == null) {
+      _logger.error('Supabase exchange returned no user', tag: 'auth');
       debugPrint('[AuthService] Supabase exchange returned no user.');
-      throw const AuthException('An unexpected error occurred.');
+      throw const AuthException('Google sign-in failed. Please try again.');
     }
 
     final user = response.user!;
@@ -209,14 +245,10 @@ class AuthService {
     const context = <String, Object?>{'function': 'delete-account'};
     _logger.debug('invoking edge function', tag: 'edge', context: context);
     try {
-      await _tracer.trace(
-        'edge-invoke-delete-account',
-        (trace) async {
-          await _client.functions.invoke('delete-account');
-          await trace.putAttribute('success', 'true');
-        },
-        attributes: {'function': 'delete-account'},
-      );
+      await _tracer.trace('edge-invoke-delete-account', (trace) async {
+        await _client.functions.invoke('delete-account');
+        await trace.putAttribute('success', 'true');
+      }, attributes: {'function': 'delete-account'});
       _logger.info(
         'edge function completed',
         tag: 'edge',
@@ -258,9 +290,7 @@ class AuthService {
     final details = e.details;
     if (e.status == 409 && details is Map && details['code'] == 'sole_owner') {
       final familyId = details['family_id'];
-      return SoleOwnerException(
-        familyId: familyId is String ? familyId : null,
-      );
+      return SoleOwnerException(familyId: familyId is String ? familyId : null);
     }
     if (e.status == 401) {
       return const AuthException('Not signed in.');
@@ -284,9 +314,7 @@ class AuthService {
       throw const AuthException('Not signed in.');
     }
     await _client.from('profiles').update({'full_name': name}).eq('id', userId);
-    await _client.auth.updateUser(
-      UserAttributes(data: {'full_name': name}),
-    );
+    await _client.auth.updateUser(UserAttributes(data: {'full_name': name}));
   }
 
   Future<String?> getProfileName() async {

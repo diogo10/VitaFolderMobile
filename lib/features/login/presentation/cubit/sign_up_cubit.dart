@@ -38,7 +38,11 @@ class SignUpCubit extends Cubit<SignUpState> {
   ///
   /// Emits [SignUpLoading] first, then [SignUpSuccess] on success,
   /// [SignUpInitial] when the user cancels the Google flow (back to the
-  /// form, nothing happened), or [SignUpError] with the failure message.
+  /// form, nothing happened), or [SignUpError] with
+  /// [SignUpErrorCode.googleSignInFailed] when the failure is a Google
+  /// sign-in error (message carries the specific cause for logging).
+  /// Unexpected errors emit [SignUpError] with
+  /// [SignUpErrorCode.unexpected] so the view shows actionable feedback.
   Future<void> signInWithGoogle() async {
     emit(SignUpLoading());
 
@@ -55,10 +59,15 @@ class SignUpCubit extends Cubit<SignUpState> {
       emit(SignUpSuccess(user));
     } on AuthException catch (e) {
       debugPrint('[SignUpCubit] Google sign-in failed: ${e.message}');
-      emit(SignUpError(message: e.message));
+      emit(
+        SignUpError(
+          code: SignUpErrorCode.googleSignInFailed,
+          message: e.message,
+        ),
+      );
     } on Object catch (e) {
       debugPrint('[SignUpCubit] Google sign-in error: $e');
-      emit(SignUpError(message: e.toString()));
+      emit(SignUpError(code: SignUpErrorCode.unexpected));
     }
   }
 }

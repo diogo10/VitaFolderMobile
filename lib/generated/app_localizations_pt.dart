@@ -557,6 +557,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountLoginFailed => 'Falha no login. Tente novamente.';
 
   @override
+  String get accountGoogleSignInFailed =>
+      'Falha no login com o Google. Verifique sua conexão e tente novamente.';
+
+  @override
   String get accountPasswordResetSent =>
       'Enviamos um link para o seu email redefinir sua senha.';
 
@@ -719,6 +723,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get signUpUnexpectedError => 'Ocorreu um erro inesperado.';
+
+  @override
+  String get signUpGoogleSignInFailed =>
+      'Falha no login com o Google. Verifique sua conexão e tente novamente.';
 
   @override
   String get peopleInvalidFamilyCode =>

@@ -273,9 +273,10 @@ void main() {
       await cubit.signInWithGoogle();
 
       expect(cubit.state, isA<LoginFailed>());
+      expect((cubit.state as LoginFailed).message, 'Google sign-in failed.');
     });
 
-    test('signInWithGoogle emits NoAccount on unexpected error', () async {
+    test('signInWithGoogle emits LoginFailed on unexpected error', () async {
       final cubit = AccountCubit(
         authService: _FakeAuthService(googleError: Exception('boom')),
         peopleRepository: _FakePeopleRepository(),
@@ -284,7 +285,7 @@ void main() {
 
       await cubit.signInWithGoogle();
 
-      expect(cubit.state, isA<NoAccount>());
+      expect(cubit.state, isA<LoginFailed>());
     });
 
     blocTest<AccountCubit, AccountState>(
@@ -490,11 +491,7 @@ void main() {
       controller.add(
         AuthState(
           AuthChangeEvent.signedIn,
-          Session(
-            accessToken: 'token',
-            tokenType: 'bearer',
-            user: _testUser(),
-          ),
+          Session(accessToken: 'token', tokenType: 'bearer', user: _testUser()),
         ),
       );
 

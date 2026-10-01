@@ -73,9 +73,12 @@ class _AccountViewState extends State<AccountView> {
         }
 
         if (state is LoginFailed) {
+          final message = state.message == null
+              ? l.accountLoginFailed
+              : l.accountGoogleSignInFailed;
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text(l.accountLoginFailed)));
+          ).showSnackBar(SnackBar(content: Text(message)));
         }
 
         if (state is PasswordResetSent) {

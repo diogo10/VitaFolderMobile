@@ -13,15 +13,13 @@ class SignUpLoading extends SignUpState {
 }
 
 class SignUpSuccess extends SignUpState {
-
   SignUpSuccess(this.user);
   final User user;
 }
 
-enum SignUpErrorCode { unexpected }
+enum SignUpErrorCode { unexpected, googleSignInFailed }
 
 class SignUpError extends SignUpState {
-
   SignUpError({this.message, this.code});
   final String? message;
   final SignUpErrorCode? code;
