@@ -23,6 +23,31 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Setup Android signing
+        # Same stable upload keystore as build_aab_release.yml. Without this,
+        # the profile APK falls back to the runner's ephemeral debug key whose
+        # SHA-1 changes every run — and Google Sign-In (bound to
+        # package name + SHA-1) can never be registered for it.
+        # Required secrets: ANDROID_KEYSTORE_BASE64,
+        # ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_PASSWORD, ANDROID_KEY_ALIAS.
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 secret is not set"
+            exit 1
+          fi
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/android.keystore
+          {
+            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyPassword=$ANDROID_KEY_PASSWORD"
+            echo "keyAlias=$ANDROID_KEY_ALIAS"
+            echo "storeFile=android.keystore"
+          } > android/key.properties
+
       - name: Build APK (prod)
         # Prod backend credentials come from GitHub secrets (never hardcoded).
         # See README "Environments & secrets" for the required secrets.
