@@ -97,7 +97,7 @@ void main() {
     final cubit = AccountCubit(
       authService: _FailingGoogleAuthService(),
       peopleRepository: _FakePeopleRepository(),
-      authStateStream: const Stream.empty(),
+      authSignedInStream: const Stream.empty(),
     );
     addTearDown(cubit.close);
 

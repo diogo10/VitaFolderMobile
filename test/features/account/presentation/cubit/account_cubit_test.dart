@@ -421,7 +421,7 @@ void main() {
     );
 
     blocTest<AccountCubit, AccountState>(
-      'signIn emits NoAccount on unexpected errors',
+      'signIn emits LoginFailed on unexpected errors',
       build: () => AccountCubit(
         authService: _FakeAuthService(
           stubUser: _testUser(),
@@ -431,7 +431,13 @@ void main() {
         peopleRepository: _FakePeopleRepository(),
       ),
       act: (cubit) => cubit.signIn('user@example.com', 'password123'),
-      expect: () => [isA<NoAccount>()],
+      expect: () => [
+        isA<LoginFailed>().having(
+          (e) => e.code,
+          'code',
+          AccountLoginErrorCode.unexpected,
+        ),
+      ],
     );
 
     blocTest<AccountCubit, AccountState>(
@@ -491,7 +497,7 @@ void main() {
     );
 
     test('reloads the account when the auth stream emits signedIn', () async {
-      final controller = StreamController<AuthState>.broadcast();
+      final controller = StreamController<bool>.broadcast();
       addTearDown(controller.close);
       final cubit = AccountCubit(
         authService: _FakeAuthService(
@@ -499,16 +505,11 @@ void main() {
           stubPerson: _testPerson(),
         ),
         peopleRepository: _FakePeopleRepository(),
-        authStateStream: controller.stream,
+        authSignedInStream: controller.stream,
       );
       addTearDown(cubit.close);
 
-      controller.add(
-        AuthState(
-          AuthChangeEvent.signedIn,
-          Session(accessToken: 'token', tokenType: 'bearer', user: _testUser()),
-        ),
-      );
+      controller.add(true);
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 
@@ -516,7 +517,7 @@ void main() {
     });
 
     test('emits NoAccount when the auth stream emits signedOut', () async {
-      final controller = StreamController<AuthState>.broadcast();
+      final controller = StreamController<bool>.broadcast();
       addTearDown(controller.close);
       final cubit = AccountCubit(
         authService: _FakeAuthService(
@@ -524,14 +525,14 @@ void main() {
           stubPerson: _testPerson(),
         ),
         peopleRepository: _FakePeopleRepository(),
-        authStateStream: controller.stream,
+        authSignedInStream: controller.stream,
       );
       addTearDown(cubit.close);
 
       await cubit.loadAccount();
       expect(cubit.state, isA<AccountLoaded>());
 
-      controller.add(const AuthState(AuthChangeEvent.signedOut, null));
+      controller.add(false);
 
       await Future<void>.delayed(const Duration(milliseconds: 100));
 

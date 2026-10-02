@@ -13,7 +13,21 @@ User _user() => User.fromJson({'id': 'u1', 'email': 'a@b.c'})!;
 void main() {
   late _MockAuthService auth;
 
-  setUp(() => auth = _MockAuthService());
+  setUp(() {
+    auth = _MockAuthService();
+    // Mirror the real AuthService classification so the cubit can be
+    // tested without importing Supabase types itself.
+    when(() => auth.isAuthError(any())).thenAnswer(
+      (invocation) => invocation.positionalArguments.single is AuthException,
+    );
+    when(() => auth.isInvalidCredentialsError(any())).thenAnswer(
+      (invocation) => invocation.positionalArguments.single is AuthApiException,
+    );
+    when(() => auth.authErrorMessage(any())).thenAnswer((invocation) {
+      final error = invocation.positionalArguments.single;
+      return error is AuthException ? error.message : null;
+    });
+  });
 
   SignUpCubit build() => SignUpCubit(auth);
 

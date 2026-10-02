@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart'
     show AuthStateNotifier;
@@ -55,6 +54,35 @@ class AuthService {
     return _client.auth.currentUser != null;
   }
 
+  /// Whether [error] is an invalid-credentials rejection from Supabase Auth.
+  ///
+  /// Lets presentation cubits map sign-in failures to typed feedback states
+  /// without importing Supabase types themselves.
+  bool isInvalidCredentialsError(Object error) => error is AuthApiException;
+
+  /// Whether [error] is any Supabase Auth failure (invalid credentials,
+  /// expired/invalid tokens, exchange errors, ...).
+  ///
+  /// Cubits use this to distinguish expected auth rejections from
+  /// unexpected errors without depending on `supabase_flutter` directly.
+  bool isAuthError(Object error) => error is AuthException;
+
+  /// Human-readable detail for an auth failure, for logging only.
+  ///
+  /// Returns the Supabase message when [error] is an auth rejection,
+  /// otherwise null. Views show generic localized copy and must never
+  /// display this string directly.
+  String? authErrorMessage(Object error) =>
+      error is AuthException ? error.message : null;
+
+  /// Broadcast of the sign-in state derived from [authStateChanges].
+  ///
+  /// Emits `true` while a session is active and `false` otherwise, so
+  /// presentation cubits can stay in sync with the session without
+  /// importing Supabase stream types.
+  Stream<bool> get authSignedInChanges =>
+      authStateChanges.map((event) => event.session != null);
+
   String? get currentUserId => _client.auth.currentUser?.id;
 
   Future<User?> signUp({
@@ -103,8 +131,13 @@ class AuthService {
     if (values.isEmpty || userId.isEmpty) return;
     try {
       await _client.from('profiles').update(values).eq('id', userId);
-    } on Object catch (e) {
-      debugPrint('Error ensuring profile: $e');
+    } on Object catch (e, stackTrace) {
+      _logger.warning(
+        'ensuring profile failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -155,11 +188,11 @@ class AuthService {
     }
 
     if (tokens == null) {
-      debugPrint('[AuthService] Google sign-in canceled by the user.');
+      _logger.info('Google sign-in canceled by the user', tag: 'auth');
       return null;
     }
 
-    debugPrint('[AuthService] exchanging Google ID token with Supabase.');
+    _logger.debug('exchanging Google ID token with Supabase', tag: 'auth');
     final AuthResponse response;
     try {
       response = await _client.auth.signInWithIdToken(
@@ -200,9 +233,7 @@ class AuthService {
           metadata['avatar_url'] as String? ?? metadata['picture'] as String?,
     );
 
-    debugPrint(
-      '[AuthService] Google sign-in succeeded (${response.user!.id}).',
-    );
+    _logger.info('Google sign-in succeeded', tag: 'auth');
     return response.user;
   }
 
@@ -321,8 +352,13 @@ class AuthService {
           .eq('id', userId);
 
       return response.single['full_name'] as String?;
-    } on Object catch (e) {
-      debugPrint('Error getting the family: $e');
+    } on Object catch (e, stackTrace) {
+      _logger.warning(
+        'getting profile name failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }
@@ -333,8 +369,13 @@ class AuthService {
       final response = await _client.from('profiles').select().eq('id', userId);
 
       return PersonEntity.from(response.single);
-    } on Object catch (e) {
-      debugPrint('Error: $e');
+    } on Object catch (e, stackTrace) {
+      _logger.warning(
+        'resolving person entity failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }
