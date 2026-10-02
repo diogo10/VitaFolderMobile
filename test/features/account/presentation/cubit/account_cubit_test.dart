@@ -285,7 +285,6 @@ void main() {
         (cubit.state as LoginFailed).code,
         AccountLoginErrorCode.googleSignInFailed,
       );
-      expect((cubit.state as LoginFailed).message, 'Google sign-in failed.');
     });
 
     test('signInWithGoogle emits LoginFailed on unexpected error', () async {

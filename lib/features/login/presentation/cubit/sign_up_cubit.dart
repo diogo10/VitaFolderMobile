@@ -28,9 +28,13 @@ class SignUpCubit extends Cubit<SignUpState> {
         emit(SignUpError(code: SignUpErrorCode.unexpected));
       }
     } on AuthException catch (e) {
-      emit(SignUpError(message: e.message));
+      debugPrint('[SignUpCubit] sign-up failed: ${e.message}');
+      emit(SignUpError(code: SignUpErrorCode.unexpected, message: e.message));
     } on Object catch (e) {
-      emit(SignUpError(message: e.toString()));
+      debugPrint('[SignUpCubit] sign-up error: $e');
+      emit(
+        SignUpError(code: SignUpErrorCode.unexpected, message: e.toString()),
+      );
     }
   }
 

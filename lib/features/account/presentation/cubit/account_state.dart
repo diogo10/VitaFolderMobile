@@ -38,9 +38,8 @@ enum AccountLoginErrorCode {
 }
 
 class LoginFailed extends AccountState {
-  LoginFailed({required this.code, this.message});
+  LoginFailed({required this.code});
   final AccountLoginErrorCode code;
-  final String? message;
 }
 
 class PasswordResetSent extends AccountState {

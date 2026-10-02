@@ -118,12 +118,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(
-      find.text(
-        'Google sign-in failed. '
-        'Please check your connection and try again.',
-      ),
-      findsOneWidget,
-    );
+    final l = AppLocalizations.of(tester.element(find.byType(AccountView)))!;
+    expect(find.text(l.accountGoogleSignInFailed), findsOneWidget);
   });
 }

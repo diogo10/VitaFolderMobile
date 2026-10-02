@@ -194,6 +194,7 @@ void main() {
     testWidgets('shows error snackbar when sign up fails', (tester) async {
       authService.shouldSucceed = false;
       await pumpSignUp(tester);
+      final l = AppLocalizations.of(tester.element(find.byType(SignUpView)))!;
 
       await tester.enterText(find.byType(TextFormField).at(0), 'John Doe');
       await tester.enterText(
@@ -201,12 +202,12 @@ void main() {
         'user@example.com',
       );
       await tester.enterText(find.byType(TextFormField).at(2), 'secret12');
-      await tester.ensureVisible(find.text('Create Account'));
+      await tester.ensureVisible(find.text(l.signUpCreateAccount));
       await tester.pump();
-      await tester.tap(find.text('Create Account'));
+      await tester.tap(find.text(l.signUpCreateAccount));
       await tester.pumpAndSettle();
 
-      expect(find.text('Sign up failed'), findsOneWidget);
+      expect(find.text(l.signUpUnexpectedError), findsOneWidget);
       expect(find.text('home-shell'), findsNothing);
     });
 
@@ -259,20 +260,15 @@ void main() {
     ) async {
       authService.googleError = const AuthException('Google sign-in failed.');
       await pumpSignUp(tester);
+      final l = AppLocalizations.of(tester.element(find.byType(SignUpView)))!;
 
-      await tester.ensureVisible(find.text('Sign up with Google'));
+      await tester.ensureVisible(find.text(l.signUpContinueGoogle));
       await tester.pump();
-      await tester.tap(find.text('Sign up with Google'));
+      await tester.tap(find.text(l.signUpContinueGoogle));
       await tester.pumpAndSettle();
 
       expect(authService.googleSignInCalls, 1);
-      expect(
-        find.text(
-          'Google sign-in failed. '
-          'Please check your connection and try again.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.text(l.signUpGoogleSignInFailed), findsOneWidget);
       expect(find.text('home-shell'), findsNothing);
     });
   });

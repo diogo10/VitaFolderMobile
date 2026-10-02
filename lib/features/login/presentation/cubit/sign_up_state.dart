@@ -20,7 +20,7 @@ class SignUpSuccess extends SignUpState {
 enum SignUpErrorCode { unexpected, googleSignInFailed }
 
 class SignUpError extends SignUpState {
-  SignUpError({this.message, this.code});
+  SignUpError({required this.code, this.message});
   final String? message;
-  final SignUpErrorCode? code;
+  final SignUpErrorCode code;
 }

@@ -70,7 +70,6 @@ class _SignUpViewState extends State<SignUpView> {
                   SignUpErrorCode.unexpected => l.signUpUnexpectedError,
                   SignUpErrorCode.googleSignInFailed =>
                     l.signUpGoogleSignInFailed,
-                  null => state.message ?? '',
                 };
                 ScaffoldMessenger.of(
                   context,

@@ -80,7 +80,9 @@ void main() {
           cubit.signUp(email: 'a@b.c', password: 'secret123', name: 'Ana'),
       expect: () => [
         isA<SignUpLoading>(),
-        isA<SignUpError>().having((e) => e.message, 'message', 'Email taken'),
+        isA<SignUpError>()
+            .having((e) => e.code, 'code', SignUpErrorCode.unexpected)
+            .having((e) => e.message, 'message', 'Email taken'),
       ],
     );
 
@@ -100,11 +102,9 @@ void main() {
           cubit.signUp(email: 'a@b.c', password: 'secret123', name: 'Ana'),
       expect: () => [
         isA<SignUpLoading>(),
-        isA<SignUpError>().having(
-          (e) => e.message,
-          'message',
-          contains('boom'),
-        ),
+        isA<SignUpError>()
+            .having((e) => e.code, 'code', SignUpErrorCode.unexpected)
+            .having((e) => e.message, 'message', contains('boom')),
       ],
     );
 

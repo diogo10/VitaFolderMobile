@@ -187,7 +187,6 @@ class AuthService {
 
     if (response.user == null) {
       _logger.error('Supabase exchange returned no user', tag: 'auth');
-      debugPrint('[AuthService] Supabase exchange returned no user.');
       throw const AuthException('Google sign-in failed. Please try again.');
     }
 
