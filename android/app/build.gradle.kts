@@ -67,6 +67,16 @@ android {
                 signingConfigs.getByName("debug")
             }
         }
+        // The Flutter Gradle plugin creates the `profile` build type
+        // automatically; only the signing needs wiring so local profile
+        // builds stay installable without key.properties.
+        getByName("profile") {
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
+        }
     }
 }
 
