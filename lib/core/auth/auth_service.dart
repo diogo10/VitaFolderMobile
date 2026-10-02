@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart'
     show AuthStateNotifier;
@@ -55,6 +54,35 @@ class AuthService {
     return _client.auth.currentUser != null;
   }
 
+  /// Whether [error] is an invalid-credentials rejection from Supabase Auth.
+  ///
+  /// Lets presentation cubits map sign-in failures to typed feedback states
+  /// without importing Supabase types themselves.
+  bool isInvalidCredentialsError(Object error) => error is AuthApiException;
+
+  /// Whether [error] is any Supabase Auth failure (invalid credentials,
+  /// expired/invalid tokens, exchange errors, ...).
+  ///
+  /// Cubits use this to distinguish expected auth rejections from
+  /// unexpected errors without depending on `supabase_flutter` directly.
+  bool isAuthError(Object error) => error is AuthException;
+
+  /// Human-readable detail for an auth failure, for logging only.
+  ///
+  /// Returns the Supabase message when [error] is an auth rejection,
+  /// otherwise null. Views show generic localized copy and must never
+  /// display this string directly.
+  String? authErrorMessage(Object error) =>
+      error is AuthException ? error.message : null;
+
+  /// Broadcast of the sign-in state derived from [authStateChanges].
+  ///
+  /// Emits `true` while a session is active and `false` otherwise, so
+  /// presentation cubits can stay in sync with the session without
+  /// importing Supabase stream types.
+  Stream<bool> get authSignedInChanges =>
+      authStateChanges.map((event) => event.session != null);
+
   String? get currentUserId => _client.auth.currentUser?.id;
 
   Future<User?> signUp({
@@ -103,8 +131,13 @@ class AuthService {
     if (values.isEmpty || userId.isEmpty) return;
     try {
       await _client.from('profiles').update(values).eq('id', userId);
-    } on Object catch (e) {
-      debugPrint('Error ensuring profile: $e');
+    } on Object catch (e, stackTrace) {
+      _logger.warning(
+        'ensuring profile failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -125,26 +158,41 @@ class AuthService {
   /// it for a Supabase session with `auth.signInWithIdToken`.
   ///
   /// Returns the signed-in [User], or `null` when the user cancels the
-  /// Google flow. Throws [AuthException] when the ID token is missing or
-  /// the exchange fails.
+  /// Google flow. Throws [AuthException] with an actionable message when
+  /// the ID token is missing or the exchange fails. Every failure is
+  /// logged (without PII) so Firebase Test Lab / Crashlytics captures the
+  /// specific cause while the UI shows a localized, actionable message.
   Future<User?> signInWithGoogle() async {
     final GoogleAuthTokens? tokens;
     try {
       tokens = await _googleHandler.signIn();
-    } on GoogleSignInException catch (e) {
-      debugPrint(
-        '[AuthService] Google sign-in failed '
-        '(code: ${e.code.name}, description: ${e.description})',
+    } on GoogleSignInException catch (e, stackTrace) {
+      _logger.error(
+        'Google sign-in failed',
+        tag: 'auth',
+        context: {'code': e.code.name},
+        error: e,
+        stackTrace: stackTrace,
       );
-      throw AuthException(e.description ?? 'Google sign-in failed.');
+      throw AuthException(
+        e.description ?? 'Google sign-in failed. Please try again.',
+      );
+    } on Object catch (e, stackTrace) {
+      _logger.error(
+        'Google sign-in failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      throw AuthException('Google sign-in failed. Please try again.');
     }
 
     if (tokens == null) {
-      debugPrint('[AuthService] Google sign-in canceled by the user.');
+      _logger.info('Google sign-in canceled by the user', tag: 'auth');
       return null;
     }
 
-    debugPrint('[AuthService] exchanging Google ID token with Supabase.');
+    _logger.debug('exchanging Google ID token with Supabase', tag: 'auth');
     final AuthResponse response;
     try {
       response = await _client.auth.signInWithIdToken(
@@ -152,14 +200,27 @@ class AuthService {
         idToken: tokens.idToken,
         accessToken: tokens.accessToken,
       );
-    } on Object catch (e) {
-      debugPrint('[AuthService] Supabase ID token exchange failed: $e');
+    } on AuthException catch (e, stackTrace) {
+      _logger.error(
+        'Supabase ID token exchange failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
+    } on Object catch (e, stackTrace) {
+      _logger.error(
+        'Supabase ID token exchange failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      throw AuthException('Google sign-in failed. Please try again.');
     }
 
     if (response.user == null) {
-      debugPrint('[AuthService] Supabase exchange returned no user.');
-      throw const AuthException('An unexpected error occurred.');
+      _logger.error('Supabase exchange returned no user', tag: 'auth');
+      throw const AuthException('Google sign-in failed. Please try again.');
     }
 
     final user = response.user!;
@@ -172,9 +233,7 @@ class AuthService {
           metadata['avatar_url'] as String? ?? metadata['picture'] as String?,
     );
 
-    debugPrint(
-      '[AuthService] Google sign-in succeeded (${response.user!.id}).',
-    );
+    _logger.info('Google sign-in succeeded', tag: 'auth');
     return response.user;
   }
 
@@ -209,14 +268,10 @@ class AuthService {
     const context = <String, Object?>{'function': 'delete-account'};
     _logger.debug('invoking edge function', tag: 'edge', context: context);
     try {
-      await _tracer.trace(
-        'edge-invoke-delete-account',
-        (trace) async {
-          await _client.functions.invoke('delete-account');
-          await trace.putAttribute('success', 'true');
-        },
-        attributes: {'function': 'delete-account'},
-      );
+      await _tracer.trace('edge-invoke-delete-account', (trace) async {
+        await _client.functions.invoke('delete-account');
+        await trace.putAttribute('success', 'true');
+      }, attributes: {'function': 'delete-account'});
       _logger.info(
         'edge function completed',
         tag: 'edge',
@@ -258,9 +313,7 @@ class AuthService {
     final details = e.details;
     if (e.status == 409 && details is Map && details['code'] == 'sole_owner') {
       final familyId = details['family_id'];
-      return SoleOwnerException(
-        familyId: familyId is String ? familyId : null,
-      );
+      return SoleOwnerException(familyId: familyId is String ? familyId : null);
     }
     if (e.status == 401) {
       return const AuthException('Not signed in.');
@@ -284,9 +337,7 @@ class AuthService {
       throw const AuthException('Not signed in.');
     }
     await _client.from('profiles').update({'full_name': name}).eq('id', userId);
-    await _client.auth.updateUser(
-      UserAttributes(data: {'full_name': name}),
-    );
+    await _client.auth.updateUser(UserAttributes(data: {'full_name': name}));
   }
 
   Future<String?> getProfileName() async {
@@ -301,8 +352,13 @@ class AuthService {
           .eq('id', userId);
 
       return response.single['full_name'] as String?;
-    } on Object catch (e) {
-      debugPrint('Error getting the family: $e');
+    } on Object catch (e, stackTrace) {
+      _logger.warning(
+        'getting profile name failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }
@@ -313,8 +369,13 @@ class AuthService {
       final response = await _client.from('profiles').select().eq('id', userId);
 
       return PersonEntity.from(response.single);
-    } on Object catch (e) {
-      debugPrint('Error: $e');
+    } on Object catch (e, stackTrace) {
+      _logger.warning(
+        'resolving person entity failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }

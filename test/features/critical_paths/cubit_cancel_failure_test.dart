@@ -320,7 +320,7 @@ void main() {
       final cubit = AccountCubit(
         authService: auth,
         peopleRepository: _FakePeopleRepository(),
-        authStateStream: const Stream.empty(),
+        authSignedInStream: const Stream.empty(),
       );
       addTearDown(cubit.close);
 

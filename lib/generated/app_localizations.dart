@@ -1091,6 +1091,12 @@ abstract class AppLocalizations {
   /// **'Login failed. Please try again.'**
   String get accountLoginFailed;
 
+  /// No description provided for @accountGoogleSignInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in failed. Please check your connection and try again.'**
+  String get accountGoogleSignInFailed;
+
   /// No description provided for @accountPasswordResetSent.
   ///
   /// In en, this message translates to:
@@ -1402,6 +1408,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'An unexpected error occurred.'**
   String get signUpUnexpectedError;
+
+  /// No description provided for @signUpGoogleSignInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in failed. Please check your connection and try again.'**
+  String get signUpGoogleSignInFailed;
 
   /// No description provided for @peopleInvalidFamilyCode.
   ///

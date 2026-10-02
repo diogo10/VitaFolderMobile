@@ -73,9 +73,15 @@ class _AccountViewState extends State<AccountView> {
         }
 
         if (state is LoginFailed) {
+          final message = switch (state.code) {
+            AccountLoginErrorCode.googleSignInFailed =>
+              l.accountGoogleSignInFailed,
+            AccountLoginErrorCode.invalidCredentials ||
+            AccountLoginErrorCode.unexpected => l.accountLoginFailed,
+          };
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text(l.accountLoginFailed)));
+          ).showSnackBar(SnackBar(content: Text(message)));
         }
 
         if (state is PasswordResetSent) {

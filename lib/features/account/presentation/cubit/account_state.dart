@@ -11,7 +11,6 @@ class AccountLoading extends AccountState {
 }
 
 class AccountLoaded extends AccountState {
-
   AccountLoaded({
     required this.userName,
     required this.email,
@@ -32,8 +31,15 @@ class AccountLogoutSuccess extends AccountState {
   AccountLogoutSuccess();
 }
 
+enum AccountLoginErrorCode {
+  invalidCredentials,
+  googleSignInFailed,
+  unexpected,
+}
+
 class LoginFailed extends AccountState {
-  LoginFailed();
+  LoginFailed({required this.code});
+  final AccountLoginErrorCode code;
 }
 
 class PasswordResetSent extends AccountState {

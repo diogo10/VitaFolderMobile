@@ -66,9 +66,11 @@ class _SignUpViewState extends State<SignUpView> {
                 context.go(AppRoutes.home);
               }
               if (state is SignUpError) {
-                final message = state.code == SignUpErrorCode.unexpected
-                    ? l.signUpUnexpectedError
-                    : state.message ?? '';
+                final message = switch (state.code) {
+                  SignUpErrorCode.unexpected => l.signUpUnexpectedError,
+                  SignUpErrorCode.googleSignInFailed =>
+                    l.signUpGoogleSignInFailed,
+                };
                 ScaffoldMessenger.of(
                   context,
                 ).showSnackBar(SnackBar(content: Text(message)));

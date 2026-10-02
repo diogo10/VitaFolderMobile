@@ -13,7 +13,21 @@ User _user() => User.fromJson({'id': 'u1', 'email': 'a@b.c'})!;
 void main() {
   late _MockAuthService auth;
 
-  setUp(() => auth = _MockAuthService());
+  setUp(() {
+    auth = _MockAuthService();
+    // Mirror the real AuthService classification so the cubit can be
+    // tested without importing Supabase types itself.
+    when(() => auth.isAuthError(any())).thenAnswer(
+      (invocation) => invocation.positionalArguments.single is AuthException,
+    );
+    when(() => auth.isInvalidCredentialsError(any())).thenAnswer(
+      (invocation) => invocation.positionalArguments.single is AuthApiException,
+    );
+    when(() => auth.authErrorMessage(any())).thenAnswer((invocation) {
+      final error = invocation.positionalArguments.single;
+      return error is AuthException ? error.message : null;
+    });
+  });
 
   SignUpCubit build() => SignUpCubit(auth);
 
@@ -80,7 +94,9 @@ void main() {
           cubit.signUp(email: 'a@b.c', password: 'secret123', name: 'Ana'),
       expect: () => [
         isA<SignUpLoading>(),
-        isA<SignUpError>().having((e) => e.message, 'message', 'Email taken'),
+        isA<SignUpError>()
+            .having((e) => e.code, 'code', SignUpErrorCode.unexpected)
+            .having((e) => e.message, 'message', 'Email taken'),
       ],
     );
 
@@ -100,11 +116,9 @@ void main() {
           cubit.signUp(email: 'a@b.c', password: 'secret123', name: 'Ana'),
       expect: () => [
         isA<SignUpLoading>(),
-        isA<SignUpError>().having(
-          (e) => e.message,
-          'message',
-          contains('boom'),
-        ),
+        isA<SignUpError>()
+            .having((e) => e.code, 'code', SignUpErrorCode.unexpected)
+            .having((e) => e.message, 'message', contains('boom')),
       ],
     );
 
@@ -142,16 +156,14 @@ void main() {
       act: (cubit) => cubit.signInWithGoogle(),
       expect: () => [
         isA<SignUpLoading>(),
-        isA<SignUpError>().having(
-          (e) => e.message,
-          'message',
-          'Google sign-in failed.',
-        ),
+        isA<SignUpError>()
+            .having((e) => e.message, 'message', 'Google sign-in failed.')
+            .having((e) => e.code, 'code', SignUpErrorCode.googleSignInFailed),
       ],
     );
 
     blocTest<SignUpCubit, SignUpState>(
-      'signInWithGoogle emits stringified message on unexpected error',
+      'signInWithGoogle emits unexpected code on unexpected error',
       build: build,
       setUp: () {
         when(() => auth.signInWithGoogle()).thenThrow(Exception('boom'));
@@ -160,9 +172,9 @@ void main() {
       expect: () => [
         isA<SignUpLoading>(),
         isA<SignUpError>().having(
-          (e) => e.message,
-          'message',
-          contains('boom'),
+          (e) => e.code,
+          'code',
+          SignUpErrorCode.unexpected,
         ),
       ],
     );
