@@ -89,11 +89,11 @@ class AccountCubit extends Cubit<AccountState> {
         emit(AccountLoginSuccess());
         await loadAccount();
       } else {
-        emit(LoginFailed());
+        emit(LoginFailed(code: AccountLoginErrorCode.unexpected));
       }
     } on Exception catch (e, _) {
       if (e is AuthApiException) {
-        emit(LoginFailed());
+        emit(LoginFailed(code: AccountLoginErrorCode.invalidCredentials));
       } else {
         emit(NoAccount());
       }
@@ -125,10 +125,15 @@ class AccountCubit extends Cubit<AccountState> {
       await loadAccount();
     } on AuthException catch (e) {
       debugPrint('[AccountCubit] Google sign-in failed: ${e.message}');
-      emit(LoginFailed(message: e.message));
+      emit(
+        LoginFailed(
+          code: AccountLoginErrorCode.googleSignInFailed,
+          message: e.message,
+        ),
+      );
     } on Object catch (e) {
       debugPrint('[AccountCubit] Google sign-in error: $e');
-      emit(LoginFailed());
+      emit(LoginFailed(code: AccountLoginErrorCode.unexpected));
     }
   }
 

@@ -141,10 +141,6 @@ class AuthService {
         error: e,
         stackTrace: stackTrace,
       );
-      debugPrint(
-        '[AuthService] Google sign-in failed '
-        '(code: ${e.code.name}, description: ${e.description})',
-      );
       throw AuthException(
         e.description ?? 'Google sign-in failed. Please try again.',
       );
@@ -155,7 +151,6 @@ class AuthService {
         error: e,
         stackTrace: stackTrace,
       );
-      debugPrint('[AuthService] Google sign-in error: $e');
       throw AuthException('Google sign-in failed. Please try again.');
     }
 
@@ -179,7 +174,6 @@ class AuthService {
         error: e,
         stackTrace: stackTrace,
       );
-      debugPrint('[AuthService] Supabase ID token exchange failed: $e');
       rethrow;
     } on Object catch (e, stackTrace) {
       _logger.error(
@@ -188,7 +182,6 @@ class AuthService {
         error: e,
         stackTrace: stackTrace,
       );
-      debugPrint('[AuthService] Supabase ID token exchange failed: $e');
       throw AuthException('Google sign-in failed. Please try again.');
     }
 

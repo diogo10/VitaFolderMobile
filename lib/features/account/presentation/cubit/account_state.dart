@@ -31,8 +31,15 @@ class AccountLogoutSuccess extends AccountState {
   AccountLogoutSuccess();
 }
 
+enum AccountLoginErrorCode {
+  invalidCredentials,
+  googleSignInFailed,
+  unexpected,
+}
+
 class LoginFailed extends AccountState {
-  LoginFailed({this.message});
+  LoginFailed({required this.code, this.message});
+  final AccountLoginErrorCode code;
   final String? message;
 }
 

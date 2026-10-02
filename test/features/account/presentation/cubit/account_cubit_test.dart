@@ -211,6 +211,10 @@ void main() {
         await cubit.signIn('user@example.com', 'password123');
 
         expect(cubit.state, isA<LoginFailed>());
+        expect(
+          (cubit.state as LoginFailed).code,
+          AccountLoginErrorCode.unexpected,
+        );
       },
     );
 
@@ -228,6 +232,10 @@ void main() {
       await cubit.signIn('user@example.com', 'wrong');
 
       expect(cubit.state, isA<LoginFailed>());
+      expect(
+        (cubit.state as LoginFailed).code,
+        AccountLoginErrorCode.invalidCredentials,
+      );
     });
 
     test('signInWithGoogle emits AccountLoaded on success', () async {
@@ -273,6 +281,10 @@ void main() {
       await cubit.signInWithGoogle();
 
       expect(cubit.state, isA<LoginFailed>());
+      expect(
+        (cubit.state as LoginFailed).code,
+        AccountLoginErrorCode.googleSignInFailed,
+      );
       expect((cubit.state as LoginFailed).message, 'Google sign-in failed.');
     });
 
@@ -286,6 +298,10 @@ void main() {
       await cubit.signInWithGoogle();
 
       expect(cubit.state, isA<LoginFailed>());
+      expect(
+        (cubit.state as LoginFailed).code,
+        AccountLoginErrorCode.unexpected,
+      );
     });
 
     blocTest<AccountCubit, AccountState>(
