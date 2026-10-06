@@ -37,12 +37,18 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
       final result = await _getPeopleUsecase();
 
       result.fold(
-        (error) => emit(FamilySettingsError(message: error.toString())),
+        (error) => emit(
+          const FamilySettingsError(code: FamilySettingsErrorCode.loadFailed),
+        ),
         (peopleData) {
           final currentUserId = _authService.currentUserId ?? '';
 
           // Admins manage the circle; every member may still open settings
-          // to leave it. The view gates admin-only actions on [isAdmin].
+          // to leave it. The view gates admin-only actions on [isAdmin];
+          // the queue/save/delete guards below re-check it so a crafted
+          // call cannot bypass the UI. Supabase RLS is the backend
+          // enforcement point: families update/delete must be admin-only
+          // and family_memberships delete-others must be admin-only.
           final currentUserRole = peopleData.people
               .firstWhere(
                 (p) => p.id == currentUserId,
@@ -62,14 +68,27 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
           );
         },
       );
-    } on Object catch (e) {
-      emit(FamilySettingsError(message: e.toString()));
+    } on Object catch (_) {
+      emit(const FamilySettingsError(code: FamilySettingsErrorCode.loadFailed));
     }
+  }
+
+  /// Emits a notAdmin error when [current] is not an admin.
+  /// Cubit-level defense-in-depth: the view hides admin actions, RLS
+  /// enforces them backend-side; this keeps a non-admin programmatic call
+  /// from reaching the repository.
+  bool _requireAdmin(FamilySettingsLoaded current) {
+    if (!current.isAdmin) {
+      emit(const FamilySettingsError(code: FamilySettingsErrorCode.notAdmin));
+      return false;
+    }
+    return true;
   }
 
   void queueFamilyNameChange(String name) {
     if (state is FamilySettingsLoaded) {
       final current = state as FamilySettingsLoaded;
+      if (!_requireAdmin(current)) return;
       emit(current.copyWith(pendingFamilyName: name.trim()));
     }
   }
@@ -77,6 +96,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
   void queueMemberRemoval(String memberId) {
     if (state is FamilySettingsLoaded) {
       final current = state as FamilySettingsLoaded;
+      if (!_requireAdmin(current)) return;
       final newRemovals = Set<String>.from(current.pendingRemovals)
         ..add(memberId);
       emit(current.copyWith(pendingRemovals: newRemovals));
@@ -96,6 +116,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
     if (state is! FamilySettingsLoaded) return;
 
     final current = state as FamilySettingsLoaded;
+    if (!_requireAdmin(current)) return;
     if (!current.hasPendingChanges) return;
 
     emit(const FamilySettingsSaving());
@@ -103,10 +124,13 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
     try {
       // Get family ID
       final familyIdResult = await _getMyFamilyIdUsecase();
-      final familyId = familyIdResult.fold(
-        (error) => throw Exception(error.toString()),
-        (id) => id,
-      );
+      if (familyIdResult.isLeft()) {
+        emit(
+          const FamilySettingsError(code: FamilySettingsErrorCode.saveFailed),
+        );
+        return;
+      }
+      final familyId = familyIdResult.fold((_) => null, (id) => id);
 
       if (familyId == null) {
         emit(const FamilySettingsError(code: FamilySettingsErrorCode.notFound));
@@ -120,7 +144,12 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
           familyId: familyId,
           name: current.pendingFamilyName!,
         );
-        nameResult.fold((error) => throw Exception(error.toString()), (_) {});
+        if (nameResult.isLeft()) {
+          emit(
+            const FamilySettingsError(code: FamilySettingsErrorCode.saveFailed),
+          );
+          return;
+        }
       }
 
       // Remove members
@@ -129,30 +158,52 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
           familyId: familyId,
           userId: memberId,
         );
-        removeResult.fold((error) => throw Exception(error.toString()), (_) {});
+        if (removeResult.isLeft()) {
+          emit(
+            const FamilySettingsError(code: FamilySettingsErrorCode.saveFailed),
+          );
+          return;
+        }
       }
 
       emit(const FamilySettingsSaveSuccess());
 
       // Reload settings after save
       await loadSettings();
-    } on Object catch (e) {
-      emit(FamilySettingsError(message: e.toString()));
+    } on Object catch (_) {
+      emit(const FamilySettingsError(code: FamilySettingsErrorCode.saveFailed));
     }
   }
 
   Future<void> leaveFamily() async {
     if (state is! FamilySettingsLoaded) return;
 
+    final current = state as FamilySettingsLoaded;
+
+    // Block leaving when it would orphan the circle: the sole member must
+    // delete it instead, and the last admin must transfer ownership (or
+    // delete) first.
+    if (current.members.length <= 1) {
+      emit(const FamilySettingsError(code: FamilySettingsErrorCode.soleMember));
+      return;
+    }
+    if (current.isAdmin && _isLastAdmin(current)) {
+      emit(const FamilySettingsError(code: FamilySettingsErrorCode.lastAdmin));
+      return;
+    }
+
     emit(const FamilySettingsSaving());
 
     try {
       // Get family ID
       final familyIdResult = await _getMyFamilyIdUsecase();
-      final familyId = familyIdResult.fold(
-        (error) => throw Exception(error.toString()),
-        (id) => id,
-      );
+      if (familyIdResult.isLeft()) {
+        emit(
+          const FamilySettingsError(code: FamilySettingsErrorCode.leaveFailed),
+        );
+        return;
+      }
+      final familyId = familyIdResult.fold((_) => null, (id) => id);
 
       if (familyId == null) {
         emit(const FamilySettingsError(code: FamilySettingsErrorCode.notFound));
@@ -172,26 +223,36 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
         userId: userId,
       );
       result.fold(
-        (error) => emit(FamilySettingsError(message: error.toString())),
+        (_) => emit(
+          const FamilySettingsError(code: FamilySettingsErrorCode.leaveFailed),
+        ),
         (_) => emit(const FamilySettingsLeaveSuccess()),
       );
-    } on Object catch (e) {
-      emit(FamilySettingsError(message: e.toString()));
+    } on Object catch (_) {
+      emit(
+        const FamilySettingsError(code: FamilySettingsErrorCode.leaveFailed),
+      );
     }
   }
 
   Future<void> deleteFamily() async {
     if (state is! FamilySettingsLoaded) return;
 
+    final current = state as FamilySettingsLoaded;
+    if (!_requireAdmin(current)) return;
+
     emit(const FamilySettingsSaving());
 
     try {
       // Get family ID
       final familyIdResult = await _getMyFamilyIdUsecase();
-      final familyId = familyIdResult.fold(
-        (error) => throw Exception(error.toString()),
-        (id) => id,
-      );
+      if (familyIdResult.isLeft()) {
+        emit(
+          const FamilySettingsError(code: FamilySettingsErrorCode.deleteFailed),
+        );
+        return;
+      }
+      final familyId = familyIdResult.fold((_) => null, (id) => id);
 
       if (familyId == null) {
         emit(const FamilySettingsError(code: FamilySettingsErrorCode.notFound));
@@ -200,11 +261,28 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
 
       final result = await _deleteFamilyUsecase(familyId: familyId);
       result.fold(
-        (error) => emit(FamilySettingsError(message: error.toString())),
+        (_) => emit(
+          const FamilySettingsError(code: FamilySettingsErrorCode.deleteFailed),
+        ),
         (_) => emit(const FamilySettingsDeleteSuccess()),
       );
-    } on Object catch (e) {
-      emit(FamilySettingsError(message: e.toString()));
+    } on Object catch (_) {
+      emit(
+        const FamilySettingsError(code: FamilySettingsErrorCode.deleteFailed),
+      );
     }
+  }
+
+  bool _isLastAdmin(FamilySettingsLoaded current) {
+    final adminCount = current.members.where(_isAdminRole).length;
+    if (adminCount != 1) return false;
+    return current.members.any(
+      (m) => m.id == current.currentUserId && _isAdminRole(m),
+    );
+  }
+
+  bool _isAdminRole(PersonEntity person) {
+    final role = person.role?.toLowerCase();
+    return role == 'admin' || role == 'owner';
   }
 }

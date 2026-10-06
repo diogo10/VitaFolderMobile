@@ -244,13 +244,23 @@ class PeopleRepositoryImpl implements PeopleRepository {
     required String userId,
   }) async {
     try {
-      // Data impact: removing a user (admin-remove or self-leave) must
-      // also delete the notes and reminders they created in this family.
-      // These run before the membership delete while RLS still sees the
-      // caller as a family member (notes policies are membership-scoped).
-      // Best-effort: reminders DELETE is creator-scoped, so an admin
-      // removing someone else cannot delete their reminders — the
-      // membership removal must still proceed.
+      // Data impact: removing a user (admin-remove or self-leave) also
+      // deletes the notes and reminders they created in this family. These
+      // run before the membership delete while RLS still sees the caller
+      // as a family member (notes policies are membership-scoped).
+      //
+      // Orphan tolerance (known limitation): reminders DELETE is
+      // creator-scoped, so an admin removing someone else cannot delete
+      // that member's reminders — the membership removal still proceeds
+      // and those rows are left orphaned. A transactional delete (edge
+      // function with elevated server privileges) would be needed for
+      // atomic cascade; until then self-leave (the common path) cleans
+      // up its own rows.
+      //
+      // Backend enforcement: families update/delete and
+      // family_memberships delete-others must be admin-only in Supabase
+      // RLS; the cubit admin guard is UX/defense-in-depth only and must
+      // not be relied on as the security boundary.
       try {
         await _client
             .from('notes')

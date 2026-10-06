@@ -2261,6 +2261,24 @@ abstract class AppLocalizations {
   /// **'Family not found'**
   String get familySettingsErrorNotFound;
 
+  /// No description provided for @familySettingsErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get familySettingsErrorGeneric;
+
+  /// No description provided for @familySettingsErrorLastAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'You are the last admin. Transfer admin to another member or delete the family circle instead.'**
+  String get familySettingsErrorLastAdmin;
+
+  /// No description provided for @familySettingsErrorSoleMember.
+  ///
+  /// In en, this message translates to:
+  /// **'You are the only member. Delete the family circle instead of leaving.'**
+  String get familySettingsErrorSoleMember;
+
   /// No description provided for @navNotes.
   ///
   /// In en, this message translates to:

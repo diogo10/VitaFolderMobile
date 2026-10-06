@@ -1188,6 +1188,17 @@ class AppLocalizationsPt extends AppLocalizations {
   String get familySettingsErrorNotFound => 'Família não encontrada';
 
   @override
+  String get familySettingsErrorGeneric => 'Algo deu errado. Tente novamente.';
+
+  @override
+  String get familySettingsErrorLastAdmin =>
+      'Você é o último administrador. Transfira a administração para outro membro ou exclua o círculo familiar.';
+
+  @override
+  String get familySettingsErrorSoleMember =>
+      'Você é o único membro. Exclua o círculo familiar em vez de sair.';
+
+  @override
   String get navNotes => 'Notas';
 
   @override

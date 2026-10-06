@@ -17,7 +17,7 @@ class FamilySettingsLoaded extends FamilySettingsState {
     required this.familyName,
     required this.members,
     required this.currentUserId,
-    this.isAdmin = true,
+    this.isAdmin = false,
     this.pendingFamilyName,
     this.pendingRemovals = const {},
   });
@@ -71,7 +71,16 @@ class FamilySettingsLeaveSuccess extends FamilySettingsState {
   const FamilySettingsLeaveSuccess();
 }
 
-enum FamilySettingsErrorCode { notAdmin, notFound }
+enum FamilySettingsErrorCode {
+  notAdmin,
+  notFound,
+  loadFailed,
+  saveFailed,
+  deleteFailed,
+  leaveFailed,
+  lastAdmin,
+  soleMember,
+}
 
 class FamilySettingsError extends FamilySettingsState {
   const FamilySettingsError({this.message, this.code});

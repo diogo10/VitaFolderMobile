@@ -189,7 +189,6 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
 
                         // Leave Family (all members)
                         _LeaveFamilySection(
-                          familyName: loaded.familyName,
                           onLeavePressed: () => _showLeaveFamilyDialog(
                             context,
                             loaded.familyName,
@@ -238,10 +237,18 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
   }
 
   String _errorMessage(FamilySettingsError state, AppLocalizations l) {
+    // Never surface raw exceptions: every cubit failure carries a code
+    // with a localized message; unknown/absent codes fall back to generic.
     return switch (state.code) {
       FamilySettingsErrorCode.notAdmin => l.onlyAdminCanAccess,
       FamilySettingsErrorCode.notFound => l.familySettingsErrorNotFound,
-      _ => state.message ?? l.familySettingsErrorNotFound,
+      FamilySettingsErrorCode.lastAdmin => l.familySettingsErrorLastAdmin,
+      FamilySettingsErrorCode.soleMember => l.familySettingsErrorSoleMember,
+      FamilySettingsErrorCode.loadFailed ||
+      FamilySettingsErrorCode.saveFailed ||
+      FamilySettingsErrorCode.deleteFailed ||
+      FamilySettingsErrorCode.leaveFailed ||
+      null => l.familySettingsErrorGeneric,
     };
   }
 
@@ -616,12 +623,10 @@ class _DangerZoneSection extends StatelessWidget {
 
 class _LeaveFamilySection extends StatelessWidget {
   const _LeaveFamilySection({
-    required this.familyName,
     required this.onLeavePressed,
     required this.isLeaving,
     required this.l,
   });
-  final String familyName;
   final VoidCallback onLeavePressed;
   final bool isLeaving;
   final AppLocalizations l;
