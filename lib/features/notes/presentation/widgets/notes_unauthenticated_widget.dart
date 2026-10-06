@@ -25,10 +25,10 @@ class NotesUnauthenticatedWidget extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 48),
+          const SizedBox(height: 32),
           SizedBox(
-            width: 260,
-            height: 200,
+            width: 196,
+            height: 152,
             child: Stack(
               children: [
                 Positioned(
@@ -37,12 +37,12 @@ class NotesUnauthenticatedWidget extends StatelessWidget {
                   child: Transform.rotate(
                     angle: -0.09,
                     child: Container(
-                      width: 96,
-                      height: 95,
-                      padding: const EdgeInsets.all(16),
+                      width: 72,
+                      height: 71,
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEF3C7),
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(18),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(
@@ -57,12 +57,12 @@ class NotesUnauthenticatedWidget extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _NoteLine(widthFactor: 0.7, color: Color(0xFFF59E0B)),
-                          SizedBox(height: 8),
+                          SizedBox(height: 6),
                           _NoteLine(
                             widthFactor: 0.92,
                             color: Color(0xFFFDE68A),
                           ),
-                          SizedBox(height: 8),
+                          SizedBox(height: 6),
                           _NoteLine(
                             widthFactor: 0.55,
                             color: Color(0xFFFDE68A),
@@ -73,17 +73,17 @@ class NotesUnauthenticatedWidget extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  left: 128,
-                  top: 80,
+                  left: 96,
+                  top: 60,
                   child: Transform.rotate(
                     angle: 0.12,
                     child: Container(
-                      width: 118,
-                      height: 112,
-                      padding: const EdgeInsets.all(16),
+                      width: 88,
+                      height: 84,
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: const Color(0xFFDBEAFE),
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(18),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(
@@ -101,9 +101,9 @@ class NotesUnauthenticatedWidget extends StatelessWidget {
                             widthFactor: 0.45,
                             color: Color(0xFF60A5FA),
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 8),
                           _NoteLine(widthFactor: 0.8, color: Color(0xFF93C5FD)),
-                          SizedBox(height: 10),
+                          SizedBox(height: 8),
                           _NoteLine(widthFactor: 0.6, color: Color(0xFF93C5FD)),
                         ],
                       ),
@@ -111,11 +111,11 @@ class NotesUnauthenticatedWidget extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  left: 87,
-                  top: 64,
+                  left: 65,
+                  top: 48,
                   child: Container(
-                    width: 80,
-                    height: 80,
+                    width: 60,
+                    height: 60,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
@@ -130,7 +130,7 @@ class NotesUnauthenticatedWidget extends StatelessWidget {
                     child: const Center(
                       child: Icon(
                         Icons.sticky_note_2_rounded,
-                        size: 30,
+                        size: 24,
                         color: SandPalette.sand400,
                       ),
                     ),
@@ -164,17 +164,17 @@ class NotesUnauthenticatedWidget extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 28),
           SizedBox(
             width: double.infinity,
-            height: 76,
+            height: 56,
             child: FilledButton(
               onPressed: onSignIn,
               style: FilledButton.styleFrom(
                 backgroundColor: SandPalette.sand500,
                 foregroundColor: SandPalette.sand50,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(38),
+                  borderRadius: BorderRadius.circular(28),
                 ),
               ),
               child: Text(
@@ -190,7 +190,7 @@ class NotesUnauthenticatedWidget extends StatelessWidget {
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            height: 62,
+            height: 50,
             child: OutlinedButton(
               onPressed: onJoinFamily,
               style: OutlinedButton.styleFrom(
@@ -198,7 +198,7 @@ class NotesUnauthenticatedWidget extends StatelessWidget {
                 backgroundColor: Colors.white,
                 side: const BorderSide(color: SandPalette.sand200),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(31),
+                  borderRadius: BorderRadius.circular(25),
                 ),
               ),
               child: Text(

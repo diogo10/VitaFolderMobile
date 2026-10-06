@@ -41,9 +41,11 @@ class HomeEmptyInviteCardWidget extends StatelessWidget {
               children: [
                 Text(
                   l.homeEmptyInviteInviteParentTitle,
+                  overflow: TextOverflow.ellipsis,
                   style: context.textTheme.titleMedium?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
+                    
                   ),
                 ),
                 const SizedBox(height: 6),

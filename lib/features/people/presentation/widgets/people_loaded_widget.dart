@@ -84,8 +84,6 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
           detail: person.email ?? person.phone ?? '',
           role: role,
           avatarColor: colors[role]!,
-          onPressed: () =>
-              _showMessage(l.peopleLoadedMemberSelected(person.name ?? '')),
         ),
       );
     }
