@@ -10,15 +10,11 @@ class HomeSuccessHeaderWidget extends StatelessWidget {
     required this.activeMembers,
     required this.pendingReminders,
     super.key,
-    this.onNotificationsPressed,
-    this.onProfilePressed,
   });
   final String role;
   final String familyName;
   final int activeMembers;
   final int pendingReminders;
-  final VoidCallback? onNotificationsPressed;
-  final VoidCallback? onProfilePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +22,7 @@ class HomeSuccessHeaderWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FamilyHeaderWidget(
-          role: role,
-          onNotificationsPressed: onNotificationsPressed,
-          onProfilePressed: onProfilePressed,
-        ),
+        FamilyHeaderWidget(role: role),
         const SizedBox(height: 22),
         Text(
           DateFormat('EEEE, MMMM d', l.localeName).format(DateTime.now()),

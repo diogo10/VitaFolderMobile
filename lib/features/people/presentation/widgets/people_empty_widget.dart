@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/features/people/presentation/widgets/family_header_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -81,6 +82,8 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  const FamilyHeaderWidget(),
+                  const SizedBox(height: 26),
                   Text(
                     l.peopleLoadedTheCircle,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(

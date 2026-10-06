@@ -44,8 +44,6 @@ class HomeViewSuccess extends StatelessWidget {
                 familyName: data.familyName,
                 activeMembers: data.activeMembers,
                 pendingReminders: _pendingReminders,
-                onNotificationsPressed: () => context.go(AppRoutes.account),
-                onProfilePressed: () => context.go(AppRoutes.account),
               ),
               const SizedBox(height: 24),
               if (data.peopleInCircle.isNotEmpty) ...[

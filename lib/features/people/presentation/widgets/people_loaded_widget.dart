@@ -141,12 +141,7 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             children: [
-              FamilyHeaderWidget(
-                onNotificationsPressed: () =>
-                    _showMessage(l.peopleLoadedNotificationMessage),
-                onProfilePressed: () =>
-                    _showMessage(l.peopleLoadedProfileMessage),
-              ),
+              const FamilyHeaderWidget(),
               const SizedBox(height: 26),
               Text(
                 l.peopleLoadedTheCircle,

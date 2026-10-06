@@ -7,19 +7,19 @@ import 'package:house_mira/theme/sand_palette.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
 
 class RemindersHeaderWidget extends StatefulWidget {
-
   const RemindersHeaderWidget({
-    required this.title, super.key,
+    required this.title,
+    super.key,
     this.role,
     this.selectedType,
     this.viewMode,
     this.onCategoryChanged,
     this.onAddPressed,
     this.onCalendarPressed,
-    this.onNotificationsPressed,
-    this.onProfilePressed,
     this.onFilterPressed,
     this.hasActiveFilters = false,
+    this.showNotificationIcon = false,
+    this.showProfileIcon = true,
   });
   final String title;
   final String? role;
@@ -28,10 +28,10 @@ class RemindersHeaderWidget extends StatefulWidget {
   final ValueChanged<ReminderType?>? onCategoryChanged;
   final VoidCallback? onAddPressed;
   final VoidCallback? onCalendarPressed;
-  final VoidCallback? onNotificationsPressed;
-  final VoidCallback? onProfilePressed;
   final VoidCallback? onFilterPressed;
   final bool hasActiveFilters;
+  final bool showNotificationIcon;
+  final bool showProfileIcon;
 
   @override
   State<RemindersHeaderWidget> createState() => _RemindersHeaderWidgetState();
@@ -56,8 +56,8 @@ class _RemindersHeaderWidgetState extends State<RemindersHeaderWidget> {
               children: [
                 FamilyHeaderWidget(
                   role: widget.role,
-                  onNotificationsPressed: widget.onNotificationsPressed,
-                  onProfilePressed: widget.onProfilePressed,
+                  showNotificationIcon: widget.showNotificationIcon,
+                  showProfileIcon: widget.showProfileIcon,
                 ),
                 const SizedBox(height: 22),
                 Row(

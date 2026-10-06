@@ -87,9 +87,6 @@ class _RemindersViewState extends State<RemindersView> {
                       onCategoryChanged: (type) =>
                           cubit.getReminders(type: type),
                       onCalendarPressed: cubit.toggleViewMode,
-                      onNotificationsPressed: () =>
-                          context.go(AppRoutes.account),
-                      onProfilePressed: () => context.go(AppRoutes.account),
                       onAddPressed: _handleAddPressed,
                       onFilterPressed: () => _showFilterSheet(context),
                       hasActiveFilters: hasActiveFilters,

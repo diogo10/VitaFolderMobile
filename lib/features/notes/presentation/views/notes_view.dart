@@ -12,6 +12,7 @@ import 'package:house_mira/features/notes/presentation/views/note_editor_screen.
 import 'package:house_mira/features/notes/presentation/widgets/note_card_widget.dart';
 import 'package:house_mira/features/notes/presentation/widgets/notes_empty_widget.dart';
 import 'package:house_mira/features/notes/presentation/widgets/notes_unauthenticated_widget.dart';
+import 'package:house_mira/features/people/presentation/widgets/family_header_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
@@ -194,13 +195,25 @@ class _NotesViewState extends State<NotesView> {
       ),
       NotesLoaded(:final notes) =>
         notes.isEmpty
-            ? _scrollable(NotesEmptyWidget(onCreate: _handleAdd))
+            ? SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 120),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const FamilyHeaderWidget(),
+                    NotesEmptyWidget(onCreate: _handleAdd),
+                  ],
+                ),
+              )
             : SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 120),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const FamilyHeaderWidget(),
+                    const SizedBox(height: 22),
                     _Heading(familyName: cubit.familyName),
                     const SizedBox(height: 16),
                     Row(
