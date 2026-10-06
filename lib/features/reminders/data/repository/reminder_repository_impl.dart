@@ -83,7 +83,15 @@ class ReminderRepositoryImpl implements ReminderRepository {
   Future<Either<Failure, bool>> updateReminder(ReminderModel reminder) async {
     try {
       final input = reminder.toUpdate();
-      await _client.from('reminders').update(input).eq('id', reminder.id);
+      // select() verifies a row was actually touched: RLS can filter the
+      // update down to zero rows while still returning success, which must
+      // not be reported as a successful edit.
+      final updated = await _client
+          .from('reminders')
+          .update(input)
+          .eq('id', reminder.id)
+          .select('id');
+      if ((updated as List).isEmpty) return Left(WriteBlockedFailure());
       return const Right(true);
     } on Failure catch (e) {
       return Left(Failure(message: e.message));
@@ -96,7 +104,14 @@ class ReminderRepositoryImpl implements ReminderRepository {
   @override
   Future<Either<Failure, bool>> removeReminder(String id) async {
     try {
-      await _client.from('reminders').delete().eq('id', id);
+      // select() verifies a row was actually removed: RLS can filter the
+      // delete down to zero rows while still returning success.
+      final deleted = await _client
+          .from('reminders')
+          .delete()
+          .eq('id', id)
+          .select('id');
+      if ((deleted as List).isEmpty) return Left(WriteBlockedFailure());
       return const Right(true);
     } on Failure catch (e) {
       return Left(Failure(message: e.message));

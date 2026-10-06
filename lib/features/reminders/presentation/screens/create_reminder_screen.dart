@@ -383,6 +383,8 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
               CreateReminderErrorCode.noFamily => l.createReminderErrorNoFamily,
               CreateReminderErrorCode.authRequired =>
                 l.createReminderErrorAuthRequired,
+              CreateReminderErrorCode.notAllowed =>
+                l.createReminderErrorUpdateBlocked,
               _ => state.message ?? l.createReminderErrorNoFamily,
             };
             ScaffoldMessenger.of(context)
@@ -893,6 +895,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       ('daily', l.createReminderRepeatDaily),
       ('weekly', l.createReminderRepeatWeekly),
       ('monthly', l.createReminderRepeatMonthly),
+      ('yearly', l.createReminderRepeatYearly),
     ];
 
     return Column(

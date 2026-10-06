@@ -891,6 +891,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createReminderRepeatMonthly => 'Monthly';
 
   @override
+  String get createReminderRepeatYearly => 'Yearly';
+
+  @override
   String get createReminderNotifyTitle => 'Notifications';
 
   @override
@@ -1149,6 +1152,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createReminderErrorAuthRequired => 'Authentication required';
+
+  @override
+  String get createReminderErrorUpdateBlocked =>
+      'Couldn\'t save the reminder. Please try again';
 
   @override
   String get familySettingsErrorNotFound => 'Family not found';

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
@@ -120,7 +121,15 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
     final result = await _updateReminderUsecase(reminderModel);
 
     await result.fold(
-      (err) async => emit(CreateReminderError(message: err.message)),
+      (err) async {
+        if (err is WriteBlockedFailure) {
+          emit(
+            CreateReminderError(code: CreateReminderErrorCode.notAllowed),
+          );
+        } else {
+          emit(CreateReminderError(message: err.message));
+        }
+      },
       (_) async {
         final sync = await _syncNotification(
           reminderId: reminder.id,

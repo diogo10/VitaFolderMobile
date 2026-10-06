@@ -192,9 +192,60 @@ void main() {
       );
     });
 
+    test('yearly occurs on same month/day on/after due day', () {
+      final due = DateTime(2024, 5, 15);
+      final reminder = makeReminder(dueDate: fmt(due), repeatRule: 'yearly');
+      expect(ReminderDateUtils.occursOnDate(reminder, due), isTrue);
+      expect(
+        ReminderDateUtils.occursOnDate(
+          reminder,
+          DateTime(2025, 5, 15),
+        ),
+        isTrue,
+      );
+      expect(
+        ReminderDateUtils.occursOnDate(
+          reminder,
+          DateTime(2025, 5, 16),
+        ),
+        isFalse,
+      );
+      expect(
+        ReminderDateUtils.occursOnDate(
+          reminder,
+          DateTime(2023, 5, 15),
+        ),
+        isFalse,
+      );
+    });
+
+    test('yearly leap-day reminder surfaces on Feb 28 in common years', () {
+      final due = DateTime(2024, 2, 29);
+      final reminder = makeReminder(dueDate: fmt(due), repeatRule: 'yearly');
+      expect(
+        ReminderDateUtils.occursOnDate(reminder, DateTime(2025, 2, 28)),
+        isTrue,
+      );
+      expect(
+        ReminderDateUtils.occursOnDate(reminder, DateTime(2028, 2, 29)),
+        isTrue,
+      );
+      expect(
+        ReminderDateUtils.occursOnDate(reminder, DateTime(2025, 3, 2)),
+        isFalse,
+      );
+      expect(
+        ReminderDateUtils.occursOnDate(reminder, DateTime(2028, 2, 28)),
+        isFalse,
+      );
+    });
+
     test('unknown repeat rule never occurs', () {
       final now = DateTime.now();
-      final reminder = makeReminder(dueDate: fmt(now), repeatRule: 'yearly');
+      final reminder = makeReminder(
+        dueDate: fmt(now),
+        repeatRule: 'fortnightly',
+      );
       expect(
         ReminderDateUtils.occursOnDate(
           reminder,

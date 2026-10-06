@@ -1739,6 +1739,12 @@ abstract class AppLocalizations {
   /// **'Monthly'**
   String get createReminderRepeatMonthly;
 
+  /// No description provided for @createReminderRepeatYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get createReminderRepeatYearly;
+
   /// No description provided for @createReminderNotifyTitle.
   ///
   /// In en, this message translates to:
@@ -2218,6 +2224,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Authentication required'**
   String get createReminderErrorAuthRequired;
+
+  /// No description provided for @createReminderErrorUpdateBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the reminder. Please try again'**
+  String get createReminderErrorUpdateBlocked;
 
   /// No description provided for @familySettingsErrorNotFound.
   ///

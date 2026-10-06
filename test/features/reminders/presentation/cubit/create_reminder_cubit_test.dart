@@ -297,6 +297,32 @@ void main() {
         ),
       ],
     );
+
+    blocTest<CreateReminderCubit, CreateReminderState>(
+      'emits notAllowed when the backend touches zero rows',
+      build: buildCubit,
+      setUp: () {
+        when(
+          () => updateReminderUsecase.call(any()),
+        ).thenAnswer((_) async => Left(WriteBlockedFailure()));
+      },
+      act: (cubit) => cubit.updateReminder(
+        reminder: reminder,
+        title: 'New title',
+        body: 'New body',
+        type: ReminderType.chores,
+        dueDate: DateTime(2026, 9, 1, 10, 30),
+        repeatRule: 'yearly',
+      ),
+      expect: () => [
+        isA<CreateReminderLoading>(),
+        isA<CreateReminderError>().having(
+          (state) => state.code,
+          'code',
+          CreateReminderErrorCode.notAllowed,
+        ),
+      ],
+    );
   });
 
   group('CreateReminderCubit notifications', () {

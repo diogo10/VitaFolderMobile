@@ -319,6 +319,8 @@ class _ReminderWidgetState extends State<ReminderWidget> {
         return l.createReminderRepeatWeekly;
       case 'monthly':
         return l.createReminderRepeatMonthly;
+      case 'yearly':
+        return l.createReminderRepeatYearly;
       default:
         return '';
     }

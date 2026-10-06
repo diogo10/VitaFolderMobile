@@ -162,9 +162,9 @@ class ReminderNotificationService implements IReminderNotificationService {
     return dueDate.subtract(Duration(minutes: leadTime.minutes));
   }
 
-  /// Maps repeat rules to calendar components. Monthly has no matching
-  /// component (dateAndTime repeats yearly), so it fires once and the next
-  /// occurrence is scheduled on the following edit/save.
+  /// Maps repeat rules to calendar components. Monthly and yearly have no
+  /// matching component (dateAndTime repeats yearly), so they fire once
+  /// and the next occurrence is scheduled on the following edit/save.
   @visibleForTesting
   static DateTimeComponents? repeatComponentFor(String repeatRule) {
     switch (repeatRule) {

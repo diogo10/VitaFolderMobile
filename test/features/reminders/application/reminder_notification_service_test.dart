@@ -138,6 +138,7 @@ void main() {
       );
       expect(ReminderNotificationService.repeatComponentFor('never'), isNull);
       expect(ReminderNotificationService.repeatComponentFor('monthly'), isNull);
+      expect(ReminderNotificationService.repeatComponentFor('yearly'), isNull);
     });
 
     test('skips one-shot notifications in the past', () {

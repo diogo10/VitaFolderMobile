@@ -1,4 +1,5 @@
-import 'package:house_mira/features/reminders/data/models/reminder_model.dart' show ReminderModel;
+import 'package:house_mira/features/reminders/data/models/reminder_model.dart'
+    show ReminderModel;
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:intl/intl.dart';
 
@@ -57,6 +58,9 @@ class ReminderDateUtils {
   static DateTime _dayOnly(DateTime date) =>
       DateTime(date.year, date.month, date.day);
 
+  static bool _isLeapYear(int year) =>
+      year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+
   /// Whether [reminder] occurs on [date], comparing calendar days only
   /// (time-of-day is ignored so a 14:00 reminder still matches its day).
   static bool occursOnDate(ReminderEntity reminder, DateTime date) {
@@ -76,6 +80,14 @@ class ReminderDateUtils {
         return day.weekday == dueDay.weekday;
       case 'monthly':
         return day.day == dueDay.day;
+      case 'yearly':
+        if (day.month == dueDay.month && day.day == dueDay.day) return true;
+        // Leap-day anniversaries surface on Feb 28 in common years.
+        return dueDay.month == 2 &&
+            dueDay.day == 29 &&
+            day.month == 2 &&
+            day.day == 28 &&
+            !_isLeapYear(day.year);
       default:
         return false;
     }

@@ -339,6 +339,27 @@ void main() {
     });
   });
 
+  group('CreateReminderScreen repeat selector', () {
+    testWidgets('shows yearly option that can be selected', (tester) async {
+      await tester.pumpWidget(pumpApp());
+      await tester.pumpAndSettle();
+      final l = AppLocalizations.of(
+        tester.element(find.byType(CreateReminderScreen)),
+      )!;
+
+      expect(find.text(l.createReminderRepeatYearly), findsOneWidget);
+      await tester.ensureVisible(find.text(l.createReminderRepeatYearly));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l.createReminderRepeatYearly));
+      await tester.pumpAndSettle();
+
+      final selected = tester.widget<Text>(
+        find.text(l.createReminderRepeatYearly),
+      );
+      expect(selected.style?.color, Colors.white);
+    });
+  });
+
   group('CreateReminderScreen notifications', () {
     testWidgets('notify toggle defaults to off without lead options', (
       tester,
@@ -616,6 +637,47 @@ void main() {
         findsOneWidget,
       );
       expect(find.text(l.createReminderUpdatedMessage), findsNothing);
+    });
+
+    testWidgets('blocked edit shows who-can-edit message', (tester) async {
+      final service = _FakeNotificationService();
+      when(
+        () => updateReminderUsecase.call(any()),
+      ).thenAnswer((_) async => Left(WriteBlockedFailure()));
+      when(
+        () => peopleRepository.getMyFamilyRole(),
+      ).thenAnswer((_) async => <String>[]);
+      when(
+        () => peopleRepository.getFamilyIdsForUser(any()),
+      ).thenAnswer((_) async => ['fam-1']);
+      when(
+        () => getReminderUsecase.call(any(), type: any(named: 'type')),
+      ).thenAnswer((_) async => const Right([]));
+
+      final testRouter = buildTestRouter(
+        notificationService: service,
+        reminder: reminder,
+      );
+      await tester.pumpWidget(
+        pumpRouter(testRouter, notificationService: service),
+      );
+      await tester.pumpAndSettle();
+
+      unawaited(testRouter.push('/create'));
+      await tester.pumpAndSettle();
+      final l = AppLocalizations.of(
+        tester.element(find.byType(CreateReminderScreen)),
+      )!;
+
+      await tester.tap(find.text(l.createReminderSaveButtonEdit));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(l.createReminderErrorUpdateBlocked),
+        findsOneWidget,
+      );
+      // The editor stays open so no change is lost.
+      expect(find.byType(CreateReminderScreen), findsOneWidget);
     });
 
     testWidgets('save warns when notifications are disabled', (tester) async {

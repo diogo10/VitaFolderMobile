@@ -90,8 +90,13 @@ void main() {
       createdAt: '2026-08-01',
     );
 
-    Widget buildTestWidget({RemindersCubit? cubit}) {
+    Widget buildTestWidget({
+      RemindersCubit? cubit,
+      ReminderEntity? reminderOverride,
+      Locale? locale,
+    }) {
       return MaterialApp(
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -105,7 +110,7 @@ void main() {
                   reminderRepository: _FakeReminderRepository(),
                   notificationService: _NoopNotificationService(),
                 ),
-            child: const ReminderWidget(reminder: reminder),
+            child: ReminderWidget(reminder: reminderOverride ?? reminder),
           ),
         ),
       );
@@ -118,6 +123,32 @@ void main() {
       expect(find.text(reminder.body), findsOneWidget);
       // Time is displayed in the description and trailing section
       expect(find.text('15:00'), findsWidgets);
+    });
+
+    testWidgets('renders yearly repeat label in EN and PT', (tester) async {
+      const yearly = ReminderEntity(
+        id: '1',
+        title: 'Test Title',
+        body: 'Test Body Content',
+        type: ReminderType.appointment,
+        dueDate: '22/08/2026 15:00',
+        repeatRule: 'yearly',
+        status: 'pending',
+        createdBy: 'user-1',
+        createdAt: '2026-08-01',
+      );
+
+      await tester.pumpWidget(buildTestWidget(reminderOverride: yearly));
+      expect(find.textContaining('Yearly'), findsOneWidget);
+
+      await tester.pumpWidget(
+        buildTestWidget(
+          reminderOverride: yearly,
+          locale: const Locale('pt'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Anual'), findsOneWidget);
     });
 
     testWidgets('renders title with bold style', (tester) async {

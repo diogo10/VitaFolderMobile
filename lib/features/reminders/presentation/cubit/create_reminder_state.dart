@@ -48,7 +48,7 @@ class UpdatedReminderSuccess extends CreateReminderState {
   final bool notificationInexact;
 }
 
-enum CreateReminderErrorCode { noFamily, authRequired }
+enum CreateReminderErrorCode { noFamily, authRequired, notAllowed }
 
 class CreateReminderError extends CreateReminderState {
   CreateReminderError({this.message, this.code});

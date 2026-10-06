@@ -239,7 +239,7 @@ ALTER TABLE ONLY "public"."reminders"
 
 
 
-CREATE POLICY "Enable delete for users based on user_id" ON "public"."reminders" FOR DELETE USING ((( SELECT "auth"."uid"() AS "uid") = "created_by"));
+CREATE POLICY "Family members can delete reminders" ON "public"."reminders" FOR DELETE TO "authenticated" USING (("created_by" = ( SELECT "auth"."uid"() AS "uid")) OR (EXISTS ( SELECT 1 FROM "public"."family_memberships" AS "m" WHERE (("m"."family_id" = "reminders"."family_id") AND ("m"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))));
 
 
 
@@ -259,7 +259,7 @@ CREATE POLICY "Enable read access for all users" ON "public"."reminders" FOR SEL
 
 
 
-CREATE POLICY "Enable update for authenticated users (own rows)" ON "public"."reminders" FOR UPDATE TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "created_by")) WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "created_by"));
+CREATE POLICY "Family members can update reminders" ON "public"."reminders" FOR UPDATE TO "authenticated" USING (("created_by" = ( SELECT "auth"."uid"() AS "uid")) OR (EXISTS ( SELECT 1 FROM "public"."family_memberships" AS "m" WHERE (("m"."family_id" = "reminders"."family_id") AND ("m"."user_id" = ( SELECT "auth"."uid"() AS "uid")))))) WITH CHECK (("created_by" = ( SELECT "auth"."uid"() AS "uid")) OR (EXISTS ( SELECT 1 FROM "public"."family_memberships" AS "m" WHERE (("m"."family_id" = "reminders"."family_id") AND ("m"."user_id" = ( SELECT "auth"."uid"() AS "uid"))))));
 
 
 

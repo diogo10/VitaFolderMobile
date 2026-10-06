@@ -54,9 +54,16 @@ class _FakeListFilter extends Fake
   Stream<PostgrestList> asStream() => _future.asStream();
 }
 
-/// Awaitable fake for `update(...).eq(...)` / `delete().eq(...)` calls where
-/// the response payload is ignored by the repository.
+/// Awaitable fake for `update(...).eq(...)` / `delete().eq(...)` calls.
+/// `select()` returns [selectRows], mimicking the row-count verification
+/// select on updates (empty rows = RLS-filtered write).
 class _FakeVoidFilter extends Fake implements PostgrestFilterBuilder<dynamic> {
+  _FakeVoidFilter({
+    this.selectRows = const [
+      {'id': '1'},
+    ],
+  });
+  final PostgrestList selectRows;
   final List<(String, Object)> eqCalls = [];
 
   @override
@@ -94,7 +101,7 @@ class _FakeVoidFilter extends Fake implements PostgrestFilterBuilder<dynamic> {
 
   @override
   PostgrestTransformBuilder<PostgrestList> select([String columns = '*']) =>
-      throw UnimplementedError('select() is not used on this fake');
+      _FakeListFilter(selectRows);
 }
 
 /// Terminal `single()` step of the `insert(...).select('id').single()` chain.
@@ -492,6 +499,22 @@ void main() {
       expect(result.getLeft().toNullable()?.message, 'db boom');
     });
 
+    test(
+      'reports blocked writes touching zero rows instead of success',
+      () async {
+        final filter = _FakeVoidFilter(selectRows: const []);
+        when(() => query.update(any())).thenAnswer((_) => filter);
+
+        final result = await repository.updateReminder(_model());
+
+        expect(result.isLeft(), isTrue);
+        expect(
+          result.getLeft().toNullable(),
+          isA<WriteBlockedFailure>(),
+        );
+      },
+    );
+
     test('maps unexpected errors to a generic Failure', () async {
       when(() => query.update(any())).thenThrow(Exception('db down'));
 
@@ -523,6 +546,22 @@ void main() {
 
       expect(result.getLeft().toNullable()?.message, 'db boom');
     });
+
+    test(
+      'reports blocked deletes touching zero rows instead of success',
+      () async {
+        final filter = _FakeVoidFilter(selectRows: const []);
+        when(() => query.delete()).thenAnswer((_) => filter);
+
+        final result = await repository.removeReminder('r1');
+
+        expect(result.isLeft(), isTrue);
+        expect(
+          result.getLeft().toNullable(),
+          isA<WriteBlockedFailure>(),
+        );
+      },
+    );
 
     test('maps unexpected errors to a generic Failure', () async {
       when(() => query.delete()).thenThrow(Exception('db down'));

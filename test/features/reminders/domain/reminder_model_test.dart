@@ -99,5 +99,21 @@ void main() {
       expect(payload.keys, isNot(contains('family_id')));
       expect(payload.keys, isNot(contains('status')));
     });
+
+    test('toCreate and toUpdate push the yearly repeat rule', () {
+      const model = ReminderModel(
+        title: 'T',
+        body: 'B',
+        id: '1',
+        type: ReminderType.birthday,
+        dueDate: '22/08/2026 15:00',
+        repeatRule: 'yearly',
+        status: 'pending',
+        createdBy: 'u1',
+        createdAt: '2026-08-01',
+      );
+      expect(model.toCreate('fam-1')['repeat_rule'], 'yearly');
+      expect(model.toUpdate()['repeat_rule'], 'yearly');
+    });
   });
 }
