@@ -98,7 +98,6 @@ void main() {
     WidgetTester tester,
     AccountCubit cubit, {
     String familyCode = 'ABC123',
-    bool isAdmin = false,
   }) async {
     addTearDown(cubit.close);
     await tester.pumpWidget(
@@ -111,10 +110,7 @@ void main() {
           // column inside a SingleChildScrollView.
           child: Scaffold(
             body: SingleChildScrollView(
-              child: AccountSettingsWidget(
-                familyCode: familyCode,
-                isAdmin: isAdmin,
-              ),
+              child: AccountSettingsWidget(familyCode: familyCode),
             ),
           ),
         ),
@@ -179,6 +175,14 @@ void main() {
       expect(find.text('Delete Account'), findsOneWidget);
       expect(find.text('Invite Members'), findsNothing);
       expect(find.text('Family Settings'), findsNothing);
+    });
+
+    testWidgets('shows family settings to every family member', (tester) async {
+      final auth = _FakeAuthService();
+      await pumpSettings(tester, buildCubit(auth));
+
+      expect(find.text('Family Settings'), findsOneWidget);
+      expect(find.text('Invite Members'), findsOneWidget);
     });
   });
 }

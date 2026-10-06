@@ -1125,6 +1125,27 @@ class AppLocalizationsPt extends AppLocalizations {
   String get deleteFamilyButton => 'Excluir Círculo';
 
   @override
+  String get leaveFamilyTitle => 'Sair do Círculo Familiar';
+
+  @override
+  String get leaveFamilyDescription =>
+      'Você será removido deste círculo familiar. As notas e lembretes que você criou nesta família serão excluídos permanentemente. Esta ação não pode ser desfeita.';
+
+  @override
+  String get leaveFamilyButton => 'Sair da Família';
+
+  @override
+  String get leaveFamilyConfirmTitle => 'Sair da família?';
+
+  @override
+  String leaveFamilyConfirmMessage(String familyName) {
+    return 'Tem certeza que deseja sair de $familyName? Suas notas e lembretes nesta família serão excluídos.';
+  }
+
+  @override
+  String get leaveSuccess => 'Você saiu do círculo familiar';
+
+  @override
   String get saveButton => 'Salvar';
 
   @override

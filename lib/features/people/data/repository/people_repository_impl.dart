@@ -197,10 +197,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
         .eq('family_id', familyId);
     final memberships = (membershipsRes as List).map((e) {
       final entry = e as Map<String, dynamic>;
-      return {
-        'user_id': entry['user_id'],
-        'role': entry['role'],
-      };
+      return {'user_id': entry['user_id'], 'role': entry['role']};
     }).toList();
 
     final userIds = memberships.map((m) => m['user_id'] as String).toList();
@@ -247,6 +244,31 @@ class PeopleRepositoryImpl implements PeopleRepository {
     required String userId,
   }) async {
     try {
+      // Data impact: removing a user (admin-remove or self-leave) must
+      // also delete the notes and reminders they created in this family.
+      // These run before the membership delete while RLS still sees the
+      // caller as a family member (notes policies are membership-scoped).
+      // Best-effort: reminders DELETE is creator-scoped, so an admin
+      // removing someone else cannot delete their reminders — the
+      // membership removal must still proceed.
+      try {
+        await _client
+            .from('notes')
+            .delete()
+            .eq('family_id', familyId)
+            .eq('created_by', userId);
+      } on Object catch (e) {
+        debugPrint('Error deleting member notes: $e');
+      }
+      try {
+        await _client
+            .from('reminders')
+            .delete()
+            .eq('family_id', familyId)
+            .eq('created_by', userId);
+      } on Object catch (e) {
+        debugPrint('Error deleting member reminders: $e');
+      }
       await _client
           .from('family_memberships')
           .delete()

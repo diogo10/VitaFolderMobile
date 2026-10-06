@@ -2147,6 +2147,42 @@ abstract class AppLocalizations {
   /// **'Delete Circle'**
   String get deleteFamilyButton;
 
+  /// No description provided for @leaveFamilyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Family Circle'**
+  String get leaveFamilyTitle;
+
+  /// No description provided for @leaveFamilyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You will be removed from this family circle. Notes and reminders you created in this family will be permanently deleted. This action cannot be undone.'**
+  String get leaveFamilyDescription;
+
+  /// No description provided for @leaveFamilyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Family'**
+  String get leaveFamilyButton;
+
+  /// No description provided for @leaveFamilyConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave family?'**
+  String get leaveFamilyConfirmTitle;
+
+  /// No description provided for @leaveFamilyConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to leave {familyName}? Your notes and reminders in this family will be deleted.'**
+  String leaveFamilyConfirmMessage(String familyName);
+
+  /// No description provided for @leaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'You have left the family circle'**
+  String get leaveSuccess;
+
   /// No description provided for @saveButton.
   ///
   /// In en, this message translates to:

@@ -41,26 +41,23 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
         (peopleData) {
           final currentUserId = _authService.currentUserId ?? '';
 
-          // Check if user is admin
+          // Admins manage the circle; every member may still open settings
+          // to leave it. The view gates admin-only actions on [isAdmin].
           final currentUserRole = peopleData.people
               .firstWhere(
                 (p) => p.id == currentUserId,
                 orElse: PersonEntity.new,
               )
               .role;
-
-          if (currentUserRole?.toLowerCase() != 'admin') {
-            emit(
-              const FamilySettingsError(code: FamilySettingsErrorCode.notAdmin),
-            );
-            return;
-          }
+          final role = currentUserRole?.toLowerCase();
+          final isAdmin = role == 'admin' || role == 'owner';
 
           emit(
             FamilySettingsLoaded(
               familyName: peopleData.family.name,
               members: peopleData.people,
               currentUserId: currentUserId,
+              isAdmin: isAdmin,
             ),
           );
         },
@@ -139,6 +136,45 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
 
       // Reload settings after save
       await loadSettings();
+    } on Object catch (e) {
+      emit(FamilySettingsError(message: e.toString()));
+    }
+  }
+
+  Future<void> leaveFamily() async {
+    if (state is! FamilySettingsLoaded) return;
+
+    emit(const FamilySettingsSaving());
+
+    try {
+      // Get family ID
+      final familyIdResult = await _getMyFamilyIdUsecase();
+      final familyId = familyIdResult.fold(
+        (error) => throw Exception(error.toString()),
+        (id) => id,
+      );
+
+      if (familyId == null) {
+        emit(const FamilySettingsError(code: FamilySettingsErrorCode.notFound));
+        return;
+      }
+
+      final userId = _authService.currentUserId;
+      if (userId == null || userId.isEmpty) {
+        emit(const FamilySettingsError(code: FamilySettingsErrorCode.notFound));
+        return;
+      }
+
+      // removeMember also deletes the user's notes and reminders in this
+      // family (see PeopleRepositoryImpl.removeMember).
+      final result = await _removeMemberUsecase(
+        familyId: familyId,
+        userId: userId,
+      );
+      result.fold(
+        (error) => emit(FamilySettingsError(message: error.toString())),
+        (_) => emit(const FamilySettingsLeaveSuccess()),
+      );
     } on Object catch (e) {
       emit(FamilySettingsError(message: e.toString()));
     }

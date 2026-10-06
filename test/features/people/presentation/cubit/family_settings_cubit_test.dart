@@ -97,17 +97,45 @@ void main() {
     );
 
     blocTest<FamilySettingsCubit, FamilySettingsState>(
-      'emits notAdmin error for non-admin members',
+      'loads with isAdmin false for non-admin members',
       build: () => build(userId: 'u2'),
       setUp: () => stubPeople(adminData()),
       act: (cubit) => cubit.loadSettings(),
       expect: () => [
         isA<FamilySettingsLoading>(),
-        isA<FamilySettingsError>().having(
-          (s) => s.code,
-          'code',
-          FamilySettingsErrorCode.notAdmin,
+        isA<FamilySettingsLoaded>()
+            .having((s) => s.isAdmin, 'isAdmin', isFalse)
+            .having((s) => s.currentUserId, 'currentUserId', 'u2'),
+      ],
+    );
+
+    blocTest<FamilySettingsCubit, FamilySettingsState>(
+      'loads with isAdmin true for admins',
+      build: build,
+      setUp: () => stubPeople(adminData()),
+      act: (cubit) => cubit.loadSettings(),
+      expect: () => [
+        isA<FamilySettingsLoading>(),
+        isA<FamilySettingsLoaded>().having((s) => s.isAdmin, 'isAdmin', isTrue),
+      ],
+    );
+
+    blocTest<FamilySettingsCubit, FamilySettingsState>(
+      'loads with isAdmin true for owners',
+      build: build,
+      setUp: () => stubPeople(
+        PeopleData(
+          family: FamilyEntity(name: 'Fam', inviteCode: 'ABC123'),
+          people: const [
+            PersonEntity(id: 'u1', name: 'Ana', role: 'owner'),
+            PersonEntity(id: 'u2', name: 'Bob', role: 'member'),
+          ],
         ),
+      ),
+      act: (cubit) => cubit.loadSettings(),
+      expect: () => [
+        isA<FamilySettingsLoading>(),
+        isA<FamilySettingsLoaded>().having((s) => s.isAdmin, 'isAdmin', isTrue),
       ],
     );
 
@@ -137,10 +165,7 @@ void main() {
         when(() => getPeopleUsecase()).thenThrow(Exception('boom'));
       },
       act: (cubit) => cubit.loadSettings(),
-      expect: () => [
-        isA<FamilySettingsLoading>(),
-        isA<FamilySettingsError>(),
-      ],
+      expect: () => [isA<FamilySettingsLoading>(), isA<FamilySettingsError>()],
     );
   });
 
@@ -220,9 +245,9 @@ void main() {
       build: build,
       setUp: () {
         stubPeople(adminData());
-        when(() => getMyFamilyIdUsecase()).thenAnswer(
-          (_) async => const Right<Exception, String?>('f1'),
-        );
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>('f1'));
         when(
           () => updateFamilyNameUsecase(familyId: 'f1', name: 'New'),
         ).thenAnswer((_) async => const Right(true));
@@ -262,9 +287,9 @@ void main() {
       build: build,
       setUp: () {
         stubPeople(adminData());
-        when(() => getMyFamilyIdUsecase()).thenAnswer(
-          (_) async => const Right<Exception, String?>('f1'),
-        );
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>('f1'));
         when(
           () => removeMemberUsecase(
             familyId: any(named: 'familyId'),
@@ -304,9 +329,9 @@ void main() {
       build: build,
       setUp: () {
         stubPeople(adminData());
-        when(() => getMyFamilyIdUsecase()).thenAnswer(
-          (_) async => const Right<Exception, String?>(null),
-        );
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>(null));
       },
       act: (cubit) async {
         await cubit.loadSettings();
@@ -331,9 +356,9 @@ void main() {
       build: build,
       setUp: () {
         stubPeople(adminData());
-        when(() => getMyFamilyIdUsecase()).thenAnswer(
-          (_) async => Left<Exception, String?>(Exception('boom')),
-        );
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => Left<Exception, String?>(Exception('boom')));
       },
       act: (cubit) async {
         await cubit.loadSettings();
@@ -354,9 +379,9 @@ void main() {
       build: build,
       setUp: () {
         stubPeople(adminData());
-        when(() => getMyFamilyIdUsecase()).thenAnswer(
-          (_) async => const Right<Exception, String?>('f1'),
-        );
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>('f1'));
         when(
           () => updateFamilyNameUsecase(
             familyId: any(named: 'familyId'),
@@ -387,9 +412,9 @@ void main() {
       build: build,
       setUp: () {
         stubPeople(adminData());
-        when(() => getMyFamilyIdUsecase()).thenAnswer(
-          (_) async => const Right<Exception, String?>('f1'),
-        );
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>('f1'));
         when(
           () => removeMemberUsecase(
             familyId: any(named: 'familyId'),
@@ -420,9 +445,7 @@ void main() {
       await cubit.deleteFamily();
 
       expect(cubit.state, isA<FamilySettingsInitial>());
-      verifyNever(
-        () => getMyFamilyIdUsecase(),
-      );
+      verifyNever(() => getMyFamilyIdUsecase());
     });
 
     blocTest<FamilySettingsCubit, FamilySettingsState>(
@@ -430,12 +453,12 @@ void main() {
       build: build,
       setUp: () {
         stubPeople(adminData());
-        when(() => getMyFamilyIdUsecase()).thenAnswer(
-          (_) async => const Right<Exception, String?>('f1'),
-        );
-        when(() => deleteFamilyUsecase(familyId: 'f1')).thenAnswer(
-          (_) async => const Right(true),
-        );
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>('f1'));
+        when(
+          () => deleteFamilyUsecase(familyId: 'f1'),
+        ).thenAnswer((_) async => const Right(true));
       },
       act: (cubit) async {
         await cubit.loadSettings();
@@ -454,9 +477,9 @@ void main() {
       build: build,
       setUp: () {
         stubPeople(adminData());
-        when(() => getMyFamilyIdUsecase()).thenAnswer(
-          (_) async => const Right<Exception, String?>(null),
-        );
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>(null));
       },
       act: (cubit) async {
         await cubit.loadSettings();
@@ -479,12 +502,12 @@ void main() {
       build: build,
       setUp: () {
         stubPeople(adminData());
-        when(() => getMyFamilyIdUsecase()).thenAnswer(
-          (_) async => const Right<Exception, String?>('f1'),
-        );
-        when(() => deleteFamilyUsecase(familyId: 'f1')).thenAnswer(
-          (_) async => Left(Exception('boom')),
-        );
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>('f1'));
+        when(
+          () => deleteFamilyUsecase(familyId: 'f1'),
+        ).thenAnswer((_) async => Left(Exception('boom')));
       },
       act: (cubit) async {
         await cubit.loadSettings();
@@ -508,6 +531,167 @@ void main() {
       act: (cubit) async {
         await cubit.loadSettings();
         await cubit.deleteFamily();
+      },
+      expect: () => [
+        isA<FamilySettingsLoading>(),
+        isA<FamilySettingsLoaded>(),
+        isA<FamilySettingsSaving>(),
+        isA<FamilySettingsError>(),
+      ],
+    );
+  });
+
+  group('leaveFamily', () {
+    test('is a no-op when settings are not loaded', () async {
+      final cubit = build();
+      addTearDown(cubit.close);
+
+      await cubit.leaveFamily();
+
+      expect(cubit.state, isA<FamilySettingsInitial>());
+      verifyNever(() => getMyFamilyIdUsecase());
+    });
+
+    blocTest<FamilySettingsCubit, FamilySettingsState>(
+      'emits leave success for the current user',
+      build: build,
+      setUp: () {
+        stubPeople(adminData());
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>('f1'));
+        when(
+          () => removeMemberUsecase(familyId: 'f1', userId: 'u1'),
+        ).thenAnswer((_) async => const Right(true));
+      },
+      act: (cubit) async {
+        await cubit.loadSettings();
+        await cubit.leaveFamily();
+      },
+      expect: () => [
+        isA<FamilySettingsLoading>(),
+        isA<FamilySettingsLoaded>(),
+        isA<FamilySettingsSaving>(),
+        isA<FamilySettingsLeaveSuccess>(),
+      ],
+      verify: (_) {
+        verify(
+          () => removeMemberUsecase(familyId: 'f1', userId: 'u1'),
+        ).called(1);
+      },
+    );
+
+    blocTest<FamilySettingsCubit, FamilySettingsState>(
+      'non-admin members can leave too',
+      build: () => build(userId: 'u2'),
+      setUp: () {
+        stubPeople(adminData());
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>('f1'));
+        when(
+          () => removeMemberUsecase(familyId: 'f1', userId: 'u2'),
+        ).thenAnswer((_) async => const Right(true));
+      },
+      act: (cubit) async {
+        await cubit.loadSettings();
+        await cubit.leaveFamily();
+      },
+      expect: () => [
+        isA<FamilySettingsLoading>(),
+        isA<FamilySettingsLoaded>(),
+        isA<FamilySettingsSaving>(),
+        isA<FamilySettingsLeaveSuccess>(),
+      ],
+    );
+
+    blocTest<FamilySettingsCubit, FamilySettingsState>(
+      'emits notFound when there is no family id',
+      build: build,
+      setUp: () {
+        stubPeople(adminData());
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>(null));
+      },
+      act: (cubit) async {
+        await cubit.loadSettings();
+        await cubit.leaveFamily();
+      },
+      expect: () => [
+        isA<FamilySettingsLoading>(),
+        isA<FamilySettingsLoaded>(),
+        isA<FamilySettingsSaving>(),
+        isA<FamilySettingsError>().having(
+          (s) => s.code,
+          'code',
+          FamilySettingsErrorCode.notFound,
+        ),
+      ],
+    );
+
+    blocTest<FamilySettingsCubit, FamilySettingsState>(
+      'emits notFound when there is no signed-in user',
+      build: () => build(userId: null),
+      setUp: () {
+        stubPeople(adminData());
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>('f1'));
+      },
+      act: (cubit) async {
+        await cubit.loadSettings();
+        await cubit.leaveFamily();
+      },
+      expect: () => [
+        isA<FamilySettingsLoading>(),
+        isA<FamilySettingsLoaded>(),
+        isA<FamilySettingsSaving>(),
+        isA<FamilySettingsError>().having(
+          (s) => s.code,
+          'code',
+          FamilySettingsErrorCode.notFound,
+        ),
+      ],
+    );
+
+    blocTest<FamilySettingsCubit, FamilySettingsState>(
+      'emits error when leaving fails',
+      build: build,
+      setUp: () {
+        stubPeople(adminData());
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>('f1'));
+        when(
+          () => removeMemberUsecase(
+            familyId: any(named: 'familyId'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => Left(Exception('boom')));
+      },
+      act: (cubit) async {
+        await cubit.loadSettings();
+        await cubit.leaveFamily();
+      },
+      expect: () => [
+        isA<FamilySettingsLoading>(),
+        isA<FamilySettingsLoaded>(),
+        isA<FamilySettingsSaving>(),
+        isA<FamilySettingsError>(),
+      ],
+    );
+
+    blocTest<FamilySettingsCubit, FamilySettingsState>(
+      'emits error when resolving the family id throws',
+      build: build,
+      setUp: () {
+        stubPeople(adminData());
+        when(() => getMyFamilyIdUsecase()).thenThrow(Exception('boom'));
+      },
+      act: (cubit) async {
+        await cubit.loadSettings();
+        await cubit.leaveFamily();
       },
       expect: () => [
         isA<FamilySettingsLoading>(),

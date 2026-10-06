@@ -1112,6 +1112,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteFamilyButton => 'Delete Circle';
 
   @override
+  String get leaveFamilyTitle => 'Leave Family Circle';
+
+  @override
+  String get leaveFamilyDescription =>
+      'You will be removed from this family circle. Notes and reminders you created in this family will be permanently deleted. This action cannot be undone.';
+
+  @override
+  String get leaveFamilyButton => 'Leave Family';
+
+  @override
+  String get leaveFamilyConfirmTitle => 'Leave family?';
+
+  @override
+  String leaveFamilyConfirmMessage(String familyName) {
+    return 'Are you sure you want to leave $familyName? Your notes and reminders in this family will be deleted.';
+  }
+
+  @override
+  String get leaveSuccess => 'You have left the family circle';
+
+  @override
   String get saveButton => 'Save';
 
   @override

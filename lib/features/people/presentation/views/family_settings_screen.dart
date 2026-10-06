@@ -58,6 +58,12 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
             ..showSnackBar(SnackBar(content: Text(l.deleteSuccess)));
           context.go(AppRoutes.account);
         }
+        if (state is FamilySettingsLeaveSuccess) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(l.leaveSuccess)));
+          context.go(AppRoutes.account);
+        }
         if (state is FamilySettingsError) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
@@ -120,6 +126,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
         final loaded = state;
         final displayMembers = loaded.displayMembers;
         final hasPendingChanges = loaded.hasPendingChanges;
+        final isAdmin = loaded.isAdmin;
 
         return Scaffold(
           backgroundColor: SandPalette.sand50,
@@ -138,6 +145,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
                           controller: _familyNameController,
                           label: l.familyNameLabel,
                           hint: l.familyNameHint,
+                          enabled: isAdmin,
                           onChanged: (value) => context
                               .read<FamilySettingsCubit>()
                               .queueFamilyNameChange(value),
@@ -153,6 +161,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
                           currentUserId: loaded.currentUserId,
                           familyName: loaded.familyName,
                           memberCount: displayMembers.length,
+                          canManage: isAdmin,
                           onRemoveMember: (memberId, memberName) =>
                               _showRemoveMemberDialog(
                                 context,
@@ -165,47 +174,61 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
 
                         const SizedBox(height: 32),
 
-                        // Danger Zone
-                        _DangerZoneSection(
+                        // Danger Zone (admin only)
+                        if (isAdmin)
+                          _DangerZoneSection(
+                            familyName: loaded.familyName,
+                            onDeletePressed: () => _showDeleteFamilyDialog(
+                              context,
+                              loaded.familyName,
+                            ),
+                            isDeleting: isLoading,
+                            l: l,
+                          ),
+                        if (isAdmin) const SizedBox(height: 24),
+
+                        // Leave Family (all members)
+                        _LeaveFamilySection(
                           familyName: loaded.familyName,
-                          onDeletePressed: () => _showDeleteFamilyDialog(
+                          onLeavePressed: () => _showLeaveFamilyDialog(
                             context,
                             loaded.familyName,
                           ),
-                          isDeleting: isLoading,
+                          isLeaving: isLoading,
                           l: l,
                         ),
                       ],
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        SandPalette.sand50.withValues(alpha: 0),
-                        SandPalette.sand50,
-                        SandPalette.sand50,
-                      ],
+                if (isAdmin)
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          SandPalette.sand50.withValues(alpha: 0),
+                          SandPalette.sand50,
+                          SandPalette.sand50,
+                        ],
+                      ),
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      child: SandPrimaryButton(
+                        label: isLoading ? l.savedButton : l.saveButton,
+                        icon: Icons.check_rounded,
+                        isLoading: isLoading,
+                        onPressed: hasPendingChanges && !isLoading
+                            ? () => context
+                                  .read<FamilySettingsCubit>()
+                                  .saveChanges()
+                            : null,
+                      ),
                     ),
                   ),
-                  child: SafeArea(
-                    top: false,
-                    child: SandPrimaryButton(
-                      label: isLoading ? l.savedButton : l.saveButton,
-                      icon: Icons.check_rounded,
-                      isLoading: isLoading,
-                      onPressed: hasPendingChanges && !isLoading
-                          ? () => context
-                                .read<FamilySettingsCubit>()
-                                .saveChanges()
-                          : null,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -306,6 +329,48 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
       ),
     );
   }
+
+  void _showLeaveFamilyDialog(BuildContext context, String familyName) {
+    final l = AppLocalizations.of(context)!;
+    final cubit = context.read<FamilySettingsCubit>();
+
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            l.leaveFamilyConfirmTitle,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.red,
+            ),
+          ),
+          content: Text(
+            l.leaveFamilyConfirmMessage(familyName),
+            style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l.cancel),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await cubit.leaveFamily();
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: Text(l.leaveFamilyButton),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _FamilyNameSection extends StatefulWidget {
@@ -314,11 +379,13 @@ class _FamilyNameSection extends StatefulWidget {
     required this.label,
     required this.hint,
     required this.onChanged,
+    this.enabled = true,
   });
   final TextEditingController controller;
   final String label;
   final String hint;
   final ValueChanged<String> onChanged;
+  final bool enabled;
 
   @override
   State<_FamilyNameSection> createState() => _FamilyNameSectionState();
@@ -338,6 +405,7 @@ class _FamilyNameSectionState extends State<_FamilyNameSection> {
   }
 
   void _onTextChanged() {
+    if (!widget.enabled) return;
     widget.onChanged(widget.controller.text);
   }
 
@@ -363,6 +431,7 @@ class _FamilyNameSectionState extends State<_FamilyNameSection> {
           hint: widget.hint,
           prefixIcon: Icons.edit_rounded,
           textCapitalization: TextCapitalization.words,
+          enabled: widget.enabled,
         ),
       ],
     );
@@ -378,6 +447,7 @@ class _ManageMembersSection extends StatelessWidget {
     required this.onRemoveMember,
     required this.isRemoving,
     required this.l,
+    this.canManage = true,
   });
   final List<PersonEntity> members;
   final String currentUserId;
@@ -385,6 +455,7 @@ class _ManageMembersSection extends StatelessWidget {
   final int memberCount;
   final void Function(String memberId, String memberName) onRemoveMember;
   final bool isRemoving;
+  final bool canManage;
   final AppLocalizations l;
 
   @override
@@ -422,6 +493,7 @@ class _ManageMembersSection extends StatelessWidget {
           familyName,
           onRemoveMember,
           isRemoving,
+          canManage,
         ),
       ],
     );
@@ -433,6 +505,7 @@ class _ManageMembersSection extends StatelessWidget {
     String familyName,
     void Function(String memberId, String memberName) onRemoveMember,
     bool isRemoving,
+    bool canManage,
   ) {
     return members.asMap().entries.map((entry) {
       final index = entry.key;
@@ -443,7 +516,7 @@ class _ManageMembersSection extends StatelessWidget {
           person: person,
           currentUserId: currentUserId,
           familyName: familyName,
-          onRemove: person.id != currentUserId
+          onRemove: canManage && person.id != currentUserId
               ? () => onRemoveMember(person.id!, person.name ?? '')
               : null,
           isRemoving: isRemoving,
@@ -525,6 +598,84 @@ class _DangerZoneSection extends StatelessWidget {
                   ),
                   child: Text(
                     l.deleteFamilyButton,
+                    style: const TextStyle(
+                      fontFamily: 'Outfit',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LeaveFamilySection extends StatelessWidget {
+  const _LeaveFamilySection({
+    required this.familyName,
+    required this.onLeavePressed,
+    required this.isLeaving,
+    required this.l,
+  });
+  final String familyName;
+  final VoidCallback onLeavePressed;
+  final bool isLeaving;
+  final AppLocalizations l;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFFDF2F2),
+            border: Border.all(color: const Color(0xFFFAD1D1)),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l.leaveFamilyTitle,
+                style: const TextStyle(
+                  fontFamily: 'Outfit',
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                  fontSize: 11,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                l.leaveFamilyDescription,
+                style: const TextStyle(
+                  fontFamily: 'Figtree',
+                  color: Color(0xFFF47174),
+                  fontSize: 10,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: isLeaving ? null : onLeavePressed,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    side: const BorderSide(color: Color(0xFFFAD1D1)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    backgroundColor: Colors.white,
+                  ),
+                  child: Text(
+                    l.leaveFamilyButton,
                     style: const TextStyle(
                       fontFamily: 'Outfit',
                       fontWeight: FontWeight.w600,

@@ -413,6 +413,19 @@
   "deleteFamilyTitle": "Delete Family Circle",
   "deleteFamilyDescription": "This action cannot be undone. All data, tasks, and members will be permanently removed.",
   "deleteFamilyButton": "Delete Circle",
+  "leaveFamilyTitle": "Leave Family Circle",
+  "leaveFamilyDescription": "You will be removed from this family circle. Notes and reminders you created in this family will be permanently deleted. This action cannot be undone.",
+  "leaveFamilyButton": "Leave Family",
+  "leaveFamilyConfirmTitle": "Leave family?",
+  "leaveFamilyConfirmMessage": "Are you sure you want to leave {familyName}? Your notes and reminders in this family will be deleted.",
+  "@leaveFamilyConfirmMessage": {
+    "placeholders": {
+      "familyName": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveSuccess": "You have left the family circle",
   "saveButton": "Save",
   "savedButton": "Saved",
   "saveSuccess": "Family settings saved successfully",

@@ -392,6 +392,19 @@
   "deleteFamilyTitle": "Excluir Círculo Familiar",
   "deleteFamilyDescription": "Esta ação não pode ser desfeita. Todos os dados, tarefas e membros serão removidos permanentemente.",
   "deleteFamilyButton": "Excluir Círculo",
+  "leaveFamilyTitle": "Sair do Círculo Familiar",
+  "leaveFamilyDescription": "Você será removido deste círculo familiar. As notas e lembretes que você criou nesta família serão excluídos permanentemente. Esta ação não pode ser desfeita.",
+  "leaveFamilyButton": "Sair da Família",
+  "leaveFamilyConfirmTitle": "Sair da família?",
+  "leaveFamilyConfirmMessage": "Tem certeza que deseja sair de {familyName}? Suas notas e lembretes nesta família serão excluídos.",
+  "@leaveFamilyConfirmMessage": {
+    "placeholders": {
+      "familyName": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveSuccess": "Você saiu do círculo familiar",
   "saveButton": "Salvar",
   "savedButton": "Salvo",
   "saveSuccess": "Configurações da família salvas com sucesso",

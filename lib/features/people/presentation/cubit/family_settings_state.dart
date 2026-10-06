@@ -13,17 +13,18 @@ class FamilySettingsLoading extends FamilySettingsState {
 }
 
 class FamilySettingsLoaded extends FamilySettingsState {
-
   const FamilySettingsLoaded({
     required this.familyName,
     required this.members,
     required this.currentUserId,
+    this.isAdmin = true,
     this.pendingFamilyName,
     this.pendingRemovals = const {},
   });
   final String familyName;
   final List<PersonEntity> members;
   final String currentUserId;
+  final bool isAdmin;
   final String? pendingFamilyName;
   final Set<String> pendingRemovals;
 
@@ -31,6 +32,7 @@ class FamilySettingsLoaded extends FamilySettingsState {
     String? familyName,
     List<PersonEntity>? members,
     String? currentUserId,
+    bool? isAdmin,
     String? pendingFamilyName,
     Set<String>? pendingRemovals,
   }) {
@@ -38,6 +40,7 @@ class FamilySettingsLoaded extends FamilySettingsState {
       familyName: familyName ?? this.familyName,
       members: members ?? this.members,
       currentUserId: currentUserId ?? this.currentUserId,
+      isAdmin: isAdmin ?? this.isAdmin,
       pendingFamilyName: pendingFamilyName ?? this.pendingFamilyName,
       pendingRemovals: pendingRemovals ?? this.pendingRemovals,
     );
@@ -64,10 +67,13 @@ class FamilySettingsDeleteSuccess extends FamilySettingsState {
   const FamilySettingsDeleteSuccess();
 }
 
+class FamilySettingsLeaveSuccess extends FamilySettingsState {
+  const FamilySettingsLeaveSuccess();
+}
+
 enum FamilySettingsErrorCode { notAdmin, notFound }
 
 class FamilySettingsError extends FamilySettingsState {
-
   const FamilySettingsError({this.message, this.code});
   final String? message;
   final FamilySettingsErrorCode? code;
