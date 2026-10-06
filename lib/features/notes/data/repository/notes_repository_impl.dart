@@ -75,13 +75,32 @@ class NotesRepositoryImpl implements NotesRepository {
   @override
   Future<Either<Failure, bool>> updateNote(NoteModel note) async {
     try {
-      final updated = await _client
+      final payload = note.toUpdate();
+      // Writes stay bare (no .select()): representation responses on writes
+      // trigger backend 42804 errors on this project, so the write is
+      // verified with a follow-up read instead (plain SELECTs work).
+      await _client.from('notes').update(payload).eq('id', note.id);
+      final echoed = await _client
           .from('notes')
-          .update(note.toUpdate())
+          .select('id,title,content,color')
           .eq('id', note.id)
-          .select('id');
-      if ((updated as List).isEmpty) {
+          .maybeSingle();
+      if (echoed == null) {
         return Left(Failure(message: notesFailureNotFound));
+      }
+      // A reported success must actually persist the payload: if the freshly
+      // read row differs, the write did not stick, so fail loudly instead
+      // of closing the editor with a success message over stale data.
+      final persisted =
+          echoed['title'] == payload['title'] &&
+          echoed['content'] == payload['content'] &&
+          echoed['color'] == payload['color'];
+      if (!persisted) {
+        debugPrint(
+          'Notes update not persisted for ${note.id}: '
+          'sent=$payload echo=$echoed',
+        );
+        return Left(Failure(message: ''));
       }
       return const Right(true);
     } on Failure catch (e) {
@@ -98,12 +117,15 @@ class NotesRepositoryImpl implements NotesRepository {
   @override
   Future<Either<Failure, bool>> deleteNote(String id) async {
     try {
-      final deleted = await _client
+      // Bare delete (see updateNote): verified with a follow-up read.
+      await _client.from('notes').delete().eq('id', id);
+      final echoed = await _client
           .from('notes')
-          .delete()
+          .select('id')
           .eq('id', id)
-          .select('id');
-      if ((deleted as List).isEmpty) {
+          .maybeSingle();
+      if (echoed != null) {
+        debugPrint('Notes delete not persisted for $id: row still present');
         return Left(Failure(message: notesFailureNotFound));
       }
       return const Right(true);

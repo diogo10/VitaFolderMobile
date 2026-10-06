@@ -64,13 +64,14 @@ CREATE OR REPLACE FUNCTION "public"."moddatetime"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
 declare
-  column_name text := TG_ARGV[0];
+  column_name text := COALESCE(TG_ARGV[0], 'updated_at');
 begin
   -- Convert NEW row -> jsonb, set the given field to now(), then
-  -- convert jsonb back into the NEW row type.
+  -- convert jsonb back into the NEW row type. Base must be the NEW row
+  -- value itself (a regclass OID is not a row type and raises 42804).
   NEW :=
     jsonb_populate_record(
-      TG_TABLE_NAME::regclass,
+      NEW,
       jsonb_set(to_jsonb(NEW), ARRAY[column_name], to_jsonb(now()))
     );
 

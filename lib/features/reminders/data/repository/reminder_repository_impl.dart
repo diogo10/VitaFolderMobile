@@ -83,15 +83,30 @@ class ReminderRepositoryImpl implements ReminderRepository {
   Future<Either<Failure, bool>> updateReminder(ReminderModel reminder) async {
     try {
       final input = reminder.toUpdate();
-      // select() verifies a row was actually touched: RLS can filter the
-      // update down to zero rows while still returning success, which must
-      // not be reported as a successful edit.
-      final updated = await _client
+      // Writes stay bare (no .select()): representation responses on writes
+      // trigger backend 42804 errors on this project, so the write is
+      // verified with a follow-up read instead (plain SELECTs work).
+      await _client.from('reminders').update(input).eq('id', reminder.id);
+      final echoed = await _client
           .from('reminders')
-          .update(input)
+          .select('id,title,type,body,repeat_rule')
           .eq('id', reminder.id)
-          .select('id');
-      if ((updated as List).isEmpty) return Left(WriteBlockedFailure());
+          .maybeSingle();
+      if (echoed == null) return Left(WriteBlockedFailure());
+      // due_at is excluded: the server timestamptz formatting differs from
+      // the ISO string sent, so exact equality never holds for it.
+      final persisted =
+          echoed['title'] == input['title'] &&
+          echoed['type'] == input['type'] &&
+          echoed['body'] == input['body'] &&
+          echoed['repeat_rule'] == input['repeat_rule'];
+      if (!persisted) {
+        debugPrint(
+          'Reminder update not persisted for ${reminder.id}: '
+          'sent=$input echo=$echoed',
+        );
+        return Left(WriteBlockedFailure());
+      }
       return const Right(true);
     } on Failure catch (e) {
       return Left(Failure(message: e.message));
@@ -104,14 +119,17 @@ class ReminderRepositoryImpl implements ReminderRepository {
   @override
   Future<Either<Failure, bool>> removeReminder(String id) async {
     try {
-      // select() verifies a row was actually removed: RLS can filter the
-      // delete down to zero rows while still returning success.
-      final deleted = await _client
+      // Bare delete (see updateReminder): verified with a follow-up read.
+      await _client.from('reminders').delete().eq('id', id);
+      final echoed = await _client
           .from('reminders')
-          .delete()
+          .select('id')
           .eq('id', id)
-          .select('id');
-      if ((deleted as List).isEmpty) return Left(WriteBlockedFailure());
+          .maybeSingle();
+      if (echoed != null) {
+        debugPrint('Reminder delete not persisted for $id: row still present');
+        return Left(WriteBlockedFailure());
+      }
       return const Right(true);
     } on Failure catch (e) {
       return Left(Failure(message: e.message));

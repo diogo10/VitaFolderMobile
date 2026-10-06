@@ -26,6 +26,10 @@ class _FakeListFilter extends Fake
     return this;
   }
 
+  @override
+  PostgrestTransformBuilder<PostgrestMap?> maybeSingle() =>
+      _FakeMaybeSingle(rows.isEmpty ? null : rows.first);
+
   Future<PostgrestList> get _future => Future<PostgrestList>.value(rows);
 
   @override
@@ -54,16 +58,46 @@ class _FakeListFilter extends Fake
   Stream<PostgrestList> asStream() => _future.asStream();
 }
 
+/// Terminal `maybeSingle()` step of verify-by-GET chains, resolving to the
+/// first row or null when the row is absent.
+class _FakeMaybeSingle extends Fake
+    implements PostgrestTransformBuilder<PostgrestMap?> {
+  _FakeMaybeSingle(this.value);
+
+  final PostgrestMap? value;
+
+  Future<PostgrestMap?> get _future => Future<PostgrestMap?>.value(value);
+
+  @override
+  Future<R> then<R>(
+    FutureOr<R> Function(PostgrestMap? value) onValue, {
+    Function? onError,
+  }) => _future.then(onValue, onError: onError);
+
+  @override
+  Future<PostgrestMap?> catchError(
+    Function onError, {
+    bool Function(Object error)? test,
+  }) => _future.catchError(onError, test: test);
+
+  @override
+  Future<PostgrestMap?> whenComplete(FutureOr<void> Function() action) =>
+      _future.whenComplete(action);
+
+  @override
+  Future<PostgrestMap?> timeout(
+    Duration timeLimit, {
+    FutureOr<PostgrestMap?> Function()? onTimeout,
+  }) => _future.timeout(timeLimit, onTimeout: onTimeout);
+
+  @override
+  Stream<PostgrestMap?> asStream() => _future.asStream();
+}
+
 /// Awaitable fake for `update(...).eq(...)` / `delete().eq(...)` calls.
-/// `select()` returns [selectRows], mimicking the row-count verification
-/// select on updates (empty rows = RLS-filtered write).
+/// The write itself is bare (no select); verification reads go through
+/// `query.select()` fakes instead.
 class _FakeVoidFilter extends Fake implements PostgrestFilterBuilder<dynamic> {
-  _FakeVoidFilter({
-    this.selectRows = const [
-      {'id': '1'},
-    ],
-  });
-  final PostgrestList selectRows;
   final List<(String, Object)> eqCalls = [];
 
   @override
@@ -98,10 +132,6 @@ class _FakeVoidFilter extends Fake implements PostgrestFilterBuilder<dynamic> {
 
   @override
   Stream<dynamic> asStream() => _future.asStream();
-
-  @override
-  PostgrestTransformBuilder<PostgrestList> select([String columns = '*']) =>
-      _FakeListFilter(selectRows);
 }
 
 /// Terminal `single()` step of the `insert(...).select('id').single()` chain.
@@ -469,10 +499,20 @@ void main() {
 
   group('updateReminder', () {
     test(
-      'sends the toUpdate payload without server-managed fields',
+      'sends the toUpdate payload and verifies the persisted echo',
       () async {
-        final filter = _FakeVoidFilter();
-        when(() => query.update(any())).thenAnswer((_) => filter);
+        final write = _FakeVoidFilter();
+        final echo = _FakeListFilter([
+          {
+            'id': '1',
+            'title': 'Dentist',
+            'type': 'appointment',
+            'body': 'Checkup',
+            'repeat_rule': 'never',
+          },
+        ]);
+        when(() => query.update(any())).thenAnswer((_) => write);
+        when(() => query.select(any())).thenAnswer((_) => echo);
 
         final result = await repository.updateReminder(_model());
 
@@ -487,7 +527,8 @@ void main() {
         expect(payload.keys, isNot(contains('family_id')));
         expect(payload.keys, isNot(contains('status')));
         expect(payload.keys, isNot(contains('created_by')));
-        expect(filter.eqCalls, [('id', '1')]);
+        expect(write.eqCalls, [('id', '1')]);
+        expect(echo.eqCalls, [('id', '1')]);
       },
     );
 
@@ -500,10 +541,38 @@ void main() {
     });
 
     test(
-      'reports blocked writes touching zero rows instead of success',
+      'reports stale echoes as blocked instead of success',
       () async {
-        final filter = _FakeVoidFilter(selectRows: const []);
-        when(() => query.update(any())).thenAnswer((_) => filter);
+        when(() => query.update(any())).thenAnswer((_) => _FakeVoidFilter());
+        when(() => query.select(any())).thenAnswer(
+          (_) => _FakeListFilter([
+            {
+              'id': '1',
+              'title': 'Dentist',
+              'type': 'appointment',
+              'body': 'Checkup',
+              'repeat_rule': 'weekly',
+            },
+          ]),
+        );
+
+        final result = await repository.updateReminder(_model());
+
+        expect(result.isLeft(), isTrue);
+        expect(
+          result.getLeft().toNullable(),
+          isA<WriteBlockedFailure>(),
+        );
+      },
+    );
+
+    test(
+      'reports absent rows as blocked instead of success',
+      () async {
+        when(() => query.update(any())).thenAnswer((_) => _FakeVoidFilter());
+        when(
+          () => query.select(any()),
+        ).thenAnswer((_) => _FakeListFilter(const []));
 
         final result = await repository.updateReminder(_model());
 
@@ -530,13 +599,16 @@ void main() {
 
   group('removeReminder', () {
     test('deletes the reminder matching the id', () async {
-      final filter = _FakeVoidFilter();
-      when(() => query.delete()).thenAnswer((_) => filter);
+      final write = _FakeVoidFilter();
+      when(() => query.delete()).thenAnswer((_) => write);
+      when(
+        () => query.select(any()),
+      ).thenAnswer((_) => _FakeListFilter(const []));
 
       final result = await repository.removeReminder('r1');
 
       expect(result.getRight().toNullable(), isTrue);
-      expect(filter.eqCalls, [('id', 'r1')]);
+      expect(write.eqCalls, [('id', 'r1')]);
     });
 
     test('preserves Failure messages from the data source', () async {
@@ -548,10 +620,16 @@ void main() {
     });
 
     test(
-      'reports blocked deletes touching zero rows instead of success',
+      'reports still-present rows as blocked instead of success',
       () async {
-        final filter = _FakeVoidFilter(selectRows: const []);
-        when(() => query.delete()).thenAnswer((_) => filter);
+        when(() => query.delete()).thenAnswer((_) => _FakeVoidFilter());
+        when(
+          () => query.select(any()),
+        ).thenAnswer(
+          (_) => _FakeListFilter([
+            {'id': 'r1'},
+          ]),
+        );
 
         final result = await repository.removeReminder('r1');
 
