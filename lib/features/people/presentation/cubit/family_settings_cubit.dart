@@ -155,7 +155,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
       if (hasNameChange) {
         final nameResult = await _updateFamilyNameUsecase(
           familyId: familyId,
-          name: trimmedPending!,
+          name: trimmedPending,
         );
         if (nameResult.isLeft()) {
           emit(
