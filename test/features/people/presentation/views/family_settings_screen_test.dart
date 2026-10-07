@@ -114,4 +114,41 @@ void main() {
       verify(() => cubit.leaveFamily()).called(1);
     });
   });
+
+  group('FamilySettingsScreen remove member', () {
+    testWidgets('remove dialog uses the dedicated remove label', (
+      tester,
+    ) async {
+      when(() => cubit.state).thenReturn(loaded());
+      await pumpScreen(tester);
+      final l = AppLocalizations.of(
+        tester.element(find.byType(FamilySettingsScreen)),
+      )!;
+
+      await tester.tap(find.byIcon(Icons.person_remove_rounded));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l.removeMemberConfirm('Bob', 'Fam')), findsOneWidget);
+      expect(find.text(l.removeMemberConfirmButton), findsOneWidget);
+      expect(find.text(l.deleteFamilyButton), findsOneWidget);
+    });
+
+    testWidgets('confirming the remove dialog queues the removal', (
+      tester,
+    ) async {
+      when(() => cubit.state).thenReturn(loaded());
+      await pumpScreen(tester);
+      final l = AppLocalizations.of(
+        tester.element(find.byType(FamilySettingsScreen)),
+      )!;
+
+      await tester.tap(find.byIcon(Icons.person_remove_rounded));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l.removeMemberConfirmButton));
+      await tester.pumpAndSettle();
+
+      verify(() => cubit.queueMemberRemoval('u2')).called(1);
+    });
+  });
 }

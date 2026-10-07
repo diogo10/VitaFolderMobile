@@ -286,7 +286,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
                   cubit.queueMemberRemoval(memberId);
                 },
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: Text(l.deleteFamilyButton),
+                child: Text(l.removeMemberConfirmButton),
               ),
             ],
           ),

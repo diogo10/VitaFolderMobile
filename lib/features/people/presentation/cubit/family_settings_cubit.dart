@@ -47,8 +47,11 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
           // to leave it. The view gates admin-only actions on [isAdmin];
           // the queue/save/delete guards below re-check it so a crafted
           // call cannot bypass the UI. Supabase RLS is the backend
-          // enforcement point: families update/delete must be admin-only
-          // and family_memberships delete-others must be admin-only.
+          // enforcement point (see
+          // supabase/migrations/20261007120000_family_admin_rls.sql):
+          // families update/delete is admin/owner-only and
+          // family_memberships delete is self-or-admin-only, so member
+          // self-leave keeps working.
           final currentUserRole = peopleData.people
               .firstWhere(
                 (p) => p.id == currentUserId,
@@ -73,23 +76,26 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
     }
   }
 
-  /// Emits a notAdmin error when [current] is not an admin.
-  /// Cubit-level defense-in-depth: the view hides admin actions, RLS
-  /// enforces them backend-side; this keeps a non-admin programmatic call
-  /// from reaching the repository.
+  /// Fail-closed admin check. Cubit-level defense-in-depth: the view hides
+  /// admin actions and Supabase RLS enforces them backend-side (see
+  /// supabase/migrations/20261007120000_family_admin_rls.sql); this keeps
+  /// a non-admin programmatic call from reaching the repository.
+  ///
+  /// Non-destructive: returns false without emitting so a denied call
+  /// preserves the loaded settings instead of replacing them with an
+  /// error state.
   bool _requireAdmin(FamilySettingsLoaded current) {
-    if (!current.isAdmin) {
-      emit(const FamilySettingsError(code: FamilySettingsErrorCode.notAdmin));
-      return false;
-    }
-    return true;
+    return current.isAdmin;
   }
 
   void queueFamilyNameChange(String name) {
     if (state is FamilySettingsLoaded) {
       final current = state as FamilySettingsLoaded;
       if (!_requireAdmin(current)) return;
-      emit(current.copyWith(pendingFamilyName: name.trim()));
+      final trimmed = name.trim();
+      // Reject empty names: never queue (or send) a blank family name.
+      if (trimmed.isEmpty) return;
+      emit(current.copyWith(pendingFamilyName: trimmed));
     }
   }
 
@@ -106,6 +112,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
   void cancelMemberRemoval(String memberId) {
     if (state is FamilySettingsLoaded) {
       final current = state as FamilySettingsLoaded;
+      if (!_requireAdmin(current)) return;
       final newRemovals = Set<String>.from(current.pendingRemovals)
         ..remove(memberId);
       emit(current.copyWith(pendingRemovals: newRemovals));
@@ -117,7 +124,14 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
 
     final current = state as FamilySettingsLoaded;
     if (!_requireAdmin(current)) return;
-    if (!current.hasPendingChanges) return;
+    // Defense-in-depth: queueFamilyNameChange already rejects blank names,
+    // but never send an empty name to the backend from a crafted state.
+    final trimmedPending = current.pendingFamilyName?.trim();
+    final hasNameChange =
+        trimmedPending != null &&
+        trimmedPending.isNotEmpty &&
+        trimmedPending != current.familyName;
+    if (!hasNameChange && current.pendingRemovals.isEmpty) return;
 
     emit(const FamilySettingsSaving());
 
@@ -137,12 +151,11 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
         return;
       }
 
-      // Update family name if changed
-      if (current.pendingFamilyName != null &&
-          current.pendingFamilyName != current.familyName) {
+      // Update family name if changed (blank pending names are skipped).
+      if (hasNameChange) {
         final nameResult = await _updateFamilyNameUsecase(
           familyId: familyId,
-          name: current.pendingFamilyName!,
+          name: trimmedPending!,
         );
         if (nameResult.isLeft()) {
           emit(

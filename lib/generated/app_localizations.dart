@@ -2123,6 +2123,12 @@ abstract class AppLocalizations {
   /// **'Remove {name} from {familyName}?'**
   String removeMemberConfirm(String name, String familyName);
 
+  /// No description provided for @removeMemberConfirmButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeMemberConfirmButton;
+
   /// No description provided for @dangerZoneTitle.
   ///
   /// In en, this message translates to:

@@ -399,6 +399,7 @@
   "roleMember": "Member",
   "youBadge": "YOU",
   "removeMemberConfirm": "Remove {name} from {familyName}?",
+  "removeMemberConfirmButton": "Remove",
   "@removeMemberConfirm": {
     "placeholders": {
       "name": {

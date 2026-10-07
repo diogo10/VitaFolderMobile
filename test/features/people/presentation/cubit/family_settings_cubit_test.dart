@@ -749,9 +749,52 @@ void main() {
     );
   });
 
+  group('empty family name', () {
+    test('queueFamilyNameChange rejects empty names', () async {
+      final cubit = build();
+      addTearDown(cubit.close);
+      stubPeople(adminData());
+
+      await cubit.loadSettings();
+      cubit
+        ..queueFamilyNameChange('')
+        ..queueFamilyNameChange('   ');
+
+      final state = cubit.state as FamilySettingsLoaded;
+      expect(state.pendingFamilyName, isNull);
+      expect(state.hasPendingChanges, isFalse);
+    });
+
+    blocTest<FamilySettingsCubit, FamilySettingsState>(
+      'saveChanges never sends a blank name to the usecase',
+      build: build,
+      setUp: () {
+        stubPeople(adminData());
+        when(
+          () => getMyFamilyIdUsecase(),
+        ).thenAnswer((_) async => const Right<Exception, String?>('f1'));
+      },
+      act: (cubit) async {
+        await cubit.loadSettings();
+        cubit.queueFamilyNameChange('   ');
+        await cubit.saveChanges();
+      },
+      expect: () => [isA<FamilySettingsLoading>(), isA<FamilySettingsLoaded>()],
+      verify: (_) {
+        verifyNever(
+          () => updateFamilyNameUsecase(
+            familyId: any(named: 'familyId'),
+            name: any(named: 'name'),
+          ),
+        );
+        verifyNever(() => getMyFamilyIdUsecase());
+      },
+    );
+  });
+
   group('admin guards', () {
     blocTest<FamilySettingsCubit, FamilySettingsState>(
-      'queueFamilyNameChange emits notAdmin for non-admins',
+      'queueFamilyNameChange is a no-op for non-admins',
       build: () => build(userId: 'u2'),
       setUp: () => stubPeople(adminData()),
       act: (cubit) async {
@@ -765,50 +808,48 @@ void main() {
           'isAdmin',
           isFalse,
         ),
-        isA<FamilySettingsError>().having(
-          (s) => s.code,
-          'code',
-          FamilySettingsErrorCode.notAdmin,
-        ),
       ],
+      verify: (cubit) {
+        final state = cubit.state as FamilySettingsLoaded;
+        expect(state.pendingFamilyName, isNull);
+      },
     );
 
     blocTest<FamilySettingsCubit, FamilySettingsState>(
-      'queueMemberRemoval emits notAdmin for non-admins',
+      'queueMemberRemoval is a no-op for non-admins',
       build: () => build(userId: 'u2'),
       setUp: () => stubPeople(adminData()),
       act: (cubit) async {
         await cubit.loadSettings();
         cubit.queueMemberRemoval('u1');
       },
-      expect: () => [
-        isA<FamilySettingsLoading>(),
-        isA<FamilySettingsLoaded>(),
-        isA<FamilySettingsError>().having(
-          (s) => s.code,
-          'code',
-          FamilySettingsErrorCode.notAdmin,
-        ),
-      ],
+      expect: () => [isA<FamilySettingsLoading>(), isA<FamilySettingsLoaded>()],
+      verify: (cubit) {
+        final state = cubit.state as FamilySettingsLoaded;
+        expect(state.pendingRemovals, isEmpty);
+      },
     );
 
     blocTest<FamilySettingsCubit, FamilySettingsState>(
-      'saveChanges emits notAdmin for non-admins without calling usecases',
+      'cancelMemberRemoval is a no-op for non-admins',
+      build: () => build(userId: 'u2'),
+      setUp: () => stubPeople(adminData()),
+      act: (cubit) async {
+        await cubit.loadSettings();
+        cubit.cancelMemberRemoval('u1');
+      },
+      expect: () => [isA<FamilySettingsLoading>(), isA<FamilySettingsLoaded>()],
+    );
+
+    blocTest<FamilySettingsCubit, FamilySettingsState>(
+      'saveChanges is a no-op for non-admins without calling usecases',
       build: () => build(userId: 'u2'),
       setUp: () => stubPeople(adminData()),
       act: (cubit) async {
         await cubit.loadSettings();
         await cubit.saveChanges();
       },
-      expect: () => [
-        isA<FamilySettingsLoading>(),
-        isA<FamilySettingsLoaded>(),
-        isA<FamilySettingsError>().having(
-          (s) => s.code,
-          'code',
-          FamilySettingsErrorCode.notAdmin,
-        ),
-      ],
+      expect: () => [isA<FamilySettingsLoading>(), isA<FamilySettingsLoaded>()],
       verify: (_) {
         verifyNever(
           () => updateFamilyNameUsecase(
@@ -826,22 +867,14 @@ void main() {
     );
 
     blocTest<FamilySettingsCubit, FamilySettingsState>(
-      'deleteFamily emits notAdmin for non-admins',
+      'deleteFamily is a no-op for non-admins',
       build: () => build(userId: 'u2'),
       setUp: () => stubPeople(adminData()),
       act: (cubit) async {
         await cubit.loadSettings();
         await cubit.deleteFamily();
       },
-      expect: () => [
-        isA<FamilySettingsLoading>(),
-        isA<FamilySettingsLoaded>(),
-        isA<FamilySettingsError>().having(
-          (s) => s.code,
-          'code',
-          FamilySettingsErrorCode.notAdmin,
-        ),
-      ],
+      expect: () => [isA<FamilySettingsLoading>(), isA<FamilySettingsLoaded>()],
       verify: (_) {
         verifyNever(
           () => deleteFamilyUsecase(familyId: any(named: 'familyId')),

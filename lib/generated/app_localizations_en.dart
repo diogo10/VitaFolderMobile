@@ -1099,6 +1099,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get removeMemberConfirmButton => 'Remove';
+
+  @override
   String get dangerZoneTitle => 'Danger Zone';
 
   @override

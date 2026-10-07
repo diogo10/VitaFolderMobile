@@ -1112,6 +1112,9 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get removeMemberConfirmButton => 'Remover';
+
+  @override
   String get dangerZoneTitle => 'Zona de Perigo';
 
   @override
