@@ -197,10 +197,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
         .eq('family_id', familyId);
     final memberships = (membershipsRes as List).map((e) {
       final entry = e as Map<String, dynamic>;
-      return {
-        'user_id': entry['user_id'],
-        'role': entry['role'],
-      };
+      return {'user_id': entry['user_id'], 'role': entry['role']};
     }).toList();
 
     final userIds = memberships.map((m) => m['user_id'] as String).toList();
@@ -247,6 +244,55 @@ class PeopleRepositoryImpl implements PeopleRepository {
     required String userId,
   }) async {
     try {
+      // Data impact: removing a user (admin-remove or self-leave) also
+      // deletes the notes and reminders they created in this family. These
+      // run before the membership delete while RLS still sees the caller
+      // as a family member.
+      //
+      // Cleanup scope under the current policies:
+      // - notes DELETE is membership-scoped
+      //   (sqls/notes_schema.sql:83-92 "notes_delete_member"): any member
+      //   can delete any note in the family, so an admin removing someone
+      //   else cleans up that member's notes.
+      // - reminders DELETE is creator-scoped
+      //   (sqls/database_schema.sql:242 "Enable delete for users based on
+      //   user_id"): only the creator's rows match, so an admin removing
+      //   someone else leaves that member's reminders behind while the
+      //   membership removal still proceeds. Self-leave (the common path)
+      //   cleans up its own rows.
+      //
+      // A transactional delete (edge function with elevated server
+      // privileges, see issue #39) would make this atomic; until then
+      // cleanup failures are logged with family/user context below and do
+      // not block the membership removal.
+      //
+      // Backend enforcement: families update/delete is admin/owner-only
+      // and family_memberships delete is self-or-admin-only in Supabase
+      // RLS (supabase/migrations/20261007120000_family_admin_rls.sql);
+      // the cubit admin guard is UX/defense-in-depth only and must not be
+      // relied on as the security boundary.
+      try {
+        await _client
+            .from('notes')
+            .delete()
+            .eq('family_id', familyId)
+            .eq('created_by', userId);
+      } on Object catch (e) {
+        debugPrint(
+          'Error deleting notes for user $userId in family $familyId: $e',
+        );
+      }
+      try {
+        await _client
+            .from('reminders')
+            .delete()
+            .eq('family_id', familyId)
+            .eq('created_by', userId);
+      } on Object catch (e) {
+        debugPrint(
+          'Error deleting reminders for user $userId in family $familyId: $e',
+        );
+      }
       await _client
           .from('family_memberships')
           .delete()

@@ -7,13 +7,8 @@ import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
 
 class AccountSettingsWidget extends StatelessWidget {
-  const AccountSettingsWidget({
-    required this.familyCode,
-    required this.isAdmin,
-    super.key,
-  });
+  const AccountSettingsWidget({required this.familyCode, super.key});
   final String familyCode;
-  final bool isAdmin;
 
   @override
   Widget build(BuildContext context) {
@@ -45,13 +40,12 @@ class AccountSettingsWidget extends StatelessWidget {
             _AccountSettingsSection(
               title: l.accountSettingsFamilySection,
               items: [
-                if (isAdmin)
-                  _AccountSettingsItemData(
-                    icon: Icons.house_rounded,
-                    title: l.accountSettingsFamilySettings,
-                    subtitle: l.accountSettingsFamilySettingsSubtitle,
-                    onTap: () => context.push(AppRoutes.familySettings),
-                  ),
+                _AccountSettingsItemData(
+                  icon: Icons.house_rounded,
+                  title: l.accountSettingsFamilySettings,
+                  subtitle: l.accountSettingsFamilySettingsSubtitle,
+                  onTap: () => context.push(AppRoutes.familySettings),
+                ),
                 _AccountSettingsItemData(
                   icon: Icons.person_add_alt_1_rounded,
                   title: l.accountSettingsInviteMembers,

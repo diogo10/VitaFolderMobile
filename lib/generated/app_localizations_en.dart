@@ -1102,6 +1102,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get removeMemberConfirmButton => 'Remove';
+
+  @override
   String get dangerZoneTitle => 'Danger Zone';
 
   @override
@@ -1113,6 +1116,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteFamilyButton => 'Delete Circle';
+
+  @override
+  String get leaveFamilyTitle => 'Leave Family Circle';
+
+  @override
+  String get leaveFamilyDescription =>
+      'You will be removed from this family circle. Notes and reminders you created in this family will be permanently deleted. This action cannot be undone.';
+
+  @override
+  String get leaveFamilyButton => 'Leave Family';
+
+  @override
+  String get leaveFamilyConfirmTitle => 'Leave family?';
+
+  @override
+  String leaveFamilyConfirmMessage(String familyName) {
+    return 'Are you sure you want to leave $familyName? Your notes and reminders in this family will be deleted.';
+  }
+
+  @override
+  String get leaveSuccess => 'You have left the family circle';
 
   @override
   String get saveButton => 'Save';
@@ -1159,6 +1183,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get familySettingsErrorNotFound => 'Family not found';
+
+  @override
+  String get familySettingsErrorGeneric =>
+      'Something went wrong. Please try again.';
+
+  @override
+  String get familySettingsErrorLastAdmin =>
+      'You are the last admin. Transfer admin to another member or delete the family circle instead.';
+
+  @override
+  String get familySettingsErrorSoleMember =>
+      'You are the only member. Delete the family circle instead of leaving.';
 
   @override
   String get navNotes => 'Notes';

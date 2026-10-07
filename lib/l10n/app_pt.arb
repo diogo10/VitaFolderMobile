@@ -379,6 +379,7 @@
   "roleMember": "Membro",
   "youBadge": "VOCÊ",
   "removeMemberConfirm": "Remover {name} de {familyName}?",
+  "removeMemberConfirmButton": "Remover",
   "@removeMemberConfirm": {
     "placeholders": {
       "name": {
@@ -393,6 +394,19 @@
   "deleteFamilyTitle": "Excluir Círculo Familiar",
   "deleteFamilyDescription": "Esta ação não pode ser desfeita. Todos os dados, tarefas e membros serão removidos permanentemente.",
   "deleteFamilyButton": "Excluir Círculo",
+  "leaveFamilyTitle": "Sair do Círculo Familiar",
+  "leaveFamilyDescription": "Você será removido deste círculo familiar. As notas e lembretes que você criou nesta família serão excluídos permanentemente. Esta ação não pode ser desfeita.",
+  "leaveFamilyButton": "Sair da Família",
+  "leaveFamilyConfirmTitle": "Sair da família?",
+  "leaveFamilyConfirmMessage": "Tem certeza que deseja sair de {familyName}? Suas notas e lembretes nesta família serão excluídos.",
+  "@leaveFamilyConfirmMessage": {
+    "placeholders": {
+      "familyName": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveSuccess": "Você saiu do círculo familiar",
   "saveButton": "Salvar",
   "savedButton": "Salvo",
   "saveSuccess": "Configurações da família salvas com sucesso",
@@ -417,6 +431,9 @@
   "createReminderErrorAuthRequired": "Autenticação necessária",
   "createReminderErrorUpdateBlocked": "Não foi possível salvar o lembrete. Tente novamente",
   "familySettingsErrorNotFound": "Família não encontrada",
+  "familySettingsErrorGeneric": "Algo deu errado. Tente novamente.",
+  "familySettingsErrorLastAdmin": "Você é o último administrador. Transfira a administração para outro membro ou exclua o círculo familiar.",
+  "familySettingsErrorSoleMember": "Você é o único membro. Exclua o círculo familiar em vez de sair.",
   "navNotes": "Notas",
   "notesTitle": "Notas",
   "notesTitleLabel": "Título",

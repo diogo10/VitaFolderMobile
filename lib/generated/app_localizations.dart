@@ -2129,6 +2129,12 @@ abstract class AppLocalizations {
   /// **'Remove {name} from {familyName}?'**
   String removeMemberConfirm(String name, String familyName);
 
+  /// No description provided for @removeMemberConfirmButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeMemberConfirmButton;
+
   /// No description provided for @dangerZoneTitle.
   ///
   /// In en, this message translates to:
@@ -2152,6 +2158,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete Circle'**
   String get deleteFamilyButton;
+
+  /// No description provided for @leaveFamilyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Family Circle'**
+  String get leaveFamilyTitle;
+
+  /// No description provided for @leaveFamilyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You will be removed from this family circle. Notes and reminders you created in this family will be permanently deleted. This action cannot be undone.'**
+  String get leaveFamilyDescription;
+
+  /// No description provided for @leaveFamilyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Family'**
+  String get leaveFamilyButton;
+
+  /// No description provided for @leaveFamilyConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave family?'**
+  String get leaveFamilyConfirmTitle;
+
+  /// No description provided for @leaveFamilyConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to leave {familyName}? Your notes and reminders in this family will be deleted.'**
+  String leaveFamilyConfirmMessage(String familyName);
+
+  /// No description provided for @leaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'You have left the family circle'**
+  String get leaveSuccess;
 
   /// No description provided for @saveButton.
   ///
@@ -2236,6 +2278,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Family not found'**
   String get familySettingsErrorNotFound;
+
+  /// No description provided for @familySettingsErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get familySettingsErrorGeneric;
+
+  /// No description provided for @familySettingsErrorLastAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'You are the last admin. Transfer admin to another member or delete the family circle instead.'**
+  String get familySettingsErrorLastAdmin;
+
+  /// No description provided for @familySettingsErrorSoleMember.
+  ///
+  /// In en, this message translates to:
+  /// **'You are the only member. Delete the family circle instead of leaving.'**
+  String get familySettingsErrorSoleMember;
 
   /// No description provided for @navNotes.
   ///
