@@ -6,6 +6,7 @@ import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/core/injections/account/account_service_locator.dart';
 import 'package:house_mira/core/injections/home/home_service_locator.dart';
 import 'package:house_mira/core/injections/notes/notes_service_locator.dart';
+import 'package:house_mira/core/injections/paywall/paywall_service_locator.dart';
 import 'package:house_mira/core/injections/people/people_service_locator.dart';
 import 'package:house_mira/core/injections/reminders/reminder_service_locator.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
@@ -85,5 +86,7 @@ class ServiceLocator {
     ).init(slInstance(instanceName: 'authService'));
 
     AccountServiceLocator(slInstance).init();
+
+    PaywallServiceLocator(slInstance).init();
   }
 }

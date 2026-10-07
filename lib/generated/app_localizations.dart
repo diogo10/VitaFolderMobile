@@ -2554,6 +2554,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No family found. Join or create a family first.'**
   String get notesErrorNoFamily;
+
+  /// No description provided for @paywallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HouseMira Pro'**
+  String get paywallTitle;
+
+  /// No description provided for @paywallLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'LIMIT REACHED'**
+  String get paywallLimitReached;
+
+  /// No description provided for @paywallHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock your house\'s\nfull potential.'**
+  String get paywallHeadline;
+
+  /// No description provided for @paywallSubtext.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the free limit for shared notes. Upgrade to keep your house organized.'**
+  String get paywallSubtext;
+
+  /// No description provided for @paywallFeatureUnlimitedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited Everything'**
+  String get paywallFeatureUnlimitedTitle;
+
+  /// No description provided for @paywallFeatureUnlimitedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No more limits on notes or circles.'**
+  String get paywallFeatureUnlimitedDescription;
+
+  /// No description provided for @paywallFeatureSortingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Auto-Sorting'**
+  String get paywallFeatureSortingTitle;
+
+  /// No description provided for @paywallFeatureSortingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'AI categorizes your house\'s activity.'**
+  String get paywallFeatureSortingDescription;
+
+  /// No description provided for @paywallFeatureSyncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority Sync'**
+  String get paywallFeatureSyncTitle;
+
+  /// No description provided for @paywallFeatureSyncDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Faster updates across all devices.'**
+  String get paywallFeatureSyncDescription;
+
+  /// No description provided for @paywallAnnualTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual Access'**
+  String get paywallAnnualTitle;
+
+  /// No description provided for @paywallSaveBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVE {percent}%'**
+  String paywallSaveBadge(int percent);
+
+  /// No description provided for @paywallAnnualNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Billed yearly at {total}'**
+  String paywallAnnualNote(String total);
+
+  /// No description provided for @paywallMonthlyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Access'**
+  String get paywallMonthlyTitle;
+
+  /// No description provided for @paywallMonthlyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Flexible billing, cancel anytime'**
+  String get paywallMonthlyNote;
+
+  /// No description provided for @paywallPerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'/mo'**
+  String get paywallPerMonth;
+
+  /// No description provided for @paywallCtaTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Start 7-Day Free Trial'**
+  String get paywallCtaTrial;
+
+  /// No description provided for @paywallTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing, you agree to our Terms of Use and Privacy Policy. Your trial will automatically renew unless cancelled.'**
+  String get paywallTerms;
+
+  /// No description provided for @paywallRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'RESTORE PURCHASES'**
+  String get paywallRestore;
+
+  /// No description provided for @paywallLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load plans. Try again.'**
+  String get paywallLoadFailed;
+
+  /// No description provided for @paywallTrialStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Trial started (mock checkout)'**
+  String get paywallTrialStarted;
+
+  /// No description provided for @paywallRestoreStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases restored (mock checkout)'**
+  String get paywallRestoreStarted;
+
+  /// No description provided for @paywallRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get paywallRetry;
 }
 
 class _AppLocalizationsDelegate

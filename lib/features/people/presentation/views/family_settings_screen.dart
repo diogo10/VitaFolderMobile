@@ -15,7 +15,13 @@ import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 class FamilySettingsScreen extends StatefulWidget {
-  const FamilySettingsScreen({super.key});
+  const FamilySettingsScreen({super.key, this.onFamilyLeft});
+
+  /// Refreshes the account tab after a successful family leave.
+  /// Wired by the route builder to the coordinator's refreshAccount; `null`
+  /// until the account tab has been visited, in which case there is nothing
+  /// to refresh (it loads on first visit).
+  final VoidCallback? onFamilyLeft;
 
   @override
   State<FamilySettingsScreen> createState() => _FamilySettingsScreenState();
@@ -62,6 +68,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(content: Text(l.leaveSuccess)));
+          widget.onFamilyLeft?.call();
           context.go(AppRoutes.account);
         }
         if (state is FamilySettingsError) {

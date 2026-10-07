@@ -497,5 +497,42 @@
     }
   },
   "notesTimeYesterday": "Ontem",
-  "notesErrorNoFamily": "Nenhuma família encontrada. Entre ou crie uma família primeiro."
+  "notesErrorNoFamily": "Nenhuma família encontrada. Entre ou crie uma família primeiro.",
+  "paywallTitle": "HouseMira Pro",
+  "paywallLimitReached": "LIMITE ATINGIDO",
+  "paywallHeadline": "Desbloqueie todo o potencial\nda sua casa.",
+  "paywallSubtext": "Você atingiu o limite gratuito de notas compartilhadas. Faça upgrade para manter sua casa organizada.",
+  "paywallFeatureUnlimitedTitle": "Tudo Ilimitado",
+  "paywallFeatureUnlimitedDescription": "Sem mais limites de notas ou círculos.",
+  "paywallFeatureSortingTitle": "Organização Inteligente",
+  "paywallFeatureSortingDescription": "A IA categoriza a atividade da sua casa.",
+  "paywallFeatureSyncTitle": "Sincronização Prioritária",
+  "paywallFeatureSyncDescription": "Atualizações mais rápidas em todos os dispositivos.",
+  "paywallAnnualTitle": "Acesso Anual",
+  "paywallSaveBadge": "ECONOMIZE {percent}%",
+  "@paywallSaveBadge": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "paywallAnnualNote": "Cobrança anual de {total}",
+  "@paywallAnnualNote": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallMonthlyTitle": "Acesso Mensal",
+  "paywallMonthlyNote": "Cobrança flexível, cancele quando quiser",
+  "paywallPerMonth": "/mês",
+  "paywallCtaTrial": "Começar 7 dias grátis",
+  "paywallTerms": "Ao continuar, você concorda com os Termos de Uso e a Política de Privacidade. Seu teste será renovado automaticamente, salvo cancelamento.",
+  "paywallRestore": "RESTAURAR COMPRAS",
+  "paywallLoadFailed": "Não foi possível carregar os planos. Tente de novo.",
+  "paywallTrialStarted": "Período de teste iniciado (compra simulada)",
+  "paywallRestoreStarted": "Compras restauradas (compra simulada)",
+  "paywallRetry": "Tentar de novo"
 }

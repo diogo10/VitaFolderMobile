@@ -518,5 +518,42 @@
     }
   },
   "notesTimeYesterday": "Yesterday",
-  "notesErrorNoFamily": "No family found. Join or create a family first."
+  "notesErrorNoFamily": "No family found. Join or create a family first.",
+  "paywallTitle": "HouseMira Pro",
+  "paywallLimitReached": "LIMIT REACHED",
+  "paywallHeadline": "Unlock your house's\nfull potential.",
+  "paywallSubtext": "You've reached the free limit for shared notes. Upgrade to keep your house organized.",
+  "paywallFeatureUnlimitedTitle": "Unlimited Everything",
+  "paywallFeatureUnlimitedDescription": "No more limits on notes or circles.",
+  "paywallFeatureSortingTitle": "Smart Auto-Sorting",
+  "paywallFeatureSortingDescription": "AI categorizes your house's activity.",
+  "paywallFeatureSyncTitle": "Priority Sync",
+  "paywallFeatureSyncDescription": "Faster updates across all devices.",
+  "paywallAnnualTitle": "Annual Access",
+  "paywallSaveBadge": "SAVE {percent}%",
+  "@paywallSaveBadge": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "paywallAnnualNote": "Billed yearly at {total}",
+  "@paywallAnnualNote": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallMonthlyTitle": "Monthly Access",
+  "paywallMonthlyNote": "Flexible billing, cancel anytime",
+  "paywallPerMonth": "/mo",
+  "paywallCtaTrial": "Start 7-Day Free Trial",
+  "paywallTerms": "By continuing, you agree to our Terms of Use and Privacy Policy. Your trial will automatically renew unless cancelled.",
+  "paywallRestore": "RESTORE PURCHASES",
+  "paywallLoadFailed": "Couldn't load plans. Try again.",
+  "paywallTrialStarted": "Trial started (mock checkout)",
+  "paywallRestoreStarted": "Purchases restored (mock checkout)",
+  "paywallRetry": "Try again"
 }

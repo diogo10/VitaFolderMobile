@@ -122,8 +122,8 @@ class FamilyMemberSettingsTile extends StatelessWidget {
                 ],
               ),
             ),
-            // Remove button (not for current user)
-            if (!isCurrentUser)
+            // Remove button (admin-only: hidden when onRemove is null)
+            if (!isCurrentUser && onRemove != null)
               Material(
                 color: Colors.transparent,
                 child: InkWell(

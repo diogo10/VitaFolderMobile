@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/presentation/cubit/family_settings_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/family_settings_state.dart';
@@ -25,14 +26,19 @@ void main() {
     isAdmin: isAdmin,
   );
 
-  Future<void> pumpScreen(WidgetTester tester) async {
+  Future<void> pumpScreen(
+    WidgetTester tester, {
+    void Function()? onFamilyLeft,
+  }) async {
     await tester.pumpWidget(
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: BlocProvider<FamilySettingsCubit>.value(
           value: cubit,
-          child: const Scaffold(body: FamilySettingsScreen()),
+          child: Scaffold(
+            body: FamilySettingsScreen(onFamilyLeft: onFamilyLeft),
+          ),
         ),
       ),
     );
@@ -116,6 +122,20 @@ void main() {
   });
 
   group('FamilySettingsScreen remove member', () {
+    testWidgets('shows remove icon for admins', (tester) async {
+      when(() => cubit.state).thenReturn(loaded());
+      await pumpScreen(tester);
+
+      expect(find.byIcon(Icons.person_remove_rounded), findsOneWidget);
+    });
+
+    testWidgets('hides remove icon for non-admins', (tester) async {
+      when(() => cubit.state).thenReturn(loaded(isAdmin: false));
+      await pumpScreen(tester);
+
+      expect(find.byIcon(Icons.person_remove_rounded), findsNothing);
+    });
+
     testWidgets('remove dialog uses the dedicated remove label', (
       tester,
     ) async {
@@ -149,6 +169,56 @@ void main() {
       await tester.pumpAndSettle();
 
       verify(() => cubit.queueMemberRemoval('u2')).called(1);
+    });
+  });
+
+  group('FamilySettingsScreen leave success refresh', () {
+    testWidgets('leave success refreshes account and navigates to it', (
+      tester,
+    ) async {
+      when(() => cubit.state).thenReturn(loaded());
+      whenListen(
+        cubit,
+        Stream<FamilySettingsState>.fromIterable([
+          loaded(),
+          const FamilySettingsLeaveSuccess(),
+        ]),
+        initialState: loaded(),
+      );
+      var refreshed = false;
+      final router = GoRouter(
+        initialLocation: '/family-settings',
+        routes: [
+          GoRoute(
+            path: '/family-settings',
+            builder: (context, state) =>
+                BlocProvider<FamilySettingsCubit>.value(
+                  value: cubit,
+                  child: Scaffold(
+                    body: FamilySettingsScreen(
+                      onFamilyLeft: () => refreshed = true,
+                    ),
+                  ),
+                ),
+          ),
+          GoRoute(
+            path: '/account',
+            builder: (context, state) => const Scaffold(body: Text('account')),
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(refreshed, isTrue);
+      expect(router.state.uri.path, '/account');
+      expect(find.text('account'), findsOneWidget);
     });
   });
 }

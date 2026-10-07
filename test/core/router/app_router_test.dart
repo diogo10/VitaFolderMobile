@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
@@ -19,13 +20,21 @@ import 'package:house_mira/features/home/presentation/views/home_view.dart';
 import 'package:house_mira/features/login/presentation/cubit/sign_up_cubit.dart';
 import 'package:house_mira/features/login/presentation/views/sign_up_screen.dart';
 import 'package:house_mira/features/onboarding/presentation/views/onboarding_view.dart';
+import 'package:house_mira/features/paywall/data/repository/paywall_repository_impl.dart';
+import 'package:house_mira/features/paywall/presentation/cubit/paywall_cubit.dart';
+import 'package:house_mira/features/paywall/presentation/cubit/paywall_state.dart';
+import 'package:house_mira/features/paywall/presentation/views/paywall_screen.dart';
 import 'package:house_mira/features/people/domain/entities/family_entity.dart';
 import 'package:house_mira/features/people/domain/entities/people_data.dart';
+import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/people/domain/usecase/create_family_usecase.dart';
 import 'package:house_mira/features/people/domain/usecase/get_people_usecase.dart';
 import 'package:house_mira/features/people/domain/usecase/join_family_usecase.dart';
+import 'package:house_mira/features/people/presentation/cubit/family_settings_cubit.dart';
+import 'package:house_mira/features/people/presentation/cubit/family_settings_state.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
+import 'package:house_mira/features/people/presentation/views/family_settings_screen.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
@@ -53,6 +62,12 @@ class _MockCreateFamilyUsecase extends Mock implements CreateFamilyUsecase {}
 class _MockJoinFamilyUsecase extends Mock implements JoinFamilyUsecase {}
 
 class _MockPeopleRepository extends Mock implements PeopleRepository {}
+
+class _MockFamilySettingsCubit extends MockCubit<FamilySettingsState>
+    implements FamilySettingsCubit {}
+
+class _MockPaywallCubit extends MockCubit<PaywallState>
+    implements PaywallCubit {}
 
 class _MockGetReminderUsecase extends Mock implements GetReminderUsecase {}
 
@@ -420,6 +435,116 @@ void main() {
       expect(view.onAuthChanged, isNotNull);
       view.onAuthChanged!.call();
       expect(refreshed, isTrue);
+    });
+
+    testWidgets('family settings wires account refresh on leave', (
+      tester,
+    ) async {
+      final notifier = AuthStateNotifier();
+      addTearDown(notifier.dispose);
+      final coordinator = TabRefreshCoordinator();
+      var refreshed = false;
+      coordinator.refreshAccount = () => refreshed = true;
+      final familySettingsCubit = _MockFamilySettingsCubit();
+      when(() => familySettingsCubit.loadSettings()).thenAnswer((_) async {});
+      when(() => familySettingsCubit.state).thenReturn(
+        const FamilySettingsLoaded(
+          familyName: 'Fam',
+          members: [PersonEntity(id: 'u1', name: 'Ana', role: 'admin')],
+          currentUserId: 'u1',
+          isAdmin: true,
+        ),
+      );
+      final authService = _MockAuthService();
+      final router = createRouter(
+        onboardingCompleted: true,
+        authStateNotifier: notifier,
+        initialLocation: '/family-settings',
+        refreshCoordinator: coordinator,
+        homeCubitFactory: () => HomeCubit(
+          getHomeDataUsecase: getHomeData,
+          hasRemindersUsecase: hasReminders,
+        ),
+        peopleCubitFactory: () => PeopleCubit(
+          getPeopleUsecase: _MockGetPeopleUsecase(),
+          createFamilyUsecase: _MockCreateFamilyUsecase(),
+          joinFamilyUsecase: _MockJoinFamilyUsecase(),
+          authService: authService,
+        ),
+        remindersCubitFactory: () => RemindersCubit(
+          getReminderUsecase: _MockGetReminderUsecase(),
+          peopleRepository: _MockPeopleRepository(),
+          authService: authService,
+          reminderRepository: _MockReminderRepository(),
+          notificationService: _FakeNotificationService(),
+        ),
+        accountCubitFactory: () => AccountCubit(
+          authService: authService,
+          peopleRepository: _MockPeopleRepository(),
+        ),
+        signUpCubitFactory: () => SignUpCubit(authService),
+        familySettingsCubitFactory: () => familySettingsCubit,
+      );
+
+      await pumpRouter(tester, router);
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+
+      final view = tester.widget<FamilySettingsScreen>(
+        find.byType(FamilySettingsScreen),
+      );
+      expect(view.onFamilyLeft, isNotNull);
+      view.onFamilyLeft!.call();
+      expect(refreshed, isTrue);
+    });
+
+    testWidgets('paywall route renders the paywall screen', (tester) async {
+      final notifier = AuthStateNotifier();
+      addTearDown(notifier.dispose);
+      final paywallCubit = _MockPaywallCubit();
+      when(() => paywallCubit.loadPaywall()).thenAnswer((_) async {});
+      when(() => paywallCubit.state).thenReturn(
+        const PaywallLoaded(
+          data: PaywallRepositoryImpl.mockedData,
+          selectedPlanId: 'annual',
+        ),
+      );
+      final authService = _MockAuthService();
+      final router = createRouter(
+        onboardingCompleted: true,
+        authStateNotifier: notifier,
+        initialLocation: '/paywall',
+        homeCubitFactory: () => HomeCubit(
+          getHomeDataUsecase: getHomeData,
+          hasRemindersUsecase: hasReminders,
+        ),
+        peopleCubitFactory: () => PeopleCubit(
+          getPeopleUsecase: _MockGetPeopleUsecase(),
+          createFamilyUsecase: _MockCreateFamilyUsecase(),
+          joinFamilyUsecase: _MockJoinFamilyUsecase(),
+          authService: authService,
+        ),
+        remindersCubitFactory: () => RemindersCubit(
+          getReminderUsecase: _MockGetReminderUsecase(),
+          peopleRepository: _MockPeopleRepository(),
+          authService: authService,
+          reminderRepository: _MockReminderRepository(),
+          notificationService: _FakeNotificationService(),
+        ),
+        accountCubitFactory: () => AccountCubit(
+          authService: authService,
+          peopleRepository: _MockPeopleRepository(),
+        ),
+        signUpCubitFactory: () => SignUpCubit(authService),
+        paywallCubitFactory: () => paywallCubit,
+      );
+
+      await pumpRouter(tester, router);
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+
+      expect(find.byType(PaywallScreen), findsOneWidget);
+      verify(() => paywallCubit.loadPaywall()).called(1);
     });
   });
 

@@ -1346,4 +1346,82 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notesErrorNoFamily =>
       'No family found. Join or create a family first.';
+
+  @override
+  String get paywallTitle => 'HouseMira Pro';
+
+  @override
+  String get paywallLimitReached => 'LIMIT REACHED';
+
+  @override
+  String get paywallHeadline => 'Unlock your house\'s\nfull potential.';
+
+  @override
+  String get paywallSubtext =>
+      'You\'ve reached the free limit for shared notes. Upgrade to keep your house organized.';
+
+  @override
+  String get paywallFeatureUnlimitedTitle => 'Unlimited Everything';
+
+  @override
+  String get paywallFeatureUnlimitedDescription =>
+      'No more limits on notes or circles.';
+
+  @override
+  String get paywallFeatureSortingTitle => 'Smart Auto-Sorting';
+
+  @override
+  String get paywallFeatureSortingDescription =>
+      'AI categorizes your house\'s activity.';
+
+  @override
+  String get paywallFeatureSyncTitle => 'Priority Sync';
+
+  @override
+  String get paywallFeatureSyncDescription =>
+      'Faster updates across all devices.';
+
+  @override
+  String get paywallAnnualTitle => 'Annual Access';
+
+  @override
+  String paywallSaveBadge(int percent) {
+    return 'SAVE $percent%';
+  }
+
+  @override
+  String paywallAnnualNote(String total) {
+    return 'Billed yearly at $total';
+  }
+
+  @override
+  String get paywallMonthlyTitle => 'Monthly Access';
+
+  @override
+  String get paywallMonthlyNote => 'Flexible billing, cancel anytime';
+
+  @override
+  String get paywallPerMonth => '/mo';
+
+  @override
+  String get paywallCtaTrial => 'Start 7-Day Free Trial';
+
+  @override
+  String get paywallTerms =>
+      'By continuing, you agree to our Terms of Use and Privacy Policy. Your trial will automatically renew unless cancelled.';
+
+  @override
+  String get paywallRestore => 'RESTORE PURCHASES';
+
+  @override
+  String get paywallLoadFailed => 'Couldn\'t load plans. Try again.';
+
+  @override
+  String get paywallTrialStarted => 'Trial started (mock checkout)';
+
+  @override
+  String get paywallRestoreStarted => 'Purchases restored (mock checkout)';
+
+  @override
+  String get paywallRetry => 'Try again';
 }

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HouseMira Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .card-slide { animation: slideInUp 0.45s ease both; }
+        .card-slide:nth-child(1) { animation-delay: 0.04s; }
+        .card-slide:nth-child(2) { animation-delay: 0.10s; }
+        .card-slide:nth-child(3) { animation-delay: 0.16s; }
+        .card-slide:nth-child(4) { animation-delay: 0.22s; }
+        .card-slide:nth-child(5) { animation-delay: 0.28s; }
+        .card-slide:nth-child(6) { animation-delay: 0.34s; }
+
+        .fade-in { animation: fadeIn 0.5s ease both; }
+        .scale-in { animation: scaleIn 0.4s ease both; }
+
+        .action-btn { transition: transform 0.15s ease; }
+        .action-btn:active { transform: scale(0.94); }
+
+        .plan-card { transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease; cursor: pointer; }
+        .plan-card:active { transform: scale(0.985); }
+        .plan-card.selected { border-color: #8b7355; border-width: 2px; box-shadow: 0 4px 18px rgba(139,115,85,0.12); }
+        .plan-card:not(.selected) { border-color: #f0ebe3; border-width: 1px; }
+
+        .cta-btn { transition: transform 0.15s ease, background-color 0.2s ease; }
+        .cta-btn:active { transform: scale(0.98); }
+        .cta-btn:hover { background-color: #7a6348; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        outfit: ['Outfit', 'sans-serif'],
+                        figtree: ['Figtree', 'sans-serif'],
+                    },
+                    colors: {
+                        sand: {
+                            50: '#faf8f5',
+                            100: '#f0ebe3',
+                            200: '#e4dace',
+                            300: '#c9b99a',
+                            400: '#b8a080',
+                            500: '#8b7355',
+                            600: '#7a6348',
+                            700: '#634f39',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sand-50 font-figtree" style="max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative;">
+
+    <!-- STATUS BAR -->
+    <div id="status-bar" class="bg-sand-50 px-5 pt-3 pb-1 flex justify-between items-center">
+        <span class="text-sand-500 text-xs font-outfit font-medium">9:41 AM</span>
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-wifi text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-signal text-sand-500 text-xs"></i>
+            <i class="fa-solid fa-battery-three-quarters text-sand-500 text-xs"></i>
+        </div>
+    </div>
+
+    <!-- TOP BAR -->
+    <div id="top-bar" class="bg-sand-50 px-5 pt-2 pb-1 flex items-center justify-between fade-in">
+        <button class="action-btn w-11 h-11 rounded-full bg-white border border-sand-100 flex items-center justify-center" style="box-shadow: 0 2px 10px rgba(139,115,85,0.08);">
+            <i class="fa-solid fa-xmark text-sand-400 text-base"></i>
+        </button>
+        <div class="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
+            <div class="w-7 h-7 rounded-lg bg-sand-600 flex items-center justify-center">
+                <i class="fa-solid fa-crown text-sand-50" style="font-size: 11px;"></i>
+            </div>
+            <span class="font-outfit font-bold text-sand-700 text-base tracking-tight">HouseMira Pro</span>
+        </div>
+        <div class="w-11"></div>
+    </div>
+
+    <!-- SCROLLABLE CONTENT -->
+    <main id="main-content" class="px-6 pt-4 pb-10 overflow-y-auto">
+
+        <!-- LIMIT BADGE -->
+        <section id="limit-badge" class="flex justify-center mb-5 fade-in">
+            <div class="flex items-center gap-2 bg-amber-50 border border-amber-100 px-4 py-2 rounded-full">
+                <i class="fa-solid fa-triangle-exclamation text-amber-600" style="font-size: 11px;"></i>
+                <span class="font-outfit font-semibold text-amber-700 text-xs tracking-widest">LIMIT REACHED</span>
+            </div>
+        </section>
+
+        <!-- HEADLINE -->
+        <section id="headline" class="text-center mb-8 fade-in">
+            <h1 class="font-outfit font-extrabold text-sand-700 tracking-tight" style="font-size: 1.9rem; line-height: 1.2;">Unlock your house's<br>full potential.</h1>
+            <p class="font-figtree text-sand-300 text-sm mt-3 leading-relaxed">You've reached the free limit for shared<br>notes. Upgrade to keep your house<br>organized.</p>
+        </section>
+
+        <!-- FEATURES -->
+        <section id="features" class="space-y-3 mb-8">
+
+            <!-- Unlimited Everything -->
+            <div id="feat-1" class="card-slide bg-white rounded-3xl px-4 py-4 border border-sand-100 flex items-center gap-4" style="box-shadow: 0 4px 18px rgba(139,115,85,0.08);">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style="background: #f1ece2;">
+                    <i class="fa-solid fa-infinity text-sand-500 text-xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-outfit font-bold text-sand-700 text-sm">Unlimited Everything</p>
+                    <p class="font-figtree text-sand-300 text-xs mt-0.5">No more limits on notes or circles.</p>
+                </div>
+            </div>
+
+            <!-- Smart Auto-Sorting -->
+            <div id="feat-2" class="card-slide bg-white rounded-3xl px-4 py-4 border border-sand-100 flex items-center gap-4" style="box-shadow: 0 4px 18px rgba(139,115,85,0.08);">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style="background: #fdf3e3;">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-outfit font-bold text-sand-700 text-sm">Smart Auto-Sorting</p>
+                    <p class="font-figtree text-sand-300 text-xs mt-0.5">AI categorizes your house's activity.</p>
+                </div>
+            </div>
+
+            <!-- Priority Sync -->
+            <div id="feat-3" class="card-slide bg-white rounded-3xl px-4 py-4 border border-sand-100 flex items-center gap-4" style="box-shadow: 0 4px 18px rgba(139,115,85,0.08);">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style="background: #eaf3fe;">
+                    <i class="fa-solid fa-cloud-arrow-up text-blue-500 text-xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-outfit font-bold text-sand-700 text-sm">Priority Sync</p>
+                    <p class="font-figtree text-sand-300 text-xs mt-0.5">Faster updates across all devices.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PLANS -->
+        <section id="plans" class="space-y-3 mb-6">
+
+            <!-- Annual (selected) -->
+            <div id="plan-annual" class="plan-card selected card-slide bg-white rounded-full px-5 py-4 flex items-center gap-3">
+                <div class="radio-dot w-6 h-6 rounded-full border-2 border-sand-500 flex items-center justify-center flex-shrink-0">
+                    <div class="radio-fill w-3 h-3 rounded-full bg-sand-500"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <p class="font-outfit font-bold text-sand-700 text-sm">Annual Access</p>
+                        <span class="font-figtree font-bold px-2 py-0.5 rounded-md" style="font-size: 9px; background: #d9f5ea; color: #27835f;">SAVE 40%</span>
+                    </div>
+                    <p class="font-figtree text-sand-300 text-xs mt-0.5">Billed yearly at $49.99</p>
+                </div>
+                <div class="text-right flex-shrink-0">
+                    <p class="font-outfit font-bold text-sand-700 text-lg leading-none">$4.16</p>
+                    <p class="font-figtree text-sand-300 text-xs mt-1">/mo</p>
+                </div>
+            </div>
+
+            <!-- Monthly -->
+            <div id="plan-monthly" class="plan-card card-slide bg-white rounded-full px-5 py-4 flex items-center gap-3">
+                <div class="radio-dot w-6 h-6 rounded-full border-2 border-sand-200 flex items-center justify-center flex-shrink-0">
+                    <div class="radio-fill w-3 h-3 rounded-full bg-transparent"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-outfit font-bold text-sand-700 text-sm">Monthly Access</p>
+                    <p class="font-figtree text-sand-300 text-xs mt-0.5">Flexible billing, cancel anytime</p>
+                </div>
+                <div class="text-right flex-shrink-0">
+                    <p class="font-outfit font-bold text-sand-700 text-lg leading-none">$7.99</p>
+                    <p class="font-figtree text-sand-300 text-xs mt-1">/mo</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section id="cta" class="scale-in mb-4">
+            <button class="cta-btn w-full bg-sand-500 text-white font-outfit font-bold py-4 rounded-3xl text-base" style="min-height: 58px;">
+                Start 7-Day Free Trial
+            </button>
+        </section>
+
+        <!-- FINE PRINT -->
+        <section id="fine-print" class="text-center mb-5 fade-in">
+            <p class="font-figtree text-sand-300 leading-relaxed" style="font-size: 10px;">By continuing, you agree to our Terms of Use and Privacy Policy. Your<br>trial will automatically renew unless cancelled.</p>
+        </section>
+
+        <!-- RESTORE -->
+        <section id="restore" class="text-center fade-in">
+            <button class="action-btn font-outfit font-semibold text-sand-300 tracking-widest text-xs">RESTORE PURCHASES</button>
+        </section>
+
+    </main>
+
+    <script>
+        // Plan selection toggle
+        const annual = document.getElementById('plan-annual');
+        const monthly = document.getElementById('plan-monthly');
+
+        function selectPlan(selected, other) {
+            selected.classList.add('selected');
+            other.classList.remove('selected');
+
+            const selDot = selected.querySelector('.radio-dot');
+            selDot.classList.remove('border-sand-200');
+            selDot.classList.add('border-sand-500');
+            selected.querySelector('.radio-fill').classList.remove('bg-transparent');
+            selected.querySelector('.radio-fill').classList.add('bg-sand-500');
+
+            const othDot = other.querySelector('.radio-dot');
+            othDot.classList.add('border-sand-200');
+            othDot.classList.remove('border-sand-500');
+            other.querySelector('.radio-fill').classList.add('bg-transparent');
+            other.querySelector('.radio-fill').classList.remove('bg-sand-500');
+        }
+
+        annual.addEventListener('click', () => selectPlan(annual, monthly));
+        monthly.addEventListener('click', () => selectPlan(monthly, annual));
+    </script>
+
+</body>
+</html>

@@ -27,6 +27,8 @@ import 'package:house_mira/features/notes/presentation/cubit/notes_cubit.dart';
 import 'package:house_mira/features/notes/presentation/views/note_editor_screen.dart';
 import 'package:house_mira/features/notes/presentation/views/notes_view.dart';
 import 'package:house_mira/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:house_mira/features/paywall/presentation/cubit/paywall_cubit.dart';
+import 'package:house_mira/features/paywall/presentation/views/paywall_screen.dart';
 import 'package:house_mira/features/people/presentation/cubit/family_settings_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/invite_people_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
@@ -63,7 +65,8 @@ import 'package:house_mira/features/reminders/presentation/screens/reminders_vie
 /// Each `StatefulShellBranch` provides its tab cubit through a
 /// `*CubitFactory` (default: the GetIt lazy singleton), and each one-shot
 /// screen route (`/sign-up`, `/invite-people`, `/manage-profile`,
-/// `/notification-settings`, `/family-settings`, `/create-reminder`)
+/// `/notification-settings`, `/family-settings`, `/paywall`,
+/// `/create-reminder`)
 /// provides its own cubit the same way. go_router builds only the active
 /// branch, so a cold start resolves just the visited route's factory (e.g.
 /// `/home` constructs only the home cubit; the people/reminders/account
@@ -79,7 +82,8 @@ import 'package:house_mira/features/reminders/presentation/screens/reminders_vie
 ///   provider uses `BlocProvider.value` (never closes). Tests must return a
 ///   single shared instance and close it manually in `addTearDown`.
 /// * One-shot factories (`signUp`, `invitePeople`, `createReminder`,
-///   `familySettings`, `notificationSettings`, `manageProfile`) are **fresh**.
+///   `familySettings`, `notificationSettings`, `manageProfile`, `paywall`)
+///   are **fresh**.
 ///   They must build a new cubit on every call; the route owns it via
 ///   `BlocProvider(create:)` (auto-closed on pop). Tests must return a new
 ///   instance per call and never close it manually — returning the same
@@ -90,6 +94,7 @@ import 'package:house_mira/features/reminders/presentation/screens/reminders_vie
 /// build; until a tab has been visited its callback stays `null`, so
 /// logout/login/save/resync leave unbuilt tabs unbuilt. Views receive plain
 /// callbacks (`AccountView.onAuthChanged`, `CreateReminderScreen.onSaved`,
+/// `FamilySettingsScreen.onFamilyLeft`,
 /// `ManageProfileScreen.onProfileSaved`) wired here, so presentation never
 /// imports GetIt.
 GoRouter createRouter({
@@ -109,6 +114,7 @@ GoRouter createRouter({
   FamilySettingsCubit Function()? familySettingsCubitFactory,
   NotificationSettingsCubit Function()? notificationSettingsCubitFactory,
   ManageProfileCubit Function()? manageProfileCubitFactory,
+  PaywallCubit Function()? paywallCubitFactory,
   // Dev-only diagnostics gate: true only for dev-flavor debug builds
   // (passed from `main`, where the flavor is known). Staging/prod and
   // profile/release always pass false.
@@ -135,6 +141,8 @@ GoRouter createRouter({
       _defaultNotificationSettingsCubitFactory;
   final resolveManageProfileCubit =
       manageProfileCubitFactory ?? _defaultManageProfileCubitFactory;
+  final resolvePaywallCubit =
+      paywallCubitFactory ?? _defaultPaywallCubitFactory;
   return GoRouter(
     initialLocation:
         initialLocation ??
@@ -200,7 +208,14 @@ GoRouter createRouter({
         path: AppRoutes.familySettings,
         builder: (context, state) => BlocProvider<FamilySettingsCubit>(
           create: (_) => resolveFamilySettingsCubit(),
-          child: const FamilySettingsScreen(),
+          child: FamilySettingsScreen(onFamilyLeft: coordinator.refreshAccount),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.paywall,
+        builder: (context, state) => BlocProvider<PaywallCubit>(
+          create: (_) => resolvePaywallCubit(),
+          child: const PaywallScreen(),
         ),
       ),
       GoRoute(
@@ -422,6 +437,16 @@ NotificationSettingsCubit _defaultNotificationSettingsCubitFactory() =>
 /// One-shot form: fresh per visit, owned by `BlocProvider(create:)`.
 ManageProfileCubit _defaultManageProfileCubitFactory() => ManageProfileCubit(
   authService: slInstance<AuthService>(instanceName: 'authService'),
+);
+
+/// One-shot paywall: fresh per visit, owned by `BlocProvider(create:)`.
+/// The catalog is mocked in the repository until store billing is wired.
+PaywallCubit _defaultPaywallCubitFactory() => PaywallCubit(
+  getPaywallDataUsecase: slInstance(instanceName: 'getPaywallDataUsecase'),
+  startTrialUsecase: slInstance(instanceName: 'startTrialUsecase'),
+  restorePurchasesUsecase: slInstance(
+    instanceName: 'restorePurchasesUsecase',
+  ),
 );
 
 /// Default cold-start location: hold on splash (preserving the post-auth

@@ -24,6 +24,7 @@ abstract final class AppRoutes {
   static const familySettings = '/family-settings';
   static const manageProfile = '/manage-profile';
   static const notificationSettings = '/notification-settings';
+  static const paywall = '/paywall';
 
   /// Deep-link entry for family invites: `/invite/<code>`.
   ///

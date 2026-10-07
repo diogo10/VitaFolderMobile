@@ -161,35 +161,33 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                                 ?.copyWith(fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 8),
-                          Row(
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade100,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: TextField(
-                                    controller: _inviteCodeController,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(
-                                          letterSpacing: 4,
-                                          fontSize: 18,
-                                        ),
-                                    decoration: const InputDecoration(
-                                      border: InputBorder.none,
-                                      hintText: 'XX-0000',
-                                    ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: TextField(
+                                  controller: _inviteCodeController,
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(
+                                        letterSpacing: 4,
+                                        fontSize: 18,
+                                      ),
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: 'XX-0000',
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(height: 12),
                               ElevatedButton(
                                 onPressed: () => _handleJoinFamilyPressed(
                                   _inviteCodeController.text,

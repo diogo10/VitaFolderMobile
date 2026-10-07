@@ -1359,4 +1359,84 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get notesErrorNoFamily =>
       'Nenhuma família encontrada. Entre ou crie uma família primeiro.';
+
+  @override
+  String get paywallTitle => 'HouseMira Pro';
+
+  @override
+  String get paywallLimitReached => 'LIMITE ATINGIDO';
+
+  @override
+  String get paywallHeadline => 'Desbloqueie todo o potencial\nda sua casa.';
+
+  @override
+  String get paywallSubtext =>
+      'Você atingiu o limite gratuito de notas compartilhadas. Faça upgrade para manter sua casa organizada.';
+
+  @override
+  String get paywallFeatureUnlimitedTitle => 'Tudo Ilimitado';
+
+  @override
+  String get paywallFeatureUnlimitedDescription =>
+      'Sem mais limites de notas ou círculos.';
+
+  @override
+  String get paywallFeatureSortingTitle => 'Organização Inteligente';
+
+  @override
+  String get paywallFeatureSortingDescription =>
+      'A IA categoriza a atividade da sua casa.';
+
+  @override
+  String get paywallFeatureSyncTitle => 'Sincronização Prioritária';
+
+  @override
+  String get paywallFeatureSyncDescription =>
+      'Atualizações mais rápidas em todos os dispositivos.';
+
+  @override
+  String get paywallAnnualTitle => 'Acesso Anual';
+
+  @override
+  String paywallSaveBadge(int percent) {
+    return 'ECONOMIZE $percent%';
+  }
+
+  @override
+  String paywallAnnualNote(String total) {
+    return 'Cobrança anual de $total';
+  }
+
+  @override
+  String get paywallMonthlyTitle => 'Acesso Mensal';
+
+  @override
+  String get paywallMonthlyNote => 'Cobrança flexível, cancele quando quiser';
+
+  @override
+  String get paywallPerMonth => '/mês';
+
+  @override
+  String get paywallCtaTrial => 'Começar 7 dias grátis';
+
+  @override
+  String get paywallTerms =>
+      'Ao continuar, você concorda com os Termos de Uso e a Política de Privacidade. Seu teste será renovado automaticamente, salvo cancelamento.';
+
+  @override
+  String get paywallRestore => 'RESTAURAR COMPRAS';
+
+  @override
+  String get paywallLoadFailed =>
+      'Não foi possível carregar os planos. Tente de novo.';
+
+  @override
+  String get paywallTrialStarted =>
+      'Período de teste iniciado (compra simulada)';
+
+  @override
+  String get paywallRestoreStarted => 'Compras restauradas (compra simulada)';
+
+  @override
+  String get paywallRetry => 'Tentar de novo';
 }
