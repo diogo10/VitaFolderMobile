@@ -4,6 +4,18 @@ import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 
+/// Failure message codes emitted at the repository/cubit boundary.
+///
+/// The presentation layer maps known codes to localized strings and every
+/// unknown code falls back to the generic error (never raw English).
+/// [remindersFailureOffline] maps to the generic reminders error; there is
+/// no dedicated offline string for reminders.
+const String remindersFailureOffline = 'offline';
+
+/// Unexpected error mapping to the generic reminders error
+/// (never raw English).
+const String remindersFailureGeneric = 'generic';
+
 abstract interface class ReminderRepository {
   Future<Either<Failure, List<ReminderEntity>>> getReminders(String familyId);
 

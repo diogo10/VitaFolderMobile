@@ -381,6 +381,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             context.pop();
           }
           if (state is CreateReminderError) {
+            // Coded errors map to their localized string; anything else
+            // (including a raw `message` from the data layer) falls back to
+            // the generic error so untyped English never reaches the UI.
             final message = switch (state.code) {
               CreateReminderErrorCode.noFamily => l.createReminderErrorNoFamily,
               CreateReminderErrorCode.authRequired =>
@@ -391,7 +394,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                 l.createReminderErrorLimitReached(
                   UsageLimits.freeRemindersLimit,
                 ),
-              _ => state.message ?? l.createReminderErrorGeneric,
+              _ => l.createReminderErrorGeneric,
             };
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()

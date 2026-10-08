@@ -11,6 +11,7 @@ class _FakePurchasesWrapper extends PurchasesWrapper {
   int configureCalls = 0;
   CustomerInfo? customerInfo;
   Error? customerInfoError;
+  int customerInfoCalls = 0;
 
   @override
   Future<void> configure(PurchasesConfiguration configuration) async {
@@ -28,6 +29,7 @@ class _FakePurchasesWrapper extends PurchasesWrapper {
 
   @override
   Future<CustomerInfo> getCustomerInfo() async {
+    customerInfoCalls++;
     if (customerInfoError != null) {
       throw customerInfoError!;
     }
@@ -243,6 +245,43 @@ void main() {
       final service = await initializedService(purchases);
 
       expect(await service.isPro(), isFalse);
+    });
+
+    test('caches a successful lookup within the TTL', () async {
+      final purchases = _FakePurchasesWrapper()
+        ..customerInfo = _customerInfo(proActive: true);
+      final service = await initializedService(purchases);
+
+      expect(await service.isPro(), isTrue);
+      expect(await service.isPro(), isTrue);
+      expect(purchases.customerInfoCalls, 1);
+    });
+
+    test('invalidateProCache forces the next lookup to refetch', () async {
+      final purchases = _FakePurchasesWrapper()
+        ..customerInfo = _customerInfo(proActive: false);
+      final service = await initializedService(purchases);
+
+      expect(await service.isPro(), isFalse);
+      purchases.customerInfo = _customerInfo(proActive: true);
+      // Still cached: upgrade not visible until invalidated.
+      expect(await service.isPro(), isFalse);
+      service.invalidateProCache();
+      expect(await service.isPro(), isTrue);
+      expect(purchases.customerInfoCalls, 2);
+    });
+
+    test('failed lookups are never cached', () async {
+      final purchases = _FakePurchasesWrapper()
+        ..customerInfoError = StateError('store unavailable');
+      final service = await initializedService(purchases);
+
+      expect(await service.isPro(), isFalse);
+      purchases
+        ..customerInfoError = null
+        ..customerInfo = _customerInfo(proActive: true);
+      expect(await service.isPro(), isTrue);
+      expect(purchases.customerInfoCalls, 2);
     });
   });
 }

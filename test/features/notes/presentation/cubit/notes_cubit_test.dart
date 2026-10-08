@@ -111,9 +111,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => notes.getNotes('f1')).thenAnswer(
-          (_) async => const Right<Failure, List<NoteEntity>>([]),
-        );
+        when(
+          () => notes.getNotes('f1'),
+        ).thenAnswer((_) async => const Right<Failure, List<NoteEntity>>([]));
       },
       act: (cubit) => cubit.loadNotes(),
       expect: () => [isA<NotesLoading>(), isA<NotesLoaded>()],
@@ -155,9 +155,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => notes.getNotes('f1')).thenAnswer(
-          (_) async => Left(Failure(message: 'offline')),
-        );
+        when(
+          () => notes.getNotes('f1'),
+        ).thenAnswer((_) async => Left(Failure(message: 'offline')));
       },
       act: (cubit) => cubit.loadNotes(),
       expect: () => [isA<NotesLoading>(), isA<NotesFailure>()],
@@ -168,9 +168,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         when(() => auth.currentUserId).thenReturn('u1');
-        when(() => notes.getNotes('other')).thenAnswer(
-          (_) async => const Right<Failure, List<NoteEntity>>([]),
-        );
+        when(
+          () => notes.getNotes('other'),
+        ).thenAnswer((_) async => const Right<Failure, List<NoteEntity>>([]));
       },
       act: (cubit) => cubit.loadNotes(familyId: 'other'),
       expect: () => [isA<NotesLoading>(), isA<NotesLoaded>()],
@@ -203,9 +203,9 @@ void main() {
           if (calls == 1) return ['f1'];
           return ['f2'];
         });
-        when(() => notes.getNotes(any())).thenAnswer(
-          (_) async => const Right<Failure, List<NoteEntity>>([]),
-        );
+        when(
+          () => notes.getNotes(any()),
+        ).thenAnswer((_) async => const Right<Failure, List<NoteEntity>>([]));
       },
       act: (cubit) async {
         await cubit.loadNotes();
@@ -231,12 +231,12 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => notes.createNote(any(), 'f1')).thenAnswer(
-          (_) async => const Right('new-id'),
-        );
-        when(() => notes.getNotes('f1')).thenAnswer(
-          (_) async => Right<Failure, List<NoteEntity>>([note()]),
-        );
+        when(
+          () => notes.createNote(any(), 'f1'),
+        ).thenAnswer((_) async => const Right('new-id'));
+        when(
+          () => notes.getNotes('f1'),
+        ).thenAnswer((_) async => Right<Failure, List<NoteEntity>>([note()]));
       },
       act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
       expect: () => [
@@ -252,9 +252,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => notes.createNote(any(), 'f1')).thenAnswer(
-          (_) async => Left(Failure(message: 'boom')),
-        );
+        when(
+          () => notes.createNote(any(), 'f1'),
+        ).thenAnswer((_) async => Left(Failure(message: 'boom')));
       },
       act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
       expect: () => [isA<NotesLoading>(), isA<NotesFailure>()],
@@ -272,10 +272,7 @@ void main() {
       act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
       expect: () => [isA<NotesLoading>(), isA<NotesFailure>()],
       verify: (cubit) {
-        expect(
-          (cubit.state as NotesFailure).message,
-          notesFailureNoFamily,
-        );
+        expect((cubit.state as NotesFailure).message, notesFailureNoFamily);
       },
     );
   });
@@ -286,12 +283,12 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => notes.updateNote(any())).thenAnswer(
-          (_) async => const Right(true),
-        );
-        when(() => notes.getNotes('f1')).thenAnswer(
-          (_) async => Right<Failure, List<NoteEntity>>([note()]),
-        );
+        when(
+          () => notes.updateNote(any()),
+        ).thenAnswer((_) async => const Right(true));
+        when(
+          () => notes.getNotes('f1'),
+        ).thenAnswer((_) async => Right<Failure, List<NoteEntity>>([note()]));
       },
       act: (cubit) => cubit.updateNote(
         note: note(),
@@ -312,12 +309,12 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => notes.updateNote(any())).thenAnswer(
-          (_) async => Left(Failure(message: 'not-found')),
-        );
-        when(() => notes.getNotes('f1')).thenAnswer(
-          (_) async => const Right<Failure, List<NoteEntity>>([]),
-        );
+        when(
+          () => notes.updateNote(any()),
+        ).thenAnswer((_) async => Left(Failure(message: 'not-found')));
+        when(
+          () => notes.getNotes('f1'),
+        ).thenAnswer((_) async => const Right<Failure, List<NoteEntity>>([]));
       },
       act: (cubit) => cubit.updateNote(
         note: note(),
@@ -343,9 +340,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => notes.deleteNote('n1')).thenAnswer(
-          (_) async => const Right(true),
-        );
+        when(
+          () => notes.deleteNote('n1'),
+        ).thenAnswer((_) async => const Right(true));
         when(() => notes.getNotes(any())).thenAnswer(
           (_) async => Right<Failure, List<NoteEntity>>([note(id: 'n2')]),
         );
@@ -358,10 +355,7 @@ void main() {
         isA<NotesLoaded>(),
       ],
       verify: (cubit) {
-        expect(
-          (cubit.state as NotesLoaded).notes.map((n) => n.id),
-          ['n2'],
-        );
+        expect((cubit.state as NotesLoaded).notes.map((n) => n.id), ['n2']);
       },
     );
 
@@ -370,12 +364,12 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => notes.deleteNote('n1')).thenAnswer(
-          (_) async => Left(Failure(message: 'boom')),
-        );
-        when(() => notes.getNotes('f1')).thenAnswer(
-          (_) async => const Right<Failure, List<NoteEntity>>([]),
-        );
+        when(
+          () => notes.deleteNote('n1'),
+        ).thenAnswer((_) async => Left(Failure(message: 'boom')));
+        when(
+          () => notes.getNotes('f1'),
+        ).thenAnswer((_) async => const Right<Failure, List<NoteEntity>>([]));
       },
       act: (cubit) => cubit.deleteNote('n1'),
       expect: () => [
@@ -397,12 +391,12 @@ void main() {
       setUp: () {
         stubFamily();
         when(() => subscriptions.isPro()).thenAnswer((_) async => false);
-        when(() => notes.getNotesCount('f1')).thenAnswer(
-          (_) async => const Right<Failure, int>(3),
-        );
-        when(() => notes.getNotes('f1')).thenAnswer(
-          (_) async => Right<Failure, List<NoteEntity>>(rows(3)),
-        );
+        when(
+          () => notes.getNotesCount('f1'),
+        ).thenAnswer((_) async => const Right<Failure, int>(3));
+        when(
+          () => notes.getNotes('f1'),
+        ).thenAnswer((_) async => Right<Failure, List<NoteEntity>>(rows(3)));
       },
       act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
       expect: () => [isA<NotesLoading>(), isA<NotesLimitReached>()],
@@ -414,20 +408,41 @@ void main() {
     );
 
     blocTest<NotesCubit, NotesState>(
+      'limit-path reload failure preserves the underlying error',
+      build: buildCubit,
+      setUp: () {
+        stubFamily();
+        when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+        when(
+          () => notes.getNotesCount('f1'),
+        ).thenAnswer((_) async => const Right<Failure, int>(3));
+        when(
+          () => notes.getNotes('f1'),
+        ).thenAnswer((_) async => Left(Failure(message: notesFailureOffline)));
+      },
+      act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
+      expect: () => [isA<NotesLoading>(), isA<NotesFailure>()],
+      verify: (cubit) {
+        expect((cubit.state as NotesFailure).message, notesFailureOffline);
+        verifyNever(() => notes.createNote(any(), any()));
+      },
+    );
+
+    blocTest<NotesCubit, NotesState>(
       'free user below the cap creates normally',
       build: buildCubit,
       setUp: () {
         stubFamily();
         when(() => subscriptions.isPro()).thenAnswer((_) async => false);
-        when(() => notes.getNotesCount('f1')).thenAnswer(
-          (_) async => const Right<Failure, int>(2),
-        );
-        when(() => notes.getNotes('f1')).thenAnswer(
-          (_) async => Right<Failure, List<NoteEntity>>(rows(2)),
-        );
-        when(() => notes.createNote(any(), 'f1')).thenAnswer(
-          (_) async => const Right('new-id'),
-        );
+        when(
+          () => notes.getNotesCount('f1'),
+        ).thenAnswer((_) async => const Right<Failure, int>(2));
+        when(
+          () => notes.getNotes('f1'),
+        ).thenAnswer((_) async => Right<Failure, List<NoteEntity>>(rows(2)));
+        when(
+          () => notes.createNote(any(), 'f1'),
+        ).thenAnswer((_) async => const Right('new-id'));
       },
       act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
       expect: () => [
@@ -444,12 +459,12 @@ void main() {
       setUp: () {
         stubFamily();
         when(() => subscriptions.isPro()).thenAnswer((_) async => true);
-        when(() => notes.createNote(any(), 'f1')).thenAnswer(
-          (_) async => const Right('new-id'),
-        );
-        when(() => notes.getNotes('f1')).thenAnswer(
-          (_) async => Right<Failure, List<NoteEntity>>(rows(9)),
-        );
+        when(
+          () => notes.createNote(any(), 'f1'),
+        ).thenAnswer((_) async => const Right('new-id'));
+        when(
+          () => notes.getNotes('f1'),
+        ).thenAnswer((_) async => Right<Failure, List<NoteEntity>>(rows(9)));
       },
       act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
       expect: () => [
@@ -470,15 +485,15 @@ void main() {
         stubFamily();
         when(() => subscriptions.isPro()).thenAnswer((_) async => false);
         // Limit check fails, the post-create reload succeeds.
-        when(() => notes.getNotesCount('f1')).thenAnswer(
-          (_) async => Left(Failure(message: 'offline')),
-        );
-        when(() => notes.getNotes('f1')).thenAnswer(
-          (_) async => Right<Failure, List<NoteEntity>>([note()]),
-        );
-        when(() => notes.createNote(any(), 'f1')).thenAnswer(
-          (_) async => const Right('new-id'),
-        );
+        when(
+          () => notes.getNotesCount('f1'),
+        ).thenAnswer((_) async => Left(Failure(message: 'offline')));
+        when(
+          () => notes.getNotes('f1'),
+        ).thenAnswer((_) async => Right<Failure, List<NoteEntity>>([note()]));
+        when(
+          () => notes.createNote(any(), 'f1'),
+        ).thenAnswer((_) async => const Right('new-id'));
       },
       act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
       expect: () => [
@@ -495,22 +510,22 @@ void main() {
     test('isAtFreeLimit true at cap, false when paid or below cap', () async {
       stubFamily();
       when(() => subscriptions.isPro()).thenAnswer((_) async => false);
-      when(() => notes.getNotesCount('f1')).thenAnswer(
-        (_) async => const Right<Failure, int>(3),
-      );
+      when(
+        () => notes.getNotesCount('f1'),
+      ).thenAnswer((_) async => const Right<Failure, int>(3));
       final cubit = buildCubit();
       addTearDown(cubit.close);
       expect(await cubit.isAtFreeLimit(), isTrue);
 
-      when(() => notes.getNotesCount('f1')).thenAnswer(
-        (_) async => const Right<Failure, int>(1),
-      );
+      when(
+        () => notes.getNotesCount('f1'),
+      ).thenAnswer((_) async => const Right<Failure, int>(1));
       expect(await cubit.isAtFreeLimit(), isFalse);
 
       when(() => subscriptions.isPro()).thenAnswer((_) async => true);
-      when(() => notes.getNotesCount('f1')).thenAnswer(
-        (_) async => const Right<Failure, int>(30),
-      );
+      when(
+        () => notes.getNotesCount('f1'),
+      ).thenAnswer((_) async => const Right<Failure, int>(30));
       expect(await cubit.isAtFreeLimit(), isFalse);
     });
 

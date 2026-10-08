@@ -8,6 +8,12 @@ import 'package:house_mira/features/notes/domain/repository/notes_repository.dar
 /// [UsageLimits.freeNotesLimit]. Paid users never hit the cap.
 /// Fail-open (`false`) on every lookup error so a billing or count
 /// failure never blocks creation; callers re-check before saving anyway.
+///
+/// The count is a per-family shared quota while the entitlement is
+/// per-user (see [UsageLimits]): a free user in a full family is blocked
+/// even for rows they did not create. Enforcement is client-side only and
+/// check-then-create is not atomic — concurrent creates can overshoot the
+/// cap (TOCTOU accepted explicitly; no server-side cap exists yet).
 class IsAtNoteLimitUsecase {
   const IsAtNoteLimitUsecase({
     required this.subscriptionService,

@@ -45,6 +45,17 @@ class SubscriptionService {
   /// RevenueCat entitlement granting unlimited reminders and notes.
   static const String proEntitlementId = 'pro';
 
+  /// How long a successful entitlement lookup stays cached.
+  ///
+  /// Views pre-check the free-tier cap before opening an editor and the
+  /// cubit re-checks on save; without a cache that flow costs two
+  /// `getCustomerInfo()` round-trips plus two count queries. Caching the
+  /// paid bit briefly collapses the pair to one billing lookup per flow
+  /// while staying fresh enough for post-purchase upgrades (call
+  /// [invalidateProCache] after a successful purchase/restore to refresh
+  /// immediately).
+  static const Duration proCacheTtl = Duration(seconds: 30);
+
   final PurchasesWrapper _purchases;
   final AppLogger _logger;
   final TargetPlatform? _platformOverride;
@@ -54,18 +65,42 @@ class SubscriptionService {
   /// Whether [initialize] has successfully configured the SDK.
   bool get isInitialized => _initialized;
 
+  bool? _cachedIsPro;
+  DateTime? _cachedIsProAt;
+
+  /// Drops the cached [isPro] result so the next lookup hits the store.
+  ///
+  /// Call after a purchase, restore, or account change.
+  void invalidateProCache() {
+    _cachedIsPro = null;
+    _cachedIsProAt = null;
+  }
+
   /// Whether the user holds the paid entitlement ([proEntitlementId]).
   ///
   /// Returns `false` when billing is uninitialized or the lookup fails
   /// (fail-closed: free limits apply). Never throws: every failure is
-  /// logged and reported instead.
+  /// logged and reported instead. Successful lookups are cached for
+  /// [proCacheTtl] so a view pre-check plus the create-time re-check
+  /// costs one billing lookup per flow; failures are never cached.
   Future<bool> isPro() async {
     if (!_initialized) {
       return false;
     }
+    final cached = _cachedIsPro;
+    final cachedAt = _cachedIsProAt;
+    if (cached != null && cachedAt != null) {
+      final age = DateTime.now().difference(cachedAt);
+      if (age < proCacheTtl && !age.isNegative) {
+        return cached;
+      }
+    }
     try {
       final info = await _purchases.getCustomerInfo();
-      return info.entitlements.active.containsKey(proEntitlementId);
+      final pro = info.entitlements.active.containsKey(proEntitlementId);
+      _cachedIsPro = pro;
+      _cachedIsProAt = DateTime.now();
+      return pro;
     } on Object catch (error, stackTrace) {
       _logger.warning(
         'entitlement check failed',

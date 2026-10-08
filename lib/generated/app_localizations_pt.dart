@@ -1387,7 +1387,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get paywallSubtext =>
-      'Você atingiu o limite gratuito de notas compartilhadas. Faça upgrade para manter sua casa organizada.';
+      'Você atingiu o limite gratuito de notas e lembretes compartilhados da família. Os limites são compartilhados por família — faça upgrade para manter sua casa organizada.';
 
   @override
   String get paywallFeatureUnlimitedTitle => 'Tudo Ilimitado';

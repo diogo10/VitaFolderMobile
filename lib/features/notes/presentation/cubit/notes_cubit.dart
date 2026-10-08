@@ -6,7 +6,7 @@ import 'package:house_mira/features/notes/application/is_at_note_limit_usecase.d
 import 'package:house_mira/features/notes/data/models/note_model.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
 import 'package:house_mira/features/notes/domain/repository/notes_repository.dart'
-    show notesFailureLimitReached, notesFailureNoFamily, notesFailureUnknown;
+    show notesFailureNoFamily, notesFailureUnknown;
 import 'package:house_mira/features/notes/domain/usecase/create_note_usecase.dart';
 import 'package:house_mira/features/notes/domain/usecase/delete_note_usecase.dart';
 import 'package:house_mira/features/notes/domain/usecase/get_notes_usecase.dart';
@@ -91,9 +91,13 @@ class NotesCubit extends Cubit<NotesState> {
         return;
       }
       if (await isAtFreeLimit(familyId: familyId)) {
+        // The cap is hit: reload so the list view keeps rendering behind
+        // the limit message. A reload failure must preserve the underlying
+        // error (offline/RLS/...) instead of synthesizing limit-reached,
+        // which would hide the real cause and its retry path.
         final result = await getNotesUsecase(familyId);
         result.fold(
-          (_) => emit(const NotesFailure(notesFailureLimitReached)),
+          (err) => emit(NotesFailure(err.message)),
           (notes) => emit(NotesLimitReached(notes)),
         );
         return;

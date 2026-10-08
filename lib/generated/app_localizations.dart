@@ -2600,7 +2600,7 @@ abstract class AppLocalizations {
   /// No description provided for @paywallSubtext.
   ///
   /// In en, this message translates to:
-  /// **'You\'ve reached the free limit for shared notes. Upgrade to keep your house organized.'**
+  /// **'You\'ve reached the free limit for shared family notes and reminders. Limits are shared per family — upgrade to keep your house organized.'**
   String get paywallSubtext;
 
   /// No description provided for @paywallFeatureUnlimitedTitle.
