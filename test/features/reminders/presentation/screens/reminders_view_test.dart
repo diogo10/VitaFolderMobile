@@ -6,8 +6,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
@@ -111,7 +113,10 @@ void main() {
           authService: authService,
           reminderRepository: reminderRepository,
           notificationService: _NoopNotificationService(),
-          subscriptionService: _PaidSubscriptions(),
+          isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+            subscriptionService: _PaidSubscriptions(),
+            reminderRepository: reminderRepository,
+          ),
         ),
         child: const RemindersView(),
       ),
@@ -237,7 +242,10 @@ void main() {
               authService: authService,
               reminderRepository: reminderRepository,
               notificationService: _NoopNotificationService(),
-              subscriptionService: freeSubs,
+              isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+                subscriptionService: freeSubs,
+                reminderRepository: reminderRepository,
+              ),
             ),
             child: const RemindersView(),
           ),
@@ -254,7 +262,12 @@ void main() {
       final l = AppLocalizations.of(
         tester.element(find.byType(RemindersView)),
       )!;
-      expect(find.text(l.createReminderErrorLimitReached), findsOneWidget);
+      expect(
+        find.text(
+          l.createReminderErrorLimitReached(UsageLimits.freeRemindersLimit),
+        ),
+        findsOneWidget,
+      );
       expect(find.text(l.limitReachedUpgrade), findsOneWidget);
       // The create screen never opens: no editor title appears.
       expect(find.text(l.createReminderTitle), findsNothing);

@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
-import 'package:house_mira/core/subscriptions/subscription_service.dart';
-import 'package:house_mira/core/subscriptions/usage_limits.dart';
+import 'package:house_mira/features/notes/application/is_at_note_limit_usecase.dart';
 import 'package:house_mira/features/notes/data/models/note_model.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
 import 'package:house_mira/features/notes/domain/repository/notes_repository.dart';
@@ -29,7 +28,7 @@ class NotesCubit extends Cubit<NotesState> {
     required this.deleteNoteUsecase,
     required this.peopleRepository,
     required this.authService,
-    required this.subscriptionService,
+    required this.isAtNoteLimitUsecase,
   }) : super(const NotesInitial());
 
   final GetNotesUsecase getNotesUsecase;
@@ -38,7 +37,7 @@ class NotesCubit extends Cubit<NotesState> {
   final DeleteNoteUsecase deleteNoteUsecase;
   final PeopleRepository peopleRepository;
   final AuthService authService;
-  final SubscriptionService subscriptionService;
+  final IsAtNoteLimitUsecase isAtNoteLimitUsecase;
 
   /// Display name of the current family for the list subtitle
   /// (`Shared with {family}`); `null` until loaded or when unavailable.
@@ -71,45 +70,54 @@ class NotesCubit extends Cubit<NotesState> {
 
   /// Creates a note, then reloads the list.
   ///
-  /// Free-tier users are capped at [UsageLimits.freeNotesLimit] notes:
-  /// hitting the cap emits `NotesFailure(limit-reached)` and the view
-  /// routes to the paywall instead of the editor. Paid users skip the
-  /// check. Updates are never capped (only creation counts).
+  /// Free-tier users are capped at 3 notes:
+  /// hitting the cap emits [NotesLimitReached] (carrying the reloaded
+  /// list so the list view keeps rendering) and the editor routes to the
+  /// paywall instead. Paid users skip the check. Updates are never
+  /// capped (only creation counts). Every path emits exactly one
+  /// outcome state; unexpected errors map to a generic failure.
   Future<void> createNote({
     required String title,
     required String content,
     required String color,
   }) async {
     emit(const NotesLoading());
-    final userId = authService.currentUserId;
-    final familyId = userId == null ? null : await _resolveFamilyId(userId);
-    if (familyId == null) {
-      emit(const NotesFailure(notesFailureNoFamily));
-      return;
-    }
-    if (await isAtFreeLimit(familyId: familyId)) {
-      emit(const NotesFailure(notesFailureLimitReached));
-      return;
-    }
-    final now = DateTime.now().toUtc();
-    final model = NoteModel(
-      id: '',
-      familyId: familyId,
-      createdBy: userId ?? '',
-      title: title,
-      content: content,
-      color: color,
-      createdAt: now,
-      updatedAt: now,
-    );
-    final result = await createNoteUsecase(model, familyId);
-    await result.fold(
-      (err) async => emit(NotesFailure(err.message)),
-      (_) async {
+    try {
+      final userId = authService.currentUserId;
+      final familyId = userId == null ? null : await _resolveFamilyId(userId);
+      if (familyId == null) {
+        emit(const NotesFailure(notesFailureNoFamily));
+        return;
+      }
+      if (await isAtFreeLimit(familyId: familyId)) {
+        final result = await getNotesUsecase(familyId);
+        result.fold(
+          (_) => emit(const NotesFailure(notesFailureLimitReached)),
+          (notes) => emit(NotesLimitReached(notes)),
+        );
+        return;
+      }
+      final now = DateTime.now().toUtc();
+      final model = NoteModel(
+        id: '',
+        familyId: familyId,
+        createdBy: userId ?? '',
+        title: title,
+        content: content,
+        color: color,
+        createdAt: now,
+        updatedAt: now,
+      );
+      final result = await createNoteUsecase(model, familyId);
+      await result.fold((err) async => emit(NotesFailure(err.message)), (
+        _,
+      ) async {
         emit(const NoteActionSuccess());
         await loadNotes(familyId: familyId);
-      },
-    );
+      });
+    } on Object catch (_) {
+      emit(const NotesFailure('unknown'));
+    }
   }
 
   /// Updates a note (last-write-wins), then reloads the list.
@@ -177,32 +185,17 @@ class NotesCubit extends Cubit<NotesState> {
   ///
   /// Views call this before opening the editor so capped users see the
   /// limit message (with an upgrade action) instead of a form they cannot
-  /// save. Paid users always return `false`. Fail-open: any lookup error
-  /// returns `false` and the create path re-checks anyway.
+  /// save. Delegates to [IsAtNoteLimitUsecase] (paid check + count +
+  /// free-tier caps); fail-open (`false`) on every error and the create
+  /// path re-checks anyway. The whole body is guarded so no lookup
+  /// failure ever throws to the view.
   Future<bool> isAtFreeLimit({String? familyId}) async {
-    if (await _isPro()) return false;
-    final userId = authService.currentUserId;
-    if (userId == null) return false;
-    final resolved = familyId ?? await _resolveFamilyId(userId);
-    if (resolved == null) return false;
     try {
-      final result = await getNotesUsecase(resolved);
-      return result.fold(
-        (_) => false,
-        (notes) => UsageLimits.isNoteLimitReached(
-          count: notes.length,
-          isPro: false,
-        ),
-      );
-    } on Object catch (_) {
-      return false;
-    }
-  }
-
-  /// Best-effort paid check; lookup errors mean free-tier limits apply.
-  Future<bool> _isPro() async {
-    try {
-      return await subscriptionService.isPro();
+      final userId = authService.currentUserId;
+      if (userId == null) return false;
+      final resolved = familyId ?? await _resolveFamilyId(userId);
+      if (resolved == null) return false;
+      return await isAtNoteLimitUsecase(familyId: resolved);
     } on Object catch (_) {
       return false;
     }

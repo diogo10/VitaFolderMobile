@@ -2276,8 +2276,8 @@ abstract class AppLocalizations {
   /// No description provided for @createReminderErrorLimitReached.
   ///
   /// In en, this message translates to:
-  /// **'You\'ve reached the free limit of 10 reminders. Upgrade to create more.'**
-  String get createReminderErrorLimitReached;
+  /// **'You\'ve reached the free limit of {count} reminders. Upgrade to create more.'**
+  String createReminderErrorLimitReached(int count);
 
   /// No description provided for @limitReachedUpgrade.
   ///
@@ -2570,8 +2570,8 @@ abstract class AppLocalizations {
   /// No description provided for @notesErrorLimitReached.
   ///
   /// In en, this message translates to:
-  /// **'You\'ve reached the free limit of 3 notes. Upgrade to create more.'**
-  String get notesErrorLimitReached;
+  /// **'You\'ve reached the free limit of {count} notes. Upgrade to create more.'**
+  String notesErrorLimitReached(int count);
 
   /// No description provided for @paywallTitle.
   ///

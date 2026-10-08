@@ -1182,8 +1182,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t save the reminder. Please try again';
 
   @override
-  String get createReminderErrorLimitReached =>
-      'You\'ve reached the free limit of 10 reminders. Upgrade to create more.';
+  String createReminderErrorLimitReached(int count) {
+    return 'You\'ve reached the free limit of $count reminders. Upgrade to create more.';
+  }
 
   @override
   String get limitReachedUpgrade => 'Upgrade';
@@ -1355,8 +1356,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'No family found. Join or create a family first.';
 
   @override
-  String get notesErrorLimitReached =>
-      'You\'ve reached the free limit of 3 notes. Upgrade to create more.';
+  String notesErrorLimitReached(int count) {
+    return 'You\'ve reached the free limit of $count notes. Upgrade to create more.';
+  }
 
   @override
   String get paywallTitle => 'HouseMira Pro';

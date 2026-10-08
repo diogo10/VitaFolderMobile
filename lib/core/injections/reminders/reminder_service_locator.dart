@@ -6,6 +6,7 @@ import 'package:house_mira/core/observability/crash_reporter.dart';
 import 'package:house_mira/core/observability/performance_tracer.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/repository/reminder_repository_impl.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
@@ -66,6 +67,15 @@ class ReminderServiceLocator {
         ),
         instanceName: 'updateReminderUsecase',
       )
+      ..registerSingleton<IsAtReminderLimitUsecase>(
+        IsAtReminderLimitUsecase(
+          subscriptionService: sl<SubscriptionService>(
+            instanceName: 'subscriptionService',
+          ),
+          reminderRepository: sl(instanceName: 'reminderRepositoryImpl'),
+        ),
+        instanceName: 'isAtReminderLimitUsecase',
+      )
       // Tab cubits stay shared lazy singletons (see createRouter factory
       // contract). One-shot editor cubits (CreateReminderCubit) are built
       // fresh per visit by the route's default factory, never registered
@@ -79,8 +89,8 @@ class ReminderServiceLocator {
           authService: sl<AuthService>(instanceName: 'authService'),
           reminderRepository: sl(instanceName: 'reminderRepositoryImpl'),
           notificationService: sl(instanceName: 'reminderNotificationService'),
-          subscriptionService: sl<SubscriptionService>(
-            instanceName: 'subscriptionService',
+          isAtReminderLimitUsecase: sl(
+            instanceName: 'isAtReminderLimitUsecase',
           ),
           logger: logger,
           crashReporter: crashReporter,

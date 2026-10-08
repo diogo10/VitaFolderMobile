@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
+import 'package:house_mira/features/notes/application/is_at_note_limit_usecase.dart';
 import 'package:house_mira/features/notes/data/repository/notes_repository_impl.dart';
 import 'package:house_mira/features/notes/domain/repository/notes_repository.dart';
 import 'package:house_mira/features/notes/domain/usecase/create_note_usecase.dart';
@@ -31,22 +32,25 @@ class NotesServiceLocator {
         instanceName: 'getNotesUsecase',
       )
       ..registerSingleton<CreateNoteUsecase>(
-        CreateNoteUsecase(
-          repository: sl(instanceName: 'notesRepositoryImpl'),
-        ),
+        CreateNoteUsecase(repository: sl(instanceName: 'notesRepositoryImpl')),
         instanceName: 'createNoteUsecase',
       )
       ..registerSingleton<UpdateNoteUsecase>(
-        UpdateNoteUsecase(
-          repository: sl(instanceName: 'notesRepositoryImpl'),
-        ),
+        UpdateNoteUsecase(repository: sl(instanceName: 'notesRepositoryImpl')),
         instanceName: 'updateNoteUsecase',
       )
       ..registerSingleton<DeleteNoteUsecase>(
-        DeleteNoteUsecase(
-          repository: sl(instanceName: 'notesRepositoryImpl'),
-        ),
+        DeleteNoteUsecase(repository: sl(instanceName: 'notesRepositoryImpl')),
         instanceName: 'deleteNoteUsecase',
+      )
+      ..registerSingleton<IsAtNoteLimitUsecase>(
+        IsAtNoteLimitUsecase(
+          subscriptionService: sl<SubscriptionService>(
+            instanceName: 'subscriptionService',
+          ),
+          notesRepository: sl(instanceName: 'notesRepositoryImpl'),
+        ),
+        instanceName: 'isAtNoteLimitUsecase',
       )
       // Tab cubit stays a shared lazy singleton (see createRouter factory
       // contract). The editor screen reuses its methods (single-cubit
@@ -61,9 +65,7 @@ class NotesServiceLocator {
             instanceName: 'peopleRepositoryImpl',
           ),
           authService: sl<AuthService>(instanceName: 'authService'),
-          subscriptionService: sl<SubscriptionService>(
-            instanceName: 'subscriptionService',
-          ),
+          isAtNoteLimitUsecase: sl(instanceName: 'isAtNoteLimitUsecase'),
         ),
         instanceName: 'notesCubit',
       );

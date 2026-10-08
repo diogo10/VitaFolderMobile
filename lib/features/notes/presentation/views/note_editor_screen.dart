@@ -173,6 +173,19 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       }
       if (!mounted) return;
       final state = cubit.state;
+      if (state is NotesLimitReached) {
+        final l = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(noteErrorMessage(context, notesFailureLimitReached)),
+            action: SnackBarAction(
+              label: l.limitReachedUpgrade,
+              onPressed: () => context.push(AppRoutes.paywall),
+            ),
+          ),
+        );
+        return;
+      }
       if (state is NotesFailure) {
         final l = AppLocalizations.of(context)!;
         final isLimit = state.message == notesFailureLimitReached;
@@ -450,9 +463,7 @@ class _ToolButton extends StatelessWidget {
         child: Container(
           width: 44,
           height: 44,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
           child: Center(
             child: Tooltip(
               message: tooltip,

@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
+import 'package:house_mira/features/notes/application/is_at_note_limit_usecase.dart';
 import 'package:house_mira/features/notes/data/models/note_model.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
 import 'package:house_mira/features/notes/domain/repository/notes_repository.dart';
@@ -77,7 +79,10 @@ NotesCubit buildCubit({
   deleteNoteUsecase: DeleteNoteUsecase(repository: notes),
   peopleRepository: people,
   authService: auth,
-  subscriptionService: subscriptions ?? _PaidSubscriptions(),
+  isAtNoteLimitUsecase: IsAtNoteLimitUsecase(
+    subscriptionService: subscriptions ?? _PaidSubscriptions(),
+    notesRepository: notes,
+  ),
 );
 
 Widget pumpWithCubit(NotesCubit cubit, Widget child, {Locale? locale}) {
@@ -555,7 +560,10 @@ void main() {
       await tester.pumpAndSettle();
 
       final l = AppLocalizations.of(tester.element(find.byType(NotesView)))!;
-      expect(find.text(l.notesErrorLimitReached), findsOneWidget);
+      expect(
+        find.text(l.notesErrorLimitReached(UsageLimits.freeNotesLimit)),
+        findsOneWidget,
+      );
       expect(find.text(l.limitReachedUpgrade), findsOneWidget);
       // The editor never opens: no editor title appears.
       expect(find.text(l.notesCreateTitle), findsNothing);

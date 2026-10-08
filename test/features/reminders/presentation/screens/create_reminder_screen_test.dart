@@ -8,7 +8,9 @@ import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -232,8 +234,10 @@ void main() {
             authService: authService,
             peopleRepository: peopleRepository,
             notificationService: notifications,
-            subscriptionService: _PaidSubscriptions(),
-            reminderRepository: _FakeReminderRepository(),
+            isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+              subscriptionService: _PaidSubscriptions(),
+              reminderRepository: _FakeReminderRepository(),
+            ),
           ),
         ),
         BlocProvider<RemindersCubit>(
@@ -243,7 +247,10 @@ void main() {
             authService: authService,
             reminderRepository: _FakeReminderRepository(),
             notificationService: notifications,
-            subscriptionService: _PaidSubscriptions(),
+            isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+              subscriptionService: _PaidSubscriptions(),
+              reminderRepository: _FakeReminderRepository(),
+            ),
           ),
         ),
       ],
@@ -868,8 +875,10 @@ void main() {
                 authService: authService,
                 peopleRepository: peopleRepository,
                 notificationService: service,
-                subscriptionService: _FreeSubscriptions(),
-                reminderRepository: repo,
+                isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+                  subscriptionService: _FreeSubscriptions(),
+                  reminderRepository: repo,
+                ),
               ),
             ),
             BlocProvider<RemindersCubit>(
@@ -879,7 +888,10 @@ void main() {
                 authService: authService,
                 reminderRepository: repo,
                 notificationService: service,
-                subscriptionService: _FreeSubscriptions(),
+                isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+                  subscriptionService: _FreeSubscriptions(),
+                  reminderRepository: repo,
+                ),
               ),
             ),
           ],
@@ -904,7 +916,12 @@ void main() {
 
       // The reminder is never created; the limit message offers an upgrade.
       verifyNever(() => createReminderUsecase.call(any(), any()));
-      expect(find.text(l.createReminderErrorLimitReached), findsOneWidget);
+      expect(
+        find.text(
+          l.createReminderErrorLimitReached(UsageLimits.freeRemindersLimit),
+        ),
+        findsOneWidget,
+      );
       expect(find.text(l.limitReachedUpgrade), findsOneWidget);
 
       await tester.tap(find.text(l.limitReachedUpgrade));

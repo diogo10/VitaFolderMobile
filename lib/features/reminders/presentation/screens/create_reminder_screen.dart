@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/router/app_routes.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -387,7 +388,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
               CreateReminderErrorCode.notAllowed =>
                 l.createReminderErrorUpdateBlocked,
               CreateReminderErrorCode.limitReached =>
-                l.createReminderErrorLimitReached,
+                l.createReminderErrorLimitReached(
+                  UsageLimits.freeRemindersLimit,
+                ),
               _ => state.message ?? l.createReminderErrorNoFamily,
             };
             ScaffoldMessenger.of(context)

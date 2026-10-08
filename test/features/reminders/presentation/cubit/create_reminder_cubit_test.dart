@@ -5,6 +5,7 @@ import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -96,8 +97,10 @@ void main() {
     authService: authService,
     peopleRepository: peopleRepository,
     notificationService: notificationService,
-    subscriptionService: subscriptionService,
-    reminderRepository: reminderRepository,
+    isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+      subscriptionService: subscriptionService,
+      reminderRepository: reminderRepository,
+    ),
   );
 
   const reminder = ReminderEntity(

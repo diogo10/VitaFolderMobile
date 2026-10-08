@@ -24,6 +24,7 @@ import 'package:house_mira/features/people/domain/usecase/join_family_usecase.da
 import 'package:house_mira/features/people/presentation/cubit/invite_people_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/people/presentation/views/invite_people_screen.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
@@ -140,7 +141,10 @@ void main() {
       authService: authService,
       reminderRepository: _MockReminderRepository(),
       notificationService: _FakeNotificationService(),
-      subscriptionService: _PaidSubscriptions(),
+      isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+        subscriptionService: _PaidSubscriptions(),
+        reminderRepository: _MockReminderRepository(),
+      ),
     );
     final accountCubit = AccountCubit(
       authService: authService,
@@ -156,8 +160,10 @@ void main() {
       authService: authService,
       peopleRepository: _FakePeopleRepository(),
       notificationService: _FakeNotificationService(),
-      subscriptionService: _PaidSubscriptions(),
-      reminderRepository: _MockReminderRepository(),
+      isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+        subscriptionService: _PaidSubscriptions(),
+        reminderRepository: _MockReminderRepository(),
+      ),
     );
     addTearDown(() async {
       await homeCubit.close();

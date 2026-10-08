@@ -6,6 +6,7 @@ import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/observability/crash_reporter.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
@@ -89,7 +90,10 @@ void main() {
     authService: authService,
     reminderRepository: reminderRepository,
     notificationService: notificationService,
-    subscriptionService: _PaidSubscriptions(),
+    isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+      subscriptionService: _PaidSubscriptions(),
+      reminderRepository: reminderRepository,
+    ),
     crashReporter: crash,
     logger: AppLogger(crashReporter: crash, sink: lines.add),
   );

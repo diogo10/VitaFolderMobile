@@ -4,9 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/observability/crash_reporter.dart';
-import 'package:house_mira/core/subscriptions/subscription_service.dart';
-import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
@@ -22,7 +21,7 @@ class RemindersCubit extends Cubit<RemindersState> {
     required this.authService,
     required this.reminderRepository,
     required IReminderNotificationService notificationService,
-    required this.subscriptionService,
+    required this.isAtReminderLimitUsecase,
     CrashReporter? crashReporter,
     AppLogger? logger,
   }) : _notificationService = notificationService,
@@ -32,7 +31,7 @@ class RemindersCubit extends Cubit<RemindersState> {
   PeopleRepository peopleRepository;
   AuthService authService;
   ReminderRepository reminderRepository;
-  final SubscriptionService subscriptionService;
+  final IsAtReminderLimitUsecase isAtReminderLimitUsecase;
   final IReminderNotificationService _notificationService;
   final AppLogger _logger;
 
@@ -96,12 +95,16 @@ class RemindersCubit extends Cubit<RemindersState> {
   }
 
   Future<String?> _resolveFamilyId() async {
-    final userId = authService.currentUserId;
-    if (userId == null) {
+    try {
+      final userId = authService.currentUserId;
+      if (userId == null) {
+        return null;
+      }
+      final familyIds = await peopleRepository.getFamilyIdsForUser(userId);
+      return familyIds.isEmpty ? null : familyIds.first;
+    } on Object catch (_) {
       return null;
     }
-    final familyIds = await peopleRepository.getFamilyIdsForUser(userId);
-    return familyIds.isEmpty ? null : familyIds.first;
   }
 
   /// Whether the current user belongs to a family.
@@ -121,25 +124,15 @@ class RemindersCubit extends Cubit<RemindersState> {
   ///
   /// Views call this before opening the editor so capped users see the
   /// limit message (with an upgrade action) instead of a form they cannot
-  /// save. Paid users always return `false`. Fail-open: any lookup error
-  /// returns `false` and the editor re-checks on save anyway.
-  Future<bool> isAtFreeLimit() async {
+  /// save. Delegates to [IsAtReminderLimitUsecase] (paid check + count +
+  /// free-tier caps); fail-open (`false`) on every error and the editor
+  /// re-checks on save anyway. The whole body is guarded so no lookup
+  /// failure ever throws to the view.
+  Future<bool> isAtFreeLimit({String? familyId}) async {
     try {
-      if (await subscriptionService.isPro()) return false;
-    } on Object catch (_) {
-      // Fall through to the free-tier count check.
-    }
-    final familyId = await _resolveFamilyId();
-    if (familyId == null) return false;
-    try {
-      final result = await reminderRepository.getReminders(familyId);
-      return result.fold(
-        (_) => false,
-        (reminders) => UsageLimits.isReminderLimitReached(
-          count: reminders.length,
-          isPro: false,
-        ),
-      );
+      final resolved = familyId ?? await _resolveFamilyId();
+      if (resolved == null) return false;
+      return await isAtReminderLimitUsecase(familyId: resolved);
     } on Object catch (_) {
       return false;
     }

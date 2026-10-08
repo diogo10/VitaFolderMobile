@@ -36,6 +36,7 @@ import 'package:house_mira/features/people/presentation/cubit/family_settings_cu
 import 'package:house_mira/features/people/presentation/cubit/family_settings_state.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/people/presentation/views/family_settings_screen.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
@@ -167,7 +168,10 @@ void main() {
       authService: resolvedAuth,
       reminderRepository: _MockReminderRepository(),
       notificationService: _FakeNotificationService(),
-      subscriptionService: _PaidSubscriptions(),
+      isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+        subscriptionService: _PaidSubscriptions(),
+        reminderRepository: _MockReminderRepository(),
+      ),
     );
     final accountCubit = AccountCubit(
       authService: resolvedAuth,
@@ -267,8 +271,10 @@ void main() {
           authService: authService,
           peopleRepository: _MockPeopleRepository(),
           notificationService: _FakeNotificationService(),
-          subscriptionService: _PaidSubscriptions(),
-          reminderRepository: _MockReminderRepository(),
+          isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+            subscriptionService: _PaidSubscriptions(),
+            reminderRepository: _MockReminderRepository(),
+          ),
         );
         built.add(cubit);
         return cubit;
@@ -298,7 +304,10 @@ void main() {
         authService: authService,
         reminderRepository: _MockReminderRepository(),
         notificationService: _FakeNotificationService(),
-        subscriptionService: _PaidSubscriptions(),
+        isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+          subscriptionService: _PaidSubscriptions(),
+          reminderRepository: _MockReminderRepository(),
+        ),
       );
       final accountCubit = AccountCubit(
         authService: authService,
@@ -433,7 +442,10 @@ void main() {
           authService: authService,
           reminderRepository: _MockReminderRepository(),
           notificationService: _FakeNotificationService(),
-          subscriptionService: _PaidSubscriptions(),
+          isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+            subscriptionService: _PaidSubscriptions(),
+            reminderRepository: _MockReminderRepository(),
+          ),
         ),
         accountCubitFactory: () => accountCubit,
         signUpCubitFactory: () => SignUpCubit(authService),
@@ -489,7 +501,10 @@ void main() {
           authService: authService,
           reminderRepository: _MockReminderRepository(),
           notificationService: _FakeNotificationService(),
-          subscriptionService: _PaidSubscriptions(),
+          isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+            subscriptionService: _PaidSubscriptions(),
+            reminderRepository: _MockReminderRepository(),
+          ),
         ),
         accountCubitFactory: () => AccountCubit(
           authService: authService,
@@ -543,7 +558,10 @@ void main() {
           authService: authService,
           reminderRepository: _MockReminderRepository(),
           notificationService: _FakeNotificationService(),
-          subscriptionService: _PaidSubscriptions(),
+          isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+            subscriptionService: _PaidSubscriptions(),
+            reminderRepository: _MockReminderRepository(),
+          ),
         ),
         accountCubitFactory: () => AccountCubit(
           authService: authService,

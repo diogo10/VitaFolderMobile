@@ -5,6 +5,7 @@ import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
@@ -76,7 +77,10 @@ void main() {
     authService: authService,
     reminderRepository: reminderRepository,
     notificationService: notificationService,
-    subscriptionService: subscriptionService,
+    isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+      subscriptionService: subscriptionService,
+      reminderRepository: reminderRepository,
+    ),
   );
 
   group('RemindersCubit.getReminders', () {
@@ -407,7 +411,10 @@ void main() {
         authService: authService,
         reminderRepository: reminderRepository,
         notificationService: notificationService,
-        subscriptionService: subscriptionService,
+        isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+          subscriptionService: subscriptionService,
+          reminderRepository: reminderRepository,
+        ),
       ),
       setUp: () {
         when(() => authService.currentUserId).thenReturn('u1');

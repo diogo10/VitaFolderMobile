@@ -29,6 +29,7 @@ import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart'
 import 'package:house_mira/features/people/presentation/cubit/people_state.dart'
     show PeopleEmpty;
 import 'package:house_mira/features/people/presentation/views/invite_people_screen.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -307,7 +308,10 @@ Widget _pumpApp() {
     authService: fakeAuth,
     reminderRepository: fakeReminders,
     notificationService: _NoopNotificationService(),
-    subscriptionService: _PaidSubscriptions(),
+    isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+      subscriptionService: _PaidSubscriptions(),
+      reminderRepository: fakeReminders,
+    ),
   );
   final peopleCubit = PeopleCubit(
     getPeopleUsecase: GetPeopleUsecase(repository: emptyFamilyPeople),
@@ -357,7 +361,10 @@ Widget _pumpAppWithOnboarding() {
     authService: fakeAuth,
     reminderRepository: fakeReminders,
     notificationService: _NoopNotificationService(),
-    subscriptionService: _PaidSubscriptions(),
+    isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+      subscriptionService: _PaidSubscriptions(),
+      reminderRepository: fakeReminders,
+    ),
   );
   final peopleCubit = PeopleCubit(
     getPeopleUsecase: GetPeopleUsecase(repository: fakePeople),

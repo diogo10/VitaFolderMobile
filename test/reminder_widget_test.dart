@@ -7,6 +7,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
@@ -116,7 +117,10 @@ void main() {
                   authService: _FakeAuthService(),
                   reminderRepository: _FakeReminderRepository(),
                   notificationService: _NoopNotificationService(),
-                  subscriptionService: _PaidSubscriptions(),
+                  isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+                    subscriptionService: _PaidSubscriptions(),
+                    reminderRepository: _FakeReminderRepository(),
+                  ),
                 ),
             child: ReminderWidget(reminder: reminderOverride ?? reminder),
           ),
@@ -200,7 +204,10 @@ void main() {
         authService: _FakeAuthService(),
         reminderRepository: _FakeReminderRepository(),
         notificationService: _NoopNotificationService(),
-        subscriptionService: _PaidSubscriptions(),
+        isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+          subscriptionService: _PaidSubscriptions(),
+          reminderRepository: _FakeReminderRepository(),
+        ),
       );
 
       await tester.pumpWidget(buildTestWidget(cubit: cubit));
@@ -234,7 +241,10 @@ void main() {
         authService: _FakeAuthService(),
         reminderRepository: repository,
         notificationService: _NoopNotificationService(),
-        subscriptionService: _PaidSubscriptions(),
+        isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+          subscriptionService: _PaidSubscriptions(),
+          reminderRepository: repository,
+        ),
       );
 
       await tester.pumpWidget(buildTestWidget(cubit: cubit));

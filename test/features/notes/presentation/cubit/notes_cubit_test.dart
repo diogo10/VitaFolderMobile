@@ -4,6 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
+import 'package:house_mira/features/notes/application/is_at_note_limit_usecase.dart';
 import 'package:house_mira/features/notes/data/models/note_model.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
 import 'package:house_mira/features/notes/domain/repository/notes_repository.dart';
@@ -91,7 +92,10 @@ void main() {
     deleteNoteUsecase: DeleteNoteUsecase(repository: notes),
     peopleRepository: people,
     authService: auth,
-    subscriptionService: subscriptions,
+    isAtNoteLimitUsecase: IsAtNoteLimitUsecase(
+      subscriptionService: subscriptions,
+      notesRepository: notes,
+    ),
   );
 
   void stubFamily({String userId = 'u1', String familyId = 'f1'}) {
@@ -398,12 +402,10 @@ void main() {
         );
       },
       act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
-      expect: () => [isA<NotesLoading>(), isA<NotesFailure>()],
+      expect: () => [isA<NotesLoading>(), isA<NotesLimitReached>()],
       verify: (cubit) {
-        expect(
-          (cubit.state as NotesFailure).message,
-          notesFailureLimitReached,
-        );
+        final state = cubit.state as NotesLimitReached;
+        expect(state.notes, hasLength(3));
         verifyNever(() => notes.createNote(any(), any()));
       },
     );

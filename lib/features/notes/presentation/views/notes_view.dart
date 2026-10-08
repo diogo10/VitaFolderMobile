@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/router/app_routes.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
 import 'package:house_mira/features/notes/presentation/cubit/notes_cubit.dart';
 import 'package:house_mira/features/notes/presentation/cubit/notes_state.dart';
@@ -42,45 +43,54 @@ class _NotesViewState extends State<NotesView> {
       await widget.onCreateNote!(context);
       return;
     }
-    final cubit = context.read<NotesCubit>();
-    if (!cubit.authService.isLoggedIn()) {
+    try {
+      final cubit = context.read<NotesCubit>();
+      if (!cubit.authService.isLoggedIn()) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.needToBeLoggedIn),
+          ),
+        );
+        return;
+      }
+      final hasFamily = await cubit.hasFamily();
+      if (!mounted) return;
+      if (!hasFamily) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.createReminderErrorNoFamily,
+            ),
+          ),
+        );
+        context.go(AppRoutes.people);
+        return;
+      }
+      final atLimit = await cubit.isAtFreeLimit();
+      if (!mounted) return;
+      if (atLimit) {
+        final l = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l.notesErrorLimitReached(UsageLimits.freeNotesLimit)),
+            action: SnackBarAction(
+              label: l.limitReachedUpgrade,
+              onPressed: () => context.push(AppRoutes.paywall),
+            ),
+          ),
+        );
+        return;
+      }
+      await const NoteEditorRoute().push(context);
+    } on Object catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.needToBeLoggedIn),
+          content: Text(AppLocalizations.of(context)!.notesErrorGeneric),
         ),
       );
-      return;
     }
-    final hasFamily = await cubit.hasFamily();
-    if (!mounted) return;
-    if (!hasFamily) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context)!.createReminderErrorNoFamily,
-          ),
-        ),
-      );
-      context.go(AppRoutes.people);
-      return;
-    }
-    final atLimit = await cubit.isAtFreeLimit();
-    if (!mounted) return;
-    if (atLimit) {
-      final l = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l.notesErrorLimitReached),
-          action: SnackBarAction(
-            label: l.limitReachedUpgrade,
-            onPressed: () => context.push(AppRoutes.paywall),
-          ),
-        ),
-      );
-      return;
-    }
-    await const NoteEditorRoute().push(context);
   }
 
   void _showMenu(BuildContext context, NoteEntity note) {
@@ -208,67 +218,73 @@ class _NotesViewState extends State<NotesView> {
           ),
         ),
       ),
-      NotesLoaded(:final notes) =>
-        notes.isEmpty
-            ? SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 120),
+      NotesLoaded(:final notes) => _loadedBody(context, notes),
+      NotesLimitReached(:final notes) => _loadedBody(context, notes),
+    };
+  }
+
+  Widget _loadedBody(BuildContext context, List<NoteEntity> notes) {
+    final cubit = context.read<NotesCubit>();
+    if (notes.isEmpty) {
+      return SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 120),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const FamilyHeaderWidget(),
+            NotesEmptyWidget(onCreate: _handleAdd),
+          ],
+        ),
+      );
+    }
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 120),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const FamilyHeaderWidget(),
+          const SizedBox(height: 22),
+          _Heading(familyName: cubit.familyName),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const FamilyHeaderWidget(),
-                    NotesEmptyWidget(onCreate: _handleAdd),
-                  ],
-                ),
-              )
-            : SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 120),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const FamilyHeaderWidget(),
-                    const SizedBox(height: 22),
-                    _Heading(familyName: cubit.familyName),
-                    const SizedBox(height: 16),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            children: [
-                              for (var i = 0; i < notes.length; i += 2)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: NoteCardWidget(
-                                    note: notes[i],
-                                    onTap: () => _showMenu(context, notes[i]),
-                                  ),
-                                ),
-                            ],
-                          ),
+                    for (var i = 0; i < notes.length; i += 2)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: NoteCardWidget(
+                          note: notes[i],
+                          onTap: () => _showMenu(context, notes[i]),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              for (var i = 1; i < notes.length; i += 2)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: NoteCardWidget(
-                                    note: notes[i],
-                                    onTap: () => _showMenu(context, notes[i]),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
                   ],
                 ),
               ),
-    };
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  children: [
+                    for (var i = 1; i < notes.length; i += 2)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: NoteCardWidget(
+                          note: notes[i],
+                          onTap: () => _showMenu(context, notes[i]),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -295,9 +311,9 @@ class _Heading extends StatelessWidget {
           familyName == null
               ? l.notesSharedWithYourFamily
               : l.notesSharedWith(familyName!),
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: SandPalette.sand400,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: SandPalette.sand400),
         ),
       ],
     );

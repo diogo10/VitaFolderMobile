@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/features/notes/domain/repository/notes_repository.dart';
 import 'package:house_mira/features/notes/presentation/cubit/notes_state.dart';
 import 'package:house_mira/generated/app_localizations.dart';
@@ -11,7 +12,9 @@ String noteErrorMessage(BuildContext context, String code) {
     notesFailureNotFound => l.notesErrorNotFound,
     notesFailureOffline => l.notesErrorOffline,
     notesFailureNoFamily => l.notesErrorNoFamily,
-    notesFailureLimitReached => l.notesErrorLimitReached,
+    notesFailureLimitReached => l.notesErrorLimitReached(
+      UsageLimits.freeNotesLimit,
+    ),
     _ => l.notesErrorGeneric,
   };
 }
