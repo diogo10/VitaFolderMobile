@@ -397,6 +397,9 @@ void main() {
       setUp: () {
         stubFamily();
         when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+        when(() => notes.getNotesCount('f1')).thenAnswer(
+          (_) async => const Right<Failure, int>(3),
+        );
         when(() => notes.getNotes('f1')).thenAnswer(
           (_) async => Right<Failure, List<NoteEntity>>(rows(3)),
         );
@@ -416,6 +419,9 @@ void main() {
       setUp: () {
         stubFamily();
         when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+        when(() => notes.getNotesCount('f1')).thenAnswer(
+          (_) async => const Right<Failure, int>(2),
+        );
         when(() => notes.getNotes('f1')).thenAnswer(
           (_) async => Right<Failure, List<NoteEntity>>(rows(2)),
         );
@@ -463,13 +469,13 @@ void main() {
       setUp: () {
         stubFamily();
         when(() => subscriptions.isPro()).thenAnswer((_) async => false);
-        var calls = 0;
-        when(() => notes.getNotes('f1')).thenAnswer((_) async {
-          calls++;
-          // Limit check fails, the post-create reload succeeds.
-          if (calls == 1) return Left(Failure(message: 'offline'));
-          return Right<Failure, List<NoteEntity>>([note()]);
-        });
+        // Limit check fails, the post-create reload succeeds.
+        when(() => notes.getNotesCount('f1')).thenAnswer(
+          (_) async => Left(Failure(message: 'offline')),
+        );
+        when(() => notes.getNotes('f1')).thenAnswer(
+          (_) async => Right<Failure, List<NoteEntity>>([note()]),
+        );
         when(() => notes.createNote(any(), 'f1')).thenAnswer(
           (_) async => const Right('new-id'),
         );
@@ -489,21 +495,21 @@ void main() {
     test('isAtFreeLimit true at cap, false when paid or below cap', () async {
       stubFamily();
       when(() => subscriptions.isPro()).thenAnswer((_) async => false);
-      when(() => notes.getNotes('f1')).thenAnswer(
-        (_) async => Right<Failure, List<NoteEntity>>(rows(3)),
+      when(() => notes.getNotesCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(3),
       );
       final cubit = buildCubit();
       addTearDown(cubit.close);
       expect(await cubit.isAtFreeLimit(), isTrue);
 
-      when(() => notes.getNotes('f1')).thenAnswer(
-        (_) async => Right<Failure, List<NoteEntity>>(rows(1)),
+      when(() => notes.getNotesCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(1),
       );
       expect(await cubit.isAtFreeLimit(), isFalse);
 
       when(() => subscriptions.isPro()).thenAnswer((_) async => true);
-      when(() => notes.getNotes('f1')).thenAnswer(
-        (_) async => Right<Failure, List<NoteEntity>>(rows(30)),
+      when(() => notes.getNotesCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(30),
       );
       expect(await cubit.isAtFreeLimit(), isFalse);
     });

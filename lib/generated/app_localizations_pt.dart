@@ -1195,6 +1195,9 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não foi possível salvar o lembrete. Tente novamente';
 
   @override
+  String get createReminderErrorGeneric => 'Algo deu errado. Tente novamente.';
+
+  @override
   String createReminderErrorLimitReached(int count) {
     return 'Você atingiu o limite gratuito de $count lembretes. Faça upgrade para criar mais.';
   }

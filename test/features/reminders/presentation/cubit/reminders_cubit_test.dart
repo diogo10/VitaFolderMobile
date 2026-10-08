@@ -578,39 +578,24 @@ void main() {
   });
 
   group('RemindersCubit free-tier limit', () {
-    List<ReminderEntity> rows(int count) => List.generate(
-      count,
-      (i) => ReminderEntity(
-        title: 'T $i',
-        body: '',
-        id: 'r$i',
-        type: ReminderType.custom,
-        dueDate: '19/08/2026',
-        repeatRule: 'never',
-        status: 'pending',
-        createdBy: 'Mom',
-        createdAt: '',
-      ),
-    );
-
     test('isAtFreeLimit true at cap, false when paid or below cap', () async {
       stubFamily();
       when(() => subscriptionService.isPro()).thenAnswer((_) async => false);
-      when(() => reminderRepository.getReminders('f1')).thenAnswer(
-        (_) async => Right<Failure, List<ReminderEntity>>(rows(10)),
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(10),
       );
       final cubit = buildCubit();
       addTearDown(cubit.close);
       expect(await cubit.isAtFreeLimit(), isTrue);
 
-      when(() => reminderRepository.getReminders('f1')).thenAnswer(
-        (_) async => Right<Failure, List<ReminderEntity>>(rows(2)),
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(2),
       );
       expect(await cubit.isAtFreeLimit(), isFalse);
 
       when(() => subscriptionService.isPro()).thenAnswer((_) async => true);
-      when(() => reminderRepository.getReminders('f1')).thenAnswer(
-        (_) async => Right<Failure, List<ReminderEntity>>(rows(40)),
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(40),
       );
       expect(await cubit.isAtFreeLimit(), isFalse);
     });
@@ -618,7 +603,7 @@ void main() {
     test('isAtFreeLimit fails open when the count lookup fails', () async {
       stubFamily();
       when(() => subscriptionService.isPro()).thenAnswer((_) async => false);
-      when(() => reminderRepository.getReminders('f1')).thenAnswer(
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
         (_) async => Left(Failure(message: 'boom')),
       );
       final cubit = buildCubit();

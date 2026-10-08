@@ -136,6 +136,9 @@ void main() {
       when(() => notes.getNotes('f1')).thenAnswer(
         (_) async => Right<Failure, List<NoteEntity>>(rows),
       );
+      when(() => notes.getNotesCount('f1')).thenAnswer(
+        (_) async => Right<Failure, int>(rows.length),
+      );
     }
   }
 

@@ -255,21 +255,6 @@ void main() {
   });
 
   group('CreateReminderCubit free-tier limit', () {
-    List<ReminderEntity> rows(int count) => List.generate(
-      count,
-      (i) => ReminderEntity(
-        id: 'r$i',
-        title: 'T $i',
-        body: '',
-        type: ReminderType.custom,
-        dueDate: '',
-        repeatRule: 'never',
-        status: 'pending',
-        createdBy: 'u1',
-        createdAt: '',
-      ),
-    );
-
     void stubFamily({String userId = 'u1', String familyId = 'f1'}) {
       when(() => authService.currentUserId).thenReturn(userId);
       when(
@@ -283,8 +268,8 @@ void main() {
       setUp: () {
         stubFamily();
         when(() => subscriptionService.isPro()).thenAnswer((_) async => false);
-        when(() => reminderRepository.getReminders('f1')).thenAnswer(
-          (_) async => Right<Failure, List<ReminderEntity>>(rows(10)),
+        when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+          (_) async => const Right<Failure, int>(10),
         );
       },
       act: (cubit) => cubit.createReminder(
@@ -313,8 +298,8 @@ void main() {
       setUp: () {
         stubFamily();
         when(() => subscriptionService.isPro()).thenAnswer((_) async => false);
-        when(() => reminderRepository.getReminders('f1')).thenAnswer(
-          (_) async => Right<Failure, List<ReminderEntity>>(rows(9)),
+        when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+          (_) async => const Right<Failure, int>(9),
         );
         when(
           () => createReminderUsecase.call(any(), any()),
@@ -355,28 +340,28 @@ void main() {
         isA<CreateReminderSuccess>(),
       ],
       verify: (_) {
-        verifyNever(() => reminderRepository.getReminders(any()));
+        verifyNever(() => reminderRepository.getRemindersCount(any()));
       },
     );
 
     test('isAtFreeLimit true at cap, false when paid or below cap', () async {
       stubFamily();
       when(() => subscriptionService.isPro()).thenAnswer((_) async => false);
-      when(() => reminderRepository.getReminders('f1')).thenAnswer(
-        (_) async => Right<Failure, List<ReminderEntity>>(rows(10)),
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(10),
       );
       final cubit = buildCubit();
       addTearDown(cubit.close);
       expect(await cubit.isAtFreeLimit(), isTrue);
 
-      when(() => reminderRepository.getReminders('f1')).thenAnswer(
-        (_) async => Right<Failure, List<ReminderEntity>>(rows(4)),
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(4),
       );
       expect(await cubit.isAtFreeLimit(), isFalse);
 
       when(() => subscriptionService.isPro()).thenAnswer((_) async => true);
-      when(() => reminderRepository.getReminders('f1')).thenAnswer(
-        (_) async => Right<Failure, List<ReminderEntity>>(rows(50)),
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(50),
       );
       expect(await cubit.isAtFreeLimit(), isFalse);
     });

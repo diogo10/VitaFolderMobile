@@ -824,27 +824,13 @@ void main() {
       tester,
     ) async {
       final service = _FakeNotificationService();
-      final existing = List.generate(
-        10,
-        (i) => ReminderEntity(
-          id: 'r$i',
-          title: 'T $i',
-          body: '',
-          type: ReminderType.custom,
-          dueDate: '',
-          repeatRule: 'never',
-          status: 'pending',
-          createdBy: 'fake-user-id',
-          createdAt: '',
-        ),
-      );
       when(
         () => peopleRepository.getFamilyIdsForUser(any()),
       ).thenAnswer((_) async => ['fam-1']);
       final repo = _FakeReminderRepository();
       when(
-        () => repo.getReminders('fam-1'),
-      ).thenAnswer((_) async => Right(existing));
+        () => repo.getRemindersCount('fam-1'),
+      ).thenAnswer((_) async => const Right<Failure, int>(10));
 
       final testRouter = GoRouter(
         initialLocation: '/',

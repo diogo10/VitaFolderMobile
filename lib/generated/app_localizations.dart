@@ -2273,6 +2273,12 @@ abstract class AppLocalizations {
   /// **'Couldn\'t save the reminder. Please try again'**
   String get createReminderErrorUpdateBlocked;
 
+  /// No description provided for @createReminderErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get createReminderErrorGeneric;
+
   /// No description provided for @createReminderErrorLimitReached.
   ///
   /// In en, this message translates to:

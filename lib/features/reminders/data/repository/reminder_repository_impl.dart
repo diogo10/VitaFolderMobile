@@ -34,6 +34,22 @@ class ReminderRepositoryImpl implements ReminderRepository {
   }
 
   @override
+  Future<Either<Failure, int>> getRemindersCount(String familyId) async {
+    try {
+      final count = await _client
+          .from('reminders')
+          .count(CountOption.exact)
+          .eq('family_id', familyId);
+      return Right(count);
+    } on Failure catch (e) {
+      return Left(Failure(message: e.message));
+    } on Object catch (e) {
+      debugPrint('Error counting reminders: $e');
+      return Left(Failure());
+    }
+  }
+
+  @override
   Future<Either<Failure, List<ReminderEntity>>> getRemindersByTypeAndFamily({
     required ReminderType type,
     required String familyId,

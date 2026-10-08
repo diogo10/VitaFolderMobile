@@ -193,6 +193,10 @@ class _FakeReminderRepository implements ReminderRepository {
   ) async => const Right([]);
 
   @override
+  Future<Either<Failure, int>> getRemindersCount(String familyId) async =>
+      const Right(0);
+
+  @override
   Future<Either<Failure, List<ReminderEntity>>> getRemindersByTypeAndFamily({
     required ReminderType type,
     required String familyId,

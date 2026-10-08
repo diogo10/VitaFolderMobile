@@ -391,7 +391,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                 l.createReminderErrorLimitReached(
                   UsageLimits.freeRemindersLimit,
                 ),
-              _ => state.message ?? l.createReminderErrorNoFamily,
+              _ => state.message ?? l.createReminderErrorGeneric,
             };
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()

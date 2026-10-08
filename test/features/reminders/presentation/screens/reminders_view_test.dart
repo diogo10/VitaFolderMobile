@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
@@ -253,8 +254,8 @@ void main() {
       );
       await tester.pumpAndSettle();
       when(
-        () => reminderRepository.getReminders('fam-1'),
-      ).thenAnswer((_) async => Right(rows(10)));
+        () => reminderRepository.getRemindersCount('fam-1'),
+      ).thenAnswer((_) async => const Right<Failure, int>(10));
 
       await tester.tap(find.byIcon(Icons.add));
       await tester.pumpAndSettle();

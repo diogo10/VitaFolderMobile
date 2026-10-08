@@ -21,11 +21,11 @@ class IsAtReminderLimitUsecase {
     try {
       if (await subscriptionService.isPro()) return false;
       if (familyId == null) return false;
-      final result = await reminderRepository.getReminders(familyId);
+      final result = await reminderRepository.getRemindersCount(familyId);
       return result.fold(
         (_) => false,
-        (reminders) => UsageLimits.isReminderLimitReached(
-          count: reminders.length,
+        (count) => UsageLimits.isReminderLimitReached(
+          count: count,
           isPro: false,
         ),
       );

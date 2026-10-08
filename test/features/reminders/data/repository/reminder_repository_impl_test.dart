@@ -296,6 +296,47 @@ ReminderModel _model({
   createdAt: '2026-08-01',
 );
 
+/// Awaitable fake for head-count `count(...).eq(...)` queries.
+class _FakeCountFilter extends Fake implements PostgrestFilterBuilder<int> {
+  _FakeCountFilter(this.value);
+
+  final int value;
+  final List<(String, Object)> eqCalls = [];
+
+  @override
+  PostgrestFilterBuilder<int> eq(String column, Object value) {
+    eqCalls.add((column, value));
+    return this;
+  }
+
+  Future<int> get _future => Future<int>.value(value);
+
+  @override
+  Future<R> then<R>(
+    FutureOr<R> Function(int value) onValue, {
+    Function? onError,
+  }) => _future.then(onValue, onError: onError);
+
+  @override
+  Future<int> catchError(
+    Function onError, {
+    bool Function(Object error)? test,
+  }) => _future.catchError(onError, test: test);
+
+  @override
+  Future<int> whenComplete(FutureOr<void> Function() action) =>
+      _future.whenComplete(action);
+
+  @override
+  Future<int> timeout(
+    Duration timeLimit, {
+    FutureOr<int> Function()? onTimeout,
+  }) => _future.timeout(timeLimit, onTimeout: onTimeout);
+
+  @override
+  Stream<int> asStream() => _future.asStream();
+}
+
 void main() {
   late _MockSupabaseClient client;
   late _MockQueryBuilder query;
@@ -304,6 +345,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(<String, dynamic>{});
     registerFallbackValue(<dynamic, dynamic>{});
+    registerFallbackValue(CountOption.exact);
   });
 
   setUp(() {
@@ -366,6 +408,26 @@ void main() {
         result.getLeft().toNullable()?.message,
         Failure().message,
       );
+    });
+  });
+
+  group('getRemindersCount', () {
+    test('returns the head count scoped to the family', () async {
+      final filter = _FakeCountFilter(10);
+      when(() => query.count(any())).thenAnswer((_) => filter);
+
+      final result = await repository.getRemindersCount('f1');
+
+      expect(result.getRight().toNullable(), 10);
+      expect(filter.eqCalls, [('family_id', 'f1')]);
+    });
+
+    test('maps count errors to a failure', () async {
+      when(() => query.count(any())).thenThrow(Exception('db down'));
+
+      final result = await repository.getRemindersCount('f1');
+
+      expect(result.isLeft(), isTrue);
     });
   });
 

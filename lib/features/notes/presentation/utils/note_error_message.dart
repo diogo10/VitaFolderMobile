@@ -1,6 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:house_mira/core/subscriptions/usage_limits.dart';
-import 'package:house_mira/features/notes/domain/repository/notes_repository.dart';
+import 'package:house_mira/features/notes/domain/repository/notes_repository.dart'
+    show
+        notesFailureLimitReached,
+        notesFailureNoFamily,
+        notesFailureNotFound,
+        notesFailureOffline;
 import 'package:house_mira/features/notes/presentation/cubit/notes_state.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 

@@ -1182,6 +1182,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t save the reminder. Please try again';
 
   @override
+  String get createReminderErrorGeneric =>
+      'Something went wrong. Please try again.';
+
+  @override
   String createReminderErrorLimitReached(int count) {
     return 'You\'ve reached the free limit of $count reminders. Upgrade to create more.';
   }

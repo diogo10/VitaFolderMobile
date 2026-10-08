@@ -5,7 +5,8 @@ import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/notes/application/is_at_note_limit_usecase.dart';
 import 'package:house_mira/features/notes/data/models/note_model.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
-import 'package:house_mira/features/notes/domain/repository/notes_repository.dart';
+import 'package:house_mira/features/notes/domain/repository/notes_repository.dart'
+    show notesFailureLimitReached, notesFailureNoFamily, notesFailureUnknown;
 import 'package:house_mira/features/notes/domain/usecase/create_note_usecase.dart';
 import 'package:house_mira/features/notes/domain/usecase/delete_note_usecase.dart';
 import 'package:house_mira/features/notes/domain/usecase/get_notes_usecase.dart';
@@ -116,7 +117,7 @@ class NotesCubit extends Cubit<NotesState> {
         await loadNotes(familyId: familyId);
       });
     } on Object catch (_) {
-      emit(const NotesFailure('unknown'));
+      emit(const NotesFailure(notesFailureUnknown));
     }
   }
 

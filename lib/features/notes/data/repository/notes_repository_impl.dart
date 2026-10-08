@@ -6,7 +6,11 @@ import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/features/notes/data/models/note_model.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
 import 'package:house_mira/features/notes/domain/repository/notes_repository.dart'
-    show NotesRepository, notesFailureNotFound, notesFailureOffline;
+    show
+        NotesRepository,
+        notesFailureGeneric,
+        notesFailureNotFound,
+        notesFailureOffline;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Supabase implementation of [NotesRepository].
@@ -43,7 +47,26 @@ class NotesRepositoryImpl implements NotesRepository {
       return Left(Failure(message: notesFailureOffline));
     } on Object catch (e) {
       debugPrint('Error getting the notes: $e');
-      return Left(Failure(message: ''));
+      return Left(Failure(message: notesFailureGeneric));
+    }
+  }
+
+  @override
+  Future<Either<Failure, int>> getNotesCount(String familyId) async {
+    try {
+      final count = await _client
+          .from('notes')
+          .count(CountOption.exact)
+          .eq('family_id', familyId);
+      return Right(count);
+    } on Failure catch (e) {
+      return Left(Failure(message: e.message));
+    } on SocketException catch (e) {
+      debugPrint('Notes offline counting notes: $e');
+      return Left(Failure(message: notesFailureOffline));
+    } on Object catch (e) {
+      debugPrint('Error counting notes: $e');
+      return Left(Failure(message: notesFailureGeneric));
     }
   }
 
@@ -59,7 +82,7 @@ class NotesRepositoryImpl implements NotesRepository {
           .select('id')
           .single();
       final id = created['id']?.toString();
-      if (id == null || id.isEmpty) return Left(Failure(message: ''));
+      if (id == null || id.isEmpty) return Left(Failure(message: notesFailureGeneric));
       return Right(id);
     } on Failure catch (e) {
       return Left(Failure(message: e.message));
@@ -68,7 +91,7 @@ class NotesRepositoryImpl implements NotesRepository {
       return Left(Failure(message: notesFailureOffline));
     } on Object catch (e) {
       debugPrint('Error creating note: $e');
-      return Left(Failure(message: ''));
+      return Left(Failure(message: notesFailureGeneric));
     }
   }
 
@@ -100,7 +123,7 @@ class NotesRepositoryImpl implements NotesRepository {
           'Notes update not persisted for ${note.id}: '
           'sent=$payload echo=$echoed',
         );
-        return Left(Failure(message: ''));
+        return Left(Failure(message: notesFailureGeneric));
       }
       return const Right(true);
     } on Failure catch (e) {
@@ -110,7 +133,7 @@ class NotesRepositoryImpl implements NotesRepository {
       return Left(Failure(message: notesFailureOffline));
     } on Object catch (e) {
       debugPrint('Error updating note: $e');
-      return Left(Failure(message: ''));
+      return Left(Failure(message: notesFailureGeneric));
     }
   }
 
@@ -136,7 +159,7 @@ class NotesRepositoryImpl implements NotesRepository {
       return Left(Failure(message: notesFailureOffline));
     } on Object catch (e) {
       debugPrint('Error deleting note: $e');
-      return Left(Failure(message: ''));
+      return Left(Failure(message: notesFailureGeneric));
     }
   }
 }

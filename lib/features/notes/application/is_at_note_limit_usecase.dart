@@ -21,11 +21,10 @@ class IsAtNoteLimitUsecase {
     try {
       if (await subscriptionService.isPro()) return false;
       if (familyId == null) return false;
-      final result = await notesRepository.getNotes(familyId);
+      final result = await notesRepository.getNotesCount(familyId);
       return result.fold(
         (_) => false,
-        (notes) =>
-            UsageLimits.isNoteLimitReached(count: notes.length, isPro: false),
+        (count) => UsageLimits.isNoteLimitReached(count: count, isPro: false),
       );
     } on Object catch (_) {
       return false;

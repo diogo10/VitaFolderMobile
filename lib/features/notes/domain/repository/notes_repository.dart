@@ -8,6 +8,8 @@ import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
 /// The presentation layer maps them to localized strings
 /// (`notesErrorNotFound`, `notesErrorOffline`, `notesErrorNoFamily`,
 /// `notesErrorGeneric`); raw English never reaches the UI.
+/// [notesFailureUnknown] and [notesFailureGeneric] both map to
+/// `notesErrorGeneric`.
 const String notesFailureNotFound = 'not-found';
 const String notesFailureOffline = 'offline';
 const String notesFailureNoFamily = 'no-family';
@@ -15,6 +17,12 @@ const String notesFailureNoFamily = 'no-family';
 /// Free-tier cap hit (`UsageLimits.freeNotesLimit` notes). The presentation
 /// layer maps it to `notesErrorLimitReached` with an upgrade action.
 const String notesFailureLimitReached = 'limit-reached';
+
+/// Unexpected error mapping to the generic notes error (never raw English).
+const String notesFailureUnknown = 'unknown';
+
+/// Generic failure mapping to the generic notes error (never raw English).
+const String notesFailureGeneric = 'generic';
 
 /// Notes repository contract.
 ///
@@ -24,6 +32,11 @@ const String notesFailureLimitReached = 'limit-reached';
 abstract interface class NotesRepository {
   /// Lists notes scoped to one family, ordered `created_at DESC`.
   Future<Either<Failure, List<NoteEntity>>> getNotes(String familyId);
+
+  /// Head-count of notes in one family.
+  ///
+  /// Used by the free-tier limit check so it never fetches the full list.
+  Future<Either<Failure, int>> getNotesCount(String familyId);
 
   /// Creates the note and returns the created row id.
   Future<Either<Failure, String>> createNote(
