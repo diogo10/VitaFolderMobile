@@ -7,6 +7,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
@@ -42,6 +43,18 @@ class _FakeUpdateReminderUsecase extends Mock
 class _FakeGetReminderUsecase extends Mock implements GetReminderUsecase {}
 
 class _FakeReminderRepository extends Mock implements ReminderRepository {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro() async => true;
+}
+
+/// Free tier for limit-gate widget tests.
+class _FreeSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro() async => false;
+}
 
 class _FakeNotificationService implements IReminderNotificationService {
   final Map<String, ReminderNotificationPrefs> stored = {};
@@ -219,6 +232,8 @@ void main() {
             authService: authService,
             peopleRepository: peopleRepository,
             notificationService: notifications,
+            subscriptionService: _PaidSubscriptions(),
+            reminderRepository: _FakeReminderRepository(),
           ),
         ),
         BlocProvider<RemindersCubit>(
@@ -228,6 +243,7 @@ void main() {
             authService: authService,
             reminderRepository: _FakeReminderRepository(),
             notificationService: notifications,
+            subscriptionService: _PaidSubscriptions(),
           ),
         ),
       ],
@@ -793,6 +809,107 @@ void main() {
         findsOneWidget,
       );
       expect(find.text(l.createReminderUpdatedMessage), findsNothing);
+    });
+  });
+
+  group('CreateReminderScreen free-tier limit', () {
+    testWidgets('save at the free cap shows the limit message with upgrade', (
+      tester,
+    ) async {
+      final service = _FakeNotificationService();
+      final existing = List.generate(
+        10,
+        (i) => ReminderEntity(
+          id: 'r$i',
+          title: 'T $i',
+          body: '',
+          type: ReminderType.custom,
+          dueDate: '',
+          repeatRule: 'never',
+          status: 'pending',
+          createdBy: 'fake-user-id',
+          createdAt: '',
+        ),
+      );
+      when(
+        () => peopleRepository.getFamilyIdsForUser(any()),
+      ).thenAnswer((_) async => ['fam-1']);
+      final repo = _FakeReminderRepository();
+      when(
+        () => repo.getReminders('fam-1'),
+      ).thenAnswer((_) async => Right(existing));
+
+      final testRouter = GoRouter(
+        initialLocation: '/',
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => const Scaffold(body: SizedBox.shrink()),
+          ),
+          GoRoute(
+            path: '/create',
+            builder: (_, _) =>
+                CreateReminderScreen(notificationService: service),
+          ),
+          GoRoute(
+            path: '/paywall',
+            builder: (_, _) => const Scaffold(body: Text('paywall-marker')),
+          ),
+        ],
+      );
+      addTearDown(testRouter.dispose);
+      await tester.pumpWidget(
+        MultiBlocProvider(
+          providers: [
+            BlocProvider<CreateReminderCubit>(
+              create: (_) => CreateReminderCubit(
+                createReminderUsecase: createReminderUsecase,
+                updateReminderUsecase: updateReminderUsecase,
+                authService: authService,
+                peopleRepository: peopleRepository,
+                notificationService: service,
+                subscriptionService: _FreeSubscriptions(),
+                reminderRepository: repo,
+              ),
+            ),
+            BlocProvider<RemindersCubit>(
+              create: (_) => RemindersCubit(
+                getReminderUsecase: getReminderUsecase,
+                peopleRepository: peopleRepository,
+                authService: authService,
+                reminderRepository: repo,
+                notificationService: service,
+                subscriptionService: _FreeSubscriptions(),
+              ),
+            ),
+          ],
+          child: MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: testRouter,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      unawaited(testRouter.push('/create'));
+      await tester.pumpAndSettle();
+      final l = AppLocalizations.of(
+        tester.element(find.byType(CreateReminderScreen)),
+      )!;
+
+      await tester.enterText(find.byType(TextFormField).first, 'T');
+      await tester.tap(find.text(l.createReminderSaveButton));
+      await tester.pumpAndSettle();
+
+      // The reminder is never created; the limit message offers an upgrade.
+      verifyNever(() => createReminderUsecase.call(any(), any()));
+      expect(find.text(l.createReminderErrorLimitReached), findsOneWidget);
+      expect(find.text(l.limitReachedUpgrade), findsOneWidget);
+
+      await tester.tap(find.text(l.limitReachedUpgrade));
+      await tester.pumpAndSettle();
+      expect(find.text('paywall-marker'), findsOneWidget);
     });
   });
 }

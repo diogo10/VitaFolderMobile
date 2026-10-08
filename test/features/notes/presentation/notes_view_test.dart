@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/features/notes/data/models/note_model.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
@@ -29,6 +31,18 @@ class _MockPeople extends Mock implements PeopleRepository {}
 
 class _MockAuth extends Mock implements AuthService {}
 
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro() async => true;
+}
+
+/// Free tier for limit-gate widget tests.
+class _FreeSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro() async => false;
+}
+
 NoteEntity note({
   String id = 'n1',
   String title = 'Title',
@@ -52,6 +66,7 @@ NotesCubit buildCubit({
   required NotesRepository notes,
   required PeopleRepository people,
   required AuthService auth,
+  SubscriptionService? subscriptions,
 }) => NotesCubit(
   getNotesUsecase: GetNotesUsecase(
     repository: notes,
@@ -62,6 +77,7 @@ NotesCubit buildCubit({
   deleteNoteUsecase: DeleteNoteUsecase(repository: notes),
   peopleRepository: people,
   authService: auth,
+  subscriptionService: subscriptions ?? _PaidSubscriptions(),
 );
 
 Widget pumpWithCubit(NotesCubit cubit, Widget child, {Locale? locale}) {
@@ -491,6 +507,62 @@ void main() {
       richTexts.map((r) => r.text).forEach(visit);
       expect(foundBold, isTrue);
       await cubit.close();
+    });
+  });
+
+  group('Free-tier limit gate', () {
+    testWidgets('free user at cap sees the limit message on add', (
+      tester,
+    ) async {
+      final rows = List.generate(3, (i) => note(id: 'n$i'));
+      stubSignedIn(rows: rows);
+      final cubit = buildCubit(
+        notes: notes,
+        people: people,
+        auth: auth,
+        subscriptions: _FreeSubscriptions(),
+      );
+      final router = GoRouter(
+        initialLocation: '/',
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => BlocProvider<NotesCubit>.value(
+              value: cubit,
+              child: const NotesView(),
+            ),
+          ),
+          GoRoute(
+            path: '/paywall',
+            builder: (_, _) => const Scaffold(body: Text('paywall-marker')),
+          ),
+        ],
+      );
+      addTearDown(() async {
+        router.dispose();
+        await cubit.close();
+      });
+      await tester.pumpWidget(
+        MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.add_rounded));
+      await tester.pumpAndSettle();
+
+      final l = AppLocalizations.of(tester.element(find.byType(NotesView)))!;
+      expect(find.text(l.notesErrorLimitReached), findsOneWidget);
+      expect(find.text(l.limitReachedUpgrade), findsOneWidget);
+      // The editor never opens: no editor title appears.
+      expect(find.text(l.notesCreateTitle), findsNothing);
+
+      await tester.tap(find.text(l.limitReachedUpgrade));
+      await tester.pumpAndSettle();
+      expect(find.text('paywall-marker'), findsOneWidget);
     });
   });
 }

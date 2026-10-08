@@ -12,6 +12,10 @@ const String notesFailureNotFound = 'not-found';
 const String notesFailureOffline = 'offline';
 const String notesFailureNoFamily = 'no-family';
 
+/// Free-tier cap hit (`UsageLimits.freeNotesLimit` notes). The presentation
+/// layer maps it to `notesErrorLimitReached` with an upgrade action.
+const String notesFailureLimitReached = 'limit-reached';
+
 /// Notes repository contract.
 ///
 /// All methods return `Future<Either<Failure, T>>` (FR-103). Errors are

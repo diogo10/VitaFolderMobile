@@ -4,6 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
 import 'package:house_mira/features/home/domain/entities/home_entity.dart';
@@ -44,6 +45,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
 class _MockGoogleHandler extends Mock implements IGoogleSignInHandler {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro() async => true;
+}
 
 class _FakeAuthService extends AuthService {
   _FakeAuthService({this.stubUserId})
@@ -429,6 +436,7 @@ void main() {
       authService: auth,
       reminderRepository: repository,
       notificationService: notifications,
+      subscriptionService: _PaidSubscriptions(),
     );
 
     blocTest<RemindersCubit, RemindersState>(
@@ -571,6 +579,8 @@ void main() {
       authService: auth,
       peopleRepository: people,
       notificationService: notifications,
+      subscriptionService: _PaidSubscriptions(),
+      reminderRepository: _MockReminderRepository(),
     );
 
     test('permission helpers degrade to safe defaults on throw', () async {

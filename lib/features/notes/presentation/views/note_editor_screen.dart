@@ -7,6 +7,7 @@ import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/features/notes/domain/entities/note_color.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
+import 'package:house_mira/features/notes/domain/repository/notes_repository.dart';
 import 'package:house_mira/features/notes/presentation/cubit/notes_cubit.dart';
 import 'package:house_mira/features/notes/presentation/cubit/notes_state.dart';
 import 'package:house_mira/features/notes/presentation/utils/note_error_message.dart';
@@ -173,10 +174,18 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       if (!mounted) return;
       final state = cubit.state;
       if (state is NotesFailure) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-          SnackBar(content: Text(noteErrorMessage(context, state.message))),
+        final l = AppLocalizations.of(context)!;
+        final isLimit = state.message == notesFailureLimitReached;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(noteErrorMessage(context, state.message)),
+            action: isLimit
+                ? SnackBarAction(
+                    label: l.limitReachedUpgrade,
+                    onPressed: () => context.push(AppRoutes.paywall),
+                  )
+                : null,
+          ),
         );
         return;
       }

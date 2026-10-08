@@ -11,6 +11,7 @@ import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/core/router/main_shell.dart';
 import 'package:house_mira/core/router/splash_view.dart';
 import 'package:house_mira/core/router/tab_refresh_coordinator.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/application/notification_permission_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
@@ -401,6 +402,10 @@ CreateReminderCubit _defaultCreateReminderCubitFactory() => CreateReminderCubit(
   authService: slInstance<AuthService>(instanceName: 'authService'),
   peopleRepository: slInstance(instanceName: 'peopleRepositoryImpl'),
   notificationService: slInstance(instanceName: 'reminderNotificationService'),
+  subscriptionService: slInstance<SubscriptionService>(
+    instanceName: 'subscriptionService',
+  ),
+  reminderRepository: slInstance(instanceName: 'reminderRepositoryImpl'),
 );
 
 /// Sign-up is a one-shot form with no shared tab state: each visit gets a

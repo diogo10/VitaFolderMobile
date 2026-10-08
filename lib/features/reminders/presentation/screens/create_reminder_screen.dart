@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -385,11 +386,23 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                 l.createReminderErrorAuthRequired,
               CreateReminderErrorCode.notAllowed =>
                 l.createReminderErrorUpdateBlocked,
+              CreateReminderErrorCode.limitReached =>
+                l.createReminderErrorLimitReached,
               _ => state.message ?? l.createReminderErrorNoFamily,
             };
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(message)));
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(message),
+                  action: state.code == CreateReminderErrorCode.limitReached
+                      ? SnackBarAction(
+                          label: l.limitReachedUpgrade,
+                          onPressed: () => context.push(AppRoutes.paywall),
+                        )
+                      : null,
+                ),
+              );
           }
         },
         builder: (context, state) {

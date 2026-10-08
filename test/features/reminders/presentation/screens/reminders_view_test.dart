@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
@@ -27,6 +28,12 @@ class _FakePeopleRepository extends Mock implements PeopleRepository {}
 class _FakeReminderRepository extends Mock implements ReminderRepository {}
 
 class _FakeGetReminderUsecase extends Mock implements GetReminderUsecase {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro() async => true;
+}
 
 class _NoopNotificationService implements IReminderNotificationService {
   @override
@@ -83,11 +90,13 @@ void main() {
   late _FakeAuthService authService;
   late _FakePeopleRepository peopleRepository;
   late _FakeGetReminderUsecase getReminderUsecase;
+  late _FakeReminderRepository reminderRepository;
 
   setUp(() {
     authService = _FakeAuthService();
     peopleRepository = _FakePeopleRepository();
     getReminderUsecase = _FakeGetReminderUsecase();
+    reminderRepository = _FakeReminderRepository();
     registerFallbackValue(ReminderType.appointment);
   });
 
@@ -100,8 +109,9 @@ void main() {
           getReminderUsecase: getReminderUsecase,
           peopleRepository: peopleRepository,
           authService: authService,
-          reminderRepository: _FakeReminderRepository(),
+          reminderRepository: reminderRepository,
           notificationService: _NoopNotificationService(),
+          subscriptionService: _PaidSubscriptions(),
         ),
         child: const RemindersView(),
       ),
@@ -182,5 +192,78 @@ void main() {
       expect(find.byType(RemindersEmptyWidget), findsOneWidget);
       verifyNever(() => getReminderUsecase(any(), type: any(named: 'type')));
     });
+
+    testWidgets('free user at cap sees the limit message on add', (
+      tester,
+    ) async {
+      List<ReminderEntity> rows(int count) => List.generate(
+        count,
+        (i) => ReminderEntity(
+          id: 'r$i',
+          title: 'T $i',
+          body: '',
+          type: ReminderType.appointment,
+          dueDate: '22/08/2026 15:00',
+          repeatRule: 'never',
+          status: 'pending',
+          createdBy: 'Mom',
+          createdAt: '2026-08-01',
+        ),
+      );
+      when(() => authService.isLoggedIn()).thenReturn(true);
+      when(() => authService.currentUserId).thenReturn('user-1');
+      when(
+        () => peopleRepository.getMyFamilyRole(),
+      ).thenAnswer((_) async => <String>[]);
+      when(
+        () => peopleRepository.getFamilyIdsForUser('user-1'),
+      ).thenAnswer((_) async => ['fam-1']);
+      when(
+        () => peopleRepository.getProfilesWithRoleForFamily('fam-1'),
+      ).thenAnswer((_) async => <PersonEntity>[]);
+      when(
+        () => getReminderUsecase('fam-1', type: any(named: 'type')),
+      ).thenAnswer((_) async => Right(rows(10)));
+      // Free tier: the add-button gate counts via the repository.
+      final freeSubs = _FreeSubscriptions();
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: BlocProvider<RemindersCubit>(
+            create: (_) => RemindersCubit(
+              getReminderUsecase: getReminderUsecase,
+              peopleRepository: peopleRepository,
+              authService: authService,
+              reminderRepository: reminderRepository,
+              notificationService: _NoopNotificationService(),
+              subscriptionService: freeSubs,
+            ),
+            child: const RemindersView(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      when(
+        () => reminderRepository.getReminders('fam-1'),
+      ).thenAnswer((_) async => Right(rows(10)));
+
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      final l = AppLocalizations.of(
+        tester.element(find.byType(RemindersView)),
+      )!;
+      expect(find.text(l.createReminderErrorLimitReached), findsOneWidget);
+      expect(find.text(l.limitReachedUpgrade), findsOneWidget);
+      // The create screen never opens: no editor title appears.
+      expect(find.text(l.createReminderTitle), findsNothing);
+    });
   });
+}
+
+/// Free-tier subscription fake for limit-gate widget tests.
+class _FreeSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro() async => false;
 }

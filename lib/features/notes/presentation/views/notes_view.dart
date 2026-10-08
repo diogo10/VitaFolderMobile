@@ -65,6 +65,21 @@ class _NotesViewState extends State<NotesView> {
       context.go(AppRoutes.people);
       return;
     }
+    final atLimit = await cubit.isAtFreeLimit();
+    if (!mounted) return;
+    if (atLimit) {
+      final l = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l.notesErrorLimitReached),
+          action: SnackBarAction(
+            label: l.limitReachedUpgrade,
+            onPressed: () => context.push(AppRoutes.paywall),
+          ),
+        ),
+      );
+      return;
+    }
     await const NoteEditorRoute().push(context);
   }
 

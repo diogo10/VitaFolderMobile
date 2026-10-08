@@ -57,6 +57,21 @@ class _RemindersViewState extends State<RemindersView> {
       context.go(AppRoutes.people);
       return;
     }
+    final atLimit = await cubit.isAtFreeLimit();
+    if (!mounted) return;
+    if (atLimit) {
+      final l = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l.createReminderErrorLimitReached),
+          action: SnackBarAction(
+            label: l.limitReachedUpgrade,
+            onPressed: () => context.push(AppRoutes.paywall),
+          ),
+        ),
+      );
+      return;
+    }
     await const CreateReminderRoute.create().push(context);
   }
 

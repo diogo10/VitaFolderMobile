@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/notes/data/models/note_model.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
 import 'package:house_mira/features/notes/domain/repository/notes_repository.dart';
@@ -23,6 +24,8 @@ class _MockPeople extends Mock implements PeopleRepository {}
 
 class _MockAuth extends Mock implements AuthService {}
 
+class _MockSubscriptions extends Mock implements SubscriptionService {}
+
 NoteEntity note({String id = 'n1'}) {
   final now = DateTime.utc(2026);
   return NoteEntity(
@@ -41,6 +44,7 @@ void main() {
   late _MockNotes notes;
   late _MockPeople people;
   late _MockAuth auth;
+  late _MockSubscriptions subscriptions;
 
   setUpAll(() {
     registerFallbackValue(note());
@@ -63,6 +67,10 @@ void main() {
     notes = _MockNotes();
     people = _MockPeople();
     auth = _MockAuth();
+    subscriptions = _MockSubscriptions();
+    // Paid by default so existing tests exercise the uncapped path;
+    // limit tests override with `isPro() == false`.
+    when(() => subscriptions.isPro()).thenAnswer((_) async => true);
     when(() => people.getMyFamily()).thenAnswer(
       (_) async => Right<Exception, FamilyEntity>(
         FamilyEntity(name: 'Smith Family', inviteCode: 'ABC'),
@@ -83,6 +91,7 @@ void main() {
     deleteNoteUsecase: DeleteNoteUsecase(repository: notes),
     peopleRepository: people,
     authService: auth,
+    subscriptionService: subscriptions,
   );
 
   void stubFamily({String userId = 'u1', String familyId = 'f1'}) {
@@ -372,6 +381,141 @@ void main() {
         isA<NotesLoaded>(),
       ],
     );
+  });
+
+  group('NotesCubit free-tier limit', () {
+    List<NoteEntity> rows(int count) =>
+        List.generate(count, (i) => note(id: 'n$i'));
+
+    blocTest<NotesCubit, NotesState>(
+      'free user at 3 notes → limit-reached failure, no create call',
+      build: buildCubit,
+      setUp: () {
+        stubFamily();
+        when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+        when(() => notes.getNotes('f1')).thenAnswer(
+          (_) async => Right<Failure, List<NoteEntity>>(rows(3)),
+        );
+      },
+      act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
+      expect: () => [isA<NotesLoading>(), isA<NotesFailure>()],
+      verify: (cubit) {
+        expect(
+          (cubit.state as NotesFailure).message,
+          notesFailureLimitReached,
+        );
+        verifyNever(() => notes.createNote(any(), any()));
+      },
+    );
+
+    blocTest<NotesCubit, NotesState>(
+      'free user below the cap creates normally',
+      build: buildCubit,
+      setUp: () {
+        stubFamily();
+        when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+        when(() => notes.getNotes('f1')).thenAnswer(
+          (_) async => Right<Failure, List<NoteEntity>>(rows(2)),
+        );
+        when(() => notes.createNote(any(), 'f1')).thenAnswer(
+          (_) async => const Right('new-id'),
+        );
+      },
+      act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
+      expect: () => [
+        isA<NotesLoading>(),
+        isA<NoteActionSuccess>(),
+        isA<NotesLoading>(),
+        isA<NotesLoaded>(),
+      ],
+    );
+
+    blocTest<NotesCubit, NotesState>(
+      'paid user above the cap creates normally',
+      build: buildCubit,
+      setUp: () {
+        stubFamily();
+        when(() => subscriptions.isPro()).thenAnswer((_) async => true);
+        when(() => notes.createNote(any(), 'f1')).thenAnswer(
+          (_) async => const Right('new-id'),
+        );
+        when(() => notes.getNotes('f1')).thenAnswer(
+          (_) async => Right<Failure, List<NoteEntity>>(rows(9)),
+        );
+      },
+      act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
+      expect: () => [
+        isA<NotesLoading>(),
+        isA<NoteActionSuccess>(),
+        isA<NotesLoading>(),
+        isA<NotesLoaded>(),
+      ],
+      verify: (cubit) {
+        expect((cubit.state as NotesLoaded).notes, hasLength(9));
+      },
+    );
+
+    blocTest<NotesCubit, NotesState>(
+      'count lookup failure fails open (create proceeds)',
+      build: buildCubit,
+      setUp: () {
+        stubFamily();
+        when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+        var calls = 0;
+        when(() => notes.getNotes('f1')).thenAnswer((_) async {
+          calls++;
+          // Limit check fails, the post-create reload succeeds.
+          if (calls == 1) return Left(Failure(message: 'offline'));
+          return Right<Failure, List<NoteEntity>>([note()]);
+        });
+        when(() => notes.createNote(any(), 'f1')).thenAnswer(
+          (_) async => const Right('new-id'),
+        );
+      },
+      act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
+      expect: () => [
+        isA<NotesLoading>(),
+        isA<NoteActionSuccess>(),
+        isA<NotesLoading>(),
+        isA<NotesLoaded>(),
+      ],
+      verify: (_) {
+        verify(() => notes.createNote(any(), 'f1')).called(1);
+      },
+    );
+
+    test('isAtFreeLimit true at cap, false when paid or below cap', () async {
+      stubFamily();
+      when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+      when(() => notes.getNotes('f1')).thenAnswer(
+        (_) async => Right<Failure, List<NoteEntity>>(rows(3)),
+      );
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      expect(await cubit.isAtFreeLimit(), isTrue);
+
+      when(() => notes.getNotes('f1')).thenAnswer(
+        (_) async => Right<Failure, List<NoteEntity>>(rows(1)),
+      );
+      expect(await cubit.isAtFreeLimit(), isFalse);
+
+      when(() => subscriptions.isPro()).thenAnswer((_) async => true);
+      when(() => notes.getNotes('f1')).thenAnswer(
+        (_) async => Right<Failure, List<NoteEntity>>(rows(30)),
+      );
+      expect(await cubit.isAtFreeLimit(), isFalse);
+    });
+
+    test('isAtFreeLimit false without a family', () async {
+      when(() => auth.currentUserId).thenReturn('u1');
+      when(
+        () => people.getFamilyIdsForUser('u1'),
+      ).thenAnswer((_) async => <String>[]);
+      when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      expect(await cubit.isAtFreeLimit(), isFalse);
+    });
   });
 
   group('NotesCubit.hasFamily', () {

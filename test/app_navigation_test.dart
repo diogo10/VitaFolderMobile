@@ -9,6 +9,7 @@ import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
@@ -43,6 +44,12 @@ class _FakeAnalyticsService extends Fake implements AnalyticsService {
 }
 
 class _MockAuthService extends Mock implements AuthService {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro() async => true;
+}
 
 class _MockGetHomeDataUsecase extends Mock implements GetHomeDataUsecase {}
 
@@ -192,6 +199,7 @@ void main() {
       authService: authService,
       reminderRepository: _MockReminderRepository(),
       notificationService: notifications,
+      subscriptionService: _PaidSubscriptions(),
     );
     final peopleCubit = PeopleCubit(
       getPeopleUsecase: getPeopleUsecase,

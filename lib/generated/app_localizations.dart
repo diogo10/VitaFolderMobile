@@ -2273,6 +2273,18 @@ abstract class AppLocalizations {
   /// **'Couldn\'t save the reminder. Please try again'**
   String get createReminderErrorUpdateBlocked;
 
+  /// No description provided for @createReminderErrorLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the free limit of 10 reminders. Upgrade to create more.'**
+  String get createReminderErrorLimitReached;
+
+  /// No description provided for @limitReachedUpgrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade'**
+  String get limitReachedUpgrade;
+
   /// No description provided for @familySettingsErrorNotFound.
   ///
   /// In en, this message translates to:
@@ -2554,6 +2566,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No family found. Join or create a family first.'**
   String get notesErrorNoFamily;
+
+  /// No description provided for @notesErrorLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the free limit of 3 notes. Upgrade to create more.'**
+  String get notesErrorLimitReached;
 
   /// No description provided for @paywallTitle.
   ///

@@ -11,6 +11,7 @@ import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/router/app_router.dart';
 import 'package:house_mira/core/router/splash_view.dart';
 import 'package:house_mira/core/router/tab_refresh_coordinator.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/views/account_view.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
@@ -54,6 +55,12 @@ class _MockGetHomeDataUsecase extends Mock implements GetHomeDataUsecase {}
 class _MockHasRemindersUsecase extends Mock implements HasRemindersUsecase {}
 
 class _MockAuthService extends Mock implements AuthService {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro() async => true;
+}
 
 class _MockGetPeopleUsecase extends Mock implements GetPeopleUsecase {}
 
@@ -160,6 +167,7 @@ void main() {
       authService: resolvedAuth,
       reminderRepository: _MockReminderRepository(),
       notificationService: _FakeNotificationService(),
+      subscriptionService: _PaidSubscriptions(),
     );
     final accountCubit = AccountCubit(
       authService: resolvedAuth,
@@ -259,6 +267,8 @@ void main() {
           authService: authService,
           peopleRepository: _MockPeopleRepository(),
           notificationService: _FakeNotificationService(),
+          subscriptionService: _PaidSubscriptions(),
+          reminderRepository: _MockReminderRepository(),
         );
         built.add(cubit);
         return cubit;
@@ -288,6 +298,7 @@ void main() {
         authService: authService,
         reminderRepository: _MockReminderRepository(),
         notificationService: _FakeNotificationService(),
+        subscriptionService: _PaidSubscriptions(),
       );
       final accountCubit = AccountCubit(
         authService: authService,
@@ -422,6 +433,7 @@ void main() {
           authService: authService,
           reminderRepository: _MockReminderRepository(),
           notificationService: _FakeNotificationService(),
+          subscriptionService: _PaidSubscriptions(),
         ),
         accountCubitFactory: () => accountCubit,
         signUpCubitFactory: () => SignUpCubit(authService),
@@ -477,6 +489,7 @@ void main() {
           authService: authService,
           reminderRepository: _MockReminderRepository(),
           notificationService: _FakeNotificationService(),
+          subscriptionService: _PaidSubscriptions(),
         ),
         accountCubitFactory: () => AccountCubit(
           authService: authService,
@@ -530,6 +543,7 @@ void main() {
           authService: authService,
           reminderRepository: _MockReminderRepository(),
           notificationService: _FakeNotificationService(),
+          subscriptionService: _PaidSubscriptions(),
         ),
         accountCubitFactory: () => AccountCubit(
           authService: authService,

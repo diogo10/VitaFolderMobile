@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/observability/crash_reporter.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -20,6 +22,7 @@ class RemindersCubit extends Cubit<RemindersState> {
     required this.authService,
     required this.reminderRepository,
     required IReminderNotificationService notificationService,
+    required this.subscriptionService,
     CrashReporter? crashReporter,
     AppLogger? logger,
   }) : _notificationService = notificationService,
@@ -29,6 +32,7 @@ class RemindersCubit extends Cubit<RemindersState> {
   PeopleRepository peopleRepository;
   AuthService authService;
   ReminderRepository reminderRepository;
+  final SubscriptionService subscriptionService;
   final IReminderNotificationService _notificationService;
   final AppLogger _logger;
 
@@ -108,6 +112,34 @@ class RemindersCubit extends Cubit<RemindersState> {
   Future<bool> hasFamily() async {
     try {
       return await _resolveFamilyId() != null;
+    } on Object catch (_) {
+      return false;
+    }
+  }
+
+  /// Whether a free-tier user has hit the reminders cap.
+  ///
+  /// Views call this before opening the editor so capped users see the
+  /// limit message (with an upgrade action) instead of a form they cannot
+  /// save. Paid users always return `false`. Fail-open: any lookup error
+  /// returns `false` and the editor re-checks on save anyway.
+  Future<bool> isAtFreeLimit() async {
+    try {
+      if (await subscriptionService.isPro()) return false;
+    } on Object catch (_) {
+      // Fall through to the free-tier count check.
+    }
+    final familyId = await _resolveFamilyId();
+    if (familyId == null) return false;
+    try {
+      final result = await reminderRepository.getReminders(familyId);
+      return result.fold(
+        (_) => false,
+        (reminders) => UsageLimits.isReminderLimitReached(
+          count: reminders.length,
+          isPro: false,
+        ),
+      );
     } on Object catch (_) {
       return false;
     }

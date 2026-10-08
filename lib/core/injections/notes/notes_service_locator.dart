@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/notes/data/repository/notes_repository_impl.dart';
 import 'package:house_mira/features/notes/domain/repository/notes_repository.dart';
 import 'package:house_mira/features/notes/domain/usecase/create_note_usecase.dart';
@@ -60,6 +61,9 @@ class NotesServiceLocator {
             instanceName: 'peopleRepositoryImpl',
           ),
           authService: sl<AuthService>(instanceName: 'authService'),
+          subscriptionService: sl<SubscriptionService>(
+            instanceName: 'subscriptionService',
+          ),
         ),
         instanceName: 'notesCubit',
       );

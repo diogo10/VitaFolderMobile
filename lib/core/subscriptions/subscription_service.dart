@@ -14,13 +14,15 @@ class PurchasesWrapper {
 
   /// Sets the SDK log verbosity.
   Future<void> setLogLevel(LogLevel level) => Purchases.setLogLevel(level);
+
+  /// Fetches the current customer info (entitlements).
+  Future<CustomerInfo> getCustomerInfo() => Purchases.getCustomerInfo();
 }
 
 /// Initializes and owns the RevenueCat SDK instance.
 ///
 /// Initial setup only: configures the shared `Purchases` instance with the
 /// platform's public API key (Apple on iOS/macOS, Google on Android).
-/// Paywalls and entitlement checks land in a follow-up task.
 ///
 /// A missing key for the current platform (or an unsupported platform such
 /// as web, which needs a separate web-billing config) skips initialization
@@ -40,6 +42,9 @@ class SubscriptionService {
        _logger = logger ?? AppLogger(),
        _platformOverride = platformOverride;
 
+  /// RevenueCat entitlement granting unlimited reminders and notes.
+  static const String proEntitlementId = 'pro';
+
   final PurchasesWrapper _purchases;
   final AppLogger _logger;
   final TargetPlatform? _platformOverride;
@@ -48,6 +53,29 @@ class SubscriptionService {
 
   /// Whether [initialize] has successfully configured the SDK.
   bool get isInitialized => _initialized;
+
+  /// Whether the user holds the paid entitlement ([proEntitlementId]).
+  ///
+  /// Returns `false` when billing is uninitialized or the lookup fails
+  /// (fail-closed: free limits apply). Never throws: every failure is
+  /// logged and reported instead.
+  Future<bool> isPro() async {
+    if (!_initialized) {
+      return false;
+    }
+    try {
+      final info = await _purchases.getCustomerInfo();
+      return info.entitlements.active.containsKey(proEntitlementId);
+    } on Object catch (error, stackTrace) {
+      _logger.warning(
+        'entitlement check failed',
+        tag: 'subscriptions',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
 
   /// Configures the RevenueCat SDK for the current platform.
   ///

@@ -12,6 +12,7 @@ import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
@@ -97,6 +98,12 @@ class _NoopNotificationService implements IReminderNotificationService {
 class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro() async => true;
+}
 
 class _FakeAuthService extends AuthService {
   _FakeAuthService()
@@ -300,6 +307,7 @@ Widget _pumpApp() {
     authService: fakeAuth,
     reminderRepository: fakeReminders,
     notificationService: _NoopNotificationService(),
+    subscriptionService: _PaidSubscriptions(),
   );
   final peopleCubit = PeopleCubit(
     getPeopleUsecase: GetPeopleUsecase(repository: emptyFamilyPeople),
@@ -349,6 +357,7 @@ Widget _pumpAppWithOnboarding() {
     authService: fakeAuth,
     reminderRepository: fakeReminders,
     notificationService: _NoopNotificationService(),
+    subscriptionService: _PaidSubscriptions(),
   );
   final peopleCubit = PeopleCubit(
     getPeopleUsecase: GetPeopleUsecase(repository: fakePeople),

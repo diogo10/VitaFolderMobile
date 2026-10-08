@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -25,12 +26,15 @@ class _FakeReminderRepository extends Mock implements ReminderRepository {}
 class _FakeNotificationService extends Mock
     implements IReminderNotificationService {}
 
+class _FakeSubscriptionService extends Mock implements SubscriptionService {}
+
 void main() {
   late _FakePeopleRepository peopleRepository;
   late _FakeAuthService authService;
   late _FakeGetReminderUsecase getReminderUsecase;
   late _FakeReminderRepository reminderRepository;
   late _FakeNotificationService notificationService;
+  late _FakeSubscriptionService subscriptionService;
 
   setUp(() {
     peopleRepository = _FakePeopleRepository();
@@ -38,6 +42,8 @@ void main() {
     getReminderUsecase = _FakeGetReminderUsecase();
     reminderRepository = _FakeReminderRepository();
     notificationService = _FakeNotificationService();
+    subscriptionService = _FakeSubscriptionService();
+    when(() => subscriptionService.isPro()).thenAnswer((_) async => true);
     when(
       () => notificationService.rescheduleAll(any()),
     ).thenAnswer((_) async {});
@@ -70,6 +76,7 @@ void main() {
     authService: authService,
     reminderRepository: reminderRepository,
     notificationService: notificationService,
+    subscriptionService: subscriptionService,
   );
 
   group('RemindersCubit.getReminders', () {
@@ -400,6 +407,7 @@ void main() {
         authService: authService,
         reminderRepository: reminderRepository,
         notificationService: notificationService,
+        subscriptionService: subscriptionService,
       ),
       setUp: () {
         when(() => authService.currentUserId).thenReturn('u1');
@@ -560,6 +568,56 @@ void main() {
         ),
       ],
     );
+  });
+
+  group('RemindersCubit free-tier limit', () {
+    List<ReminderEntity> rows(int count) => List.generate(
+      count,
+      (i) => ReminderEntity(
+        title: 'T $i',
+        body: '',
+        id: 'r$i',
+        type: ReminderType.custom,
+        dueDate: '19/08/2026',
+        repeatRule: 'never',
+        status: 'pending',
+        createdBy: 'Mom',
+        createdAt: '',
+      ),
+    );
+
+    test('isAtFreeLimit true at cap, false when paid or below cap', () async {
+      stubFamily();
+      when(() => subscriptionService.isPro()).thenAnswer((_) async => false);
+      when(() => reminderRepository.getReminders('f1')).thenAnswer(
+        (_) async => Right<Failure, List<ReminderEntity>>(rows(10)),
+      );
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      expect(await cubit.isAtFreeLimit(), isTrue);
+
+      when(() => reminderRepository.getReminders('f1')).thenAnswer(
+        (_) async => Right<Failure, List<ReminderEntity>>(rows(2)),
+      );
+      expect(await cubit.isAtFreeLimit(), isFalse);
+
+      when(() => subscriptionService.isPro()).thenAnswer((_) async => true);
+      when(() => reminderRepository.getReminders('f1')).thenAnswer(
+        (_) async => Right<Failure, List<ReminderEntity>>(rows(40)),
+      );
+      expect(await cubit.isAtFreeLimit(), isFalse);
+    });
+
+    test('isAtFreeLimit fails open when the count lookup fails', () async {
+      stubFamily();
+      when(() => subscriptionService.isPro()).thenAnswer((_) async => false);
+      when(() => reminderRepository.getReminders('f1')).thenAnswer(
+        (_) async => Left(Failure(message: 'boom')),
+      );
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      expect(await cubit.isAtFreeLimit(), isFalse);
+    });
   });
 
   group('RemindersCubit.toggleViewMode', () {

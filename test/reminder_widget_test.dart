@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -24,6 +25,12 @@ class _FakePeopleRepository extends Mock implements PeopleRepository {}
 class _FakeAuthService extends Mock implements AuthService {}
 
 class _FakeGetReminderUsecase extends Mock implements GetReminderUsecase {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro() async => true;
+}
 
 class _NoopNotificationService implements IReminderNotificationService {
   @override
@@ -109,6 +116,7 @@ void main() {
                   authService: _FakeAuthService(),
                   reminderRepository: _FakeReminderRepository(),
                   notificationService: _NoopNotificationService(),
+                  subscriptionService: _PaidSubscriptions(),
                 ),
             child: ReminderWidget(reminder: reminderOverride ?? reminder),
           ),
@@ -192,6 +200,7 @@ void main() {
         authService: _FakeAuthService(),
         reminderRepository: _FakeReminderRepository(),
         notificationService: _NoopNotificationService(),
+        subscriptionService: _PaidSubscriptions(),
       );
 
       await tester.pumpWidget(buildTestWidget(cubit: cubit));
@@ -225,6 +234,7 @@ void main() {
         authService: _FakeAuthService(),
         reminderRepository: repository,
         notificationService: _NoopNotificationService(),
+        subscriptionService: _PaidSubscriptions(),
       );
 
       await tester.pumpWidget(buildTestWidget(cubit: cubit));

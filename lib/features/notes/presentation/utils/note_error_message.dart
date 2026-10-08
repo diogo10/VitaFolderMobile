@@ -11,6 +11,7 @@ String noteErrorMessage(BuildContext context, String code) {
     notesFailureNotFound => l.notesErrorNotFound,
     notesFailureOffline => l.notesErrorOffline,
     notesFailureNoFamily => l.notesErrorNoFamily,
+    notesFailureLimitReached => l.notesErrorLimitReached,
     _ => l.notesErrorGeneric,
   };
 }

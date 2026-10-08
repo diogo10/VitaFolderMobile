@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/features/notes/data/models/note_model.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
 import 'package:house_mira/features/notes/domain/repository/notes_repository.dart';
@@ -27,6 +29,7 @@ class NotesCubit extends Cubit<NotesState> {
     required this.deleteNoteUsecase,
     required this.peopleRepository,
     required this.authService,
+    required this.subscriptionService,
   }) : super(const NotesInitial());
 
   final GetNotesUsecase getNotesUsecase;
@@ -35,6 +38,7 @@ class NotesCubit extends Cubit<NotesState> {
   final DeleteNoteUsecase deleteNoteUsecase;
   final PeopleRepository peopleRepository;
   final AuthService authService;
+  final SubscriptionService subscriptionService;
 
   /// Display name of the current family for the list subtitle
   /// (`Shared with {family}`); `null` until loaded or when unavailable.
@@ -66,6 +70,11 @@ class NotesCubit extends Cubit<NotesState> {
   }
 
   /// Creates a note, then reloads the list.
+  ///
+  /// Free-tier users are capped at [UsageLimits.freeNotesLimit] notes:
+  /// hitting the cap emits `NotesFailure(limit-reached)` and the view
+  /// routes to the paywall instead of the editor. Paid users skip the
+  /// check. Updates are never capped (only creation counts).
   Future<void> createNote({
     required String title,
     required String content,
@@ -76,6 +85,10 @@ class NotesCubit extends Cubit<NotesState> {
     final familyId = userId == null ? null : await _resolveFamilyId(userId);
     if (familyId == null) {
       emit(const NotesFailure(notesFailureNoFamily));
+      return;
+    }
+    if (await isAtFreeLimit(familyId: familyId)) {
+      emit(const NotesFailure(notesFailureLimitReached));
       return;
     }
     final now = DateTime.now().toUtc();
@@ -155,6 +168,41 @@ class NotesCubit extends Cubit<NotesState> {
     if (userId == null) return false;
     try {
       return await _resolveFamilyId(userId) != null;
+    } on Object catch (_) {
+      return false;
+    }
+  }
+
+  /// Whether a free-tier user has hit the notes cap.
+  ///
+  /// Views call this before opening the editor so capped users see the
+  /// limit message (with an upgrade action) instead of a form they cannot
+  /// save. Paid users always return `false`. Fail-open: any lookup error
+  /// returns `false` and the create path re-checks anyway.
+  Future<bool> isAtFreeLimit({String? familyId}) async {
+    if (await _isPro()) return false;
+    final userId = authService.currentUserId;
+    if (userId == null) return false;
+    final resolved = familyId ?? await _resolveFamilyId(userId);
+    if (resolved == null) return false;
+    try {
+      final result = await getNotesUsecase(resolved);
+      return result.fold(
+        (_) => false,
+        (notes) => UsageLimits.isNoteLimitReached(
+          count: notes.length,
+          isPro: false,
+        ),
+      );
+    } on Object catch (_) {
+      return false;
+    }
+  }
+
+  /// Best-effort paid check; lookup errors mean free-tier limits apply.
+  Future<bool> _isPro() async {
+    try {
+      return await subscriptionService.isPro();
     } on Object catch (_) {
       return false;
     }

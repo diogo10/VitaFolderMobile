@@ -1182,6 +1182,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t save the reminder. Please try again';
 
   @override
+  String get createReminderErrorLimitReached =>
+      'You\'ve reached the free limit of 10 reminders. Upgrade to create more.';
+
+  @override
+  String get limitReachedUpgrade => 'Upgrade';
+
+  @override
   String get familySettingsErrorNotFound => 'Family not found';
 
   @override
@@ -1346,6 +1353,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notesErrorNoFamily =>
       'No family found. Join or create a family first.';
+
+  @override
+  String get notesErrorLimitReached =>
+      'You\'ve reached the free limit of 3 notes. Upgrade to create more.';
 
   @override
   String get paywallTitle => 'HouseMira Pro';

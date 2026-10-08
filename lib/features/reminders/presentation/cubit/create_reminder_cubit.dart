@@ -1,12 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/domain/usecase/update_reminder_usecase.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_state.dart';
@@ -18,16 +21,21 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
     required this.authService,
     required PeopleRepository peopleRepository,
     required IReminderNotificationService notificationService,
+    required this.subscriptionService,
+    required ReminderRepository reminderRepository,
   }) : _createReminderUsecase = createReminderUsecase,
        _updateReminderUsecase = updateReminderUsecase,
        _peopleRepository = peopleRepository,
        _notificationService = notificationService,
+       _reminderRepository = reminderRepository,
        super(CreateReminderInitial());
   final CreateReminderUsecase _createReminderUsecase;
   final UpdateReminderUsecase _updateReminderUsecase;
   final AuthService authService;
   final PeopleRepository _peopleRepository;
   final IReminderNotificationService _notificationService;
+  final SubscriptionService subscriptionService;
+  final ReminderRepository _reminderRepository;
 
   /// Exposed so the editor can read prefs/permissions without touching
   /// GetIt directly.
@@ -53,6 +61,15 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
     final userId = authService.currentUserId;
     if (userId == null) {
       emit(CreateReminderError(code: CreateReminderErrorCode.authRequired));
+      return;
+    }
+
+    // Free-tier users are capped at [UsageLimits.freeRemindersLimit]
+    // reminders; capped users get the limit error (the editor offers an
+    // upgrade action) instead of a save they cannot keep. Updates are
+    // never capped (only creation counts).
+    if (await isAtFreeLimit()) {
+      emit(CreateReminderError(code: CreateReminderErrorCode.limitReached));
       return;
     }
 
@@ -245,5 +262,38 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
     }
     final familyIds = await _peopleRepository.getFamilyIdsForUser(userId);
     return familyIds.isEmpty ? null : familyIds.first;
+  }
+
+  /// Whether a free-tier user has hit the reminders cap.
+  ///
+  /// Views call this before opening the editor so capped users see the
+  /// limit message (with an upgrade action) instead of a form they cannot
+  /// save. Paid users always return `false`. Fail-open: any lookup error
+  /// returns `false` and the create path re-checks anyway.
+  Future<bool> isAtFreeLimit() async {
+    if (await _isPro()) return false;
+    final familyId = await _resolveFamilyId();
+    if (familyId == null) return false;
+    try {
+      final result = await _reminderRepository.getReminders(familyId);
+      return result.fold(
+        (_) => false,
+        (reminders) => UsageLimits.isReminderLimitReached(
+          count: reminders.length,
+          isPro: false,
+        ),
+      );
+    } on Object catch (_) {
+      return false;
+    }
+  }
+
+  /// Best-effort paid check; lookup errors mean free-tier limits apply.
+  Future<bool> _isPro() async {
+    try {
+      return await subscriptionService.isPro();
+    } on Object catch (_) {
+      return false;
+    }
   }
 }
