@@ -40,8 +40,9 @@ register the same generic types (repository interfaces, use cases).
 - Adding a dependency means: register it with an `instanceName` in the
   feature locator, inject it through the consumer's constructor, resolve
   it by name at the composition root.
-- Name collisions across features are impossible as long as names stay
-  unique; renaming a name requires updating every resolution site.
+- Name collisions across features are avoided only if names stay globally
+  unique; consider a lint/grep check. Renaming a name requires updating
+  every resolution site.
 - Widgets stay DI-free, which keeps widget tests to constructor injection.
 
 ## References

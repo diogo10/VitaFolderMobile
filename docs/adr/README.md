@@ -29,3 +29,5 @@ Related standards (not ADRs, same authority):
 3. Status values: `Proposed` → `Accepted` (or `Superseded by ADR-00NN`).
 4. Keep ADRs immutable once accepted: correct typos in place, but
    record any decision change as a new ADR that supersedes the old one.
+5. Docs-only PRs skip the `fvm flutter test`/coverage gate (no app code
+   changed); `fvm flutter analyze` still applies where relevant.

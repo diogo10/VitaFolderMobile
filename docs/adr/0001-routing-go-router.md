@@ -41,7 +41,10 @@ cold start.
 - Router tests pin the redirect matrix, the shared-vs-fresh cubit factory
   contract, and route-scoped cubit laziness.
 - Deep-link and email-CTA changes must keep `AppRoutes.inviteWebBase`,
-  `EdgetFunctions` templates, and native App Link declarations in sync.
+  the backend invite email template (Supabase function), and native App
+  Link declarations in sync — distinct from the Dart `EdgetFunctions`
+  client wrapper. (The `EdgetFunctions` misspelling is tracked as
+  separate tech-debt cleanup, not fixed in this docs change.)
 
 ## References
 
