@@ -25,8 +25,10 @@ path when reviewer and author disagree.
 
 ## DI ([ADR-0002](adr/0002-dependency-injection-getit.md))
 
-- [ ] Every registration/resolution passes explicit `instanceName`.
-- [ ] Constructor injection only — no `GetIt` import in widgets/cubits.
+- [ ] Every registration/resolution passes explicit `instanceName`
+      (type parameter explicit or inferred).
+- [ ] Constructor injection only — no `GetIt` import in widgets/cubits
+      (except the two legacy exceptions documented in ADR-0002).
 - [ ] Tab cubits lazy-singleton; one-shot cubits unregistered, built
       fresh in route factory.
 - [ ] Tests inject fakes via constructors, no GetIt setup.

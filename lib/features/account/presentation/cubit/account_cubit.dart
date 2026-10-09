@@ -17,7 +17,7 @@ class AccountCubit extends Cubit<AccountState> {
   }) : _authService = authService,
        _peopleRepository = peopleRepository,
        _logger = logger ?? AppLogger(crashReporter: crashReporter),
-       super(AccountInitial()) {
+       super(const AccountInitial()) {
     try {
       _authSubscription =
           (authSignedInStream ?? _authService.authSignedInChanges).listen(
@@ -44,7 +44,7 @@ class AccountCubit extends Cubit<AccountState> {
     if (signedIn) {
       unawaited(loadAccount());
     } else {
-      emit(NoAccount());
+      emit(const NoAccount());
     }
   }
 
@@ -55,7 +55,7 @@ class AccountCubit extends Cubit<AccountState> {
   }
 
   Future<void> loadAccount() async {
-    emit(AccountLoading());
+    emit(const AccountLoading());
 
     try {
       final user = await _authService.getAsPersonEntity();
@@ -75,7 +75,7 @@ class AccountCubit extends Cubit<AccountState> {
         return;
       }
 
-      emit(NoAccount());
+      emit(const NoAccount());
     } on Object catch (e, stackTrace) {
       _logger.warning(
         'load account failed',
@@ -83,7 +83,7 @@ class AccountCubit extends Cubit<AccountState> {
         error: e,
         stackTrace: stackTrace,
       );
-      emit(NoAccount());
+      emit(const NoAccount());
     }
   }
 
@@ -97,7 +97,7 @@ class AccountCubit extends Cubit<AccountState> {
   /// silently returning to the form.
   Future<void> signIn(String email, String password) async {
     if (email.trim().isEmpty || password.isEmpty) {
-      emit(NoAccount());
+      emit(const NoAccount());
       return;
     }
 
@@ -106,11 +106,11 @@ class AccountCubit extends Cubit<AccountState> {
 
       final user = _authService.currentUser;
       if (user != null) {
-        emit(AccountLoginSuccess());
+        emit(const AccountLoginSuccess());
         await loadAccount();
       } else {
         _logger.warning('sign-in returned no user', tag: 'account');
-        emit(LoginFailed(code: AccountLoginErrorCode.unexpected));
+        emit(const LoginFailed(code: AccountLoginErrorCode.unexpected));
       }
     } on Object catch (e, stackTrace) {
       final code = _authService.isInvalidCredentialsError(e)
@@ -136,19 +136,19 @@ class AccountCubit extends Cubit<AccountState> {
   /// Unexpected errors also emit [LoginFailed] so the view can show
   /// actionable feedback instead of silently returning to the form.
   Future<void> signInWithGoogle() async {
-    emit(AccountLoading());
+    emit(const AccountLoading());
 
     try {
       final user = await _authService.signInWithGoogle();
 
       if (user == null) {
         _logger.info('Google sign-in canceled by the user', tag: 'account');
-        emit(NoAccount());
+        emit(const NoAccount());
         return;
       }
 
       _logger.info('Google sign-in succeeded', tag: 'account');
-      emit(AccountLoginSuccess());
+      emit(const AccountLoginSuccess());
       await loadAccount();
     } on Object catch (e, stackTrace) {
       final code = _authService.isAuthError(e)
@@ -166,11 +166,11 @@ class AccountCubit extends Cubit<AccountState> {
   }
 
   Future<void> signOut() async {
-    emit(AccountLoading());
+    emit(const AccountLoading());
 
     try {
       await _authService.signOut();
-      emit(AccountLogoutSuccess());
+      emit(const AccountLogoutSuccess());
     } on Object catch (e, stackTrace) {
       _logger.warning(
         'sign-out failed',
@@ -178,7 +178,7 @@ class AccountCubit extends Cubit<AccountState> {
         error: e,
         stackTrace: stackTrace,
       );
-      emit(NoAccount());
+      emit(const NoAccount());
     }
   }
 
@@ -192,14 +192,14 @@ class AccountCubit extends Cubit<AccountState> {
   /// the UI should point them at Family Settings. After a failure the
   /// account is reloaded so the user lands back on their settings.
   Future<void> deleteAccount() async {
-    emit(AccountDeleting());
+    emit(const AccountDeleting());
 
     try {
       await _authService.deleteAccount();
       await _authService.signOut();
-      emit(AccountDeletedSuccess());
+      emit(const AccountDeletedSuccess());
     } on SoleOwnerException {
-      emit(AccountDeleteFailed(code: AccountDeleteErrorCode.soleOwner));
+      emit(const AccountDeleteFailed(code: AccountDeleteErrorCode.soleOwner));
       await loadAccount();
     } on Object catch (e, stackTrace) {
       _logger.error(
@@ -208,20 +208,20 @@ class AccountCubit extends Cubit<AccountState> {
         error: e,
         stackTrace: stackTrace,
       );
-      emit(AccountDeleteFailed(code: AccountDeleteErrorCode.sendFailed));
+      emit(const AccountDeleteFailed(code: AccountDeleteErrorCode.sendFailed));
       await loadAccount();
     }
   }
 
   Future<void> forgotPassword(String email) async {
     if (email.trim().isEmpty) {
-      emit(PasswordResetError(code: PasswordResetErrorCode.emptyEmail));
+      emit(const PasswordResetError(code: PasswordResetErrorCode.emptyEmail));
       return;
     }
 
     try {
       await _authService.resetPassword(email);
-      emit(PasswordResetSent());
+      emit(const PasswordResetSent());
     } on Object catch (e, stackTrace) {
       _logger.error(
         'password reset failed',
@@ -229,7 +229,7 @@ class AccountCubit extends Cubit<AccountState> {
         error: e,
         stackTrace: stackTrace,
       );
-      emit(PasswordResetError(code: PasswordResetErrorCode.sendFailed));
+      emit(const PasswordResetError(code: PasswordResetErrorCode.sendFailed));
     }
   }
 

@@ -43,8 +43,7 @@ cold start.
 - Deep-link and email-CTA changes must keep `AppRoutes.inviteWebBase`,
   the backend invite email template (Supabase function), and native App
   Link declarations in sync — distinct from the Dart `EdgetFunctions`
-  client wrapper. (The `EdgetFunctions` misspelling is tracked as
-  separate tech-debt cleanup, not fixed in this docs change.)
+  client wrapper.
 
 ## References
 

@@ -22,13 +22,20 @@ register the same generic types (repository interfaces, use cases).
   `lib/core/injections/people/people_service_locator.dart`.
 - Register **every** entry with an explicit `instanceName` (lowerCamelCase,
   e.g. `'authService'`, `'peopleRepositoryImpl'`, `'getPeopleUsecase'`,
-  `'peopleCubit'`) and resolve with the matching name:
-  `sl<AuthService>(instanceName: 'authService')`.
+  `'peopleCubit'`) and resolve with the matching name. The generic type
+  parameter may be explicit or inferred — both
+  `sl<AuthService>(instanceName: 'authService')` and
+  `sl(instanceName: 'getPeopleUsecase')` occur in the tree (e.g.
+  `lib/core/router/app_router.dart`,
+  `lib/core/injections/people/people_service_locator.dart`); the
+  `instanceName` itself is always explicit, never omitted.
 - Inject via constructors everywhere. Never call `GetIt.instance` /
   `slInstance` directly in widgets or cubits — resolution happens in
-  service locators and router default factories
-  (`lib/core/router/app_router.dart`). (One legacy exception exists in
-  people — do not copy it.)
+  service locators, router default factories
+  (`lib/core/router/app_router.dart`), and the `lib/main.dart`
+  composition root. Legacy exceptions (do not copy):
+  `lib/features/people/presentation/widgets/people_loaded_widget.dart`
+  and `lib/features/onboarding/presentation/pages/onboarding_page.dart`.
 - Register tab cubits as lazy singletons; one-shot cubits
   (`FamilySettingsCubit`, `InvitePeopleCubit`, `CreateReminderCubit`, …)
   are **not** registered — the route's default factory builds them fresh
@@ -50,13 +57,14 @@ register the same generic types (repository interfaces, use cases).
 - `lib/core/injections/service_locator.dart`
 - `lib/core/injections/people/people_service_locator.dart`
 - `lib/core/router/app_router.dart` (default factories resolving by name)
+- `lib/main.dart` (composition root resolving by name at startup)
 
 ## Code-review checklist
 
 - [ ] Every registration and every resolution passes an explicit
-      `instanceName`?
+      `instanceName` (generic type parameter explicit or inferred)?
 - [ ] Consumer takes the dependency via constructor (no `GetIt` import
-      in widgets/cubits)?
+      in widgets/cubits — except the two documented legacy exceptions)?
 - [ ] Tab cubit registered lazy-singleton; one-shot cubit built fresh in
       the route factory, not registered?
 - [ ] Tests inject fakes via constructors, no GetIt reset/setup?

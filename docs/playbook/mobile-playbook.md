@@ -18,12 +18,14 @@ state. One Cubit per presentation concern in
 Sealed hierarchy, one `*_state.dart` file per cubit:
 
 ```dart
-sealed class AccountState { AccountState(); }
-class AccountInitial extends AccountState { AccountInitial(); }
-class AccountLoading extends AccountState { AccountLoading(); }
+sealed class AccountState { const AccountState(); }
+class AccountInitial extends AccountState { const AccountInitial(); }
+class AccountLoading extends AccountState { const AccountLoading(); }
 class AccountLoaded extends AccountState { /* final display-ready fields */ }
-class NoAccount extends AccountState { NoAccount(); }
-class LoginFailed extends AccountState { LoginFailed(); }
+class NoAccount extends AccountState { const NoAccount(); }
+class LoginFailed extends AccountState {
+  const LoginFailed({required this.code});
+}
 ```
 
 Rules:
@@ -68,8 +70,9 @@ presentation/cubit  →  application/ + domain/  →  data/ (Supabase lives here
   `lib/core/functions/`, and DI wiring. **Never in a cubit.**
 - Cubits depend on injected services/repositories/use cases via
   constructors; composition happens in
-  `lib/core/injections/<feature>/*_service_locator.dart` and the router
-  factories ([ADR-0002](../adr/0002-dependency-injection-getit.md)).
+  `lib/core/injections/<feature>/*_service_locator.dart`, the router
+  factories, and the `lib/main.dart` composition root
+  ([ADR-0002](../adr/0002-dependency-injection-getit.md)).
 - Error translation happens twice, at fixed layers: SDK errors →
   `Failure` in repositories ([ADR-0003](../adr/0003-error-handling-either-failure.md));
   `Failure`/exceptions → states in cubits. Widgets only see states.

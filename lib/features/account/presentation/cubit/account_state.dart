@@ -1,17 +1,17 @@
 sealed class AccountState {
-  AccountState();
+  const AccountState();
 }
 
 class AccountInitial extends AccountState {
-  AccountInitial();
+  const AccountInitial();
 }
 
 class AccountLoading extends AccountState {
-  AccountLoading();
+  const AccountLoading();
 }
 
 class AccountLoaded extends AccountState {
-  AccountLoaded({
+  const AccountLoaded({
     required this.userName,
     required this.email,
     required this.familyCode,
@@ -24,11 +24,11 @@ class AccountLoaded extends AccountState {
 }
 
 class NoAccount extends AccountState {
-  NoAccount();
+  const NoAccount();
 }
 
 class AccountLogoutSuccess extends AccountState {
-  AccountLogoutSuccess();
+  const AccountLogoutSuccess();
 }
 
 enum AccountLoginErrorCode {
@@ -38,36 +38,36 @@ enum AccountLoginErrorCode {
 }
 
 class LoginFailed extends AccountState {
-  LoginFailed({required this.code});
+  const LoginFailed({required this.code});
   final AccountLoginErrorCode code;
 }
 
 class PasswordResetSent extends AccountState {
-  PasswordResetSent();
+  const PasswordResetSent();
 }
 
 enum PasswordResetErrorCode { emptyEmail, sendFailed }
 
 class PasswordResetError extends AccountState {
-  PasswordResetError({required this.code});
+  const PasswordResetError({required this.code});
   final PasswordResetErrorCode code;
 }
 
 class AccountLoginSuccess extends AccountState {
-  AccountLoginSuccess();
+  const AccountLoginSuccess();
 }
 
 class AccountDeleting extends AccountState {
-  AccountDeleting();
+  const AccountDeleting();
 }
 
 class AccountDeletedSuccess extends AccountState {
-  AccountDeletedSuccess();
+  const AccountDeletedSuccess();
 }
 
 enum AccountDeleteErrorCode { soleOwner, sendFailed }
 
 class AccountDeleteFailed extends AccountState {
-  AccountDeleteFailed({required this.code});
+  const AccountDeleteFailed({required this.code});
   final AccountDeleteErrorCode code;
 }
