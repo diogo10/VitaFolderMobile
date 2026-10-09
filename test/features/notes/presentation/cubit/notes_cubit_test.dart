@@ -70,8 +70,10 @@ void main() {
     auth = _MockAuth();
     subscriptions = _MockSubscriptions();
     // Paid by default so existing tests exercise the uncapped path;
-    // limit tests override with `isPro() == false`.
-    when(() => subscriptions.isPro()).thenAnswer((_) async => true);
+    // limit tests override with `isPro(userId:) == false`.
+    when(
+      () => subscriptions.isPro(userId: any(named: 'userId')),
+    ).thenAnswer((_) async => true);
     when(() => people.getMyFamily()).thenAnswer(
       (_) async => Right<Exception, FamilyEntity>(
         FamilyEntity(name: 'Smith Family', inviteCode: 'ABC'),
@@ -390,7 +392,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+        when(
+          () => subscriptions.isPro(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => false);
         when(
           () => notes.getNotesCount('f1'),
         ).thenAnswer((_) async => const Right<Failure, int>(3));
@@ -412,7 +416,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+        when(
+          () => subscriptions.isPro(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => false);
         when(
           () => notes.getNotesCount('f1'),
         ).thenAnswer((_) async => const Right<Failure, int>(3));
@@ -433,7 +439,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+        when(
+          () => subscriptions.isPro(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => false);
         when(
           () => notes.getNotesCount('f1'),
         ).thenAnswer((_) async => const Right<Failure, int>(2));
@@ -458,7 +466,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => subscriptions.isPro()).thenAnswer((_) async => true);
+        when(
+          () => subscriptions.isPro(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => true);
         when(
           () => notes.createNote(any(), 'f1'),
         ).thenAnswer((_) async => const Right('new-id'));
@@ -483,7 +493,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+        when(
+          () => subscriptions.isPro(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => false);
         // Limit check fails, the post-create reload succeeds.
         when(
           () => notes.getNotesCount('f1'),
@@ -509,7 +521,9 @@ void main() {
 
     test('isAtFreeLimit true at cap, false when paid or below cap', () async {
       stubFamily();
-      when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+      when(
+        () => subscriptions.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => false);
       when(
         () => notes.getNotesCount('f1'),
       ).thenAnswer((_) async => const Right<Failure, int>(3));
@@ -522,7 +536,9 @@ void main() {
       ).thenAnswer((_) async => const Right<Failure, int>(1));
       expect(await cubit.isAtFreeLimit(), isFalse);
 
-      when(() => subscriptions.isPro()).thenAnswer((_) async => true);
+      when(
+        () => subscriptions.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => true);
       when(
         () => notes.getNotesCount('f1'),
       ).thenAnswer((_) async => const Right<Failure, int>(30));
@@ -534,7 +550,9 @@ void main() {
       when(
         () => people.getFamilyIdsForUser('u1'),
       ).thenAnswer((_) async => <String>[]);
-      when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+      when(
+        () => subscriptions.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => false);
       final cubit = buildCubit();
       addTearDown(cubit.close);
       expect(await cubit.isAtFreeLimit(), isFalse);

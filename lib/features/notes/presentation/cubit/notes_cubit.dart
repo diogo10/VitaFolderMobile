@@ -200,7 +200,7 @@ class NotesCubit extends Cubit<NotesState> {
       if (userId == null) return false;
       final resolved = familyId ?? await _resolveFamilyId(userId);
       if (resolved == null) return false;
-      return await isAtNoteLimitUsecase(familyId: resolved);
+      return await isAtNoteLimitUsecase(familyId: resolved, userId: userId);
     } on Object catch (_) {
       return false;
     }

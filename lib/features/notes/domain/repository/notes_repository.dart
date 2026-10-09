@@ -10,13 +10,13 @@ import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
 /// `notesErrorGeneric`); raw English never reaches the UI.
 /// [notesFailureUnknown] and [notesFailureGeneric] both map to
 /// `notesErrorGeneric`.
+///
+/// The free-tier cap is surfaced as the NotesLimitReached state (which
+/// carries the list), never as a failure code, so capped users keep the
+/// list behind the limit message with an upgrade action.
 const String notesFailureNotFound = 'not-found';
 const String notesFailureOffline = 'offline';
 const String notesFailureNoFamily = 'no-family';
-
-/// Free-tier cap hit (`UsageLimits.freeNotesLimit` notes). The presentation
-/// layer maps it to `notesErrorLimitReached` with an upgrade action.
-const String notesFailureLimitReached = 'limit-reached';
 
 /// Unexpected error mapping to the generic notes error (never raw English).
 const String notesFailureUnknown = 'unknown';

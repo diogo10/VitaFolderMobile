@@ -17,7 +17,9 @@ void main() {
   setUp(() {
     subscriptions = _MockSubscriptions();
     notes = _MockNotes();
-    when(() => subscriptions.isPro()).thenAnswer((_) async => false);
+    when(
+      () => subscriptions.isPro(userId: any(named: 'userId')),
+    ).thenAnswer((_) async => false);
   });
 
   IsAtNoteLimitUsecase build() => IsAtNoteLimitUsecase(
@@ -26,7 +28,9 @@ void main() {
   );
 
   test('paid users never hit the cap (no count lookup)', () async {
-    when(() => subscriptions.isPro()).thenAnswer((_) async => true);
+    when(
+      () => subscriptions.isPro(userId: any(named: 'userId')),
+    ).thenAnswer((_) async => true);
     expect(await build()(familyId: 'f1'), isFalse);
     verifyNever(() => notes.getNotesCount(any()));
   });
@@ -56,12 +60,22 @@ void main() {
   });
 
   test('billing lookup throw fails open', () async {
-    when(() => subscriptions.isPro()).thenThrow(Exception('billing down'));
+    when(
+      () => subscriptions.isPro(userId: any(named: 'userId')),
+    ).thenThrow(Exception('billing down'));
     expect(await build()(familyId: 'f1'), isFalse);
   });
 
   test('count lookup throw fails open', () async {
     when(() => notes.getNotesCount('f1')).thenThrow(Exception('db down'));
     expect(await build()(familyId: 'f1'), isFalse);
+  });
+
+  test('forwards the userId to the entitlement lookup', () async {
+    when(() => notes.getNotesCount('f1')).thenAnswer(
+      (_) async => const Right<Failure, int>(0),
+    );
+    expect(await build()(familyId: 'f1', userId: 'u1'), isFalse);
+    verify(() => subscriptions.isPro(userId: 'u1')).called(1);
   });
 }

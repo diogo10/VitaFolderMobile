@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/observability/crash_reporter.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 
@@ -14,9 +15,11 @@ class AccountCubit extends Cubit<AccountState> {
     Stream<bool>? authSignedInStream,
     CrashReporter? crashReporter,
     AppLogger? logger,
+    SubscriptionService? subscriptionService,
   }) : _authService = authService,
        _peopleRepository = peopleRepository,
        _logger = logger ?? AppLogger(crashReporter: crashReporter),
+       _subscriptionService = subscriptionService,
        super(const AccountInitial()) {
     try {
       _authSubscription =
@@ -31,6 +34,11 @@ class AccountCubit extends Cubit<AccountState> {
   final PeopleRepository _peopleRepository;
   final AppLogger _logger;
   StreamSubscription<bool>? _authSubscription;
+
+  /// Drops the cached entitlement on sign-out so the next account never
+  /// reads the previous user's billing status. Optional so tests can omit
+  /// billing; the entitlement cache is additionally keyed by user id.
+  final SubscriptionService? _subscriptionService;
 
   /// Keeps the account tab in sync with the session.
   ///
@@ -170,6 +178,7 @@ class AccountCubit extends Cubit<AccountState> {
 
     try {
       await _authService.signOut();
+      _subscriptionService?.invalidateProCache();
       emit(const AccountLogoutSuccess());
     } on Object catch (e, stackTrace) {
       _logger.warning(
@@ -197,6 +206,7 @@ class AccountCubit extends Cubit<AccountState> {
     try {
       await _authService.deleteAccount();
       await _authService.signOut();
+      _subscriptionService?.invalidateProCache();
       emit(const AccountDeletedSuccess());
     } on SoleOwnerException {
       emit(const AccountDeleteFailed(code: AccountDeleteErrorCode.soleOwner));

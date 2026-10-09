@@ -21,6 +21,10 @@
 /// The entitlement lookup is cached briefly inside SubscriptionService
 /// so a view pre-check plus the cubit's create-time re-check costs one
 /// billing lookup per flow.
+// TODO(diogohenrique): add a server-side cap (RLS policy, trigger, or
+// edge-function atomic check-then-insert on the notes/reminders tables)
+// before relying on these limits for revenue; client gating alone must
+// not gate paid conversion metrics.
 abstract final class UsageLimits {
   /// Maximum reminders for a free-tier user.
   static const int freeRemindersLimit = 10;

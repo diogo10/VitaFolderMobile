@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/router/app_routes.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/features/notes/domain/entities/note_color.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
-import 'package:house_mira/features/notes/domain/repository/notes_repository.dart';
 import 'package:house_mira/features/notes/presentation/cubit/notes_cubit.dart';
 import 'package:house_mira/features/notes/presentation/cubit/notes_state.dart';
 import 'package:house_mira/features/notes/presentation/utils/note_error_message.dart';
@@ -177,7 +177,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(noteErrorMessage(context, notesFailureLimitReached)),
+            content: Text(l.notesErrorLimitReached(UsageLimits.freeNotesLimit)),
             action: SnackBarAction(
               label: l.limitReachedUpgrade,
               onPressed: () => context.push(AppRoutes.paywall),
@@ -187,18 +187,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         return;
       }
       if (state is NotesFailure) {
-        final l = AppLocalizations.of(context)!;
-        final isLimit = state.message == notesFailureLimitReached;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(noteErrorMessage(context, state.message)),
-            action: isLimit
-                ? SnackBarAction(
-                    label: l.limitReachedUpgrade,
-                    onPressed: () => context.push(AppRoutes.paywall),
-                  )
-                : null,
-          ),
+          SnackBar(content: Text(noteErrorMessage(context, state.message))),
         );
         return;
       }

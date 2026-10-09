@@ -44,7 +44,9 @@ void main() {
     reminderRepository = _FakeReminderRepository();
     notificationService = _FakeNotificationService();
     subscriptionService = _FakeSubscriptionService();
-    when(() => subscriptionService.isPro()).thenAnswer((_) async => true);
+    when(
+      () => subscriptionService.isPro(userId: any(named: 'userId')),
+    ).thenAnswer((_) async => true);
     when(
       () => notificationService.rescheduleAll(any()),
     ).thenAnswer((_) async {});
@@ -580,7 +582,9 @@ void main() {
   group('RemindersCubit free-tier limit', () {
     test('isAtFreeLimit true at cap, false when paid or below cap', () async {
       stubFamily();
-      when(() => subscriptionService.isPro()).thenAnswer((_) async => false);
+      when(
+        () => subscriptionService.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => false);
       when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
         (_) async => const Right<Failure, int>(10),
       );
@@ -593,7 +597,9 @@ void main() {
       );
       expect(await cubit.isAtFreeLimit(), isFalse);
 
-      when(() => subscriptionService.isPro()).thenAnswer((_) async => true);
+      when(
+        () => subscriptionService.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => true);
       when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
         (_) async => const Right<Failure, int>(40),
       );
@@ -602,7 +608,9 @@ void main() {
 
     test('isAtFreeLimit fails open when the count lookup fails', () async {
       stubFamily();
-      when(() => subscriptionService.isPro()).thenAnswer((_) async => false);
+      when(
+        () => subscriptionService.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => false);
       when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
         (_) async => Left(Failure(message: 'boom')),
       );

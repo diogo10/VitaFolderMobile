@@ -53,7 +53,8 @@ class SubscriptionService {
   /// paid bit briefly collapses the pair to one billing lookup per flow
   /// while staying fresh enough for post-purchase upgrades (call
   /// [invalidateProCache] after a successful purchase/restore to refresh
-  /// immediately).
+  /// immediately). The cache is keyed by the calling [isPro] `userId`, so
+  /// an account switch or logout never reads another user's entitlement.
   static const Duration proCacheTtl = Duration(seconds: 30);
 
   final PurchasesWrapper _purchases;
@@ -67,6 +68,7 @@ class SubscriptionService {
 
   bool? _cachedIsPro;
   DateTime? _cachedIsProAt;
+  String? _cachedUserId;
 
   /// Drops the cached [isPro] result so the next lookup hits the store.
   ///
@@ -74,6 +76,7 @@ class SubscriptionService {
   void invalidateProCache() {
     _cachedIsPro = null;
     _cachedIsProAt = null;
+    _cachedUserId = null;
   }
 
   /// Whether the user holds the paid entitlement ([proEntitlementId]).
@@ -83,13 +86,17 @@ class SubscriptionService {
   /// logged and reported instead. Successful lookups are cached for
   /// [proCacheTtl] so a view pre-check plus the create-time re-check
   /// costs one billing lookup per flow; failures are never cached.
-  Future<bool> isPro() async {
+  ///
+  /// Pass the current `AuthService.currentUserId` as [userId] so the cache
+  /// is scoped to one account: a lookup for a different user (including
+  /// `null` after logout) always refetches instead of reading stale data.
+  Future<bool> isPro({String? userId}) async {
     if (!_initialized) {
       return false;
     }
     final cached = _cachedIsPro;
     final cachedAt = _cachedIsProAt;
-    if (cached != null && cachedAt != null) {
+    if (cached != null && cachedAt != null && _cachedUserId == userId) {
       final age = DateTime.now().difference(cachedAt);
       if (age < proCacheTtl && !age.isNegative) {
         return cached;
@@ -100,6 +107,7 @@ class SubscriptionService {
       final pro = info.entitlements.active.containsKey(proEntitlementId);
       _cachedIsPro = pro;
       _cachedIsProAt = DateTime.now();
+      _cachedUserId = userId;
       return pro;
     } on Object catch (error, stackTrace) {
       _logger.warning(

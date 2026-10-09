@@ -59,9 +59,7 @@ class _NotesViewState extends State<NotesView> {
       if (!hasFamily) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.createReminderErrorNoFamily,
-            ),
+            content: Text(AppLocalizations.of(context)!.notesErrorNoFamily),
           ),
         );
         context.go(AppRoutes.people);
@@ -219,11 +217,58 @@ class _NotesViewState extends State<NotesView> {
         ),
       ),
       NotesLoaded(:final notes) => _loadedBody(context, notes),
-      NotesLimitReached(:final notes) => _loadedBody(context, notes),
+      NotesLimitReached(:final notes) => _loadedBody(
+        context,
+        notes,
+        showLimitBanner: true,
+      ),
     };
   }
 
-  Widget _loadedBody(BuildContext context, List<NoteEntity> notes) {
+  /// Upgrade banner pinned above the list while the free-tier cap state is
+  /// active, so capped users get an upgrade affordance in the list itself
+  /// (not only via the add-button/editor snackbars).
+  Widget _limitBanner(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: SandPalette.sand200),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              l.notesErrorLimitReached(UsageLimits.freeNotesLimit),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: SandPalette.sand700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          FilledButton(
+            onPressed: () => context.push(AppRoutes.paywall),
+            style: FilledButton.styleFrom(
+              backgroundColor: SandPalette.sand500,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(l.limitReachedUpgrade),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _loadedBody(
+    BuildContext context,
+    List<NoteEntity> notes, {
+    bool showLimitBanner = false,
+  }) {
     final cubit = context.read<NotesCubit>();
     if (notes.isEmpty) {
       return SingleChildScrollView(
@@ -233,6 +278,10 @@ class _NotesViewState extends State<NotesView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const FamilyHeaderWidget(),
+            if (showLimitBanner) ...[
+              const SizedBox(height: 16),
+              _limitBanner(context),
+            ],
             NotesEmptyWidget(onCreate: _handleAdd),
           ],
         ),
@@ -245,6 +294,10 @@ class _NotesViewState extends State<NotesView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const FamilyHeaderWidget(),
+          if (showLimitBanner) ...[
+            const SizedBox(height: 16),
+            _limitBanner(context),
+          ],
           const SizedBox(height: 22),
           _Heading(familyName: cubit.familyName),
           const SizedBox(height: 16),

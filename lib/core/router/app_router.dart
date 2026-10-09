@@ -11,6 +11,7 @@ import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/core/router/main_shell.dart';
 import 'package:house_mira/core/router/splash_view.dart';
 import 'package:house_mira/core/router/tab_refresh_coordinator.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/application/notification_permission_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
@@ -444,10 +445,15 @@ ManageProfileCubit _defaultManageProfileCubitFactory() => ManageProfileCubit(
 
 /// One-shot paywall: fresh per visit, owned by `BlocProvider(create:)`.
 /// The catalog is mocked in the repository until store billing is wired.
+/// The shared [SubscriptionService] is injected so a successful trial or
+/// restore drops the cached entitlement immediately.
 PaywallCubit _defaultPaywallCubitFactory() => PaywallCubit(
   getPaywallDataUsecase: slInstance(instanceName: 'getPaywallDataUsecase'),
   startTrialUsecase: slInstance(instanceName: 'startTrialUsecase'),
   restorePurchasesUsecase: slInstance(instanceName: 'restorePurchasesUsecase'),
+  subscriptionService: slInstance<SubscriptionService>(
+    instanceName: 'subscriptionService',
+  ),
 );
 
 /// Default cold-start location: hold on splash (preserving the post-auth

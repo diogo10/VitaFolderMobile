@@ -44,7 +44,7 @@ class _MockAuthService extends Mock implements AuthService {}
 /// Paid by default so existing tests exercise the uncapped path.
 class _PaidSubscriptions extends SubscriptionService {
   @override
-  Future<bool> isPro() async => true;
+  Future<bool> isPro({String? userId}) async => true;
 }
 
 class _MockGetPeopleUsecase extends Mock implements GetPeopleUsecase {}

@@ -14,6 +14,10 @@ import 'package:house_mira/features/reminders/domain/repository/reminder_reposit
 /// even for rows they did not create. Enforcement is client-side only and
 /// check-then-create is not atomic — concurrent creates can overshoot the
 /// cap (TOCTOU accepted explicitly; no server-side cap exists yet).
+// TODO(diogohenrique): enforce the cap server-side (RLS policy, trigger,
+// or edge-function atomic check-then-insert) before relying on these
+// limits for revenue. Client-side gating is UX friction only: direct API
+// inserts bypass it.
 class IsAtReminderLimitUsecase {
   const IsAtReminderLimitUsecase({
     required this.subscriptionService,
@@ -23,9 +27,11 @@ class IsAtReminderLimitUsecase {
   final SubscriptionService subscriptionService;
   final ReminderRepository reminderRepository;
 
-  Future<bool> call({String? familyId}) async {
+  /// [userId] scopes the entitlement-cache lookup to one account (see
+  /// `SubscriptionService.isPro`); pass `AuthService.currentUserId`.
+  Future<bool> call({String? familyId, String? userId}) async {
     try {
-      if (await subscriptionService.isPro()) return false;
+      if (await subscriptionService.isPro(userId: userId)) return false;
       if (familyId == null) return false;
       final result = await reminderRepository.getRemindersCount(familyId);
       return result.fold(

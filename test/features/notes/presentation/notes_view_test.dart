@@ -36,13 +36,13 @@ class _MockAuth extends Mock implements AuthService {}
 /// Paid by default so existing tests exercise the uncapped path.
 class _PaidSubscriptions extends SubscriptionService {
   @override
-  Future<bool> isPro() async => true;
+  Future<bool> isPro({String? userId}) async => true;
 }
 
 /// Free tier for limit-gate widget tests.
 class _FreeSubscriptions extends SubscriptionService {
   @override
-  Future<bool> isPro() async => false;
+  Future<bool> isPro({String? userId}) async => false;
 }
 
 NoteEntity note({
@@ -570,6 +570,63 @@ void main() {
       expect(find.text(l.limitReachedUpgrade), findsOneWidget);
       // The editor never opens: no editor title appears.
       expect(find.text(l.notesCreateTitle), findsNothing);
+
+      await tester.tap(find.text(l.limitReachedUpgrade));
+      await tester.pumpAndSettle();
+      expect(find.text('paywall-marker'), findsOneWidget);
+    });
+
+    testWidgets('limit state surfaces an in-list upgrade banner', (
+      tester,
+    ) async {
+      final rows = List.generate(3, (i) => note(id: 'n$i'));
+      stubSignedIn(rows: rows);
+      final cubit = buildCubit(
+        notes: notes,
+        people: people,
+        auth: auth,
+        subscriptions: _FreeSubscriptions(),
+      );
+      final router = GoRouter(
+        initialLocation: '/',
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => BlocProvider<NotesCubit>.value(
+              value: cubit,
+              child: const NotesView(),
+            ),
+          ),
+          GoRoute(
+            path: '/paywall',
+            builder: (_, _) => const Scaffold(body: Text('paywall-marker')),
+          ),
+        ],
+      );
+      addTearDown(() async {
+        router.dispose();
+        await cubit.close();
+      });
+      await tester.pumpWidget(
+        MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // A capped create lands the list in NotesLimitReached (list kept).
+      await cubit.createNote(title: 'T', content: 'C', color: 'yellow');
+      await tester.pumpAndSettle();
+
+      final l = AppLocalizations.of(tester.element(find.byType(NotesView)))!;
+      expect(
+        find.text(l.notesErrorLimitReached(UsageLimits.freeNotesLimit)),
+        findsOneWidget,
+      );
+      expect(find.text(l.limitReachedUpgrade), findsOneWidget);
+      expect(find.byType(NoteCardWidget), findsNWidgets(3));
 
       await tester.tap(find.text(l.limitReachedUpgrade));
       await tester.pumpAndSettle();

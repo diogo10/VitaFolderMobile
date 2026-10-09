@@ -121,47 +121,53 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
   }) async {
     emit(CreateReminderLoading());
 
-    final reminderModel = ReminderModel(
-      title: title,
-      body: body,
-      id: reminder.id,
-      type: type,
-      dueDate: dueDate?.toIso8601String() ?? '',
-      repeatRule: repeatRule,
-      status: reminder.status,
-      createdBy: reminder.createdBy,
-      createdAt: reminder.createdAt,
-    );
+    try {
+      final reminderModel = ReminderModel(
+        title: title,
+        body: body,
+        id: reminder.id,
+        type: type,
+        dueDate: dueDate?.toIso8601String() ?? '',
+        repeatRule: repeatRule,
+        status: reminder.status,
+        createdBy: reminder.createdBy,
+        createdAt: reminder.createdAt,
+      );
 
-    final result = await _updateReminderUsecase(reminderModel);
+      final result = await _updateReminderUsecase(reminderModel);
 
-    await result.fold(
-      (err) async {
-        if (err is WriteBlockedFailure) {
-          emit(CreateReminderError(code: CreateReminderErrorCode.notAllowed));
-        } else {
-          emit(CreateReminderError(message: err.message));
-        }
-      },
-      (_) async {
-        final sync = await _syncNotification(
-          reminderId: reminder.id,
-          notifyEnabled: notifyEnabled,
-          leadTime: leadTime,
-          dueDate: dueDate,
-          title: title,
-          body: body,
-          repeatRule: repeatRule,
-        );
-        emit(
-          UpdatedReminderSuccess(
-            notificationArmed: sync.armed,
-            notificationTimePassed: sync.timePassed,
-            notificationInexact: sync.inexact,
-          ),
-        );
-      },
-    );
+      await result.fold(
+        (err) async {
+          if (err is WriteBlockedFailure) {
+            emit(
+              CreateReminderError(code: CreateReminderErrorCode.notAllowed),
+            );
+          } else {
+            emit(CreateReminderError(message: err.message));
+          }
+        },
+        (_) async {
+          final sync = await _syncNotification(
+            reminderId: reminder.id,
+            notifyEnabled: notifyEnabled,
+            leadTime: leadTime,
+            dueDate: dueDate,
+            title: title,
+            body: body,
+            repeatRule: repeatRule,
+          );
+          emit(
+            UpdatedReminderSuccess(
+              notificationArmed: sync.armed,
+              notificationTimePassed: sync.timePassed,
+              notificationInexact: sync.inexact,
+            ),
+          );
+        },
+      );
+    } on Object catch (_) {
+      emit(CreateReminderError());
+    }
   }
 
   /// Persists/schedules the notification choice. Best-effort: never throws.
@@ -276,7 +282,10 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
     try {
       final resolved = familyId ?? await _resolveFamilyId();
       if (resolved == null) return false;
-      return await isAtReminderLimitUsecase(familyId: resolved);
+      return await isAtReminderLimitUsecase(
+        familyId: resolved,
+        userId: authService.currentUserId,
+      );
     } on Object catch (_) {
       return false;
     }

@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/paywall/data/repository/paywall_repository_impl.dart';
 import 'package:house_mira/features/paywall/domain/entities/paywall_data.dart';
 import 'package:house_mira/features/paywall/domain/entities/paywall_feature_entity.dart';
@@ -41,11 +42,26 @@ class _FakePaywallRepository implements PaywallRepository {
   }
 }
 
-PaywallCubit buildCubit(_FakePaywallRepository repository) => PaywallCubit(
+PaywallCubit buildCubit(
+  _FakePaywallRepository repository, [
+  SubscriptionService? subscriptions,
+]) => PaywallCubit(
   getPaywallDataUsecase: GetPaywallDataUsecase(repository: repository),
   startTrialUsecase: StartTrialUsecase(repository: repository),
   restorePurchasesUsecase: RestorePurchasesUsecase(repository: repository),
+  subscriptionService: subscriptions,
 );
+
+/// Records [invalidateProCache] calls without touching the store.
+class _CountingSubscriptions extends SubscriptionService {
+  var invalidations = 0;
+
+  @override
+  void invalidateProCache() {
+    invalidations++;
+    super.invalidateProCache();
+  }
+}
 
 PaywallLoaded loadedWith(_FakePaywallRepository repository, String selected) =>
     PaywallLoaded(data: repository.data, selectedPlanId: selected);
@@ -243,5 +259,41 @@ void main() {
       act: (cubit) => cubit.restorePurchases(),
       expect: () => <PaywallState>[],
     );
+  });
+
+  group('PaywallCubit entitlement refresh', () {
+    test('startTrial success invalidates, failure does not', () async {
+      final subscriptions = _CountingSubscriptions();
+      var cubit = buildCubit(repository, subscriptions)
+        ..emit(loadedWith(repository, 'monthly'));
+      addTearDown(cubit.close);
+      await cubit.startTrial();
+      expect(subscriptions.invalidations, 1);
+
+      repository.failAction = true;
+      await cubit.close();
+      cubit = buildCubit(repository, subscriptions)
+        ..emit(loadedWith(repository, 'monthly'));
+      addTearDown(cubit.close);
+      await cubit.startTrial();
+      expect(subscriptions.invalidations, 1);
+    });
+
+    test('restorePurchases success invalidates, failure does not', () async {
+      final subscriptions = _CountingSubscriptions();
+      var cubit = buildCubit(repository, subscriptions)
+        ..emit(loadedWith(repository, 'annual'));
+      addTearDown(cubit.close);
+      await cubit.restorePurchases();
+      expect(subscriptions.invalidations, 1);
+      await cubit.close();
+
+      repository.failAction = true;
+      cubit = buildCubit(repository, subscriptions)
+        ..emit(loadedWith(repository, 'annual'));
+      addTearDown(cubit.close);
+      await cubit.restorePurchases();
+      expect(subscriptions.invalidations, 1);
+    });
   });
 }

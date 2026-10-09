@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/google_sign_in_handler.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
 import 'package:house_mira/features/people/domain/entities/family_entity.dart';
@@ -150,6 +151,16 @@ class _FakePeopleRepository implements PeopleRepository {
 
 User _testUser() =>
     User.fromJson({'id': 'user-id', 'email': 'user@example.com'})!;
+
+class _CountingSubscriptions extends SubscriptionService {
+  var invalidations = 0;
+
+  @override
+  void invalidateProCache() {
+    invalidations++;
+    super.invalidateProCache();
+  }
+}
 
 PersonEntity _testPerson() => const PersonEntity(
   id: 'user-id',
@@ -368,6 +379,36 @@ void main() {
       act: (cubit) => cubit.signOut(),
       expect: () => [isA<AccountLoading>(), isA<NoAccount>()],
     );
+
+    test('signOut invalidates the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signOut();
+
+      expect(cubit.state, isA<AccountLogoutSuccess>());
+      expect(subscriptions.invalidations, 1);
+    });
+
+    test('failed signOut keeps the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(signOutError: Exception('boom')),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signOut();
+
+      expect(cubit.state, isA<NoAccount>());
+      expect(subscriptions.invalidations, 0);
+    });
 
     blocTest<AccountCubit, AccountState>(
       'forgotPassword emits PasswordResetSent on success',

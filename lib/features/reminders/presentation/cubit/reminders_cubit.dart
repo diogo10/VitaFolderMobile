@@ -132,7 +132,10 @@ class RemindersCubit extends Cubit<RemindersState> {
     try {
       final resolved = familyId ?? await _resolveFamilyId();
       if (resolved == null) return false;
-      return await isAtReminderLimitUsecase(familyId: resolved);
+      return await isAtReminderLimitUsecase(
+        familyId: resolved,
+        userId: authService.currentUserId,
+      );
     } on Object catch (_) {
       return false;
     }

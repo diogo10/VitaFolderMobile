@@ -53,8 +53,10 @@ void main() {
     subscriptionService = _FakeSubscriptionService();
     reminderRepository = _FakeReminderRepository();
     // Paid by default so existing tests exercise the uncapped path;
-    // limit tests override with `isPro() == false`.
-    when(() => subscriptionService.isPro()).thenAnswer((_) async => true);
+    // limit tests override with `isPro(userId:) == false`.
+    when(
+      () => subscriptionService.isPro(userId: any(named: 'userId')),
+    ).thenAnswer((_) async => true);
     when(
       () => notificationService.setReminderNotification(
         reminderId: any(named: 'reminderId'),
@@ -267,7 +269,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => subscriptionService.isPro()).thenAnswer((_) async => false);
+        when(
+          () => subscriptionService.isPro(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => false);
         when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
           (_) async => const Right<Failure, int>(10),
         );
@@ -297,7 +301,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => subscriptionService.isPro()).thenAnswer((_) async => false);
+        when(
+          () => subscriptionService.isPro(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => false);
         when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
           (_) async => const Right<Failure, int>(9),
         );
@@ -323,7 +329,9 @@ void main() {
       build: buildCubit,
       setUp: () {
         stubFamily();
-        when(() => subscriptionService.isPro()).thenAnswer((_) async => true);
+        when(
+          () => subscriptionService.isPro(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => true);
         when(
           () => createReminderUsecase.call(any(), any()),
         ).thenAnswer((_) async => const Right('new-id'));
@@ -346,7 +354,9 @@ void main() {
 
     test('isAtFreeLimit true at cap, false when paid or below cap', () async {
       stubFamily();
-      when(() => subscriptionService.isPro()).thenAnswer((_) async => false);
+      when(
+        () => subscriptionService.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => false);
       when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
         (_) async => const Right<Failure, int>(10),
       );
@@ -359,7 +369,9 @@ void main() {
       );
       expect(await cubit.isAtFreeLimit(), isFalse);
 
-      when(() => subscriptionService.isPro()).thenAnswer((_) async => true);
+      when(
+        () => subscriptionService.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => true);
       when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
         (_) async => const Right<Failure, int>(50),
       );
@@ -452,6 +464,30 @@ void main() {
           'code',
           CreateReminderErrorCode.notAllowed,
         ),
+      ],
+    );
+
+    blocTest<CreateReminderCubit, CreateReminderState>(
+      'emits generic error when update throws',
+      build: buildCubit,
+      setUp: () {
+        when(
+          () => updateReminderUsecase.call(any()),
+        ).thenThrow(Exception('db down'));
+      },
+      act: (cubit) => cubit.updateReminder(
+        reminder: reminder,
+        title: 'New title',
+        body: 'New body',
+        type: ReminderType.chores,
+        dueDate: DateTime(2026, 9, 1, 10, 30),
+        repeatRule: 'yearly',
+      ),
+      expect: () => [
+        isA<CreateReminderLoading>(),
+        isA<CreateReminderError>()
+            .having((state) => state.code, 'code', isNull)
+            .having((state) => state.message, 'message', isNull),
       ],
     );
   });

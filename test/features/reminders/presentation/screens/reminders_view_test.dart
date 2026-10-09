@@ -35,7 +35,7 @@ class _FakeGetReminderUsecase extends Mock implements GetReminderUsecase {}
 /// Paid by default so existing tests exercise the uncapped path.
 class _PaidSubscriptions extends SubscriptionService {
   @override
-  Future<bool> isPro() async => true;
+  Future<bool> isPro({String? userId}) async => true;
 }
 
 class _NoopNotificationService implements IReminderNotificationService {
@@ -279,5 +279,5 @@ void main() {
 /// Free-tier subscription fake for limit-gate widget tests.
 class _FreeSubscriptions extends SubscriptionService {
   @override
-  Future<bool> isPro() async => false;
+  Future<bool> isPro({String? userId}) async => false;
 }
