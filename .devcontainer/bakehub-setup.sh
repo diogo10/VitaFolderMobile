@@ -44,7 +44,7 @@ if [ -n "$improvement_task" ] && [ "$improvement_task" != "null" ]; then
 
   echo "RUN opencode improvement on existing pull request"
 
-  opencode run --title "Improvement on PR: $TASK_TITLE" "A pull request is already open on branch $BRANCH_NAME. Address the following feedback: $TASK_FEEDBACK. Make the necessary code edits, run the tests, then commit and push to origin $BRANCH_NAME. Do NOT open a new pull request — pushing to the existing branch updates the open pull request."
+  opencode run --title "Improvement on PR: $TASK_TITLE" "A pull request is already open on branch $BRANCH_NAME. Address the following feedback: $TASK_FEEDBACK. Make the necessary code edits, run the tests, then commit and push to origin $BRANCH_NAME. Do NOT open a new pull request — pushing to the existing branch updates the open pull request. Also, delete the GitHub code space when you push the changes. Use the --force."
 
   curl -s -X POST -H "x-api-key: $API_KEY" -H "Content-Type: application/json" \
     -d "{\"task_id\": \"$TASK_ID\"}" \
