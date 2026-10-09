@@ -9,7 +9,10 @@ import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart
 /// The presentation layer maps known codes to localized strings and every
 /// unknown code falls back to the generic error (never raw English).
 /// [remindersFailureOffline] maps to the generic reminders error; there is
-/// no dedicated offline string for reminders.
+/// no dedicated offline string for reminders. The generic suffices because
+/// the reminders error surface already offers a retry action
+/// (`remindersErrorRetry`), so an offline-specific copy would add no new
+/// affordance — the user retries the same way either way.
 const String remindersFailureOffline = 'offline';
 
 /// Unexpected error mapping to the generic reminders error

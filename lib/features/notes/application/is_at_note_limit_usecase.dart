@@ -32,8 +32,8 @@ class IsAtNoteLimitUsecase {
   /// `SubscriptionService.isPro`); pass `AuthService.currentUserId`.
   Future<bool> call({String? familyId, String? userId}) async {
     try {
-      if (await subscriptionService.isPro(userId: userId)) return false;
       if (familyId == null) return false;
+      if (await subscriptionService.isPro(userId: userId)) return false;
       final result = await notesRepository.getNotesCount(familyId);
       return result.fold(
         (_) => false,

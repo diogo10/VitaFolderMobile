@@ -24,9 +24,7 @@ class NotesRepositoryImpl implements NotesRepository {
   final SupabaseClient _client;
 
   @override
-  Future<Either<Failure, List<NoteEntity>>> getNotes(
-    String familyId,
-  ) async {
+  Future<Either<Failure, List<NoteEntity>>> getNotes(String familyId) async {
     try {
       final response = await _client
           .from('notes')
@@ -82,7 +80,9 @@ class NotesRepositoryImpl implements NotesRepository {
           .select('id')
           .single();
       final id = created['id']?.toString();
-      if (id == null || id.isEmpty) return Left(Failure(message: notesFailureGeneric));
+      if (id == null || id.isEmpty) {
+        return Left(Failure(message: notesFailureGeneric));
+      }
       return Right(id);
     } on Failure catch (e) {
       return Left(Failure(message: e.message));
@@ -149,7 +149,7 @@ class NotesRepositoryImpl implements NotesRepository {
           .maybeSingle();
       if (echoed != null) {
         debugPrint('Notes delete not persisted for $id: row still present');
-        return Left(Failure(message: notesFailureNotFound));
+        return Left(Failure(message: notesFailureGeneric));
       }
       return const Right(true);
     } on Failure catch (e) {

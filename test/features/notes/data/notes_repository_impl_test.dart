@@ -202,10 +202,7 @@ void main() {
       final result = await repository.updateNote(_model());
 
       expect(result.isLeft(), isTrue);
-      expect(
-        result.getLeft().toNullable()?.message,
-        notesFailureNotFound,
-      );
+      expect(result.getLeft().toNullable()?.message, notesFailureNotFound);
     });
 
     test('fails instead of fake success when the row is stale', () async {
@@ -226,20 +223,14 @@ void main() {
       expect(result.isLeft(), isTrue);
     });
 
-    test(
-      'maps unexpected errors to the generic failure code',
-      () async {
-        when(() => query.update(any())).thenThrow(Exception('db down'));
+    test('maps unexpected errors to the generic failure code', () async {
+      when(() => query.update(any())).thenThrow(Exception('db down'));
 
-        final result = await repository.updateNote(_model());
+      final result = await repository.updateNote(_model());
 
-        expect(result.isLeft(), isTrue);
-        expect(
-          result.getLeft().toNullable()?.message,
-          notesFailureGeneric,
-        );
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable()?.message, notesFailureGeneric);
+    });
   });
 
   group('NotesRepositoryImpl.deleteNote', () {
@@ -258,9 +249,7 @@ void main() {
 
     test('fails when the row is still present after the delete', () async {
       when(() => query.delete()).thenAnswer((_) => _FakeWriteFilter());
-      when(
-        () => query.select(any()),
-      ).thenAnswer(
+      when(() => query.select(any())).thenAnswer(
         (_) => _FakeVerifyFilter([
           {'id': 'n1'},
         ]),
@@ -269,6 +258,7 @@ void main() {
       final result = await repository.deleteNote('n1');
 
       expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable()?.message, notesFailureGeneric);
     });
   });
 

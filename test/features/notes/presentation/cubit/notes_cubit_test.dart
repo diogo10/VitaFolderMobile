@@ -166,7 +166,7 @@ void main() {
     );
 
     blocTest<NotesCubit, NotesState>(
-      'unexpected throw maps to unknown NotesFailure',
+      'unexpected throw maps to generic NotesFailure',
       build: buildCubit,
       setUp: () {
         stubFamily();
@@ -175,10 +175,7 @@ void main() {
       act: (cubit) => cubit.loadNotes(),
       expect: () => [isA<NotesLoading>(), isA<NotesFailure>()],
       verify: (cubit) {
-        expect(
-          (cubit.state as NotesFailure).message,
-          notesFailureUnknown,
-        );
+        expect((cubit.state as NotesFailure).message, notesFailureGeneric);
       },
     );
 
@@ -353,7 +350,7 @@ void main() {
     );
 
     blocTest<NotesCubit, NotesState>(
-      'unexpected throw → unknown NotesFailure',
+      'unexpected throw → generic NotesFailure',
       build: buildCubit,
       setUp: () {
         stubFamily();
@@ -367,10 +364,7 @@ void main() {
       ),
       expect: () => [isA<NotesLoading>(), isA<NotesFailure>()],
       verify: (cubit) {
-        expect(
-          (cubit.state as NotesFailure).message,
-          notesFailureUnknown,
-        );
+        expect((cubit.state as NotesFailure).message, notesFailureGeneric);
       },
     );
   });
@@ -422,7 +416,7 @@ void main() {
     );
 
     blocTest<NotesCubit, NotesState>(
-      'unexpected throw → unknown NotesFailure',
+      'unexpected throw → generic NotesFailure',
       build: buildCubit,
       setUp: () {
         stubFamily();
@@ -431,10 +425,7 @@ void main() {
       act: (cubit) => cubit.deleteNote('n1'),
       expect: () => [isA<NotesLoading>(), isA<NotesFailure>()],
       verify: (cubit) {
-        expect(
-          (cubit.state as NotesFailure).message,
-          notesFailureUnknown,
-        );
+        expect((cubit.state as NotesFailure).message, notesFailureGeneric);
       },
     );
   });

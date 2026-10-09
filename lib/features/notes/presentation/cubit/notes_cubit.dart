@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/features/notes/application/is_at_note_limit_usecase.dart';
 import 'package:house_mira/features/notes/data/models/note_model.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
 import 'package:house_mira/features/notes/domain/repository/notes_repository.dart'
-    show notesFailureNoFamily, notesFailureUnknown;
+    show notesFailureGeneric, notesFailureNoFamily;
 import 'package:house_mira/features/notes/domain/usecase/create_note_usecase.dart';
 import 'package:house_mira/features/notes/domain/usecase/delete_note_usecase.dart';
 import 'package:house_mira/features/notes/domain/usecase/get_notes_usecase.dart';
@@ -69,13 +70,13 @@ class NotesCubit extends Cubit<NotesState> {
         emit(NotesLoaded(notes));
       });
     } on Object catch (_) {
-      emit(const NotesFailure(notesFailureUnknown));
+      emit(const NotesFailure(notesFailureGeneric));
     }
   }
 
   /// Creates a note, then reloads the list.
   ///
-  /// Free-tier users are capped at 3 notes:
+  /// Free-tier users are capped at [UsageLimits.freeNotesLimit] notes:
   /// hitting the cap emits [NotesLimitReached] (carrying the reloaded
   /// list so the list view keeps rendering) and the editor routes to the
   /// paywall instead. Paid users skip the check. Updates are never
@@ -125,7 +126,7 @@ class NotesCubit extends Cubit<NotesState> {
         await loadNotes(familyId: familyId);
       });
     } on Object catch (_) {
-      emit(const NotesFailure(notesFailureUnknown));
+      emit(const NotesFailure(notesFailureGeneric));
     }
   }
 
@@ -160,7 +161,7 @@ class NotesCubit extends Cubit<NotesState> {
         },
       );
     } on Object catch (_) {
-      emit(const NotesFailure(notesFailureUnknown));
+      emit(const NotesFailure(notesFailureGeneric));
     }
   }
 
@@ -183,7 +184,7 @@ class NotesCubit extends Cubit<NotesState> {
         },
       );
     } on Object catch (_) {
-      emit(const NotesFailure(notesFailureUnknown));
+      emit(const NotesFailure(notesFailureGeneric));
     }
   }
 

@@ -1,6 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:house_mira/features/notes/domain/repository/notes_repository.dart'
-    show notesFailureNoFamily, notesFailureNotFound, notesFailureOffline;
+    show
+        notesFailureGeneric,
+        notesFailureNoFamily,
+        notesFailureNotFound,
+        notesFailureOffline;
 import 'package:house_mira/features/notes/presentation/cubit/notes_state.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 
@@ -15,6 +19,7 @@ String noteErrorMessage(BuildContext context, String code) {
     notesFailureNotFound => l.notesErrorNotFound,
     notesFailureOffline => l.notesErrorOffline,
     notesFailureNoFamily => l.notesErrorNoFamily,
+    notesFailureGeneric => l.notesErrorGeneric,
     _ => l.notesErrorGeneric,
   };
 }

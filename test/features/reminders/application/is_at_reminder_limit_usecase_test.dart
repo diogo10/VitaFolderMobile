@@ -35,27 +35,28 @@ void main() {
     verifyNever(() => reminders.getRemindersCount(any()));
   });
 
-  test('null familyId fails open', () async {
+  test('null familyId fails open without a billing lookup', () async {
     expect(await build()(familyId: null), isFalse);
     verifyNever(() => reminders.getRemindersCount(any()));
+    verifyNever(() => subscriptions.isPro(userId: any(named: 'userId')));
   });
 
   test('true at cap, false below cap', () async {
-    when(() => reminders.getRemindersCount('f1')).thenAnswer(
-      (_) async => const Right<Failure, int>(10),
-    );
+    when(
+      () => reminders.getRemindersCount('f1'),
+    ).thenAnswer((_) async => const Right<Failure, int>(10));
     expect(await build()(familyId: 'f1'), isTrue);
 
-    when(() => reminders.getRemindersCount('f1')).thenAnswer(
-      (_) async => const Right<Failure, int>(9),
-    );
+    when(
+      () => reminders.getRemindersCount('f1'),
+    ).thenAnswer((_) async => const Right<Failure, int>(9));
     expect(await build()(familyId: 'f1'), isFalse);
   });
 
   test('count lookup failure fails open', () async {
-    when(() => reminders.getRemindersCount('f1')).thenAnswer(
-      (_) async => Left(Failure(message: 'boom')),
-    );
+    when(
+      () => reminders.getRemindersCount('f1'),
+    ).thenAnswer((_) async => Left(Failure(message: 'boom')));
     expect(await build()(familyId: 'f1'), isFalse);
   });
 
@@ -73,9 +74,9 @@ void main() {
         subscriptionService: SubscriptionService(),
         reminderRepository: reminders,
       );
-      when(() => reminders.getRemindersCount('f1')).thenAnswer(
-        (_) async => const Right<Failure, int>(10),
-      );
+      when(
+        () => reminders.getRemindersCount('f1'),
+      ).thenAnswer((_) async => const Right<Failure, int>(10));
       expect(await usecase(familyId: 'f1'), isTrue);
     },
   );
@@ -88,9 +89,9 @@ void main() {
   });
 
   test('forwards the userId to the entitlement lookup', () async {
-    when(() => reminders.getRemindersCount('f1')).thenAnswer(
-      (_) async => const Right<Failure, int>(0),
-    );
+    when(
+      () => reminders.getRemindersCount('f1'),
+    ).thenAnswer((_) async => const Right<Failure, int>(0));
     expect(await build()(familyId: 'f1', userId: 'u1'), isFalse);
     verify(() => subscriptions.isPro(userId: 'u1')).called(1);
   });
