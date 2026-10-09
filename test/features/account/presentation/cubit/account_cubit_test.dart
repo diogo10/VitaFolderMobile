@@ -395,6 +395,43 @@ void main() {
       expect(subscriptions.invalidations, 1);
     });
 
+    test('signIn invalidates the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubPerson: _testPerson(),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signIn('user@example.com', 'password123');
+
+      expect(cubit.state, isA<AccountLoaded>());
+      expect(subscriptions.invalidations, 1);
+    });
+
+    test('signInWithGoogle invalidates the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final auth = _FakeAuthService(
+        stubUser: _testUser(),
+        stubPerson: _testPerson(),
+      )..googleStubUser = _testUser();
+      final cubit = AccountCubit(
+        authService: auth,
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithGoogle();
+
+      expect(cubit.state, isA<AccountLoaded>());
+      expect(subscriptions.invalidations, 1);
+    });
+
     test('failed signOut keeps the cached entitlement', () async {
       final subscriptions = _CountingSubscriptions();
       final cubit = AccountCubit(

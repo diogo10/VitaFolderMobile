@@ -59,12 +59,26 @@ void main() {
     expect(await build()(familyId: 'f1'), isFalse);
   });
 
-  test('billing lookup throw fails open', () async {
+  test('throwing entitlement fake fails open (outer guard)', () async {
     when(
       () => subscriptions.isPro(userId: any(named: 'userId')),
     ).thenThrow(Exception('billing down'));
     expect(await build()(familyId: 'f1'), isFalse);
   });
+
+  test(
+    'billing outage fail-closes: uninitialized service applies free limits',
+    () async {
+      final usecase = IsAtNoteLimitUsecase(
+        subscriptionService: SubscriptionService(),
+        notesRepository: notes,
+      );
+      when(() => notes.getNotesCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(3),
+      );
+      expect(await usecase(familyId: 'f1'), isTrue);
+    },
+  );
 
   test('count lookup throw fails open', () async {
     when(() => notes.getNotesCount('f1')).thenThrow(Exception('db down'));

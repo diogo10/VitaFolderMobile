@@ -139,9 +139,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
       await result.fold(
         (err) async {
           if (err is WriteBlockedFailure) {
-            emit(
-              CreateReminderError(code: CreateReminderErrorCode.notAllowed),
-            );
+            emit(CreateReminderError(code: CreateReminderErrorCode.notAllowed));
           } else {
             emit(CreateReminderError(message: err.message));
           }
@@ -275,9 +273,9 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
   /// Views call this before opening the editor so capped users see the
   /// limit message (with an upgrade action) instead of a form they cannot
   /// save. Delegates to [IsAtReminderLimitUsecase] (paid check + count +
-  /// free-tier caps); fail-open (`false`) on every error and the create
-  /// path re-checks anyway. The whole body is guarded so no lookup
-  /// failure ever throws to the view.
+  /// free-tier caps); fail-closed on billing, fail-open (`false`) on
+  /// count errors, and the create path re-checks anyway. The whole body
+  /// is guarded so no lookup failure ever throws to the view.
   Future<bool> isAtFreeLimit({String? familyId}) async {
     try {
       final resolved = familyId ?? await _resolveFamilyId();

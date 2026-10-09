@@ -37,7 +37,10 @@ class AccountCubit extends Cubit<AccountState> {
 
   /// Drops the cached entitlement on sign-out so the next account never
   /// reads the previous user's billing status. Optional so tests can omit
-  /// billing; the entitlement cache is additionally keyed by user id.
+  /// billing; the entitlement cache is additionally keyed by user id, so
+  /// userId-keying alone would suffice — invalidation on sign-in,
+  /// sign-out, and account changes is defense-in-depth so a stale paid
+  /// (or free) bit never survives an account switch even within the TTL.
   final SubscriptionService? _subscriptionService;
 
   /// Keeps the account tab in sync with the session.
@@ -46,9 +49,12 @@ class AccountCubit extends Cubit<AccountState> {
   /// registration from `/sign-up` (which navigates to `/home`) would
   /// otherwise leave a stale `NoAccount` state behind. Reloading on
   /// sign-in and clearing on sign-out fixes that without the views
-  /// having to coordinate.
+  /// having to coordinate. The entitlement cache is dropped on every
+  /// account change (sign-in and sign-out) so billing never leaks
+  /// across accounts.
   void _onSignedInChanged(bool signedIn) {
     if (isClosed) return;
+    _subscriptionService?.invalidateProCache();
     if (signedIn) {
       unawaited(loadAccount());
     } else {
@@ -111,6 +117,7 @@ class AccountCubit extends Cubit<AccountState> {
 
     try {
       await _authService.signIn(email: email.trim(), password: password);
+      _subscriptionService?.invalidateProCache();
 
       final user = _authService.currentUser;
       if (user != null) {
@@ -156,6 +163,7 @@ class AccountCubit extends Cubit<AccountState> {
       }
 
       _logger.info('Google sign-in succeeded', tag: 'account');
+      _subscriptionService?.invalidateProCache();
       emit(const AccountLoginSuccess());
       await loadAccount();
     } on Object catch (e, stackTrace) {

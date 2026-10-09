@@ -166,6 +166,23 @@ void main() {
     );
 
     blocTest<NotesCubit, NotesState>(
+      'unexpected throw maps to unknown NotesFailure',
+      build: buildCubit,
+      setUp: () {
+        stubFamily();
+        when(() => notes.getNotes('f1')).thenThrow(Exception('boom'));
+      },
+      act: (cubit) => cubit.loadNotes(),
+      expect: () => [isA<NotesLoading>(), isA<NotesFailure>()],
+      verify: (cubit) {
+        expect(
+          (cubit.state as NotesFailure).message,
+          notesFailureUnknown,
+        );
+      },
+    );
+
+    blocTest<NotesCubit, NotesState>(
       'explicit familyId skips resolution',
       build: buildCubit,
       setUp: () {
@@ -334,6 +351,28 @@ void main() {
         expect(cubit.state, isA<NotesLoaded>());
       },
     );
+
+    blocTest<NotesCubit, NotesState>(
+      'unexpected throw → unknown NotesFailure',
+      build: buildCubit,
+      setUp: () {
+        stubFamily();
+        when(() => notes.updateNote(any())).thenThrow(Exception('boom'));
+      },
+      act: (cubit) => cubit.updateNote(
+        note: note(),
+        title: 'N',
+        content: 'C',
+        color: 'blue',
+      ),
+      expect: () => [isA<NotesLoading>(), isA<NotesFailure>()],
+      verify: (cubit) {
+        expect(
+          (cubit.state as NotesFailure).message,
+          notesFailureUnknown,
+        );
+      },
+    );
   });
 
   group('NotesCubit.deleteNote', () {
@@ -380,6 +419,23 @@ void main() {
         isA<NotesLoading>(),
         isA<NotesLoaded>(),
       ],
+    );
+
+    blocTest<NotesCubit, NotesState>(
+      'unexpected throw → unknown NotesFailure',
+      build: buildCubit,
+      setUp: () {
+        stubFamily();
+        when(() => notes.deleteNote('n1')).thenThrow(Exception('boom'));
+      },
+      act: (cubit) => cubit.deleteNote('n1'),
+      expect: () => [isA<NotesLoading>(), isA<NotesFailure>()],
+      verify: (cubit) {
+        expect(
+          (cubit.state as NotesFailure).message,
+          notesFailureUnknown,
+        );
+      },
     );
   });
 

@@ -50,23 +50,27 @@ class NotesCubit extends Cubit<NotesState> {
   /// Loads the family notes ordered `created_at DESC`.
   Future<void> loadNotes({String? familyId}) async {
     emit(const NotesLoading());
-    final userId = authService.currentUserId;
-    if (userId == null) {
-      _familyName = null;
-      emit(const NotesUnauthenticated());
-      return;
+    try {
+      final userId = authService.currentUserId;
+      if (userId == null) {
+        _familyName = null;
+        emit(const NotesUnauthenticated());
+        return;
+      }
+      final resolved = familyId ?? await _resolveFamilyId(userId);
+      if (resolved == null) {
+        _familyName = null;
+        emit(const NotesLoaded([]));
+        return;
+      }
+      await _loadFamilyName();
+      final result = await getNotesUsecase(resolved);
+      result.fold((err) => emit(NotesFailure(err.message)), (notes) {
+        emit(NotesLoaded(notes));
+      });
+    } on Object catch (_) {
+      emit(const NotesFailure(notesFailureUnknown));
     }
-    final resolved = familyId ?? await _resolveFamilyId(userId);
-    if (resolved == null) {
-      _familyName = null;
-      emit(const NotesLoaded([]));
-      return;
-    }
-    await _loadFamilyName();
-    final result = await getNotesUsecase(resolved);
-    result.fold((err) => emit(NotesFailure(err.message)), (notes) {
-      emit(NotesLoaded(notes));
-    });
   }
 
   /// Creates a note, then reloads the list.
@@ -133,27 +137,31 @@ class NotesCubit extends Cubit<NotesState> {
     required String color,
   }) async {
     emit(const NotesLoading());
-    final model = NoteModel(
-      id: note.id,
-      familyId: note.familyId,
-      createdBy: note.createdBy,
-      title: title,
-      content: content,
-      color: color,
-      createdAt: note.createdAt,
-      updatedAt: note.updatedAt,
-    );
-    final result = await updateNoteUsecase(model);
-    await result.fold(
-      (err) async {
-        emit(NotesFailure(err.message));
-        await loadNotes();
-      },
-      (_) async {
-        emit(const NoteActionSuccess());
-        await loadNotes();
-      },
-    );
+    try {
+      final model = NoteModel(
+        id: note.id,
+        familyId: note.familyId,
+        createdBy: note.createdBy,
+        title: title,
+        content: content,
+        color: color,
+        createdAt: note.createdAt,
+        updatedAt: note.updatedAt,
+      );
+      final result = await updateNoteUsecase(model);
+      await result.fold(
+        (err) async {
+          emit(NotesFailure(err.message));
+          await loadNotes();
+        },
+        (_) async {
+          emit(const NoteActionSuccess());
+          await loadNotes();
+        },
+      );
+    } on Object catch (_) {
+      emit(const NotesFailure(notesFailureUnknown));
+    }
   }
 
   /// Hard-deletes a note after confirm, then reloads the list.
@@ -162,17 +170,21 @@ class NotesCubit extends Cubit<NotesState> {
   /// instead — callers simply skip calling this method on dismiss.
   Future<void> deleteNote(String id) async {
     emit(const NotesLoading());
-    final result = await deleteNoteUsecase(id);
-    await result.fold(
-      (err) async {
-        emit(NotesFailure(err.message));
-        await loadNotes();
-      },
-      (_) async {
-        emit(const NoteActionSuccess());
-        await loadNotes();
-      },
-    );
+    try {
+      final result = await deleteNoteUsecase(id);
+      await result.fold(
+        (err) async {
+          emit(NotesFailure(err.message));
+          await loadNotes();
+        },
+        (_) async {
+          emit(const NoteActionSuccess());
+          await loadNotes();
+        },
+      );
+    } on Object catch (_) {
+      emit(const NotesFailure(notesFailureUnknown));
+    }
   }
 
   /// Whether the current user belongs to a family.
@@ -191,9 +203,9 @@ class NotesCubit extends Cubit<NotesState> {
   /// Views call this before opening the editor so capped users see the
   /// limit message (with an upgrade action) instead of a form they cannot
   /// save. Delegates to [IsAtNoteLimitUsecase] (paid check + count +
-  /// free-tier caps); fail-open (`false`) on every error and the create
-  /// path re-checks anyway. The whole body is guarded so no lookup
-  /// failure ever throws to the view.
+  /// free-tier caps); fail-closed on billing, fail-open (`false`) on
+  /// count errors, and the create path re-checks anyway. The whole body
+  /// is guarded so no lookup failure ever throws to the view.
   Future<bool> isAtFreeLimit({String? familyId}) async {
     try {
       final userId = authService.currentUserId;

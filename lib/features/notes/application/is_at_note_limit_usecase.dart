@@ -6,8 +6,9 @@ import 'package:house_mira/features/notes/domain/repository/notes_repository.dar
 ///
 /// Returns `true` when a free-tier user has hit
 /// [UsageLimits.freeNotesLimit]. Paid users never hit the cap.
-/// Fail-open (`false`) on every lookup error so a billing or count
-/// failure never blocks creation; callers re-check before saving anyway.
+/// Fail-closed on billing (`isPro` false on lookup error, so free limits
+/// apply), fail-open (`false`) on count errors so a count failure never
+/// blocks creation; callers re-check before saving anyway.
 ///
 /// The count is a per-family shared quota while the entitlement is
 /// per-user (see [UsageLimits]): a free user in a full family is blocked
