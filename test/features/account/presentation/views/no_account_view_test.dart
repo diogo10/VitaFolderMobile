@@ -15,6 +15,7 @@ import 'package:house_mira/features/people/domain/repository/people_repository.d
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 
 class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
@@ -142,6 +143,7 @@ void main() {
   AccountCubit buildCubit() => AccountCubit(
     authService: authService,
     peopleRepository: peopleRepository,
+    subscriptionService: SubscriptionService(),
   );
 
   group('NoAccountView', () {

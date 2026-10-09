@@ -1195,6 +1195,17 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não foi possível salvar o lembrete. Tente novamente';
 
   @override
+  String get createReminderErrorGeneric => 'Algo deu errado. Tente novamente.';
+
+  @override
+  String createReminderErrorLimitReached(int count) {
+    return 'Você atingiu o limite gratuito de $count lembretes. Faça upgrade para criar mais.';
+  }
+
+  @override
+  String get limitReachedUpgrade => 'Fazer upgrade';
+
+  @override
   String get familySettingsErrorNotFound => 'Família não encontrada';
 
   @override
@@ -1361,6 +1372,11 @@ class AppLocalizationsPt extends AppLocalizations {
       'Nenhuma família encontrada. Entre ou crie uma família primeiro.';
 
   @override
+  String notesErrorLimitReached(int count) {
+    return 'Você atingiu o limite gratuito de $count notas. Faça upgrade para criar mais.';
+  }
+
+  @override
   String get paywallTitle => 'HouseMira Pro';
 
   @override
@@ -1371,7 +1387,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get paywallSubtext =>
-      'Você atingiu o limite gratuito de notas compartilhadas. Faça upgrade para manter sua casa organizada.';
+      'Você atingiu o limite gratuito de notas e lembretes compartilhados da família. Os limites são compartilhados por família — faça upgrade para manter sua casa organizada.';
 
   @override
   String get paywallFeatureUnlimitedTitle => 'Tudo Ilimitado';

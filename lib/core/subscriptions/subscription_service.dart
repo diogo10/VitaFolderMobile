@@ -14,13 +14,15 @@ class PurchasesWrapper {
 
   /// Sets the SDK log verbosity.
   Future<void> setLogLevel(LogLevel level) => Purchases.setLogLevel(level);
+
+  /// Fetches the current customer info (entitlements).
+  Future<CustomerInfo> getCustomerInfo() => Purchases.getCustomerInfo();
 }
 
 /// Initializes and owns the RevenueCat SDK instance.
 ///
 /// Initial setup only: configures the shared `Purchases` instance with the
 /// platform's public API key (Apple on iOS/macOS, Google on Android).
-/// Paywalls and entitlement checks land in a follow-up task.
 ///
 /// A missing key for the current platform (or an unsupported platform such
 /// as web, which needs a separate web-billing config) skips initialization
@@ -40,6 +42,21 @@ class SubscriptionService {
        _logger = logger ?? AppLogger(),
        _platformOverride = platformOverride;
 
+  /// RevenueCat entitlement granting unlimited reminders and notes.
+  static const String proEntitlementId = 'pro';
+
+  /// How long a successful entitlement lookup stays cached.
+  ///
+  /// Views pre-check the free-tier cap before opening an editor and the
+  /// cubit re-checks on save; without a cache that flow costs two
+  /// `getCustomerInfo()` round-trips plus two count queries. Caching the
+  /// paid bit briefly collapses the pair to one billing lookup per flow
+  /// while staying fresh enough for post-purchase upgrades (call
+  /// [invalidateProCache] after a successful purchase/restore to refresh
+  /// immediately). The cache is keyed by the calling [isPro] `userId`, so
+  /// an account switch or logout never reads another user's entitlement.
+  static const Duration proCacheTtl = Duration(seconds: 30);
+
   final PurchasesWrapper _purchases;
   final AppLogger _logger;
   final TargetPlatform? _platformOverride;
@@ -48,6 +65,60 @@ class SubscriptionService {
 
   /// Whether [initialize] has successfully configured the SDK.
   bool get isInitialized => _initialized;
+
+  bool? _cachedIsPro;
+  DateTime? _cachedIsProAt;
+  String? _cachedUserId;
+
+  /// Drops the cached [isPro] result so the next lookup hits the store.
+  ///
+  /// Call after a purchase, restore, or account change.
+  void invalidateProCache() {
+    _cachedIsPro = null;
+    _cachedIsProAt = null;
+    _cachedUserId = null;
+  }
+
+  /// Whether the user holds the paid entitlement ([proEntitlementId]).
+  ///
+  /// Returns `false` when billing is uninitialized or the lookup fails
+  /// (fail-closed: free limits apply). Never throws: every failure is
+  /// logged and reported instead. Successful lookups are cached for
+  /// [proCacheTtl] so a view pre-check plus the create-time re-check
+  /// costs one billing lookup per flow; failures are never cached.
+  ///
+  /// Pass the current `AuthService.currentUserId` as [userId] so the cache
+  /// is scoped to one account: a lookup for a different user (including
+  /// `null` after logout) always refetches instead of reading stale data.
+  Future<bool> isPro({String? userId}) async {
+    if (!_initialized) {
+      return false;
+    }
+    final cached = _cachedIsPro;
+    final cachedAt = _cachedIsProAt;
+    if (cached != null && cachedAt != null && _cachedUserId == userId) {
+      final age = DateTime.now().difference(cachedAt);
+      if (age < proCacheTtl && !age.isNegative) {
+        return cached;
+      }
+    }
+    try {
+      final info = await _purchases.getCustomerInfo();
+      final pro = info.entitlements.active.containsKey(proEntitlementId);
+      _cachedIsPro = pro;
+      _cachedIsProAt = DateTime.now();
+      _cachedUserId = userId;
+      return pro;
+    } on Object catch (error, stackTrace) {
+      _logger.warning(
+        'entitlement check failed',
+        tag: 'subscriptions',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
 
   /// Configures the RevenueCat SDK for the current platform.
   ///

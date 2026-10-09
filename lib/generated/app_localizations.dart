@@ -2273,6 +2273,24 @@ abstract class AppLocalizations {
   /// **'Couldn\'t save the reminder. Please try again'**
   String get createReminderErrorUpdateBlocked;
 
+  /// No description provided for @createReminderErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get createReminderErrorGeneric;
+
+  /// No description provided for @createReminderErrorLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the free limit of {count} reminders. Upgrade to create more.'**
+  String createReminderErrorLimitReached(int count);
+
+  /// No description provided for @limitReachedUpgrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade'**
+  String get limitReachedUpgrade;
+
   /// No description provided for @familySettingsErrorNotFound.
   ///
   /// In en, this message translates to:
@@ -2555,6 +2573,12 @@ abstract class AppLocalizations {
   /// **'No family found. Join or create a family first.'**
   String get notesErrorNoFamily;
 
+  /// No description provided for @notesErrorLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the free limit of {count} notes. Upgrade to create more.'**
+  String notesErrorLimitReached(int count);
+
   /// No description provided for @paywallTitle.
   ///
   /// In en, this message translates to:
@@ -2576,7 +2600,7 @@ abstract class AppLocalizations {
   /// No description provided for @paywallSubtext.
   ///
   /// In en, this message translates to:
-  /// **'You\'ve reached the free limit for shared notes. Upgrade to keep your house organized.'**
+  /// **'You\'ve reached the free limit for shared family notes and reminders. Limits are shared per family — upgrade to keep your house organized.'**
   String get paywallSubtext;
 
   /// No description provided for @paywallFeatureUnlimitedTitle.

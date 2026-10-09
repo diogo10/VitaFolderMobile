@@ -105,6 +105,47 @@ class _FakeMaybeSingle extends Fake
   Stream<PostgrestMap?> asStream() => _future.asStream();
 }
 
+/// Awaitable fake for head-count `count(...).eq(...)` queries.
+class _FakeCountFilter extends Fake implements PostgrestFilterBuilder<int> {
+  _FakeCountFilter(this.value);
+
+  final int value;
+  final List<(String, Object)> eqCalls = [];
+
+  @override
+  PostgrestFilterBuilder<int> eq(String column, Object value) {
+    eqCalls.add((column, value));
+    return this;
+  }
+
+  Future<int> get _future => Future<int>.value(value);
+
+  @override
+  Future<R> then<R>(
+    FutureOr<R> Function(int value) onValue, {
+    Function? onError,
+  }) => _future.then(onValue, onError: onError);
+
+  @override
+  Future<int> catchError(
+    Function onError, {
+    bool Function(Object error)? test,
+  }) => _future.catchError(onError, test: test);
+
+  @override
+  Future<int> whenComplete(FutureOr<void> Function() action) =>
+      _future.whenComplete(action);
+
+  @override
+  Future<int> timeout(
+    Duration timeLimit, {
+    FutureOr<int> Function()? onTimeout,
+  }) => _future.timeout(timeLimit, onTimeout: onTimeout);
+
+  @override
+  Stream<int> asStream() => _future.asStream();
+}
+
 NoteModel _model() => NoteModel(
   id: 'n1',
   familyId: 'f1',
@@ -117,6 +158,10 @@ NoteModel _model() => NoteModel(
 );
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(CountOption.exact);
+  });
+
   late _MockSupabaseClient client;
   late _MockQueryBuilder query;
   late NotesRepositoryImpl repository;
@@ -157,10 +202,7 @@ void main() {
       final result = await repository.updateNote(_model());
 
       expect(result.isLeft(), isTrue);
-      expect(
-        result.getLeft().toNullable()?.message,
-        notesFailureNotFound,
-      );
+      expect(result.getLeft().toNullable()?.message, notesFailureNotFound);
     });
 
     test('fails instead of fake success when the row is stale', () async {
@@ -181,17 +223,14 @@ void main() {
       expect(result.isLeft(), isTrue);
     });
 
-    test(
-      'maps unexpected errors to an empty message (generic UI error)',
-      () async {
-        when(() => query.update(any())).thenThrow(Exception('db down'));
+    test('maps unexpected errors to the generic failure code', () async {
+      when(() => query.update(any())).thenThrow(Exception('db down'));
 
-        final result = await repository.updateNote(_model());
+      final result = await repository.updateNote(_model());
 
-        expect(result.isLeft(), isTrue);
-        expect(result.getLeft().toNullable()?.message, '');
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable()?.message, notesFailureGeneric);
+    });
   });
 
   group('NotesRepositoryImpl.deleteNote', () {
@@ -210,15 +249,34 @@ void main() {
 
     test('fails when the row is still present after the delete', () async {
       when(() => query.delete()).thenAnswer((_) => _FakeWriteFilter());
-      when(
-        () => query.select(any()),
-      ).thenAnswer(
+      when(() => query.select(any())).thenAnswer(
         (_) => _FakeVerifyFilter([
           {'id': 'n1'},
         ]),
       );
 
       final result = await repository.deleteNote('n1');
+
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable()?.message, notesFailureGeneric);
+    });
+  });
+
+  group('NotesRepositoryImpl.getNotesCount', () {
+    test('returns the head count scoped to the family', () async {
+      final filter = _FakeCountFilter(3);
+      when(() => query.count(any())).thenAnswer((_) => filter);
+
+      final result = await repository.getNotesCount('f1');
+
+      expect(result.getRight().toNullable(), 3);
+      expect(filter.eqCalls, [('family_id', 'f1')]);
+    });
+
+    test('maps count errors to a failure', () async {
+      when(() => query.count(any())).thenThrow(Exception('db down'));
+
+      final result = await repository.getNotesCount('f1');
 
       expect(result.isLeft(), isTrue);
     });

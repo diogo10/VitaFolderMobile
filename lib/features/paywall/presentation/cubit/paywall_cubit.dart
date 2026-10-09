@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/paywall/domain/usecase/get_paywall_data_usecase.dart';
 import 'package:house_mira/features/paywall/domain/usecase/restore_purchases_usecase.dart';
 import 'package:house_mira/features/paywall/domain/usecase/start_trial_usecase.dart';
@@ -11,14 +12,22 @@ class PaywallCubit extends Cubit<PaywallState> {
     required GetPaywallDataUsecase getPaywallDataUsecase,
     required StartTrialUsecase startTrialUsecase,
     required RestorePurchasesUsecase restorePurchasesUsecase,
+    required SubscriptionService subscriptionService,
   }) : _getPaywallDataUsecase = getPaywallDataUsecase,
        _startTrialUsecase = startTrialUsecase,
        _restorePurchasesUsecase = restorePurchasesUsecase,
+       _subscriptionService = subscriptionService,
        super(const PaywallInitial());
 
   final GetPaywallDataUsecase _getPaywallDataUsecase;
   final StartTrialUsecase _startTrialUsecase;
   final RestorePurchasesUsecase _restorePurchasesUsecase;
+
+  /// Refreshes the cached entitlement after purchase/restore so the next
+  /// limit check sees the new status immediately instead of the stale
+  /// 30s cache. Required: the locator always provides the shared service
+  /// and tests pass a fake.
+  final SubscriptionService _subscriptionService;
 
   Future<void> loadPaywall() async {
     emit(const PaywallLoading());
@@ -71,13 +80,16 @@ class PaywallCubit extends Cubit<PaywallState> {
             selectedPlanId: current.selectedPlanId,
           ),
         ),
-        (_) => emit(
-          PaywallTrialStarted(
-            data: current.data,
-            selectedPlanId: current.selectedPlanId,
-            planId: current.selectedPlanId,
-          ),
-        ),
+        (_) {
+          _subscriptionService.invalidateProCache();
+          emit(
+            PaywallTrialStarted(
+              data: current.data,
+              selectedPlanId: current.selectedPlanId,
+              planId: current.selectedPlanId,
+            ),
+          );
+        },
       );
     } on Object catch (_) {
       emit(
@@ -102,12 +114,15 @@ class PaywallCubit extends Cubit<PaywallState> {
             selectedPlanId: current.selectedPlanId,
           ),
         ),
-        (_) => emit(
-          PaywallRestoreCompleted(
-            data: current.data,
-            selectedPlanId: current.selectedPlanId,
-          ),
-        ),
+        (_) {
+          _subscriptionService.invalidateProCache();
+          emit(
+            PaywallRestoreCompleted(
+              data: current.data,
+              selectedPlanId: current.selectedPlanId,
+            ),
+          );
+        },
       );
     } on Object catch (_) {
       emit(

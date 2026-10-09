@@ -12,6 +12,7 @@ import 'package:house_mira/features/people/domain/repository/people_repository.d
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 
 class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
@@ -98,6 +99,7 @@ void main() {
       authService: _FailingGoogleAuthService(),
       peopleRepository: _FakePeopleRepository(),
       authSignedInStream: const Stream.empty(),
+      subscriptionService: SubscriptionService(),
     );
     addTearDown(cubit.close);
 

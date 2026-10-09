@@ -12,6 +12,7 @@ import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
@@ -28,6 +29,7 @@ import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart'
 import 'package:house_mira/features/people/presentation/cubit/people_state.dart'
     show PeopleEmpty;
 import 'package:house_mira/features/people/presentation/views/invite_people_screen.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -97,6 +99,12 @@ class _NoopNotificationService implements IReminderNotificationService {
 class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro({String? userId}) async => true;
+}
 
 class _FakeAuthService extends AuthService {
   _FakeAuthService()
@@ -183,6 +191,10 @@ class _FakeReminderRepository implements ReminderRepository {
   Future<Either<Failure, List<ReminderEntity>>> getReminders(
     String familyId,
   ) async => const Right([]);
+
+  @override
+  Future<Either<Failure, int>> getRemindersCount(String familyId) async =>
+      const Right(0);
 
   @override
   Future<Either<Failure, List<ReminderEntity>>> getRemindersByTypeAndFamily({
@@ -300,6 +312,10 @@ Widget _pumpApp() {
     authService: fakeAuth,
     reminderRepository: fakeReminders,
     notificationService: _NoopNotificationService(),
+    isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+      subscriptionService: _PaidSubscriptions(),
+      reminderRepository: fakeReminders,
+    ),
   );
   final peopleCubit = PeopleCubit(
     getPeopleUsecase: GetPeopleUsecase(repository: emptyFamilyPeople),
@@ -310,6 +326,7 @@ Widget _pumpApp() {
   final accountCubit = AccountCubit(
     authService: fakeAuth,
     peopleRepository: fakePeople,
+    subscriptionService: _PaidSubscriptions(),
   );
   // Tab factories return shared instances via BlocProvider.value (never
   // closed by the provider), so close them manually like other suites.
@@ -349,6 +366,10 @@ Widget _pumpAppWithOnboarding() {
     authService: fakeAuth,
     reminderRepository: fakeReminders,
     notificationService: _NoopNotificationService(),
+    isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+      subscriptionService: _PaidSubscriptions(),
+      reminderRepository: fakeReminders,
+    ),
   );
   final peopleCubit = PeopleCubit(
     getPeopleUsecase: GetPeopleUsecase(repository: fakePeople),
@@ -359,6 +380,7 @@ Widget _pumpAppWithOnboarding() {
   final accountCubit = AccountCubit(
     authService: fakeAuth,
     peopleRepository: fakePeople,
+    subscriptionService: _PaidSubscriptions(),
   );
   addTearDown(homeCubit.close);
   addTearDown(remindersCubit.close);

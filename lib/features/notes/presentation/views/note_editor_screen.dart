@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/router/app_routes.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/features/notes/domain/entities/note_color.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
@@ -172,10 +173,21 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       }
       if (!mounted) return;
       final state = cubit.state;
+      if (state is NotesLimitReached) {
+        final l = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l.notesErrorLimitReached(UsageLimits.freeNotesLimit)),
+            action: SnackBarAction(
+              label: l.limitReachedUpgrade,
+              onPressed: () => context.push(AppRoutes.paywall),
+            ),
+          ),
+        );
+        return;
+      }
       if (state is NotesFailure) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(noteErrorMessage(context, state.message))),
         );
         return;
@@ -441,9 +453,7 @@ class _ToolButton extends StatelessWidget {
         child: Container(
           width: 44,
           height: 44,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
           child: Center(
             child: Tooltip(
               message: tooltip,

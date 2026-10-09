@@ -1,12 +1,27 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
-import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
+import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart'
+    show ReminderRepository, remindersFailureGeneric, remindersFailureOffline;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// Supabase implementation of [ReminderRepository].
+///
+/// Supabase errors are mapped to [Failure] at this boundary
+/// (`WriteBlockedFailure` → preserved as-is so callers can branch on type,
+/// other `Failure` → message passthrough, [SocketException] → offline code,
+/// `on Object` → generic). Raw English never originates here: every
+/// synthesized failure carries [remindersFailureGeneric].
+///
+/// TODO(diogohenrique): replace the `dart:io` [SocketException] catches
+/// with a cross-platform offline signal — `dart:io` breaks web
+/// compilation and misses web network errors. Until then this stays
+/// mobile-only (the app ships Android/iOS; there is no `web/` target).
 class ReminderRepositoryImpl implements ReminderRepository {
   ReminderRepositoryImpl({SupabaseClient? client})
     : _client = client ?? Supabase.instance.client;
@@ -26,10 +41,34 @@ class ReminderRepositoryImpl implements ReminderRepository {
           .toList();
       return Right(data);
     } on Failure catch (e) {
+      if (e is WriteBlockedFailure) return Left(e);
       return Left(Failure(message: e.message));
+    } on SocketException catch (e) {
+      debugPrint('Reminders offline getting the reminders: $e');
+      return Left(Failure(message: remindersFailureOffline));
     } on Object catch (e) {
       debugPrint('Error getting the reminders: $e');
-      return Left(Failure());
+      return Left(Failure(message: remindersFailureGeneric));
+    }
+  }
+
+  @override
+  Future<Either<Failure, int>> getRemindersCount(String familyId) async {
+    try {
+      final count = await _client
+          .from('reminders')
+          .count(CountOption.exact)
+          .eq('family_id', familyId);
+      return Right(count);
+    } on Failure catch (e) {
+      if (e is WriteBlockedFailure) return Left(e);
+      return Left(Failure(message: e.message));
+    } on SocketException catch (e) {
+      debugPrint('Reminders offline counting reminders: $e');
+      return Left(Failure(message: remindersFailureOffline));
+    } on Object catch (e) {
+      debugPrint('Error counting reminders: $e');
+      return Left(Failure(message: remindersFailureGeneric));
     }
   }
 
@@ -49,10 +88,14 @@ class ReminderRepositoryImpl implements ReminderRepository {
           .toList();
       return Right(data);
     } on Failure catch (e) {
+      if (e is WriteBlockedFailure) return Left(e);
       return Left(Failure(message: e.message));
+    } on SocketException catch (e) {
+      debugPrint('Reminders offline getting reminders by type: $e');
+      return Left(Failure(message: remindersFailureOffline));
     } on Object catch (e) {
       debugPrint('Error getting reminders by type and family: $e');
-      return Left(Failure());
+      return Left(Failure(message: remindersFailureGeneric));
     }
   }
 
@@ -69,13 +112,19 @@ class ReminderRepositoryImpl implements ReminderRepository {
           .select('id')
           .single();
       final id = created['id']?.toString();
-      if (id == null || id.isEmpty) return Left(Failure());
+      if (id == null || id.isEmpty) {
+        return Left(Failure(message: remindersFailureGeneric));
+      }
       return Right(id);
     } on Failure catch (e) {
+      if (e is WriteBlockedFailure) return Left(e);
       return Left(Failure(message: e.message));
+    } on SocketException catch (e) {
+      debugPrint('Reminders offline creating reminder: $e');
+      return Left(Failure(message: remindersFailureOffline));
     } on Object catch (e) {
       debugPrint('Error creating reminder: $e');
-      return Left(Failure());
+      return Left(Failure(message: remindersFailureGeneric));
     }
   }
 
@@ -109,10 +158,14 @@ class ReminderRepositoryImpl implements ReminderRepository {
       }
       return const Right(true);
     } on Failure catch (e) {
+      if (e is WriteBlockedFailure) return Left(e);
       return Left(Failure(message: e.message));
+    } on SocketException catch (e) {
+      debugPrint('Reminders offline updating reminder: $e');
+      return Left(Failure(message: remindersFailureOffline));
     } on Object catch (e) {
       debugPrint('Error updating reminder: $e');
-      return Left(Failure());
+      return Left(Failure(message: remindersFailureGeneric));
     }
   }
 
@@ -132,10 +185,14 @@ class ReminderRepositoryImpl implements ReminderRepository {
       }
       return const Right(true);
     } on Failure catch (e) {
+      if (e is WriteBlockedFailure) return Left(e);
       return Left(Failure(message: e.message));
+    } on SocketException catch (e) {
+      debugPrint('Reminders offline removing reminder: $e');
+      return Left(Failure(message: remindersFailureOffline));
     } on Object catch (e) {
       debugPrint('Error removing reminder: $e');
-      return Left(Failure());
+      return Left(Failure(message: remindersFailureGeneric));
     }
   }
 }

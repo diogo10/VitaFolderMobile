@@ -4,6 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/google_sign_in_handler.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
 import 'package:house_mira/features/home/domain/entities/home_entity.dart';
@@ -26,6 +27,7 @@ import 'package:house_mira/features/people/presentation/cubit/people_state.dart'
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:house_mira/features/people/domain/usecase/create_family_usecase.dart';
 import 'package:house_mira/features/people/domain/usecase/join_family_usecase.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
@@ -44,6 +46,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
 class _MockGoogleHandler extends Mock implements IGoogleSignInHandler {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro({String? userId}) async => true;
+}
 
 class _FakeAuthService extends AuthService {
   _FakeAuthService({this.stubUserId})
@@ -321,6 +329,7 @@ void main() {
         authService: auth,
         peopleRepository: _FakePeopleRepository(),
         authSignedInStream: const Stream.empty(),
+        subscriptionService: _PaidSubscriptions(),
       );
       addTearDown(cubit.close);
 
@@ -429,6 +438,10 @@ void main() {
       authService: auth,
       reminderRepository: repository,
       notificationService: notifications,
+      isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+        subscriptionService: _PaidSubscriptions(),
+        reminderRepository: repository,
+      ),
     );
 
     blocTest<RemindersCubit, RemindersState>(
@@ -571,6 +584,10 @@ void main() {
       authService: auth,
       peopleRepository: people,
       notificationService: notifications,
+      isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+        subscriptionService: _PaidSubscriptions(),
+        reminderRepository: _MockReminderRepository(),
+      ),
     );
 
     test('permission helpers degrade to safe defaults on throw', () async {

@@ -4,7 +4,9 @@ import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/observability/crash_reporter.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
@@ -24,6 +26,12 @@ class _FakeReminderRepository extends Mock implements ReminderRepository {}
 
 class _FakeNotificationService extends Mock
     implements IReminderNotificationService {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro({String? userId}) async => true;
+}
 
 class _RecordingCrashReporter implements CrashReporter {
   final logs = <String>[];
@@ -82,6 +90,10 @@ void main() {
     authService: authService,
     reminderRepository: reminderRepository,
     notificationService: notificationService,
+    isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+      subscriptionService: _PaidSubscriptions(),
+      reminderRepository: reminderRepository,
+    ),
     crashReporter: crash,
     logger: AppLogger(crashReporter: crash, sink: lines.add),
   );

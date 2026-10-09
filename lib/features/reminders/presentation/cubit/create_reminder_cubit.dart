@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -18,6 +19,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
     required this.authService,
     required PeopleRepository peopleRepository,
     required IReminderNotificationService notificationService,
+    required this.isAtReminderLimitUsecase,
   }) : _createReminderUsecase = createReminderUsecase,
        _updateReminderUsecase = updateReminderUsecase,
        _peopleRepository = peopleRepository,
@@ -28,6 +30,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
   final AuthService authService;
   final PeopleRepository _peopleRepository;
   final IReminderNotificationService _notificationService;
+  final IsAtReminderLimitUsecase isAtReminderLimitUsecase;
 
   /// Exposed so the editor can read prefs/permissions without touching
   /// GetIt directly.
@@ -44,54 +47,66 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
   }) async {
     emit(CreateReminderLoading());
 
-    final familyId = await _resolveFamilyId();
-    if (familyId == null) {
-      emit(CreateReminderError(code: CreateReminderErrorCode.noFamily));
-      return;
-    }
+    try {
+      final familyId = await _resolveFamilyId();
+      if (familyId == null) {
+        emit(CreateReminderError(code: CreateReminderErrorCode.noFamily));
+        return;
+      }
 
-    final userId = authService.currentUserId;
-    if (userId == null) {
-      emit(CreateReminderError(code: CreateReminderErrorCode.authRequired));
-      return;
-    }
+      final userId = authService.currentUserId;
+      if (userId == null) {
+        emit(CreateReminderError(code: CreateReminderErrorCode.authRequired));
+        return;
+      }
 
-    final reminder = ReminderModel(
-      title: title,
-      body: body,
-      id: '',
-      type: type,
-      dueDate: dueDate?.toIso8601String() ?? '',
-      repeatRule: repeatRule,
-      status: 'pending',
-      createdBy: userId,
-      createdAt: DateTime.now().toIso8601String(),
-    );
+      // Free-tier cap: reuse the already-resolved familyId so the count
+      // check never re-resolves. Capped users get the limit error (the
+      // editor offers an upgrade action). Updates are never capped.
+      if (await isAtFreeLimit(familyId: familyId)) {
+        emit(CreateReminderError(code: CreateReminderErrorCode.limitReached));
+        return;
+      }
 
-    final result = await _createReminderUsecase(reminder, familyId);
+      final reminder = ReminderModel(
+        title: title,
+        body: body,
+        id: '',
+        type: type,
+        dueDate: dueDate?.toIso8601String() ?? '',
+        repeatRule: repeatRule,
+        status: 'pending',
+        createdBy: userId,
+        createdAt: DateTime.now().toIso8601String(),
+      );
 
-    await result.fold(
-      (err) async => emit(CreateReminderError(message: err.message)),
-      (reminderId) async {
-        final sync = await _syncNotification(
-          reminderId: reminderId,
-          notifyEnabled: notifyEnabled,
-          leadTime: leadTime,
-          dueDate: dueDate,
-          title: title,
-          body: body,
-          repeatRule: repeatRule,
-        );
-        emit(
-          CreateReminderSuccess(
+      final result = await _createReminderUsecase(reminder, familyId);
+
+      await result.fold(
+        (err) async => emit(CreateReminderError(message: err.message)),
+        (reminderId) async {
+          final sync = await _syncNotification(
             reminderId: reminderId,
-            notificationArmed: sync.armed,
-            notificationTimePassed: sync.timePassed,
-            notificationInexact: sync.inexact,
-          ),
-        );
-      },
-    );
+            notifyEnabled: notifyEnabled,
+            leadTime: leadTime,
+            dueDate: dueDate,
+            title: title,
+            body: body,
+            repeatRule: repeatRule,
+          );
+          emit(
+            CreateReminderSuccess(
+              reminderId: reminderId,
+              notificationArmed: sync.armed,
+              notificationTimePassed: sync.timePassed,
+              notificationInexact: sync.inexact,
+            ),
+          );
+        },
+      );
+    } on Object catch (_) {
+      emit(CreateReminderError());
+    }
   }
 
   Future<void> updateReminder({
@@ -106,49 +121,51 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
   }) async {
     emit(CreateReminderLoading());
 
-    final reminderModel = ReminderModel(
-      title: title,
-      body: body,
-      id: reminder.id,
-      type: type,
-      dueDate: dueDate?.toIso8601String() ?? '',
-      repeatRule: repeatRule,
-      status: reminder.status,
-      createdBy: reminder.createdBy,
-      createdAt: reminder.createdAt,
-    );
+    try {
+      final reminderModel = ReminderModel(
+        title: title,
+        body: body,
+        id: reminder.id,
+        type: type,
+        dueDate: dueDate?.toIso8601String() ?? '',
+        repeatRule: repeatRule,
+        status: reminder.status,
+        createdBy: reminder.createdBy,
+        createdAt: reminder.createdAt,
+      );
 
-    final result = await _updateReminderUsecase(reminderModel);
+      final result = await _updateReminderUsecase(reminderModel);
 
-    await result.fold(
-      (err) async {
-        if (err is WriteBlockedFailure) {
-          emit(
-            CreateReminderError(code: CreateReminderErrorCode.notAllowed),
+      await result.fold(
+        (err) async {
+          if (err is WriteBlockedFailure) {
+            emit(CreateReminderError(code: CreateReminderErrorCode.notAllowed));
+          } else {
+            emit(CreateReminderError(message: err.message));
+          }
+        },
+        (_) async {
+          final sync = await _syncNotification(
+            reminderId: reminder.id,
+            notifyEnabled: notifyEnabled,
+            leadTime: leadTime,
+            dueDate: dueDate,
+            title: title,
+            body: body,
+            repeatRule: repeatRule,
           );
-        } else {
-          emit(CreateReminderError(message: err.message));
-        }
-      },
-      (_) async {
-        final sync = await _syncNotification(
-          reminderId: reminder.id,
-          notifyEnabled: notifyEnabled,
-          leadTime: leadTime,
-          dueDate: dueDate,
-          title: title,
-          body: body,
-          repeatRule: repeatRule,
-        );
-        emit(
-          UpdatedReminderSuccess(
-            notificationArmed: sync.armed,
-            notificationTimePassed: sync.timePassed,
-            notificationInexact: sync.inexact,
-          ),
-        );
-      },
-    );
+          emit(
+            UpdatedReminderSuccess(
+              notificationArmed: sync.armed,
+              notificationTimePassed: sync.timePassed,
+              notificationInexact: sync.inexact,
+            ),
+          );
+        },
+      );
+    } on Object catch (_) {
+      emit(CreateReminderError());
+    }
   }
 
   /// Persists/schedules the notification choice. Best-effort: never throws.
@@ -239,11 +256,36 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
   }
 
   Future<String?> _resolveFamilyId() async {
-    final userId = authService.currentUserId;
-    if (userId == null) {
+    try {
+      final userId = authService.currentUserId;
+      if (userId == null) {
+        return null;
+      }
+      final familyIds = await _peopleRepository.getFamilyIdsForUser(userId);
+      return familyIds.isEmpty ? null : familyIds.first;
+    } on Object catch (_) {
       return null;
     }
-    final familyIds = await _peopleRepository.getFamilyIdsForUser(userId);
-    return familyIds.isEmpty ? null : familyIds.first;
+  }
+
+  /// Whether a free-tier user has hit the reminders cap.
+  ///
+  /// Views call this before opening the editor so capped users see the
+  /// limit message (with an upgrade action) instead of a form they cannot
+  /// save. Delegates to [IsAtReminderLimitUsecase] (paid check + count +
+  /// free-tier caps); fail-closed on billing, fail-open (`false`) on
+  /// count errors, and the create path re-checks anyway. The whole body
+  /// is guarded so no lookup failure ever throws to the view.
+  Future<bool> isAtFreeLimit({String? familyId}) async {
+    try {
+      final resolved = familyId ?? await _resolveFamilyId();
+      if (resolved == null) return false;
+      return await isAtReminderLimitUsecase(
+        familyId: resolved,
+        userId: authService.currentUserId,
+      );
+    } on Object catch (_) {
+      return false;
+    }
   }
 }

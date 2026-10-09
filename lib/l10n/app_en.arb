@@ -451,6 +451,16 @@
   "createReminderErrorNoFamily": "No family found",
   "createReminderErrorAuthRequired": "Authentication required",
   "createReminderErrorUpdateBlocked": "Couldn't save the reminder. Please try again",
+  "createReminderErrorGeneric": "Something went wrong. Please try again.",
+  "createReminderErrorLimitReached": "You've reached the free limit of {count} reminders. Upgrade to create more.",
+  "@createReminderErrorLimitReached": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "limitReachedUpgrade": "Upgrade",
   "familySettingsErrorNotFound": "Family not found",
   "familySettingsErrorGeneric": "Something went wrong. Please try again.",
   "familySettingsErrorLastAdmin": "You are the last admin. Transfer admin to another member or delete the family circle instead.",
@@ -519,10 +529,18 @@
   },
   "notesTimeYesterday": "Yesterday",
   "notesErrorNoFamily": "No family found. Join or create a family first.",
+  "notesErrorLimitReached": "You've reached the free limit of {count} notes. Upgrade to create more.",
+  "@notesErrorLimitReached": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "paywallTitle": "HouseMira Pro",
   "paywallLimitReached": "LIMIT REACHED",
   "paywallHeadline": "Unlock your house's\nfull potential.",
-  "paywallSubtext": "You've reached the free limit for shared notes. Upgrade to keep your house organized.",
+  "paywallSubtext": "You've reached the free limit for shared family notes and reminders. Limits are shared per family — upgrade to keep your house organized.",
   "paywallFeatureUnlimitedTitle": "Unlimited Everything",
   "paywallFeatureUnlimitedDescription": "No more limits on notes or circles.",
   "paywallFeatureSortingTitle": "Smart Auto-Sorting",

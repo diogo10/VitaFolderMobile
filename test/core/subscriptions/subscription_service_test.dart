@@ -9,6 +9,9 @@ class _FakePurchasesWrapper extends PurchasesWrapper {
   LogLevel? logLevel;
   Error? configureError;
   int configureCalls = 0;
+  CustomerInfo? customerInfo;
+  Error? customerInfoError;
+  int customerInfoCalls = 0;
 
   @override
   Future<void> configure(PurchasesConfiguration configuration) async {
@@ -23,9 +26,36 @@ class _FakePurchasesWrapper extends PurchasesWrapper {
   Future<void> setLogLevel(LogLevel level) async {
     logLevel = level;
   }
+
+  @override
+  Future<CustomerInfo> getCustomerInfo() async {
+    customerInfoCalls++;
+    if (customerInfoError != null) {
+      throw customerInfoError!;
+    }
+    return customerInfo!;
+  }
 }
 
 AppLogger _silentLogger() => AppLogger(sink: (_) {});
+
+CustomerInfo _customerInfo({required bool proActive}) {
+  const entitlement = EntitlementInfo('pro', true, true, '', '', '', true);
+  final active = proActive
+      ? {'pro': entitlement}
+      : const <String, EntitlementInfo>{};
+  return CustomerInfo(
+    EntitlementInfos(const {}, active),
+    const {},
+    const [],
+    const [],
+    const [],
+    '',
+    '',
+    const {},
+    '',
+  );
+}
 
 void main() {
   group('SubscriptionService.initialize', () {
@@ -161,6 +191,143 @@ void main() {
       );
       expect(purchases.configureCalls, 1);
       expect(purchases.configuredWith?.apiKey, 'fake-google-key');
+    });
+  });
+
+  group('SubscriptionService.isPro', () {
+    Future<SubscriptionService> initializedService(
+      _FakePurchasesWrapper purchases,
+    ) async {
+      final service = SubscriptionService(
+        purchases: purchases,
+        logger: _silentLogger(),
+        platformOverride: TargetPlatform.android,
+      );
+      expect(
+        await service.initialize(
+          appleApiKey: '',
+          googleApiKey: 'fake-google-key',
+        ),
+        isTrue,
+      );
+      return service;
+    }
+
+    test('false when billing is uninitialized', () async {
+      final service = SubscriptionService(
+        purchases: _FakePurchasesWrapper(),
+        logger: _silentLogger(),
+        platformOverride: TargetPlatform.android,
+      );
+
+      expect(await service.isPro(), isFalse);
+    });
+
+    test('true when the pro entitlement is active', () async {
+      final purchases = _FakePurchasesWrapper()
+        ..customerInfo = _customerInfo(proActive: true);
+      final service = await initializedService(purchases);
+
+      expect(await service.isPro(), isTrue);
+    });
+
+    test('false when the pro entitlement is inactive', () async {
+      final purchases = _FakePurchasesWrapper()
+        ..customerInfo = _customerInfo(proActive: false);
+      final service = await initializedService(purchases);
+
+      expect(await service.isPro(), isFalse);
+    });
+
+    test('false and never throws when the lookup fails', () async {
+      final purchases = _FakePurchasesWrapper()
+        ..customerInfoError = StateError('store unavailable');
+      final service = await initializedService(purchases);
+
+      expect(await service.isPro(), isFalse);
+    });
+
+    test('caches a successful lookup within the TTL', () async {
+      final purchases = _FakePurchasesWrapper()
+        ..customerInfo = _customerInfo(proActive: true);
+      final service = await initializedService(purchases);
+
+      expect(await service.isPro(), isTrue);
+      expect(await service.isPro(), isTrue);
+      expect(purchases.customerInfoCalls, 1);
+    });
+
+    test('invalidateProCache forces the next lookup to refetch', () async {
+      final purchases = _FakePurchasesWrapper()
+        ..customerInfo = _customerInfo(proActive: false);
+      final service = await initializedService(purchases);
+
+      expect(await service.isPro(), isFalse);
+      purchases.customerInfo = _customerInfo(proActive: true);
+      // Still cached: upgrade not visible until invalidated.
+      expect(await service.isPro(), isFalse);
+      service.invalidateProCache();
+      expect(await service.isPro(), isTrue);
+      expect(purchases.customerInfoCalls, 2);
+    });
+
+    test('failed lookups are never cached', () async {
+      final purchases = _FakePurchasesWrapper()
+        ..customerInfoError = StateError('store unavailable');
+      final service = await initializedService(purchases);
+
+      expect(await service.isPro(), isFalse);
+      purchases
+        ..customerInfoError = null
+        ..customerInfo = _customerInfo(proActive: true);
+      expect(await service.isPro(), isTrue);
+      expect(purchases.customerInfoCalls, 2);
+    });
+
+    test(
+      'a different userId refetches instead of reading stale cache',
+      () async {
+        final purchases = _FakePurchasesWrapper()
+          ..customerInfo = _customerInfo(proActive: false);
+        final service = await initializedService(purchases);
+
+        expect(await service.isPro(userId: 'user-a'), isFalse);
+        // The SDK now reports pro for the next user: the cached `false`
+        // for user-a must not leak across the account switch.
+        purchases.customerInfo = _customerInfo(proActive: true);
+        expect(await service.isPro(userId: 'user-b'), isTrue);
+        expect(purchases.customerInfoCalls, 2);
+      },
+    );
+
+    test(
+      'logging out (null userId) refetches instead of reading cache',
+      () async {
+        final purchases = _FakePurchasesWrapper()
+          ..customerInfo = _customerInfo(proActive: true);
+        final service = await initializedService(purchases);
+
+        expect(await service.isPro(userId: 'user-a'), isTrue);
+        purchases.customerInfo = _customerInfo(proActive: false);
+        expect(await service.isPro(), isFalse);
+        // The null-keyed `false` must not satisfy a later user-a lookup:
+        // it refetches and sees the fresh value.
+        purchases.customerInfo = _customerInfo(proActive: true);
+        expect(await service.isPro(userId: 'user-a'), isTrue);
+        expect(purchases.customerInfoCalls, 3);
+      },
+    );
+
+    test('invalidateProCache drops the user-scoped entry', () async {
+      final purchases = _FakePurchasesWrapper()
+        ..customerInfo = _customerInfo(proActive: false);
+      final service = await initializedService(purchases);
+
+      expect(await service.isPro(userId: 'user-a'), isFalse);
+      purchases.customerInfo = _customerInfo(proActive: true);
+      service.invalidateProCache();
+      expect(await service.isPro(userId: 'user-a'), isTrue);
+      expect(purchases.customerInfoCalls, 2);
     });
   });
 }

@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
@@ -25,12 +27,15 @@ class _FakeReminderRepository extends Mock implements ReminderRepository {}
 class _FakeNotificationService extends Mock
     implements IReminderNotificationService {}
 
+class _FakeSubscriptionService extends Mock implements SubscriptionService {}
+
 void main() {
   late _FakePeopleRepository peopleRepository;
   late _FakeAuthService authService;
   late _FakeGetReminderUsecase getReminderUsecase;
   late _FakeReminderRepository reminderRepository;
   late _FakeNotificationService notificationService;
+  late _FakeSubscriptionService subscriptionService;
 
   setUp(() {
     peopleRepository = _FakePeopleRepository();
@@ -38,6 +43,10 @@ void main() {
     getReminderUsecase = _FakeGetReminderUsecase();
     reminderRepository = _FakeReminderRepository();
     notificationService = _FakeNotificationService();
+    subscriptionService = _FakeSubscriptionService();
+    when(
+      () => subscriptionService.isPro(userId: any(named: 'userId')),
+    ).thenAnswer((_) async => true);
     when(
       () => notificationService.rescheduleAll(any()),
     ).thenAnswer((_) async {});
@@ -70,6 +79,10 @@ void main() {
     authService: authService,
     reminderRepository: reminderRepository,
     notificationService: notificationService,
+    isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+      subscriptionService: subscriptionService,
+      reminderRepository: reminderRepository,
+    ),
   );
 
   group('RemindersCubit.getReminders', () {
@@ -400,6 +413,10 @@ void main() {
         authService: authService,
         reminderRepository: reminderRepository,
         notificationService: notificationService,
+        isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+          subscriptionService: subscriptionService,
+          reminderRepository: reminderRepository,
+        ),
       ),
       setUp: () {
         when(() => authService.currentUserId).thenReturn('u1');
@@ -560,6 +577,68 @@ void main() {
         ),
       ],
     );
+  });
+
+  group('RemindersCubit free-tier limit', () {
+    test('isAtFreeLimit true at cap, false when paid or below cap', () async {
+      stubFamily();
+      when(
+        () => subscriptionService.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => false);
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(10),
+      );
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      expect(await cubit.isAtFreeLimit(), isTrue);
+
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(2),
+      );
+      expect(await cubit.isAtFreeLimit(), isFalse);
+
+      when(
+        () => subscriptionService.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => true);
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(40),
+      );
+      expect(await cubit.isAtFreeLimit(), isFalse);
+    });
+
+    test('isAtFreeLimit fails open when the count lookup fails', () async {
+      stubFamily();
+      when(
+        () => subscriptionService.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => false);
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+        (_) async => Left(Failure(message: 'boom')),
+      );
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      expect(await cubit.isAtFreeLimit(), isFalse);
+    });
+
+    test('resolveFamilyId returns the id once for the add gate', () async {
+      stubFamily();
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      expect(await cubit.resolveFamilyId(), 'f1');
+    });
+
+    test('isAtFreeLimit with a passed id skips family resolution', () async {
+      when(() => authService.currentUserId).thenReturn('u1');
+      when(
+        () => subscriptionService.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => false);
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(10),
+      );
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      expect(await cubit.isAtFreeLimit(familyId: 'f1'), isTrue);
+      verifyNever(() => peopleRepository.getFamilyIdsForUser(any()));
+    });
   });
 
   group('RemindersCubit.toggleViewMode', () {

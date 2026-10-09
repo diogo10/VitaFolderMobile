@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/router/app_routes.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
@@ -37,27 +38,58 @@ class _RemindersViewState extends State<RemindersView> {
   }
 
   Future<void> _handleAddPressed() async {
-    final cubit = context.read<RemindersCubit>();
-    if (!cubit.authService.isLoggedIn()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.needToBeLoggedIn)),
-      );
-      return;
-    }
-    final hasFamily = await cubit.hasFamily();
-    if (!mounted) return;
-    if (!hasFamily) {
+    try {
+      final cubit = context.read<RemindersCubit>();
+      if (!cubit.authService.isLoggedIn()) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.needToBeLoggedIn),
+          ),
+        );
+        return;
+      }
+      final familyId = await cubit.resolveFamilyId();
+      if (!mounted) return;
+      if (familyId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.createReminderErrorNoFamily,
+            ),
+          ),
+        );
+        context.go(AppRoutes.people);
+        return;
+      }
+      final atLimit = await cubit.isAtFreeLimit(familyId: familyId);
+      if (!mounted) return;
+      if (atLimit) {
+        final l = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              l.createReminderErrorLimitReached(UsageLimits.freeRemindersLimit),
+            ),
+            action: SnackBarAction(
+              label: l.limitReachedUpgrade,
+              onPressed: () => context.push(AppRoutes.paywall),
+            ),
+          ),
+        );
+        return;
+      }
+      await const CreateReminderRoute.create().push(context);
+    } on Object catch (_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            AppLocalizations.of(context)!.createReminderErrorNoFamily,
+            AppLocalizations.of(context)!.createReminderErrorGeneric,
           ),
         ),
       );
-      context.go(AppRoutes.people);
-      return;
     }
-    await const CreateReminderRoute.create().push(context);
   }
 
   @override

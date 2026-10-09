@@ -9,6 +9,7 @@ import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/core/router/app_router.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
@@ -23,6 +24,7 @@ import 'package:house_mira/features/people/domain/usecase/join_family_usecase.da
 import 'package:house_mira/features/people/presentation/cubit/invite_people_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/people/presentation/views/invite_people_screen.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
@@ -38,6 +40,12 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class _MockAuthService extends Mock implements AuthService {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro({String? userId}) async => true;
+}
 
 class _MockGetPeopleUsecase extends Mock implements GetPeopleUsecase {}
 
@@ -133,10 +141,15 @@ void main() {
       authService: authService,
       reminderRepository: _MockReminderRepository(),
       notificationService: _FakeNotificationService(),
+      isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+        subscriptionService: _PaidSubscriptions(),
+        reminderRepository: _MockReminderRepository(),
+      ),
     );
     final accountCubit = AccountCubit(
       authService: authService,
       peopleRepository: peopleRepository,
+      subscriptionService: _PaidSubscriptions(),
     );
     // Factory contract (see createRouter): tab factories are shared (single
     // instance, BlocProvider.value, closed here); one-shot factories are
@@ -148,6 +161,10 @@ void main() {
       authService: authService,
       peopleRepository: _FakePeopleRepository(),
       notificationService: _FakeNotificationService(),
+      isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+        subscriptionService: _PaidSubscriptions(),
+        reminderRepository: _MockReminderRepository(),
+      ),
     );
     addTearDown(() async {
       await homeCubit.close();

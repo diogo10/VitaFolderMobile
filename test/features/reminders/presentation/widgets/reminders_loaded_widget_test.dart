@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
@@ -23,6 +25,12 @@ class _FakeAuthService extends Mock implements AuthService {}
 class _FakeGetReminderUsecase extends Mock implements GetReminderUsecase {}
 
 class _FakeReminderRepository extends Mock implements ReminderRepository {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro({String? userId}) async => true;
+}
 
 class _NoopNotificationService implements IReminderNotificationService {
   @override
@@ -78,13 +86,25 @@ class _NoopNotificationService implements IReminderNotificationService {
 void main() {
   late RemindersCubit cubit;
 
+  late _FakeGetReminderUsecase getReminderUsecase;
+  late _FakeReminderRepository reminderRepository;
+
+  late _PaidSubscriptions paidSubscriptions;
+
   setUp(() {
+    getReminderUsecase = _FakeGetReminderUsecase();
+    reminderRepository = _FakeReminderRepository();
+    paidSubscriptions = _PaidSubscriptions();
     cubit = RemindersCubit(
-      getReminderUsecase: _FakeGetReminderUsecase(),
+      getReminderUsecase: getReminderUsecase,
       peopleRepository: _FakePeopleRepository(),
       authService: _FakeAuthService(),
-      reminderRepository: _FakeReminderRepository(),
+      reminderRepository: reminderRepository,
       notificationService: _NoopNotificationService(),
+      isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+        subscriptionService: paidSubscriptions,
+        reminderRepository: reminderRepository,
+      ),
     );
   });
 

@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/features/reminders/data/models/reminder_model.dart';
 import 'package:house_mira/features/reminders/data/repository/reminder_repository_impl.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart'
+    show remindersFailureGeneric, remindersFailureOffline;
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -296,6 +299,47 @@ ReminderModel _model({
   createdAt: '2026-08-01',
 );
 
+/// Awaitable fake for head-count `count(...).eq(...)` queries.
+class _FakeCountFilter extends Fake implements PostgrestFilterBuilder<int> {
+  _FakeCountFilter(this.value);
+
+  final int value;
+  final List<(String, Object)> eqCalls = [];
+
+  @override
+  PostgrestFilterBuilder<int> eq(String column, Object value) {
+    eqCalls.add((column, value));
+    return this;
+  }
+
+  Future<int> get _future => Future<int>.value(value);
+
+  @override
+  Future<R> then<R>(
+    FutureOr<R> Function(int value) onValue, {
+    Function? onError,
+  }) => _future.then(onValue, onError: onError);
+
+  @override
+  Future<int> catchError(
+    Function onError, {
+    bool Function(Object error)? test,
+  }) => _future.catchError(onError, test: test);
+
+  @override
+  Future<int> whenComplete(FutureOr<void> Function() action) =>
+      _future.whenComplete(action);
+
+  @override
+  Future<int> timeout(
+    Duration timeLimit, {
+    FutureOr<int> Function()? onTimeout,
+  }) => _future.timeout(timeLimit, onTimeout: onTimeout);
+
+  @override
+  Stream<int> asStream() => _future.asStream();
+}
+
 void main() {
   late _MockSupabaseClient client;
   late _MockQueryBuilder query;
@@ -304,6 +348,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(<String, dynamic>{});
     registerFallbackValue(<dynamic, dynamic>{});
+    registerFallbackValue(CountOption.exact);
   });
 
   setUp(() {
@@ -317,10 +362,7 @@ void main() {
     test(
       'maps rows to entities with display dates and filters by family',
       () async {
-        final filter = _FakeListFilter([
-          _row(),
-          _row(id: '2', dueAt: null),
-        ]);
+        final filter = _FakeListFilter([_row(), _row(id: '2', dueAt: null)]);
         when(() => query.select()).thenAnswer((_) => filter);
 
         final result = await repository.getReminders('f1');
@@ -332,10 +374,7 @@ void main() {
         expect(list.first.type, ReminderType.appointment);
         // Null due_at maps to '' (dateless) instead of a fallback value.
         expect(list.last.dueDate, '');
-        expect(
-          filter.eqCalls,
-          [('family_id', 'f1')],
-        );
+        expect(filter.eqCalls, [('family_id', 'f1')]);
       },
     );
 
@@ -362,10 +401,56 @@ void main() {
       final result = await repository.getReminders('f1');
 
       expect(result.isLeft(), isTrue);
-      expect(
-        result.getLeft().toNullable()?.message,
-        Failure().message,
-      );
+      expect(result.getLeft().toNullable()?.message, remindersFailureGeneric);
+    });
+
+    test('maps SocketException to the offline code', () async {
+      when(() => query.select()).thenThrow(const SocketException('no route'));
+
+      final result = await repository.getReminders('f1');
+
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable()?.message, remindersFailureOffline);
+    });
+
+    test('preserves WriteBlockedFailure type', () async {
+      when(() => query.select()).thenThrow(WriteBlockedFailure());
+
+      final result = await repository.getReminders('f1');
+
+      expect(result.getLeft().toNullable(), isA<WriteBlockedFailure>());
+    });
+  });
+
+  group('getRemindersCount', () {
+    test('returns the head count scoped to the family', () async {
+      final filter = _FakeCountFilter(10);
+      when(() => query.count(any())).thenAnswer((_) => filter);
+
+      final result = await repository.getRemindersCount('f1');
+
+      expect(result.getRight().toNullable(), 10);
+      expect(filter.eqCalls, [('family_id', 'f1')]);
+    });
+
+    test('maps count errors to a failure', () async {
+      when(() => query.count(any())).thenThrow(Exception('db down'));
+
+      final result = await repository.getRemindersCount('f1');
+
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable()?.message, remindersFailureGeneric);
+    });
+
+    test('maps count SocketException to the offline code', () async {
+      when(
+        () => query.count(any()),
+      ).thenThrow(const SocketException('no route'));
+
+      final result = await repository.getRemindersCount('f1');
+
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable()?.message, remindersFailureOffline);
     });
   });
 
@@ -382,13 +467,7 @@ void main() {
       final list = result.getRight().toNullable()!;
       expect(list, hasLength(1));
       expect(list.single.type, ReminderType.chores);
-      expect(
-        filter.eqCalls,
-        [
-          ('type', 'chores'),
-          ('family_id', 'f1'),
-        ],
-      );
+      expect(filter.eqCalls, [('type', 'chores'), ('family_id', 'f1')]);
     });
 
     test('maps unexpected errors to a generic Failure', () async {
@@ -400,10 +479,7 @@ void main() {
       );
 
       expect(result.isLeft(), isTrue);
-      expect(
-        result.getLeft().toNullable()?.message,
-        Failure().message,
-      );
+      expect(result.getLeft().toNullable()?.message, remindersFailureGeneric);
     });
   });
 
@@ -411,9 +487,7 @@ void main() {
     test(
       'sends the toCreate payload with family id and returns the new id',
       () async {
-        final insert = _FakeInsertFilter(
-          singleValue: {'id': 'new-id'},
-        );
+        final insert = _FakeInsertFilter(singleValue: {'id': 'new-id'});
         when(() => query.insert(any())).thenAnswer((_) => insert);
 
         final result = await repository.createReminder(_model(), 'fam-1');
@@ -432,9 +506,7 @@ void main() {
     );
 
     test('sends null due_at for dateless reminders', () async {
-      final insert = _FakeInsertFilter(
-        singleValue: {'id': 'new-id'},
-      );
+      final insert = _FakeInsertFilter(singleValue: {'id': 'new-id'});
       when(() => query.insert(any())).thenAnswer((_) => insert);
 
       await repository.createReminder(_model(dueDate: ''), 'fam-1');
@@ -446,9 +518,7 @@ void main() {
     });
 
     test('coerces non-string ids to string', () async {
-      final insert = _FakeInsertFilter(
-        singleValue: {'id': 42},
-      );
+      final insert = _FakeInsertFilter(singleValue: {'id': 42});
       when(() => query.insert(any())).thenAnswer((_) => insert);
 
       final result = await repository.createReminder(_model(), 'fam-1');
@@ -457,9 +527,9 @@ void main() {
     });
 
     test('returns Failure when the created id is missing', () async {
-      when(() => query.insert(any())).thenAnswer(
-        (_) => _FakeInsertFilter(singleValue: <String, dynamic>{}),
-      );
+      when(
+        () => query.insert(any()),
+      ).thenAnswer((_) => _FakeInsertFilter(singleValue: <String, dynamic>{}));
 
       final result = await repository.createReminder(_model(), 'fam-1');
 
@@ -467,9 +537,9 @@ void main() {
     });
 
     test('returns Failure when the created id is empty', () async {
-      when(() => query.insert(any())).thenAnswer(
-        (_) => _FakeInsertFilter(singleValue: {'id': ''}),
-      );
+      when(
+        () => query.insert(any()),
+      ).thenAnswer((_) => _FakeInsertFilter(singleValue: {'id': ''}));
 
       final result = await repository.createReminder(_model(), 'fam-1');
 
@@ -490,10 +560,7 @@ void main() {
       final result = await repository.createReminder(_model(), 'fam-1');
 
       expect(result.isLeft(), isTrue);
-      expect(
-        result.getLeft().toNullable()?.message,
-        Failure().message,
-      );
+      expect(result.getLeft().toNullable()?.message, remindersFailureGeneric);
     });
   });
 
@@ -540,49 +607,37 @@ void main() {
       expect(result.getLeft().toNullable()?.message, 'db boom');
     });
 
-    test(
-      'reports stale echoes as blocked instead of success',
-      () async {
-        when(() => query.update(any())).thenAnswer((_) => _FakeVoidFilter());
-        when(() => query.select(any())).thenAnswer(
-          (_) => _FakeListFilter([
-            {
-              'id': '1',
-              'title': 'Dentist',
-              'type': 'appointment',
-              'body': 'Checkup',
-              'repeat_rule': 'weekly',
-            },
-          ]),
-        );
+    test('reports stale echoes as blocked instead of success', () async {
+      when(() => query.update(any())).thenAnswer((_) => _FakeVoidFilter());
+      when(() => query.select(any())).thenAnswer(
+        (_) => _FakeListFilter([
+          {
+            'id': '1',
+            'title': 'Dentist',
+            'type': 'appointment',
+            'body': 'Checkup',
+            'repeat_rule': 'weekly',
+          },
+        ]),
+      );
 
-        final result = await repository.updateReminder(_model());
+      final result = await repository.updateReminder(_model());
 
-        expect(result.isLeft(), isTrue);
-        expect(
-          result.getLeft().toNullable(),
-          isA<WriteBlockedFailure>(),
-        );
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable(), isA<WriteBlockedFailure>());
+    });
 
-    test(
-      'reports absent rows as blocked instead of success',
-      () async {
-        when(() => query.update(any())).thenAnswer((_) => _FakeVoidFilter());
-        when(
-          () => query.select(any()),
-        ).thenAnswer((_) => _FakeListFilter(const []));
+    test('reports absent rows as blocked instead of success', () async {
+      when(() => query.update(any())).thenAnswer((_) => _FakeVoidFilter());
+      when(
+        () => query.select(any()),
+      ).thenAnswer((_) => _FakeListFilter(const []));
 
-        final result = await repository.updateReminder(_model());
+      final result = await repository.updateReminder(_model());
 
-        expect(result.isLeft(), isTrue);
-        expect(
-          result.getLeft().toNullable(),
-          isA<WriteBlockedFailure>(),
-        );
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable(), isA<WriteBlockedFailure>());
+    });
 
     test('maps unexpected errors to a generic Failure', () async {
       when(() => query.update(any())).thenThrow(Exception('db down'));
@@ -590,10 +645,7 @@ void main() {
       final result = await repository.updateReminder(_model());
 
       expect(result.isLeft(), isTrue);
-      expect(
-        result.getLeft().toNullable()?.message,
-        Failure().message,
-      );
+      expect(result.getLeft().toNullable()?.message, remindersFailureGeneric);
     });
   });
 
@@ -619,27 +671,19 @@ void main() {
       expect(result.getLeft().toNullable()?.message, 'db boom');
     });
 
-    test(
-      'reports still-present rows as blocked instead of success',
-      () async {
-        when(() => query.delete()).thenAnswer((_) => _FakeVoidFilter());
-        when(
-          () => query.select(any()),
-        ).thenAnswer(
-          (_) => _FakeListFilter([
-            {'id': 'r1'},
-          ]),
-        );
+    test('reports still-present rows as blocked instead of success', () async {
+      when(() => query.delete()).thenAnswer((_) => _FakeVoidFilter());
+      when(() => query.select(any())).thenAnswer(
+        (_) => _FakeListFilter([
+          {'id': 'r1'},
+        ]),
+      );
 
-        final result = await repository.removeReminder('r1');
+      final result = await repository.removeReminder('r1');
 
-        expect(result.isLeft(), isTrue);
-        expect(
-          result.getLeft().toNullable(),
-          isA<WriteBlockedFailure>(),
-        );
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      expect(result.getLeft().toNullable(), isA<WriteBlockedFailure>());
+    });
 
     test('maps unexpected errors to a generic Failure', () async {
       when(() => query.delete()).thenThrow(Exception('db down'));
@@ -647,10 +691,7 @@ void main() {
       final result = await repository.removeReminder('r1');
 
       expect(result.isLeft(), isTrue);
-      expect(
-        result.getLeft().toNullable()?.message,
-        Failure().message,
-      );
+      expect(result.getLeft().toNullable()?.message, remindersFailureGeneric);
     });
   });
 }

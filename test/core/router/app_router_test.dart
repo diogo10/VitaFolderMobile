@@ -11,6 +11,7 @@ import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/router/app_router.dart';
 import 'package:house_mira/core/router/splash_view.dart';
 import 'package:house_mira/core/router/tab_refresh_coordinator.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/views/account_view.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
@@ -35,6 +36,7 @@ import 'package:house_mira/features/people/presentation/cubit/family_settings_cu
 import 'package:house_mira/features/people/presentation/cubit/family_settings_state.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/people/presentation/views/family_settings_screen.dart';
+import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
 import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
@@ -54,6 +56,12 @@ class _MockGetHomeDataUsecase extends Mock implements GetHomeDataUsecase {}
 class _MockHasRemindersUsecase extends Mock implements HasRemindersUsecase {}
 
 class _MockAuthService extends Mock implements AuthService {}
+
+/// Paid by default so existing tests exercise the uncapped path.
+class _PaidSubscriptions extends SubscriptionService {
+  @override
+  Future<bool> isPro({String? userId}) async => true;
+}
 
 class _MockGetPeopleUsecase extends Mock implements GetPeopleUsecase {}
 
@@ -160,10 +168,15 @@ void main() {
       authService: resolvedAuth,
       reminderRepository: _MockReminderRepository(),
       notificationService: _FakeNotificationService(),
+      isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+        subscriptionService: _PaidSubscriptions(),
+        reminderRepository: _MockReminderRepository(),
+      ),
     );
     final accountCubit = AccountCubit(
       authService: resolvedAuth,
       peopleRepository: peopleRepository,
+      subscriptionService: _PaidSubscriptions(),
     );
     // Factory contract (see createRouter): tab factories are shared (single
     // instance, BlocProvider.value, closed here), one-shot factories are
@@ -259,6 +272,10 @@ void main() {
           authService: authService,
           peopleRepository: _MockPeopleRepository(),
           notificationService: _FakeNotificationService(),
+          isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+            subscriptionService: _PaidSubscriptions(),
+            reminderRepository: _MockReminderRepository(),
+          ),
         );
         built.add(cubit);
         return cubit;
@@ -288,10 +305,15 @@ void main() {
         authService: authService,
         reminderRepository: _MockReminderRepository(),
         notificationService: _FakeNotificationService(),
+        isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+          subscriptionService: _PaidSubscriptions(),
+          reminderRepository: _MockReminderRepository(),
+        ),
       );
       final accountCubit = AccountCubit(
         authService: authService,
         peopleRepository: _MockPeopleRepository(),
+        subscriptionService: _PaidSubscriptions(),
       );
       addTearDown(() async {
         await homeCubit.close();
@@ -399,6 +421,7 @@ void main() {
       final accountCubit = AccountCubit(
         authService: authService,
         peopleRepository: _MockPeopleRepository(),
+        subscriptionService: _PaidSubscriptions(),
       );
       addTearDown(accountCubit.close);
       final router = createRouter(
@@ -422,6 +445,10 @@ void main() {
           authService: authService,
           reminderRepository: _MockReminderRepository(),
           notificationService: _FakeNotificationService(),
+          isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+            subscriptionService: _PaidSubscriptions(),
+            reminderRepository: _MockReminderRepository(),
+          ),
         ),
         accountCubitFactory: () => accountCubit,
         signUpCubitFactory: () => SignUpCubit(authService),
@@ -477,10 +504,15 @@ void main() {
           authService: authService,
           reminderRepository: _MockReminderRepository(),
           notificationService: _FakeNotificationService(),
+          isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+            subscriptionService: _PaidSubscriptions(),
+            reminderRepository: _MockReminderRepository(),
+          ),
         ),
         accountCubitFactory: () => AccountCubit(
           authService: authService,
           peopleRepository: _MockPeopleRepository(),
+          subscriptionService: _PaidSubscriptions(),
         ),
         signUpCubitFactory: () => SignUpCubit(authService),
         familySettingsCubitFactory: () => familySettingsCubit,
@@ -530,10 +562,15 @@ void main() {
           authService: authService,
           reminderRepository: _MockReminderRepository(),
           notificationService: _FakeNotificationService(),
+          isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
+            subscriptionService: _PaidSubscriptions(),
+            reminderRepository: _MockReminderRepository(),
+          ),
         ),
         accountCubitFactory: () => AccountCubit(
           authService: authService,
           peopleRepository: _MockPeopleRepository(),
+          subscriptionService: _PaidSubscriptions(),
         ),
         signUpCubitFactory: () => SignUpCubit(authService),
         paywallCubitFactory: () => paywallCubit,

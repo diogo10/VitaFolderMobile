@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 
@@ -17,6 +18,9 @@ class AccountServiceLocator {
         authService: sl<AuthService>(instanceName: 'authService'),
         peopleRepository: sl<PeopleRepository>(
           instanceName: 'peopleRepositoryImpl',
+        ),
+        subscriptionService: sl<SubscriptionService>(
+          instanceName: 'subscriptionService',
         ),
       ),
       instanceName: 'accountCubit',

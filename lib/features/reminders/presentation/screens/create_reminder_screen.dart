@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/router/app_routes.dart';
+import 'package:house_mira/core/subscriptions/usage_limits.dart';
 import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
 import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
@@ -379,17 +381,34 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             context.pop();
           }
           if (state is CreateReminderError) {
+            // Coded errors map to their localized string; anything else
+            // (including a raw `message` from the data layer) falls back to
+            // the generic error so untyped English never reaches the UI.
             final message = switch (state.code) {
               CreateReminderErrorCode.noFamily => l.createReminderErrorNoFamily,
               CreateReminderErrorCode.authRequired =>
                 l.createReminderErrorAuthRequired,
               CreateReminderErrorCode.notAllowed =>
                 l.createReminderErrorUpdateBlocked,
-              _ => state.message ?? l.createReminderErrorNoFamily,
+              CreateReminderErrorCode.limitReached =>
+                l.createReminderErrorLimitReached(
+                  UsageLimits.freeRemindersLimit,
+                ),
+              _ => l.createReminderErrorGeneric,
             };
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(message)));
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(message),
+                  action: state.code == CreateReminderErrorCode.limitReached
+                      ? SnackBarAction(
+                          label: l.limitReachedUpgrade,
+                          onPressed: () => context.push(AppRoutes.paywall),
+                        )
+                      : null,
+                ),
+              );
           }
         },
         builder: (context, state) {

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/google_sign_in_handler.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
 import 'package:house_mira/features/people/domain/entities/family_entity.dart';
@@ -151,6 +152,16 @@ class _FakePeopleRepository implements PeopleRepository {
 User _testUser() =>
     User.fromJson({'id': 'user-id', 'email': 'user@example.com'})!;
 
+class _CountingSubscriptions extends SubscriptionService {
+  var invalidations = 0;
+
+  @override
+  void invalidateProCache() {
+    invalidations++;
+    super.invalidateProCache();
+  }
+}
+
 PersonEntity _testPerson() => const PersonEntity(
   id: 'user-id',
   name: 'Test User',
@@ -166,6 +177,7 @@ void main() {
           stubPerson: _testPerson(),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -189,6 +201,7 @@ void main() {
         final cubit = AccountCubit(
           authService: auth,
           peopleRepository: _FakePeopleRepository(),
+          subscriptionService: SubscriptionService(),
         );
         addTearDown(cubit.close);
 
@@ -205,6 +218,7 @@ void main() {
         final cubit = AccountCubit(
           authService: _FakeAuthService(),
           peopleRepository: _FakePeopleRepository(),
+          subscriptionService: SubscriptionService(),
         );
         addTearDown(cubit.close);
 
@@ -226,6 +240,7 @@ void main() {
           signInError: const AuthApiException('bad'),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -246,6 +261,7 @@ void main() {
       final cubit = AccountCubit(
         authService: auth,
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -260,6 +276,7 @@ void main() {
       final cubit = AccountCubit(
         authService: auth,
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -275,6 +292,7 @@ void main() {
           googleError: const AuthException('Google sign-in failed.'),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -291,6 +309,7 @@ void main() {
       final cubit = AccountCubit(
         authService: _FakeAuthService(googleError: Exception('boom')),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -311,6 +330,7 @@ void main() {
           stubPerson: _testPerson(),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.loadAccount(),
       expect: () => [isA<AccountLoading>(), isA<AccountLoaded>()],
@@ -328,6 +348,7 @@ void main() {
             stubPerson: _testPerson(),
           ),
           peopleRepository: people,
+          subscriptionService: SubscriptionService(),
         );
       },
       act: (cubit) => cubit.loadAccount(),
@@ -344,6 +365,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.loadAccount(),
       expect: () => [isA<AccountLoading>(), isA<NoAccount>()],
@@ -354,6 +376,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.signOut(),
       expect: () => [isA<AccountLoading>(), isA<AccountLogoutSuccess>()],
@@ -364,16 +387,85 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(signOutError: Exception('boom')),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.signOut(),
       expect: () => [isA<AccountLoading>(), isA<NoAccount>()],
     );
+
+    test('signOut invalidates the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signOut();
+
+      expect(cubit.state, isA<AccountLogoutSuccess>());
+      expect(subscriptions.invalidations, 1);
+    });
+
+    test('signIn invalidates the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubPerson: _testPerson(),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signIn('user@example.com', 'password123');
+
+      expect(cubit.state, isA<AccountLoaded>());
+      expect(subscriptions.invalidations, 1);
+    });
+
+    test('signInWithGoogle invalidates the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final auth = _FakeAuthService(
+        stubUser: _testUser(),
+        stubPerson: _testPerson(),
+      )..googleStubUser = _testUser();
+      final cubit = AccountCubit(
+        authService: auth,
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithGoogle();
+
+      expect(cubit.state, isA<AccountLoaded>());
+      expect(subscriptions.invalidations, 1);
+    });
+
+    test('failed signOut keeps the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(signOutError: Exception('boom')),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signOut();
+
+      expect(cubit.state, isA<NoAccount>());
+      expect(subscriptions.invalidations, 0);
+    });
 
     blocTest<AccountCubit, AccountState>(
       'forgotPassword emits PasswordResetSent on success',
       build: () => AccountCubit(
         authService: _FakeAuthService(),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.forgotPassword('user@example.com'),
       expect: () => [isA<PasswordResetSent>()],
@@ -384,6 +476,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.forgotPassword('   '),
       expect: () => [
@@ -400,6 +493,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(resetError: Exception('boom')),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.forgotPassword('user@example.com'),
       expect: () => [
@@ -415,6 +509,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(personError: Exception('boom')),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.loadAccount(),
       expect: () => [isA<AccountLoading>(), isA<NoAccount>()],
@@ -429,6 +524,7 @@ void main() {
           signInError: Exception('boom'),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.signIn('user@example.com', 'password123'),
       expect: () => [
@@ -445,6 +541,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.deleteAccount(),
       expect: () => [isA<AccountDeleting>(), isA<AccountDeletedSuccess>()],
@@ -459,6 +556,7 @@ void main() {
           deleteError: SoleOwnerException(familyId: 'family-1'),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.deleteAccount(),
       expect: () => [
@@ -482,6 +580,7 @@ void main() {
           deleteError: Exception('boom'),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.deleteAccount(),
       expect: () => [
@@ -506,6 +605,7 @@ void main() {
         ),
         peopleRepository: _FakePeopleRepository(),
         authSignedInStream: controller.stream,
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -526,6 +626,7 @@ void main() {
         ),
         peopleRepository: _FakePeopleRepository(),
         authSignedInStream: controller.stream,
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
