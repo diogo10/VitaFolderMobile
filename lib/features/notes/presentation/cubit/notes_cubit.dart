@@ -77,16 +77,22 @@ class NotesCubit extends Cubit<NotesState> {
   /// Creates a note, then reloads the list.
   ///
   /// Free-tier users are capped at [UsageLimits.freeNotesLimit] notes:
-  /// hitting the cap emits [NotesLimitReached] (carrying the reloaded
-  /// list so the list view keeps rendering) and the editor routes to the
-  /// paywall instead. Paid users skip the check. Updates are never
-  /// capped (only creation counts). Every path emits exactly one
-  /// outcome state; unexpected errors map to a generic failure.
+  /// hitting the cap emits [NotesLimitReached] (carrying the list so the
+  /// list view keeps rendering) and the editor routes to the paywall
+  /// instead. Paid users skip the check. Updates are never capped (only
+  /// creation counts). Every path emits exactly one outcome state;
+  /// unexpected errors map to a generic failure.
   Future<void> createNote({
     required String title,
     required String content,
     required String color,
   }) async {
+    final previous = state;
+    final previousNotes = previous is NotesLoaded
+        ? previous.notes
+        : previous is NotesLimitReached
+        ? previous.notes
+        : null;
     emit(const NotesLoading());
     try {
       final userId = authService.currentUserId;
@@ -96,10 +102,15 @@ class NotesCubit extends Cubit<NotesState> {
         return;
       }
       if (await isAtFreeLimit(familyId: familyId)) {
-        // The cap is hit: reload so the list view keeps rendering behind
-        // the limit message. A reload failure must preserve the underlying
+        // The cap is hit: reuse the pre-load list when it already holds
+        // rows so the limit path skips the extra list query after the
+        // count query. A reload failure must preserve the underlying
         // error (offline/RLS/...) instead of synthesizing limit-reached,
         // which would hide the real cause and its retry path.
+        if (previousNotes != null && previousNotes.isNotEmpty) {
+          emit(NotesLimitReached(previousNotes));
+          return;
+        }
         final result = await getNotesUsecase(familyId);
         result.fold(
           (err) => emit(NotesFailure(err.message)),
@@ -188,12 +199,26 @@ class NotesCubit extends Cubit<NotesState> {
     }
   }
 
+  /// Resolves the current `family_id` fresh on every call — never cached —
+  /// so family switches and account changes always load current data.
+  ///
+  /// Views use this to gate creation flows with a single lookup: a `null`
+  /// result means "no family" (route to `/people`), otherwise pass the id
+  /// to [isAtFreeLimit] so the limit check never re-resolves.
+  Future<String?> resolveFamilyId() async {
+    final userId = authService.currentUserId;
+    if (userId == null) return null;
+    try {
+      return await _resolveFamilyId(userId);
+    } on Object catch (_) {
+      return null;
+    }
+  }
+
   /// Whether the current user belongs to a family.
   Future<bool> hasFamily() async {
-    final userId = authService.currentUserId;
-    if (userId == null) return false;
     try {
-      return await _resolveFamilyId(userId) != null;
+      return await resolveFamilyId() != null;
     } on Object catch (_) {
       return false;
     }

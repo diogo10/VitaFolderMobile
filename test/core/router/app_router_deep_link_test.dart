@@ -149,6 +149,7 @@ void main() {
     final accountCubit = AccountCubit(
       authService: authService,
       peopleRepository: peopleRepository,
+      subscriptionService: _PaidSubscriptions(),
     );
     // Factory contract (see createRouter): tab factories are shared (single
     // instance, BlocProvider.value, closed here); one-shot factories are

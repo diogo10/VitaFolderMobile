@@ -329,6 +329,7 @@ void main() {
         authService: auth,
         peopleRepository: _FakePeopleRepository(),
         authSignedInStream: const Stream.empty(),
+        subscriptionService: _PaidSubscriptions(),
       );
       addTearDown(cubit.close);
 

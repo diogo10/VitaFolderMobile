@@ -12,7 +12,7 @@ class PaywallCubit extends Cubit<PaywallState> {
     required GetPaywallDataUsecase getPaywallDataUsecase,
     required StartTrialUsecase startTrialUsecase,
     required RestorePurchasesUsecase restorePurchasesUsecase,
-    SubscriptionService? subscriptionService,
+    required SubscriptionService subscriptionService,
   }) : _getPaywallDataUsecase = getPaywallDataUsecase,
        _startTrialUsecase = startTrialUsecase,
        _restorePurchasesUsecase = restorePurchasesUsecase,
@@ -25,8 +25,9 @@ class PaywallCubit extends Cubit<PaywallState> {
 
   /// Refreshes the cached entitlement after purchase/restore so the next
   /// limit check sees the new status immediately instead of the stale
-  /// 30s cache. Optional so tests can omit billing.
-  final SubscriptionService? _subscriptionService;
+  /// 30s cache. Required: the locator always provides the shared service
+  /// and tests pass a fake.
+  final SubscriptionService _subscriptionService;
 
   Future<void> loadPaywall() async {
     emit(const PaywallLoading());
@@ -80,7 +81,7 @@ class PaywallCubit extends Cubit<PaywallState> {
           ),
         ),
         (_) {
-          _subscriptionService?.invalidateProCache();
+          _subscriptionService.invalidateProCache();
           emit(
             PaywallTrialStarted(
               data: current.data,
@@ -114,7 +115,7 @@ class PaywallCubit extends Cubit<PaywallState> {
           ),
         ),
         (_) {
-          _subscriptionService?.invalidateProCache();
+          _subscriptionService.invalidateProCache();
           emit(
             PaywallRestoreCompleted(
               data: current.data,

@@ -18,6 +18,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Supabase errors are mapped to [Failure] at this boundary
 /// (`on Failure` → message passthrough, [SocketException] → offline code,
 /// `on Object` → generic).
+///
+/// TODO(diogohenrique): replace the `dart:io` [SocketException] catches
+/// with a cross-platform offline signal — `dart:io` breaks web
+/// compilation and misses web network errors. Until then this stays
+/// mobile-only (the app ships Android/iOS; there is no `web/` target).
 class NotesRepositoryImpl implements NotesRepository {
   NotesRepositoryImpl({SupabaseClient? client})
     : _client = client ?? Supabase.instance.client;

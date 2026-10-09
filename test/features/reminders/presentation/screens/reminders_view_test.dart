@@ -257,6 +257,9 @@ void main() {
         () => reminderRepository.getRemindersCount('fam-1'),
       ).thenAnswer((_) async => const Right<Failure, int>(10));
 
+      // The add gate resolves the family once and reuses it for the limit
+      // check (single lookup, not one per check).
+      clearInteractions(peopleRepository);
       await tester.tap(find.byIcon(Icons.add));
       await tester.pumpAndSettle();
 
@@ -272,6 +275,7 @@ void main() {
       expect(find.text(l.limitReachedUpgrade), findsOneWidget);
       // The create screen never opens: no editor title appears.
       expect(find.text(l.createReminderTitle), findsNothing);
+      verify(() => peopleRepository.getFamilyIdsForUser('user-1')).called(1);
     });
   });
 }

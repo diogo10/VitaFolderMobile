@@ -618,6 +618,27 @@ void main() {
       addTearDown(cubit.close);
       expect(await cubit.isAtFreeLimit(), isFalse);
     });
+
+    test('resolveFamilyId returns the id once for the add gate', () async {
+      stubFamily();
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      expect(await cubit.resolveFamilyId(), 'f1');
+    });
+
+    test('isAtFreeLimit with a passed id skips family resolution', () async {
+      when(() => authService.currentUserId).thenReturn('u1');
+      when(
+        () => subscriptionService.isPro(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => false);
+      when(() => reminderRepository.getRemindersCount('f1')).thenAnswer(
+        (_) async => const Right<Failure, int>(10),
+      );
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      expect(await cubit.isAtFreeLimit(familyId: 'f1'), isTrue);
+      verifyNever(() => peopleRepository.getFamilyIdsForUser(any()));
+    });
   });
 
   group('RemindersCubit.toggleViewMode', () {

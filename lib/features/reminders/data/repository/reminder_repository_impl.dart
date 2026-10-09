@@ -17,6 +17,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// other `Failure` → message passthrough, [SocketException] → offline code,
 /// `on Object` → generic). Raw English never originates here: every
 /// synthesized failure carries [remindersFailureGeneric].
+///
+/// TODO(diogohenrique): replace the `dart:io` [SocketException] catches
+/// with a cross-platform offline signal — `dart:io` breaks web
+/// compilation and misses web network errors. Until then this stays
+/// mobile-only (the app ships Android/iOS; there is no `web/` target).
 class ReminderRepositoryImpl implements ReminderRepository {
   ReminderRepositoryImpl({SupabaseClient? client})
     : _client = client ?? Supabase.instance.client;

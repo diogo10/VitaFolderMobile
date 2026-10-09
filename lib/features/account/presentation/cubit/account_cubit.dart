@@ -12,10 +12,10 @@ class AccountCubit extends Cubit<AccountState> {
   AccountCubit({
     required AuthService authService,
     required PeopleRepository peopleRepository,
+    required SubscriptionService subscriptionService,
     Stream<bool>? authSignedInStream,
     CrashReporter? crashReporter,
     AppLogger? logger,
-    SubscriptionService? subscriptionService,
   }) : _authService = authService,
        _peopleRepository = peopleRepository,
        _logger = logger ?? AppLogger(crashReporter: crashReporter),
@@ -36,12 +36,13 @@ class AccountCubit extends Cubit<AccountState> {
   StreamSubscription<bool>? _authSubscription;
 
   /// Drops the cached entitlement on sign-out so the next account never
-  /// reads the previous user's billing status. Optional so tests can omit
-  /// billing; the entitlement cache is additionally keyed by user id, so
+  /// reads the previous user's billing status. Required: the locator
+  /// always provides the shared service and tests pass a fake; the
+  /// entitlement cache is additionally keyed by user id, so
   /// userId-keying alone would suffice — invalidation on sign-in,
   /// sign-out, and account changes is defense-in-depth so a stale paid
   /// (or free) bit never survives an account switch even within the TTL.
-  final SubscriptionService? _subscriptionService;
+  final SubscriptionService _subscriptionService;
 
   /// Keeps the account tab in sync with the session.
   ///
@@ -54,7 +55,7 @@ class AccountCubit extends Cubit<AccountState> {
   /// across accounts.
   void _onSignedInChanged(bool signedIn) {
     if (isClosed) return;
-    _subscriptionService?.invalidateProCache();
+    _subscriptionService.invalidateProCache();
     if (signedIn) {
       unawaited(loadAccount());
     } else {
@@ -117,7 +118,7 @@ class AccountCubit extends Cubit<AccountState> {
 
     try {
       await _authService.signIn(email: email.trim(), password: password);
-      _subscriptionService?.invalidateProCache();
+      _subscriptionService.invalidateProCache();
 
       final user = _authService.currentUser;
       if (user != null) {
@@ -163,7 +164,7 @@ class AccountCubit extends Cubit<AccountState> {
       }
 
       _logger.info('Google sign-in succeeded', tag: 'account');
-      _subscriptionService?.invalidateProCache();
+      _subscriptionService.invalidateProCache();
       emit(const AccountLoginSuccess());
       await loadAccount();
     } on Object catch (e, stackTrace) {
@@ -186,7 +187,7 @@ class AccountCubit extends Cubit<AccountState> {
 
     try {
       await _authService.signOut();
-      _subscriptionService?.invalidateProCache();
+      _subscriptionService.invalidateProCache();
       emit(const AccountLogoutSuccess());
     } on Object catch (e, stackTrace) {
       _logger.warning(
@@ -214,7 +215,7 @@ class AccountCubit extends Cubit<AccountState> {
     try {
       await _authService.deleteAccount();
       await _authService.signOut();
-      _subscriptionService?.invalidateProCache();
+      _subscriptionService.invalidateProCache();
       emit(const AccountDeletedSuccess());
     } on SoleOwnerException {
       emit(const AccountDeleteFailed(code: AccountDeleteErrorCode.soleOwner));

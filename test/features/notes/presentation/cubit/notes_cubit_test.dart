@@ -459,6 +459,29 @@ void main() {
     );
 
     blocTest<NotesCubit, NotesState>(
+      'limit path reuses the loaded list without refetching',
+      build: buildCubit,
+      seed: () => NotesLoaded(rows(3)),
+      setUp: () {
+        stubFamily();
+        when(
+          () => subscriptions.isPro(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => false);
+        when(
+          () => notes.getNotesCount('f1'),
+        ).thenAnswer((_) async => const Right<Failure, int>(3));
+      },
+      act: (cubit) => cubit.createNote(title: 'T', content: 'C', color: 'pink'),
+      expect: () => [isA<NotesLoading>(), isA<NotesLimitReached>()],
+      verify: (cubit) {
+        final state = cubit.state as NotesLimitReached;
+        expect(state.notes, hasLength(3));
+        verifyNever(() => notes.createNote(any(), any()));
+        verifyNever(() => notes.getNotes(any()));
+      },
+    );
+
+    blocTest<NotesCubit, NotesState>(
       'limit-path reload failure preserves the underlying error',
       build: buildCubit,
       setUp: () {
@@ -618,6 +641,23 @@ void main() {
         () => people.getFamilyIdsForUser('u1'),
       ).thenThrow(Exception('db down'));
       expect(await buildCubit().hasFamily(), isFalse);
+    });
+
+    test('resolveFamilyId returns the id once for the add gate', () async {
+      stubFamily();
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      expect(await cubit.resolveFamilyId(), 'f1');
+    });
+
+    test('resolveFamilyId null without a family', () async {
+      when(() => auth.currentUserId).thenReturn('u1');
+      when(
+        () => people.getFamilyIdsForUser('u1'),
+      ).thenAnswer((_) async => <String>[]);
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      expect(await cubit.resolveFamilyId(), isNull);
     });
   });
 }

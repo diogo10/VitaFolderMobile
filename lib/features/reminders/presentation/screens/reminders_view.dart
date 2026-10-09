@@ -49,9 +49,9 @@ class _RemindersViewState extends State<RemindersView> {
         );
         return;
       }
-      final hasFamily = await cubit.hasFamily();
+      final familyId = await cubit.resolveFamilyId();
       if (!mounted) return;
-      if (!hasFamily) {
+      if (familyId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -62,7 +62,7 @@ class _RemindersViewState extends State<RemindersView> {
         context.go(AppRoutes.people);
         return;
       }
-      final atLimit = await cubit.isAtFreeLimit();
+      final atLimit = await cubit.isAtFreeLimit(familyId: familyId);
       if (!mounted) return;
       if (atLimit) {
         final l = AppLocalizations.of(context)!;
@@ -85,7 +85,7 @@ class _RemindersViewState extends State<RemindersView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            AppLocalizations.of(context)!.remindersErrorDescription,
+            AppLocalizations.of(context)!.createReminderErrorGeneric,
           ),
         ),
       );

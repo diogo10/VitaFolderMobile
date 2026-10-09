@@ -176,6 +176,7 @@ void main() {
     final accountCubit = AccountCubit(
       authService: resolvedAuth,
       peopleRepository: peopleRepository,
+      subscriptionService: _PaidSubscriptions(),
     );
     // Factory contract (see createRouter): tab factories are shared (single
     // instance, BlocProvider.value, closed here), one-shot factories are
@@ -312,6 +313,7 @@ void main() {
       final accountCubit = AccountCubit(
         authService: authService,
         peopleRepository: _MockPeopleRepository(),
+        subscriptionService: _PaidSubscriptions(),
       );
       addTearDown(() async {
         await homeCubit.close();
@@ -419,6 +421,7 @@ void main() {
       final accountCubit = AccountCubit(
         authService: authService,
         peopleRepository: _MockPeopleRepository(),
+        subscriptionService: _PaidSubscriptions(),
       );
       addTearDown(accountCubit.close);
       final router = createRouter(
@@ -509,6 +512,7 @@ void main() {
         accountCubitFactory: () => AccountCubit(
           authService: authService,
           peopleRepository: _MockPeopleRepository(),
+          subscriptionService: _PaidSubscriptions(),
         ),
         signUpCubitFactory: () => SignUpCubit(authService),
         familySettingsCubitFactory: () => familySettingsCubit,
@@ -566,6 +570,7 @@ void main() {
         accountCubitFactory: () => AccountCubit(
           authService: authService,
           peopleRepository: _MockPeopleRepository(),
+          subscriptionService: _PaidSubscriptions(),
         ),
         signUpCubitFactory: () => SignUpCubit(authService),
         paywallCubitFactory: () => paywallCubit,

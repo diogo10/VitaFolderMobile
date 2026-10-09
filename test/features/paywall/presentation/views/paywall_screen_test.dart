@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/paywall/data/repository/paywall_repository_impl.dart';
 import 'package:house_mira/features/paywall/domain/entities/paywall_data.dart';
 import 'package:house_mira/features/paywall/domain/repository/paywall_repository.dart';
@@ -38,6 +39,7 @@ PaywallCubit buildCubit(PaywallRepository repository) => PaywallCubit(
   getPaywallDataUsecase: GetPaywallDataUsecase(repository: repository),
   startTrialUsecase: StartTrialUsecase(repository: repository),
   restorePurchasesUsecase: RestorePurchasesUsecase(repository: repository),
+  subscriptionService: SubscriptionService(),
 );
 
 Future<void> pumpScreen(WidgetTester tester, PaywallCubit cubit) async {

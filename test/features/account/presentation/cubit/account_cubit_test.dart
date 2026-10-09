@@ -177,6 +177,7 @@ void main() {
           stubPerson: _testPerson(),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -200,6 +201,7 @@ void main() {
         final cubit = AccountCubit(
           authService: auth,
           peopleRepository: _FakePeopleRepository(),
+          subscriptionService: SubscriptionService(),
         );
         addTearDown(cubit.close);
 
@@ -216,6 +218,7 @@ void main() {
         final cubit = AccountCubit(
           authService: _FakeAuthService(),
           peopleRepository: _FakePeopleRepository(),
+          subscriptionService: SubscriptionService(),
         );
         addTearDown(cubit.close);
 
@@ -237,6 +240,7 @@ void main() {
           signInError: const AuthApiException('bad'),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -257,6 +261,7 @@ void main() {
       final cubit = AccountCubit(
         authService: auth,
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -271,6 +276,7 @@ void main() {
       final cubit = AccountCubit(
         authService: auth,
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -286,6 +292,7 @@ void main() {
           googleError: const AuthException('Google sign-in failed.'),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -302,6 +309,7 @@ void main() {
       final cubit = AccountCubit(
         authService: _FakeAuthService(googleError: Exception('boom')),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -322,6 +330,7 @@ void main() {
           stubPerson: _testPerson(),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.loadAccount(),
       expect: () => [isA<AccountLoading>(), isA<AccountLoaded>()],
@@ -339,6 +348,7 @@ void main() {
             stubPerson: _testPerson(),
           ),
           peopleRepository: people,
+          subscriptionService: SubscriptionService(),
         );
       },
       act: (cubit) => cubit.loadAccount(),
@@ -355,6 +365,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.loadAccount(),
       expect: () => [isA<AccountLoading>(), isA<NoAccount>()],
@@ -365,6 +376,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.signOut(),
       expect: () => [isA<AccountLoading>(), isA<AccountLogoutSuccess>()],
@@ -375,6 +387,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(signOutError: Exception('boom')),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.signOut(),
       expect: () => [isA<AccountLoading>(), isA<NoAccount>()],
@@ -452,6 +465,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.forgotPassword('user@example.com'),
       expect: () => [isA<PasswordResetSent>()],
@@ -462,6 +476,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.forgotPassword('   '),
       expect: () => [
@@ -478,6 +493,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(resetError: Exception('boom')),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.forgotPassword('user@example.com'),
       expect: () => [
@@ -493,6 +509,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(personError: Exception('boom')),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.loadAccount(),
       expect: () => [isA<AccountLoading>(), isA<NoAccount>()],
@@ -507,6 +524,7 @@ void main() {
           signInError: Exception('boom'),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.signIn('user@example.com', 'password123'),
       expect: () => [
@@ -523,6 +541,7 @@ void main() {
       build: () => AccountCubit(
         authService: _FakeAuthService(),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.deleteAccount(),
       expect: () => [isA<AccountDeleting>(), isA<AccountDeletedSuccess>()],
@@ -537,6 +556,7 @@ void main() {
           deleteError: SoleOwnerException(familyId: 'family-1'),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.deleteAccount(),
       expect: () => [
@@ -560,6 +580,7 @@ void main() {
           deleteError: Exception('boom'),
         ),
         peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
       ),
       act: (cubit) => cubit.deleteAccount(),
       expect: () => [
@@ -584,6 +605,7 @@ void main() {
         ),
         peopleRepository: _FakePeopleRepository(),
         authSignedInStream: controller.stream,
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 
@@ -604,6 +626,7 @@ void main() {
         ),
         peopleRepository: _FakePeopleRepository(),
         authSignedInStream: controller.stream,
+        subscriptionService: SubscriptionService(),
       );
       addTearDown(cubit.close);
 

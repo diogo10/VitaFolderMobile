@@ -559,6 +559,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // The add gate resolves the family once and reuses it for the limit
+      // check (single lookup, not one per check).
+      clearInteractions(people);
       await tester.tap(find.byIcon(Icons.add_rounded));
       await tester.pumpAndSettle();
 
@@ -570,6 +573,7 @@ void main() {
       expect(find.text(l.limitReachedUpgrade), findsOneWidget);
       // The editor never opens: no editor title appears.
       expect(find.text(l.notesCreateTitle), findsNothing);
+      verify(() => people.getFamilyIdsForUser('u1')).called(1);
 
       await tester.tap(find.text(l.limitReachedUpgrade));
       await tester.pumpAndSettle();

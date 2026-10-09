@@ -107,6 +107,19 @@ class RemindersCubit extends Cubit<RemindersState> {
     }
   }
 
+  /// Resolves the current `family_id` fresh on every call — never cached.
+  ///
+  /// Views use this to gate creation flows with a single lookup: a `null`
+  /// result means "no family" (route to `/people`), otherwise pass the id
+  /// to [isAtFreeLimit] so the limit check never re-resolves.
+  Future<String?> resolveFamilyId() async {
+    try {
+      return await _resolveFamilyId();
+    } on Object catch (_) {
+      return null;
+    }
+  }
+
   /// Whether the current user belongs to a family.
   ///
   /// Views use this to gate creation flows: a logged-in user without a
@@ -114,7 +127,7 @@ class RemindersCubit extends Cubit<RemindersState> {
   /// create routes them to `/people` instead of the editor.
   Future<bool> hasFamily() async {
     try {
-      return await _resolveFamilyId() != null;
+      return await resolveFamilyId() != null;
     } on Object catch (_) {
       return false;
     }

@@ -214,6 +214,7 @@ void main() {
     final accountCubit = AccountCubit(
       authService: authService,
       peopleRepository: peopleRepository,
+      subscriptionService: _PaidSubscriptions(),
     );
     addTearDown(() async {
       await homeCubit.close();

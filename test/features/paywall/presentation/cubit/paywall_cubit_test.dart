@@ -49,7 +49,7 @@ PaywallCubit buildCubit(
   getPaywallDataUsecase: GetPaywallDataUsecase(repository: repository),
   startTrialUsecase: StartTrialUsecase(repository: repository),
   restorePurchasesUsecase: RestorePurchasesUsecase(repository: repository),
-  subscriptionService: subscriptions,
+  subscriptionService: subscriptions ?? SubscriptionService(),
 );
 
 /// Records [invalidateProCache] calls without touching the store.

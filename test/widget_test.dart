@@ -326,6 +326,7 @@ Widget _pumpApp() {
   final accountCubit = AccountCubit(
     authService: fakeAuth,
     peopleRepository: fakePeople,
+    subscriptionService: _PaidSubscriptions(),
   );
   // Tab factories return shared instances via BlocProvider.value (never
   // closed by the provider), so close them manually like other suites.
@@ -379,6 +380,7 @@ Widget _pumpAppWithOnboarding() {
   final accountCubit = AccountCubit(
     authService: fakeAuth,
     peopleRepository: fakePeople,
+    subscriptionService: _PaidSubscriptions(),
   );
   addTearDown(homeCubit.close);
   addTearDown(remindersCubit.close);
