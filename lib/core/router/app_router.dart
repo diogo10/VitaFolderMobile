@@ -265,7 +265,15 @@ GoRouter createRouter({
           // so only one subtree is ever alive at a time.
           return BlocProvider<PeopleCubit>.value(
             value: resolvePeopleCubit(),
-            child: Scaffold(body: PeopleView(pendingInviteCode: route?.code)),
+            child: Scaffold(
+              body: PeopleView(
+                pendingInviteCode: route?.code,
+                onJoined: () {
+                  coordinator.refreshAll();
+                  context.go(AppRoutes.people);
+                },
+              ),
+            ),
           );
         },
       ),
@@ -276,7 +284,15 @@ GoRouter createRouter({
           // Same shared-singleton note as the `:code` variant above.
           return BlocProvider<PeopleCubit>.value(
             value: resolvePeopleCubit(),
-            child: Scaffold(body: PeopleView(pendingInviteCode: route?.code)),
+            child: Scaffold(
+              body: PeopleView(
+                pendingInviteCode: route?.code,
+                onJoined: () {
+                  coordinator.refreshAll();
+                  context.go(AppRoutes.people);
+                },
+              ),
+            ),
           );
         },
       ),
@@ -313,6 +329,7 @@ GoRouter createRouter({
                     child: PeopleView(
                       pendingInviteCode:
                           state.uri.queryParameters[AppRoutes.inviteCodeParam],
+                      onJoined: coordinator.refreshAll,
                     ),
                   );
                 },

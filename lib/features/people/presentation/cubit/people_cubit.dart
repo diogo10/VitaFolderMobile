@@ -32,9 +32,13 @@ class PeopleCubit extends Cubit<PeopleState> {
     emit(PeopleLoading());
     final result = await joinFamilyUsecase(familyCode: familyCode);
 
-    result.fold((err) => emit(PeopleInvalidFamilyCode()), (joined) {
-      unawaited(getPeople());
-    });
+    if (result.isLeft()) {
+      emit(PeopleInvalidFamilyCode());
+      return;
+    }
+    // Awaited (not fire-and-forget) so the screen transitions
+    // Loading -> Loaded/Empty deterministically after a successful join.
+    await getPeople();
   }
 
   Future<void> getPeople({bool isRefresh = false}) async {

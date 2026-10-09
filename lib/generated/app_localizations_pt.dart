@@ -733,6 +733,9 @@ class AppLocalizationsPt extends AppLocalizations {
       'Código de família inválido. Tente novamente.';
 
   @override
+  String get peopleJoinedFamily => 'Você entrou na família!';
+
+  @override
   String get invitePeopleTitle => 'Convidar Pessoas';
 
   @override

@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/features/people/domain/entities/family_entity.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
+import 'package:house_mira/features/people/domain/invite_code.dart';
 import 'package:house_mira/features/people/domain/repository/people_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -92,6 +93,10 @@ class PeopleRepositoryImpl implements PeopleRepository {
     required String inviteCode,
   }) async {
     try {
+      final code = normalizeInviteCode(inviteCode);
+      if (!isValidInviteCode(code)) {
+        return Left(Exception('Invalid family code'));
+      }
       final session = _client.auth.currentSession;
       if (session == null) {
         throw Exception('Not signed in (no session).');
@@ -101,7 +106,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
       final response = await _client
           .from('families')
           .select('id')
-          .eq('invite_code', inviteCode);
+          .eq('invite_code', code);
 
       if (response.isEmpty) {
         return Left(Exception('Family not found with this invite code'));
@@ -111,25 +116,54 @@ class PeopleRepositoryImpl implements PeopleRepository {
       if (userId == null) {
         throw Exception('Not signed in (no user id).');
       }
-      final familyId = response.single['id'];
-      await _client.from('family_memberships').insert({
-        'family_id': familyId,
-        'user_id': userId,
-        'role': 'member',
-      });
+      final familyId = response.single['id'] as String;
 
-      // Add to people table
-      final userName = await _authService.getProfileName();
-      await _client.from('people').insert({
-        'family_id': familyId,
-        'full_name': userName ?? '',
-      });
+      // Idempotent join: a retry (double tap, or a previous attempt that
+      // failed after the membership row was written) must succeed instead
+      // of surfacing a duplicate-key error as an invalid code.
+      if (!await _isMemberOf(userId, familyId)) {
+        try {
+          await _client.from('family_memberships').insert({
+            'family_id': familyId,
+            'user_id': userId,
+            'role': 'member',
+          });
+        } on Object catch (_) {
+          // Lost race / duplicate insert (e.g. double tap): re-check.
+          if (!await _isMemberOf(userId, familyId)) {
+            rethrow;
+          }
+        }
+      }
+
+      // Best-effort people row: a failure here must never report the join
+      // itself as failed — the membership above is what makes the user
+      // part of the family.
+      try {
+        final userName = await _authService.getProfileName();
+        await _client.from('people').insert({
+          'family_id': familyId,
+          'full_name': userName ?? '',
+        });
+      } on Object catch (e) {
+        debugPrint('Non-fatal: could not add person row after join: $e');
+      }
 
       return const Right(true);
     } on Object catch (e) {
       debugPrint('Error joining family: $e');
       return Left(Exception(e.toString()));
     }
+  }
+
+  Future<bool> _isMemberOf(String userId, String familyId) async {
+    final rows = await _client
+        .from('family_memberships')
+        .select('family_id')
+        .eq('user_id', userId);
+    return (rows as List).any(
+      (row) => (row as Map<String, dynamic>)['family_id'] == familyId,
+    );
   }
 
   @override

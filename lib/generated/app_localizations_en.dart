@@ -722,6 +722,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Invalid family code. Please try again.';
 
   @override
+  String get peopleJoinedFamily => 'You\'ve joined the family!';
+
+  @override
   String get invitePeopleTitle => 'Invite People';
 
   @override

@@ -261,6 +261,7 @@
   "signUpUnexpectedError": "An unexpected error occurred.",
   "signUpGoogleSignInFailed": "Google sign-in failed. Please check your connection and try again.",
   "peopleInvalidFamilyCode": "Invalid family code. Please try again.",
+  "peopleJoinedFamily": "You've joined the family!",
   "invitePeopleTitle": "Invite People",
   "invitePeopleHeroTitle": "Grow your circle",
   "invitePeopleHeroDescriptionPrefix": "Enter your family member's email address below to send them an invitation to join ",

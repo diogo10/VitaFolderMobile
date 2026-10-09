@@ -10,12 +10,17 @@ import 'package:house_mira/features/people/presentation/widgets/people_loaded_wi
 import 'package:house_mira/generated/app_localizations.dart';
 
 class PeopleView extends StatefulWidget {
-  const PeopleView({super.key, this.pendingInviteCode});
+  const PeopleView({super.key, this.pendingInviteCode, this.onJoined});
 
   /// Invite code from a `/invite/<code>` deep link, pre-filled into the
   /// join form so the recipient can join with one tap. `null` (or blank)
   /// means no deep link is pending.
   final String? pendingInviteCode;
+
+  /// Called once the user successfully joins a family (state reaches
+  /// [PeopleLoaded] after a join). Route builders wire this to
+  /// `TabRefreshCoordinator.refreshAll` so sibling tabs reload.
+  final VoidCallback? onJoined;
 
   @override
   State<PeopleView> createState() => _PeopleViewState();
@@ -23,6 +28,11 @@ class PeopleView extends StatefulWidget {
 
 class _PeopleViewState extends State<PeopleView> {
   final _familyNameController = TextEditingController();
+
+  /// True between tapping join and the outcome landing, so the success
+  /// confirmation fires only for a fresh join — not for initial loads or
+  /// pull-to-refresh.
+  var _joinPending = false;
 
   void _onCreateFamilyPressed() {
     final authService = context.read<AuthService>();
@@ -81,6 +91,7 @@ class _PeopleViewState extends State<PeopleView> {
     return BlocConsumer<PeopleCubit, PeopleState>(
       listener: (context, state) {
         if (state is PeopleInvalidFamilyCode) {
+          _joinPending = false;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -88,6 +99,14 @@ class _PeopleViewState extends State<PeopleView> {
               ),
             ),
           );
+        } else if (state is PeopleLoaded && _joinPending) {
+          _joinPending = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.peopleJoinedFamily),
+            ),
+          );
+          widget.onJoined?.call();
         }
       },
       builder: (context, state) {
@@ -105,8 +124,12 @@ class _PeopleViewState extends State<PeopleView> {
           return PeopleEmptyWidget(
             initialInviteCode: widget.pendingInviteCode,
             onCreateFamilyPressed: _onCreateFamilyPressed,
-            onJoinFamilyPressed: (code) =>
+            onJoinFamilyPressed: (code) {
+              _joinPending = true;
+              unawaited(
                 context.read<PeopleCubit>().joinFamily(familyCode: code),
+              );
+            },
             onRefresh: () =>
                 context.read<PeopleCubit>().getPeople(isRefresh: true),
           );

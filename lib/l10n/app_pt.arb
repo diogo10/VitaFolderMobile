@@ -240,6 +240,7 @@
   "signUpUnexpectedError": "Ocorreu um erro inesperado.",
   "signUpGoogleSignInFailed": "Falha no login com o Google. Verifique sua conexão e tente novamente.",
   "peopleInvalidFamilyCode": "Código de família inválido. Tente novamente.",
+  "peopleJoinedFamily": "Você entrou na família!",
   "invitePeopleTitle": "Convidar Pessoas",
   "invitePeopleHeroTitle": "Aumente seu círculo",
   "invitePeopleHeroDescriptionPrefix": "Digite o endereço de email do seu familiar abaixo para enviar um convite para participar de ",

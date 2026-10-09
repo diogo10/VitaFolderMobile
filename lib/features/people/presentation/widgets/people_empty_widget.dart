@@ -183,14 +183,14 @@ class _PeopleEmptyWidgetState extends State<PeopleEmptyWidget> {
                                       ),
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,
-                                    hintText: 'XX-0000',
+                                    hintText: 'ABC123',
                                   ),
                                 ),
                               ),
                               const SizedBox(height: 12),
                               ElevatedButton(
                                 onPressed: () => _handleJoinFamilyPressed(
-                                  _inviteCodeController.text,
+                                  _inviteCodeController.text.trim(),
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: primary,

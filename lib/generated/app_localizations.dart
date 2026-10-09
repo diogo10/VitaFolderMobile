@@ -1421,6 +1421,12 @@ abstract class AppLocalizations {
   /// **'Invalid family code. Please try again.'**
   String get peopleInvalidFamilyCode;
 
+  /// No description provided for @peopleJoinedFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve joined the family!'**
+  String get peopleJoinedFamily;
+
   /// No description provided for @invitePeopleTitle.
   ///
   /// In en, this message translates to:
