@@ -224,6 +224,12 @@ abstract class AppLocalizations {
   /// **'Today · 5:00 PM'**
   String get onboardingReminderGroceryTime;
 
+  /// No description provided for @onboardingCompleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not complete onboarding. Please try again.'**
+  String get onboardingCompleteFailed;
+
   /// No description provided for @homeError.
   ///
   /// In en, this message translates to:

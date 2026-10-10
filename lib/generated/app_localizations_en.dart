@@ -75,6 +75,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingReminderGroceryTime => 'Today · 5:00 PM';
 
   @override
+  String get onboardingCompleteFailed =>
+      'Could not complete onboarding. Please try again.';
+
+  @override
   String get homeError => 'Something went wrong.';
 
   @override

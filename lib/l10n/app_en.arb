@@ -21,6 +21,7 @@
   "onboardingReminderMedicineTime": "Today · 8:30 AM",
   "onboardingReminderGroceryTitle": "Grocery Run",
   "onboardingReminderGroceryTime": "Today · 5:00 PM",
+  "onboardingCompleteFailed": "Could not complete onboarding. Please try again.",
   "homeError": "Something went wrong.",
   "homeToday": "Today",
   "homeTasks": "Tasks",

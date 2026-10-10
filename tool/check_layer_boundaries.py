@@ -4,7 +4,8 @@ Run locally: python3 tool/check_layer_boundaries.py
 CI runs the same script (see .github/workflows/ci.yml) and fails the PR
 on any violation. Rules:
 
-R1 DOMAIN PURITY .... no `package:flutter*` import in lib/**/domain/.
+R1 DOMAIN PURITY .... no `package:flutter*` or `dart:ui` import in
+   lib/**/domain/ (Flutter engine types stay in presentation/).
 R2 SUPABASE BOUNDARY  `supabase` imports only in lib/features/*/data/,
    lib/core/{auth,functions}/, and the two composition roots
    (lib/main.dart session init, lib/core/injections/service_locator.dart
@@ -14,7 +15,8 @@ R3 DI BOUNDARY ....... no `get_it` / service-locator imports anywhere
    the router, and main.dart; widgets take constructor injection).
 R4 DOMAIN ISOLATION .. a file under lib/features/<a>/domain/ must not
    import another feature's data/, application/, or presentation/
-   (domain-to-domain sharing is allowed and graphed).
+   (domain-to-domain sharing is allowed and graphed; same-feature
+   domain->data imports are grandfathered tech debt, see ADR-0006).
 R5 ONE STATE MGMT .... no `package:provider` imports under lib/features/
    (flutter_bloc only; the single root Provider in main.dart is
    grandfathered until migration Phase 1 removes it).
@@ -30,7 +32,8 @@ FEATURES = LIB / 'features'
 
 IMPORT = re.compile(r"""^\s*import\s+['"]([^'"]+)['"]""")
 # Direct service-location calls (checked outside comments).
-LOCATE_CALL = re.compile(r'GetIt\s*\.\s*instance|slInstance\s*[<(]')
+# Matches GetIt.instance, GetIt.I (shorthand), and slInstance<...>().
+LOCATE_CALL = re.compile(r'GetIt\s*\.\s*instance|GetIt\s*\.\s*I\b|slInstance\s*[<(]')
 
 CORE_SUPABASE_ALLOW = ('lib/core/auth/', 'lib/core/functions/')
 # Composition roots: session init (main) and AuthService wiring
@@ -78,8 +81,11 @@ def check_text(
             continue
         uri = match.group(1)
 
-        # R1: domain has zero Flutter imports.
-        if layer == 'domain' and uri.startswith('package:flutter'):
+        # R1: domain has zero Flutter imports (package:flutter* or
+        # dart:ui engine types).
+        if layer == 'domain' and (
+            uri.startswith('package:flutter') or uri.startswith('dart:ui')
+        ):
             hits.append(f'R1 {rel}: Flutter import in domain: {uri}')
 
         # R2: Supabase stays at the data boundary.
@@ -135,6 +141,7 @@ def layer_of(path: Path) -> str | None:
 
 
 def main() -> None:
+    failures.clear()
     files = iter_lib_dart()
     if not files:
         print('::error::No Dart files found under lib/.')

@@ -70,6 +70,12 @@ packages/
 - Move `FamilyHeaderWidget` (+ `FamilyMemberCardWidget` if the graph
   shows reuse) to `lib/core/widgets/` (or a `design` package later);
   update the 3 cross-feature importers.
+- Follow-up (same phase): remove the grandfathered same-feature
+  `domain/` → `data/` imports (notes/reminders repository contracts and
+  use cases referencing `NoteModel`/`ReminderModel`; R4 intentionally
+  scopes to cross-feature edges until then). Switch the contracts to
+  entities (`NoteEntity`/`ReminderEntity`) with mappers at the
+  `data/` boundary.
 - Acceptance: graph shows zero presentation→presentation cross-feature
   edges; R4 extended to forbid them (remove the documented exception).
 

@@ -58,7 +58,7 @@ def scan():
                 continue
             if uri == HEADER_WIDGET and src_feature != 'people':
                 header_users.append('/'.join(rel))
-            dst_feature, dst_layer = fm.group(1), fm.group(2)
+            dst_feature = fm.group(1)
             if dst_feature == src_feature:
                 continue
             kind = (

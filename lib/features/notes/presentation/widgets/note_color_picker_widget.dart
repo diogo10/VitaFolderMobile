@@ -51,7 +51,7 @@ class _Swatch extends StatelessWidget {
         width: 64,
         height: 64,
         decoration: BoxDecoration(
-          color: noteColorPalette[name],
+          color: noteColorPalette[name] ?? SandPalette.sand200,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: selected

@@ -62,6 +62,8 @@ class CheckLayerBoundariesTest(unittest.TestCase):
             "import 'package:flutter/material.dart';",
             'import "package:flutter/widgets.dart";',
             "import 'package:flutter_test/flutter_test.dart';",
+            "import 'dart:ui';",
+            "import 'dart:ui' show Color;",
         ):
             with self.subTest(line=line):
                 hits = check_text(
@@ -107,6 +109,28 @@ class CheckLayerBoundariesTest(unittest.TestCase):
         )
         self.assertTrue(has_rule(hits, 'R3'), hits)
 
+    def test_r3_getit_shorthand_locate_call(self) -> None:
+        for line in (
+            'final x = GetIt.I<AuthService>();\n',
+            'final x = GetIt . I<AuthService>();\n',
+        ):
+            with self.subTest(line=line):
+                hits = check_text(
+                    'lib/features/people/presentation/views/v.dart',
+                    'people',
+                    'presentation',
+                    line,
+                )
+                self.assertTrue(has_rule(hits, 'R3'), hits)
+        # Commented-out locate calls are ignored.
+        hits = check_text(
+            'lib/features/people/presentation/views/v.dart',
+            'people',
+            'presentation',
+            '// final x = GetIt.I<AuthService>();\n',
+        )
+        self.assertFalse(has_rule(hits, 'R3'), hits)
+
     def test_r4_domain_reaches_into_other_feature_layers(self) -> None:
         for layer in ('data', 'application', 'presentation'):
             with self.subTest(layer=layer):
@@ -124,6 +148,18 @@ class CheckLayerBoundariesTest(unittest.TestCase):
             'home',
             'domain',
             "import 'package:house_mira/features/people/domain/entities/p.dart';\n",
+        )
+        self.assertFalse(has_rule(hits, 'R4'), hits)
+
+    def test_r4_same_feature_domain_to_data_allowed_tech_debt(self) -> None:
+        # Intra-feature domain->data (e.g. repository contracts taking
+        # NoteModel/ReminderModel) is grandfathered tech debt, see
+        # ADR-0006 consequences; R4 only guards cross-feature edges.
+        hits = check_text(
+            'lib/features/notes/domain/repository/r.dart',
+            'notes',
+            'domain',
+            "import 'package:house_mira/features/notes/data/models/note_model.dart';\n",
         )
         self.assertFalse(has_rule(hits, 'R4'), hits)
 

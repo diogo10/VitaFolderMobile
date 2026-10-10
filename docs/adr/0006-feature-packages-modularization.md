@@ -84,9 +84,16 @@ doing it in one big-bang PR would break the coverage gate and reviewability.
 
 ## Consequences
 
-- New code can only depend inward (presentation → application → domain →
-  core) and only on another feature's domain. Violations fail CI with the
-  rule number and file — no human has to memorize the matrix.
+- Cross-feature code can only depend on another feature's `domain/`
+  (R4 — CI enforces). Within one feature, layers still depend inward
+  (presentation → application → domain) except for grandfathered
+  same-feature `domain/` → `data/` imports: the notes/reminders
+  repository contracts and use cases reference `NoteModel` /
+  `ReminderModel` directly (7 files). That inversion is accepted tech
+  debt for this ADR — new code must take entities, and the contracts
+  switch to entities at extraction time (migration plan Phase 2
+  follow-up). Violations fail CI with the rule number and file — no
+  human has to memorize the matrix.
 - Adding a cross-feature dependency means: depend on the other feature's
   domain, regenerate the dependency graph, and (post-extraction) add a
   `path`/published dependency — never copy the file.
@@ -111,11 +118,11 @@ doing it in one big-bang PR would break the coverage gate and reviewability.
 
 - [ ] New cross-feature import targets another feature's `domain/` only
        (R4 — CI enforces; `dependency-graph.md` regenerated)?
-- [ ] No `package:flutter*` import in `domain/` (R1)?
+- [ ] No `package:flutter*` or `dart:ui` import in `domain/` (R1)?
 - [ ] No `supabase` import outside `data/`, `core/auth|functions`, or the
        two composition roots (R2)?
 - [ ] No `get_it`/`service_locator` import and no `GetIt.instance` /
-       `slInstance` call under `lib/features/` (R3)?
+       `GetIt.I` / `slInstance` call under `lib/features/` (R3)?
 - [ ] No `package:provider` import under `lib/features/` (R5)?
 - [ ] New widget/page takes dependencies via constructor; route adds a
        `*Factory` seam with a GetIt default instead of widget-side

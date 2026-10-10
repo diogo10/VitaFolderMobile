@@ -75,6 +75,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get onboardingReminderGroceryTime => 'Hoje · 17:00';
 
   @override
+  String get onboardingCompleteFailed =>
+      'Não foi possível concluir a apresentação. Tente novamente.';
+
+  @override
   String get homeError => 'Algo deu errado.';
 
   @override
