@@ -21,6 +21,7 @@
   "onboardingReminderMedicineTime": "Hoje · 08:30",
   "onboardingReminderGroceryTitle": "Compras",
   "onboardingReminderGroceryTime": "Hoje · 17:00",
+  "onboardingCompleteFailed": "Não foi possível concluir a apresentação. Tente novamente.",
   "homeError": "Algo deu errado.",
   "homeToday": "Hoje",
   "homeTasks": "Tarefas",

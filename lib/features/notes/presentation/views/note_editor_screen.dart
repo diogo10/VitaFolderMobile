@@ -10,6 +10,7 @@ import 'package:house_mira/features/notes/domain/entities/note_color.dart';
 import 'package:house_mira/features/notes/domain/entities/note_entity.dart';
 import 'package:house_mira/features/notes/presentation/cubit/notes_cubit.dart';
 import 'package:house_mira/features/notes/presentation/cubit/notes_state.dart';
+import 'package:house_mira/features/notes/presentation/utils/note_color_palette.dart';
 import 'package:house_mira/features/notes/presentation/utils/note_error_message.dart';
 import 'package:house_mira/features/notes/presentation/widgets/note_color_picker_widget.dart';
 import 'package:house_mira/generated/app_localizations.dart';

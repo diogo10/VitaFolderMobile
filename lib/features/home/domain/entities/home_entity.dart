@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:meta/meta.dart';
 
 @immutable
 class HomeEntity {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
 import 'package:house_mira/features/people/presentation/cubit/people_state.dart';
 import 'package:house_mira/features/people/presentation/widgets/people_empty_widget.dart';
@@ -10,7 +11,12 @@ import 'package:house_mira/features/people/presentation/widgets/people_loaded_wi
 import 'package:house_mira/generated/app_localizations.dart';
 
 class PeopleView extends StatefulWidget {
-  const PeopleView({super.key, this.pendingInviteCode, this.onJoined});
+  const PeopleView({
+    required this.storage,
+    super.key,
+    this.pendingInviteCode,
+    this.onJoined,
+  });
 
   /// Invite code from a `/invite/<code>` deep link, pre-filled into the
   /// join form so the recipient can join with one tap. `null` (or blank)
@@ -21,6 +27,11 @@ class PeopleView extends StatefulWidget {
   /// [PeopleLoaded] after a join). Route builders wire this to
   /// `TabRefreshCoordinator.refreshAll` so sibling tabs reload.
   final VoidCallback? onJoined;
+
+  /// Dismissal-flag store forwarded to [PeopleLoadedWidget];
+  /// resolved by name at the router composition root, never via GetIt
+  /// in the widget tree.
+  final LocalStorageDatasource storage;
 
   @override
   State<PeopleView> createState() => _PeopleViewState();
@@ -143,6 +154,7 @@ class _PeopleViewState extends State<PeopleView> {
           people: state.people,
           inviteCode: state.inviteCode,
           familyName: state.familyName,
+          storage: widget.storage,
         );
       },
     );

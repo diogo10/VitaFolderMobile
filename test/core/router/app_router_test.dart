@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/router/app_router.dart';
 import 'package:house_mira/core/router/splash_view.dart';
 import 'package:house_mira/core/router/tab_refresh_coordinator.dart';
@@ -20,6 +22,7 @@ import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/home/presentation/views/home_view.dart';
 import 'package:house_mira/features/login/presentation/cubit/sign_up_cubit.dart';
 import 'package:house_mira/features/login/presentation/views/sign_up_screen.dart';
+import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:house_mira/features/onboarding/presentation/views/onboarding_view.dart';
 import 'package:house_mira/features/paywall/data/repository/paywall_repository_impl.dart';
 import 'package:house_mira/features/paywall/presentation/cubit/paywall_cubit.dart';
@@ -87,6 +90,11 @@ class _MockUpdateReminderUsecase extends Mock
 
 class _MockReminderRepository extends Mock implements ReminderRepository {}
 
+class _MockOnboardingDatasource extends Mock
+    implements OnboardingLocalDatasource {}
+
+class _MockAppLogger extends Mock implements AppLogger {}
+
 class _FakeNotificationService extends Fake
     implements IReminderNotificationService {}
 
@@ -130,6 +138,8 @@ void main() {
     required AuthStateNotifier notifier,
     bool onboardingCompleted = true,
     AuthService? authService,
+    OnboardingLocalDatasource Function()? onboardingDatasourceFactory,
+    AppLogger Function()? appLoggerFactory,
   }) {
     final resolvedAuth = authService ?? _MockAuthService();
     final getPeopleUsecase = _MockGetPeopleUsecase();
@@ -196,6 +206,10 @@ void main() {
       remindersCubitFactory: () => remindersCubit,
       accountCubitFactory: () => accountCubit,
       signUpCubitFactory: () => SignUpCubit(resolvedAuth),
+      localStorageDatasourceFactory: LocalStorageDatasource.new,
+      onboardingDatasourceFactory:
+          onboardingDatasourceFactory ?? OnboardingLocalDatasource.new,
+      appLoggerFactory: appLoggerFactory,
     );
   }
 
@@ -659,6 +673,50 @@ void main() {
 
       expect(router.state.uri.path, '/onboarding');
       expect(find.byType(OnboardingView), findsOneWidget);
+    });
+
+    testWidgets('onboarding route forwards the injected logger', (
+      tester,
+    ) async {
+      final notifier = AuthStateNotifier(
+        authStateStream: authEvents.stream,
+      );
+      addTearDown(notifier.dispose);
+      final datasource = _MockOnboardingDatasource();
+      when(datasource.completeOnboarding).thenThrow(Exception('disk full'));
+      final logger = _MockAppLogger();
+      final router = buildRouter(
+        notifier: notifier,
+        onboardingCompleted: false,
+        onboardingDatasourceFactory: () => datasource,
+        appLoggerFactory: () => logger,
+      );
+
+      await pumpRouter(tester, router);
+      await emitAuth(
+        tester,
+        const AuthState(AuthChangeEvent.initialSession, null),
+      );
+      expect(router.state.uri.path, '/onboarding');
+      expect(find.byType(OnboardingView), findsOneWidget);
+
+      final l = AppLocalizations.of(
+        tester.element(find.byType(OnboardingView)),
+      )!;
+      await tester.tap(find.text(l.onboardingSkip));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.tap(find.text(l.onboardingGetStarted));
+      await tester.pump();
+
+      verify(
+        () => logger.warning(
+          'completeOnboarding failed',
+          tag: 'onboarding',
+          error: any(named: 'error'),
+          stackTrace: any(named: 'stackTrace'),
+        ),
+      ).called(1);
     });
 
     testWidgets('redirects signed-in users away from sign-up', (tester) async {

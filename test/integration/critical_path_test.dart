@@ -9,12 +9,14 @@ import 'package:house_mira/core/analytics/analytics_service.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
 import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
 import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/home/presentation/views/home_view.dart';
+import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:house_mira/features/onboarding/presentation/views/onboarding_view.dart';
 import 'package:house_mira/features/people/domain/entities/family_entity.dart';
 import 'package:house_mira/features/people/domain/entities/people_data.dart';
@@ -238,6 +240,8 @@ void main() {
         remindersCubitFactory: () => remindersCubit,
         peopleCubitFactory: () => peopleCubit,
         accountCubitFactory: () => accountCubit,
+        localStorageDatasourceFactory: LocalStorageDatasource.new,
+        onboardingDatasourceFactory: OnboardingLocalDatasource.new,
       ),
     );
   }

@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:house_mira/features/paywall/domain/entities/paywall_feature_entity.dart';
 import 'package:house_mira/features/paywall/domain/entities/paywall_plan_entity.dart';
+import 'package:meta/meta.dart';
 
 /// Mocked paywall catalog: the plans and features shown on the screen.
 @immutable

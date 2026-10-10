@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
 import 'package:house_mira/generated/app_localizations.dart';
 import 'package:house_mira/theme/theme_extensions.dart';
-import 'package:provider/provider.dart';
 
 class RemindersSuggestionsCardsWidget extends StatelessWidget {
   const RemindersSuggestionsCardsWidget({super.key});

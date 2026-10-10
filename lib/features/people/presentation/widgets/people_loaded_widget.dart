@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
@@ -19,22 +18,24 @@ class PeopleLoadedWidget extends StatefulWidget {
     required this.people,
     required this.inviteCode,
     required this.familyName,
+    required this.storage,
     super.key,
   });
   final List<PersonEntity> people;
   final String inviteCode;
   final String familyName;
 
+  /// Dismissal-flag store, constructor-injected (no GetIt in widgets).
+  final LocalStorageDatasource storage;
+
   @override
   State<PeopleLoadedWidget> createState() => _PeopleLoadedWidgetState();
 }
 
 class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
-  final LocalStorageDatasource _storage =
-      GetIt.instance<LocalStorageDatasource>(
-        instanceName: 'localStorageDatasource',
-      );
   bool _showInviteCodeCard = true;
+
+  LocalStorageDatasource get _storage => widget.storage;
 
   @override
   void initState() {
@@ -43,11 +44,18 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
   }
 
   Future<void> _loadInviteCodeCardVisibility() async {
-    final dismissed = await _storage.getBool(
-      'invite_code_card_dismissed_${widget.inviteCode}',
-    );
-    if (mounted) {
-      setState(() => _showInviteCodeCard = !dismissed);
+    try {
+      final dismissed = await _storage.getBool(
+        'invite_code_card_dismissed_${widget.inviteCode}',
+      );
+      if (mounted) {
+        setState(() => _showInviteCodeCard = !dismissed);
+      }
+    } on Object catch (_) {
+      // Keep the invite-code card visible when the flag store is
+      // unavailable: dismissal is best-effort and must never hide the
+      // card or crash the view.
+      return;
     }
   }
 
@@ -117,11 +125,16 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
   }
 
   void _closeInviteCodeCardClicked() {
+    // Best-effort only: a failing flag store must never surface an
+    // unhandled async error (matches the load-path comment in
+    // [_loadInviteCodeCardVisibility]).
     unawaited(
-      _storage.setBool(
-        'invite_code_card_dismissed_${widget.inviteCode}',
-        value: true,
-      ),
+      _storage
+          .setBool(
+            'invite_code_card_dismissed_${widget.inviteCode}',
+            value: true,
+          )
+          .then((_) {}, onError: (_) {}),
     );
     setState(() => _showInviteCodeCard = false);
   }

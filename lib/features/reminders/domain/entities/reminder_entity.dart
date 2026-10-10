@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:meta/meta.dart';
 
 @immutable
 class ReminderEntity {

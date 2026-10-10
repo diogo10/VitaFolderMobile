@@ -7,6 +7,8 @@ import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/core/router/main_shell.dart';
 import 'package:house_mira/core/router/splash_view.dart';
@@ -27,6 +29,7 @@ import 'package:house_mira/features/login/presentation/views/sign_up_screen.dart
 import 'package:house_mira/features/notes/presentation/cubit/notes_cubit.dart';
 import 'package:house_mira/features/notes/presentation/views/note_editor_screen.dart';
 import 'package:house_mira/features/notes/presentation/views/notes_view.dart';
+import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:house_mira/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:house_mira/features/paywall/presentation/cubit/paywall_cubit.dart';
 import 'package:house_mira/features/paywall/presentation/views/paywall_screen.dart';
@@ -116,6 +119,9 @@ GoRouter createRouter({
   NotificationSettingsCubit Function()? notificationSettingsCubitFactory,
   ManageProfileCubit Function()? manageProfileCubitFactory,
   PaywallCubit Function()? paywallCubitFactory,
+  LocalStorageDatasource Function()? localStorageDatasourceFactory,
+  OnboardingLocalDatasource Function()? onboardingDatasourceFactory,
+  AppLogger Function()? appLoggerFactory,
   // Dev-only diagnostics gate: true only for dev-flavor debug builds
   // (passed from `main`, where the flavor is known). Staging/prod and
   // profile/release always pass false.
@@ -144,6 +150,11 @@ GoRouter createRouter({
       manageProfileCubitFactory ?? _defaultManageProfileCubitFactory;
   final resolvePaywallCubit =
       paywallCubitFactory ?? _defaultPaywallCubitFactory;
+  final resolveStorage =
+      localStorageDatasourceFactory ?? _defaultLocalStorageDatasourceFactory;
+  final resolveOnboardingDatasource =
+      onboardingDatasourceFactory ?? _defaultOnboardingDatasourceFactory;
+  final resolveLogger = appLoggerFactory ?? _defaultAppLoggerFactory;
   return GoRouter(
     initialLocation:
         initialLocation ??
@@ -250,7 +261,10 @@ GoRouter createRouter({
       ),
       GoRoute(
         path: AppRoutes.onboarding,
-        builder: (context, state) => const OnboardingPage(),
+        builder: (context, state) => OnboardingPage(
+          datasource: resolveOnboardingDatasource(),
+          logger: resolveLogger(),
+        ),
       ),
       GoRoute(
         path: '${AppRoutes.inviteJoinBase}/:code',
@@ -267,6 +281,7 @@ GoRouter createRouter({
             value: resolvePeopleCubit(),
             child: Scaffold(
               body: PeopleView(
+                storage: resolveStorage(),
                 pendingInviteCode: route?.code,
                 onJoined: () {
                   coordinator.refreshAll();
@@ -286,6 +301,7 @@ GoRouter createRouter({
             value: resolvePeopleCubit(),
             child: Scaffold(
               body: PeopleView(
+                storage: resolveStorage(),
                 pendingInviteCode: route?.code,
                 onJoined: () {
                   coordinator.refreshAll();
@@ -327,6 +343,7 @@ GoRouter createRouter({
                   return BlocProvider<PeopleCubit>.value(
                     value: cubit,
                     child: PeopleView(
+                      storage: resolveStorage(),
                       pendingInviteCode:
                           state.uri.queryParameters[AppRoutes.inviteCodeParam],
                       onJoined: coordinator.refreshAll,
@@ -459,6 +476,26 @@ NotificationSettingsCubit _defaultNotificationSettingsCubitFactory() =>
 ManageProfileCubit _defaultManageProfileCubitFactory() => ManageProfileCubit(
   authService: slInstance<AuthService>(instanceName: 'authService'),
 );
+
+/// Dismissal-flag store for [PeopleView]: resolved by name from GetIt in
+/// production; tests pass `localStorageDatasourceFactory` to inject a fake.
+LocalStorageDatasource _defaultLocalStorageDatasourceFactory() =>
+    slInstance(instanceName: 'localStorageDatasource');
+
+/// Completion-flag store for [OnboardingPage]: resolved by name from GetIt
+/// in production; tests pass `onboardingDatasourceFactory` to inject a fake.
+OnboardingLocalDatasource _defaultOnboardingDatasourceFactory() =>
+    slInstance(instanceName: 'onboardingLocalDatasource');
+
+/// Observability sink for [OnboardingPage] completion failures: resolved
+/// by name from GetIt in production so the warning reaches Crashlytics;
+/// tests pass `appLoggerFactory` to inject a fake. Falls back to a local
+/// [AppLogger] when GetIt has no registration (widget tests, previews),
+/// matching the intentional fallback documented on [OnboardingPage].
+AppLogger _defaultAppLoggerFactory() =>
+    slInstance.isRegistered<AppLogger>(instanceName: 'appLogger')
+    ? slInstance<AppLogger>(instanceName: 'appLogger')
+    : AppLogger();
 
 /// One-shot paywall: fresh per visit, owned by `BlocProvider(create:)`.
 /// The catalog is mocked in the repository until store billing is wired.
