@@ -5,6 +5,19 @@ edges, generated). Goal: one Dart package per feature with an explicit
 public API, without ever breaking CI (`flutter analyze` clean, 100%
 per-file `domain/`+`application/` coverage).
 
+> Workspace status (this PR): the Melos workspace is live — `packages/`
+> holds `house_mira_core` + 8 feature packages (independently versioned,
+> `CODEOWNERS`-owned), the app shell keeps only the composition root
+> (`main.dart`, `core/router/*`, `core/injections/service_locator.dart`),
+> and `tool/check_feature_boundaries.py` (P1–P4) enforces the import
+> rules in CI alongside R1–R5. Decoupling landed with it: the route
+> table lives in core (typed reminder routes in the reminders package),
+> `AuthService` exposes core-pure `getCurrentProfile()` (no
+> core→people import), and account settings depend on core's
+> `NotificationSender` (no account→reminders application import).
+> Remaining Phase 2 item: move the two shared people widgets to
+> `core/widgets/` and switch repository contracts to entities.
+
 ## Current state (2026-10-10, measured)
 
 - 186 Dart files in `lib/`, ~29k LOC. Features: people (33 files),

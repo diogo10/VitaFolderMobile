@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:house_mira/core/auth/auth_state_notifier.dart' show AuthStateNotifier;
+import 'package:house_mira_core/auth/auth_state_notifier.dart' show AuthStateNotifier;
 
 /// Transient loading screen shown while the authentication state is being
 /// determined (session recovery on app restart).

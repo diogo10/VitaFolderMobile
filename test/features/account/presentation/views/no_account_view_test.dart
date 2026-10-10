@@ -4,18 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:house_mira/core/auth/auth_service.dart';
-import 'package:house_mira/core/auth/google_sign_in_handler.dart';
-import 'package:house_mira/core/widgets/sand/google_g_icon.dart';
-import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
-import 'package:house_mira/features/account/presentation/views/no_account_view.dart';
-import 'package:house_mira/features/people/domain/entities/family_entity.dart';
-import 'package:house_mira/features/people/domain/entities/person_entity.dart';
-import 'package:house_mira/features/people/domain/repository/people_repository.dart';
-import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_core/auth/google_sign_in_handler.dart';
+import 'package:house_mira_core/widgets/sand/google_g_icon.dart';
+import 'package:house_mira_account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira_account/presentation/views/no_account_view.dart';
+import 'package:house_mira_people/domain/entities/family_entity.dart';
+import 'package:house_mira_people/domain/entities/person_entity.dart';
+import 'package:house_mira_people/domain/repository/people_repository.dart';
+import 'package:house_mira_core/generated/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:house_mira/core/subscriptions/subscription_service.dart';
+import 'package:house_mira_core/subscriptions/subscription_service.dart';
 
 class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
@@ -28,7 +28,7 @@ class _FakeAuthService extends AuthService {
         googleSignInHandler: _MockGoogleSignInHandler(),
       );
 
-  Completer<PersonEntity?> personCompleter = Completer<PersonEntity?>()
+  Completer<({String? name, String? email})?> personCompleter = Completer<({String? name, String? email})?>()
     ..complete(null);
   String? lastSignInEmail;
   String? lastSignInPassword;
@@ -36,7 +36,7 @@ class _FakeAuthService extends AuthService {
   int googleSignInCalls = 0;
 
   @override
-  Future<PersonEntity?> getAsPersonEntity() => personCompleter.future;
+  Future<({String? name, String? email})?> getCurrentProfile() => personCompleter.future;
 
   @override
   Future<void> signIn({required String email, required String password}) async {
@@ -245,7 +245,7 @@ void main() {
       tester,
     ) async {
       // Pending lookup keeps the cubit in AccountLoading while pumping.
-      authService.personCompleter = Completer<PersonEntity?>();
+      authService.personCompleter = Completer<({String? name, String? email})?>();
       final cubit = buildCubit();
       unawaited(cubit.loadAccount());
 

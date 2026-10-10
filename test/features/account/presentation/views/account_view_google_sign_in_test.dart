@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:house_mira/core/auth/auth_service.dart';
-import 'package:house_mira/core/auth/google_sign_in_handler.dart';
-import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
-import 'package:house_mira/features/account/presentation/views/account_view.dart';
-import 'package:house_mira/features/people/domain/entities/family_entity.dart';
-import 'package:house_mira/features/people/domain/entities/person_entity.dart';
-import 'package:house_mira/features/people/domain/repository/people_repository.dart';
-import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_core/auth/google_sign_in_handler.dart';
+import 'package:house_mira_account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira_account/presentation/views/account_view.dart';
+import 'package:house_mira_people/domain/entities/family_entity.dart';
+import 'package:house_mira_people/domain/entities/person_entity.dart';
+import 'package:house_mira_people/domain/repository/people_repository.dart';
+import 'package:house_mira_core/generated/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:house_mira/core/subscriptions/subscription_service.dart';
+import 'package:house_mira_core/subscriptions/subscription_service.dart';
 
 class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
@@ -26,7 +26,7 @@ class _FailingGoogleAuthService extends AuthService {
       );
 
   @override
-  Future<PersonEntity?> getAsPersonEntity() async => null;
+  Future<({String? name, String? email})?> getCurrentProfile() async => null;
 
   @override
   Future<User?> signInWithGoogle() async {

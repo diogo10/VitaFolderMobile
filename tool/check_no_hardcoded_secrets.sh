@@ -7,20 +7,20 @@ fail=0
 
 # 1. Real Supabase publishable/secret keys must never appear in Dart source.
 #    (Tests use the literal 'mock-anon-key', which contains no key material.)
-if grep -rEn --include='*.dart' 'sb_(publishable|secret)_' lib/ test/; then
+if grep -rEn --include='*.dart' 'sb_(publishable|secret)_' lib/ packages/ test/; then
   echo "::error::Hardcoded Supabase key found. Inject keys via --dart-define / env/<flavor>.json instead."
   fail=1
 fi
 
 # 2. Hardcoded Supabase project URLs must not appear in lib/.
 #    test/ may reference https://mock.supabase.co as a fake.
-if grep -rEn --include='*.dart' 'https://[A-Za-z0-9-]+\.supabase\.co' lib/ | grep -v 'your-[a-z-]*\.supabase\.co'; then
+if grep -rEn --include='*.dart' 'https://[A-Za-z0-9-]+\.supabase\.co' lib/ packages/ | grep -v 'your-[a-z-]*\.supabase\.co'; then
   echo "::error::Hardcoded Supabase URL found in lib/. Use AppConfig (--dart-define) instead."
   fail=1
 fi
 
 # 3. Service-role keys are server-only and must never ship in the client.
-if grep -rEni --include='*.dart' 'service.role|SERVICE_ROLE' lib/; then
+if grep -rEni --include='*.dart' 'service.role|SERVICE_ROLE' lib/ packages/; then
   echo "::error::Service-role key reference found in lib/. Service-role keys are server-only."
   fail=1
 fi
@@ -35,7 +35,7 @@ fi
 # 5. RevenueCat public API keys must never be hardcoded in lib/.
 #    (Tests use 'fake-apple-key' / 'fake-google-key' placeholders, which
 #    carry no key material and do not match the appl_/goog_ key prefixes.)
-if grep -rEn --include='*.dart' '(appl|goog|amzn)_[A-Za-z0-9]{6,}' lib/; then
+if grep -rEn --include='*.dart' '(appl|goog|amzn)_[A-Za-z0-9]{6,}' lib/ packages/; then
   echo "::error::Hardcoded RevenueCat API key found in lib/. Inject keys via --dart-define / env/<flavor>.json instead."
   fail=1
 fi

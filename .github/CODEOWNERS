@@ -1,0 +1,20 @@
+# Team ownership for the Melos workspace.
+# Each feature package is independently versioned; owners approve
+# changes to their package's public API (barrel + domain/) and DI entry
+# point (*_service_locator.dart).
+
+/packages/house_mira_core/ @diogo10/core-team
+/packages/house_mira_people/ @diogo10/people-team
+/packages/house_mira_reminders/ @diogo10/reminders-team
+/packages/house_mira_notes/ @diogo10/notes-team
+/packages/house_mira_home/ @diogo10/home-team
+/packages/house_mira_account/ @diogo10/account-team
+/packages/house_mira_login/ @diogo10/account-team
+/packages/house_mira_onboarding/ @diogo10/growth-team
+/packages/house_mira_paywall/ @diogo10/growth-team
+
+# Composition root (app shell) needs core-team sign-off: router and DI
+# wiring touch every feature.
+/lib/ @diogo10/core-team
+/melos.yaml @diogo10/core-team
+/tool/check_feature_boundaries.py @diogo10/core-team
