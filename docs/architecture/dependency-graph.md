@@ -14,11 +14,10 @@ edge header lists every importing file once.
 ```mermaid
 flowchart LR
     account -.->|"presentation x1 imports"| people
-    account -.->|"presentation x1 imports"| reminders
     home -->|"domain x4 imports"| people
     home -.->|"presentation x3 imports"| people
     home -->|"domain x4 imports"| reminders
-    home -.->|"presentation x5 imports"| reminders
+    home -.->|"presentation x6 imports"| reminders
     notes -->|"domain x1 imports"| people
     notes -.->|"presentation x2 imports"| people
     reminders -->|"domain x1 imports"| people
@@ -30,10 +29,6 @@ flowchart LR
 ### `account` → `people` (presentation, 1 imports)
 
 - `account/presentation/cubit/account_cubit.dart`
-
-### `account` → `reminders` (presentation, 1 imports)
-
-- `account/presentation/cubit/notification_settings_cubit.dart`
 
 ### `home` → `people` (domain, 4 imports)
 
@@ -52,8 +47,9 @@ flowchart LR
 - `home/domain/usecase/get_home_data_usecase.dart`
 - `home/domain/usecase/has_reminders_usecase.dart`
 
-### `home` → `reminders` (presentation, 5 imports)
+### `home` → `reminders` (presentation, 6 imports)
 
+- `home/presentation/views/home_view_success.dart`
 - `home/presentation/views/widgets/home_reminder_tile_widget.dart`
 - `home/presentation/views/widgets/home_upcoming_reminders_widget.dart`
 

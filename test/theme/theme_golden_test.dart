@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:house_mira/generated/app_localizations.dart';
-import 'package:house_mira/theme/app_constants.dart';
-import 'package:house_mira/theme/app_theme.dart';
-import 'package:house_mira/theme/sand_palette.dart';
-import 'package:house_mira/theme/theme_extensions.dart';
+import 'package:house_mira_core/generated/app_localizations.dart';
+import 'package:house_mira_core/theme/app_constants.dart';
+import 'package:house_mira_core/theme/app_theme.dart';
+import 'package:house_mira_core/theme/sand_palette.dart';
+import 'package:house_mira_core/theme/theme_extensions.dart';
 
 /// Golden + unit tests for the theme layer (`lib/theme/`).
 ///

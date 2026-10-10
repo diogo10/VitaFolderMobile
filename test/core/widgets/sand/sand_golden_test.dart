@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:house_mira/core/widgets/sand/google_g_icon.dart';
-import 'package:house_mira/core/widgets/sand/sand_brand_mark.dart';
-import 'package:house_mira/core/widgets/sand/sand_header.dart';
-import 'package:house_mira/core/widgets/sand/sand_primary_button.dart';
-import 'package:house_mira/core/widgets/sand/sand_social_button.dart';
-import 'package:house_mira/core/widgets/sand/sand_text_field.dart';
-import 'package:house_mira/generated/app_localizations.dart';
-import 'package:house_mira/theme/app_theme.dart';
+import 'package:house_mira_core/widgets/sand/google_g_icon.dart';
+import 'package:house_mira_core/widgets/sand/sand_brand_mark.dart';
+import 'package:house_mira_core/widgets/sand/sand_header.dart';
+import 'package:house_mira_core/widgets/sand/sand_primary_button.dart';
+import 'package:house_mira_core/widgets/sand/sand_social_button.dart';
+import 'package:house_mira_core/widgets/sand/sand_text_field.dart';
+import 'package:house_mira_core/generated/app_localizations.dart';
+import 'package:house_mira_core/theme/app_theme.dart';
 
 /// Golden tests for the sand design system (`lib/core/widgets/sand/`).
 ///

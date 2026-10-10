@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira_core/generated/app_localizations.dart';
 
 class MainShell extends StatelessWidget {
   const MainShell({required this.navigationShell, super.key});
