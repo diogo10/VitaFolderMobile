@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:house_mira/features/notes/domain/entities/note_color.dart';
+import 'package:house_mira/features/notes/presentation/utils/note_color_palette.dart';
 import 'package:house_mira/theme/sand_palette.dart';
 
 /// Color swatch picker per `designs/html/01-FamilyAdmin - Notes (Create).html`:

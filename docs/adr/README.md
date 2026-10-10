@@ -13,6 +13,7 @@ one, open a PR that updates the ADR and the affected code together.
 | [0003](0003-error-handling-either-failure.md) | Error handling: `Either<Failure, T>` at repository boundary | Accepted |
 | [0004](0004-data-modeling-entity-from-null.md) | Data modeling: `entity.from()` returns `null` on invalid input | Accepted |
 | [0005](0005-localization-l10n-only.md) | Localization: l10n-only strings in UI | Accepted |
+| [0006](0006-feature-packages-modularization.md) | Feature packages: explicit APIs, enforced layer boundaries | Accepted |
 
 Related standards (not ADRs, same authority):
 

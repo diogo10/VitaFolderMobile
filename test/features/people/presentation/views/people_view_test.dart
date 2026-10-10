@@ -4,7 +4,6 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
@@ -25,10 +24,7 @@ void main() {
   late _MockPeopleCubit cubit;
 
   setUpAll(() {
-    GetIt.instance.registerSingleton<LocalStorageDatasource>(
-      LocalStorageDatasource(),
-      instanceName: 'localStorageDatasource',
-    );
+    SharedPreferences.setMockInitialValues({});
   });
 
   setUp(() {
@@ -46,7 +42,7 @@ void main() {
       home: Scaffold(
         body: BlocProvider<PeopleCubit>.value(
           value: cubit,
-          child: const PeopleView(),
+          child: PeopleView(storage: LocalStorageDatasource()),
         ),
       ),
     );
@@ -141,7 +137,10 @@ void main() {
             value: authService,
             child: BlocProvider<PeopleCubit>.value(
               value: cubit,
-              child: PeopleView(onJoined: onJoined),
+              child: PeopleView(
+                storage: LocalStorageDatasource(),
+                onJoined: onJoined,
+              ),
             ),
           ),
         ),

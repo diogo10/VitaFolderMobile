@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/features/people/domain/entities/person_entity.dart';
@@ -19,22 +18,24 @@ class PeopleLoadedWidget extends StatefulWidget {
     required this.people,
     required this.inviteCode,
     required this.familyName,
+    required this.storage,
     super.key,
   });
   final List<PersonEntity> people;
   final String inviteCode;
   final String familyName;
 
+  /// Dismissal-flag store, constructor-injected (no GetIt in widgets).
+  final LocalStorageDatasource storage;
+
   @override
   State<PeopleLoadedWidget> createState() => _PeopleLoadedWidgetState();
 }
 
 class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
-  final LocalStorageDatasource _storage =
-      GetIt.instance<LocalStorageDatasource>(
-        instanceName: 'localStorageDatasource',
-      );
   bool _showInviteCodeCard = true;
+
+  LocalStorageDatasource get _storage => widget.storage;
 
   @override
   void initState() {

@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:house_mira/features/notes/domain/entities/note_color.dart';
+import 'package:meta/meta.dart';
 
 /// Immutable family note entity.
 ///

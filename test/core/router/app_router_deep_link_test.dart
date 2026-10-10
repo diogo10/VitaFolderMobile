@@ -8,6 +8,7 @@ import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/errors/failure.dart';
 import 'package:house_mira/core/functions/edget_functions.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/core/router/app_router.dart';
 import 'package:house_mira/core/subscriptions/subscription_service.dart';
 import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
@@ -184,6 +185,7 @@ void main() {
       invitePeopleCubitFactory: () =>
           InvitePeopleCubit(edgetFunctions: _MockEdgetFunctions()),
       createReminderCubitFactory: buildCreateCubit,
+      localStorageDatasourceFactory: LocalStorageDatasource.new,
     );
   }
 

@@ -24,9 +24,13 @@ client), `errors/` (`Failure`), `widgets/sand/` (design system),
 ## Dependency injection
 
 GetIt, wired per feature in `lib/core/injections/<feature>/*_service_locator.dart`
-(sl cascades), aggregated in `service_locator.dart`. Inject via constructor;
-never call `GetIt.instance` directly in widgets (one legacy exception exists
-in people — don't copy it). Tests pass fakes/mocks through constructors.
+(cascades), aggregated in `service_locator.dart`. Inject via constructor;
+never call `GetIt.instance` / `slInstance` in widgets, pages, or cubits —
+resolution happens in service locators, router `*Factory` seams
+(`lib/core/router/app_router.dart`), and `lib/main.dart`. Widget/page
+tests pass fakes through constructors; router tests use the factory
+seams. Layer rules R1–R5 are enforced by
+`tool/check_layer_boundaries.py` (see ADR-0006).
 
 ## Data conventions
 

@@ -27,8 +27,10 @@ path when reviewer and author disagree.
 
 - [ ] Every registration/resolution passes explicit `instanceName`
       (type parameter explicit or inferred).
-- [ ] Constructor injection only — no `GetIt` import in widgets/cubits
-      (except the two legacy exceptions documented in ADR-0002).
+- [ ] Constructor injection only — no `GetIt` import or
+      `GetIt.instance`/`slInstance` call under `lib/features/`
+      (checked by `tool/check_layer_boundaries.py` R3; resolution lives
+      in service locators, router `*Factory` seams, and `main.dart`).
 - [ ] Tab cubits lazy-singleton; one-shot cubits unregistered, built
       fresh in route factory.
 - [ ] Tests inject fakes via constructors, no GetIt setup.

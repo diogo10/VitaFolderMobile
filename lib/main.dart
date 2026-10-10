@@ -11,6 +11,7 @@ import 'package:house_mira/core/config/app_config.dart';
 import 'package:house_mira/core/config/app_flavor.dart';
 import 'package:house_mira/core/config/firebase_options_provider.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/observability/crash_reporter.dart';
 import 'package:house_mira/core/observability/performance_tracer.dart';
@@ -172,6 +173,8 @@ class MyApp extends StatefulWidget {
     this.familySettingsCubitFactory,
     this.notificationSettingsCubitFactory,
     this.manageProfileCubitFactory,
+    this.localStorageDatasourceFactory,
+    this.onboardingDatasourceFactory,
   });
   final bool onboardingCompleted;
   final AuthStateNotifier? authStateNotifier;
@@ -208,6 +211,14 @@ class MyApp extends StatefulWidget {
   final FamilySettingsCubit Function()? familySettingsCubitFactory;
   final NotificationSettingsCubit Function()? notificationSettingsCubitFactory;
   final ManageProfileCubit Function()? manageProfileCubitFactory;
+
+  /// Testing seam for the dismissal-flag store forwarded to `PeopleView`
+  /// (see [createRouter]): defaults to the GetIt singleton.
+  final LocalStorageDatasource Function()? localStorageDatasourceFactory;
+
+  /// Testing seam for the completion-flag store forwarded to
+  /// `OnboardingPage` (see [createRouter]): defaults to GetIt.
+  final OnboardingLocalDatasource Function()? onboardingDatasourceFactory;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -261,6 +272,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       familySettingsCubitFactory: widget.familySettingsCubitFactory,
       notificationSettingsCubitFactory: widget.notificationSettingsCubitFactory,
       manageProfileCubitFactory: widget.manageProfileCubitFactory,
+      localStorageDatasourceFactory: widget.localStorageDatasourceFactory,
+      onboardingDatasourceFactory: widget.onboardingDatasourceFactory,
       showNotificationTestAction: widget.showNotificationTestAction,
     );
     WidgetsBinding.instance.addObserver(this);

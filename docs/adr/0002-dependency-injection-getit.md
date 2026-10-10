@@ -30,12 +30,11 @@ register the same generic types (repository interfaces, use cases).
   `lib/core/injections/people/people_service_locator.dart`); the
   `instanceName` itself is always explicit, never omitted.
 - Inject via constructors everywhere. Never call `GetIt.instance` /
-  `slInstance` directly in widgets or cubits — resolution happens in
-  service locators, router default factories
+  `slInstance` directly in widgets, pages, or cubits — resolution happens
+  in service locators, router default factories
   (`lib/core/router/app_router.dart`), and the `lib/main.dart`
-  composition root. Legacy exceptions (do not copy):
-  `lib/features/people/presentation/widgets/people_loaded_widget.dart`
-  and `lib/features/onboarding/presentation/pages/onboarding_page.dart`.
+  composition root. (The former people/onboarding legacy exceptions were
+  removed by ADR-0006; zero remain.)
 - Register tab cubits as lazy singletons; one-shot cubits
   (`FamilySettingsCubit`, `InvitePeopleCubit`, `CreateReminderCubit`, …)
   are **not** registered — the route's default factory builds them fresh
@@ -64,7 +63,7 @@ register the same generic types (repository interfaces, use cases).
 - [ ] Every registration and every resolution passes an explicit
       `instanceName` (generic type parameter explicit or inferred)?
 - [ ] Consumer takes the dependency via constructor (no `GetIt` import
-      in widgets/cubits — except the two documented legacy exceptions)?
+      or `GetIt.instance`/`slInstance` call under `lib/features/`)?
 - [ ] Tab cubit registered lazy-singleton; one-shot cubit built fresh in
       the route factory, not registered?
 - [ ] Tests inject fakes via constructors, no GetIt reset/setup?

@@ -40,6 +40,11 @@ jobs:
       - name: Run tests with coverage
         run: flutter test --coverage
 
+      - name: Enforce layer boundaries (ADR-0006)
+        # Rules R1-R5 live in tool/check_layer_boundaries.py (same logic
+        # as CI) so they also run locally.
+        run: python3 tool/check_layer_boundaries.py
+
       - name: Enforce 100% business-logic coverage
         # Gate lives in tool/check_business_logic_coverage.py (same logic as
         # the former inline script) so it can also run locally.

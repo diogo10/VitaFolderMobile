@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:house_mira/core/auth/auth_service.dart';
 import 'package:house_mira/core/auth/auth_state_notifier.dart';
 import 'package:house_mira/core/errors/failure.dart';
+import 'package:house_mira/core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira/core/router/app_router.dart';
 import 'package:house_mira/core/router/splash_view.dart';
 import 'package:house_mira/core/router/tab_refresh_coordinator.dart';
@@ -20,6 +21,7 @@ import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira/features/home/presentation/views/home_view.dart';
 import 'package:house_mira/features/login/presentation/cubit/sign_up_cubit.dart';
 import 'package:house_mira/features/login/presentation/views/sign_up_screen.dart';
+import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:house_mira/features/onboarding/presentation/views/onboarding_view.dart';
 import 'package:house_mira/features/paywall/data/repository/paywall_repository_impl.dart';
 import 'package:house_mira/features/paywall/presentation/cubit/paywall_cubit.dart';
@@ -196,6 +198,8 @@ void main() {
       remindersCubitFactory: () => remindersCubit,
       accountCubitFactory: () => accountCubit,
       signUpCubitFactory: () => SignUpCubit(resolvedAuth),
+      localStorageDatasourceFactory: LocalStorageDatasource.new,
+      onboardingDatasourceFactory: OnboardingLocalDatasource.new,
     );
   }
 
@@ -590,8 +594,8 @@ void main() {
       'holds splash until the initial session is recovered (no FOUNC)',
       (tester) async {
         final notifier = AuthStateNotifier(
-          authStateStream: authEvents.stream,
-        );
+        authStateStream: authEvents.stream,
+      );
         addTearDown(notifier.dispose);
         final router = buildRouter(notifier: notifier);
 
@@ -727,10 +731,7 @@ void main() {
 
       // Sign out while on home: guest browsing is allowed, no forced
       // navigation, but the notifier reflects the signed-out state.
-      await emitAuth(
-        tester,
-        const AuthState(AuthChangeEvent.signedOut, null),
-      );
+      await emitAuth(tester, const AuthState(AuthChangeEvent.signedOut, null));
       expect(notifier.isAuthenticated, isFalse);
       expect(router.state.uri.path, '/home');
 
