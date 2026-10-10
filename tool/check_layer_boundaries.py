@@ -59,6 +59,66 @@ def feature_of(path: Path) -> str | None:
     return rel[0] if len(rel) > 1 else None
 
 
+def check_text(
+    rel: str,
+    feature: str | None,
+    layer: str | None,
+    text: str,
+) -> list[str]:
+    """Returns violation strings for one file's text (testable helper)."""
+    hits: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith('//'):
+            continue
+        if feature is not None and LOCATE_CALL.search(line):
+            hits.append(f'R3 {rel}: direct service location: {stripped[:80]}')
+        match = IMPORT.match(line)
+        if not match:
+            continue
+        uri = match.group(1)
+
+        # R1: domain has zero Flutter imports.
+        if layer == 'domain' and uri.startswith('package:flutter'):
+            hits.append(f'R1 {rel}: Flutter import in domain: {uri}')
+
+        # R2: Supabase stays at the data boundary.
+        if 'supabase' in uri:
+            allowed = (
+                layer == 'data'
+                or rel.startswith(CORE_SUPABASE_ALLOW)
+                or rel in ROOT_SUPABASE_ALLOW
+            )
+            if not allowed:
+                hits.append(f'R2 {rel}: Supabase import outside data: {uri}')
+
+        # R3: no GetIt/service-locator imports inside features.
+        if feature is not None and (
+            uri.startswith('package:get_it')
+            or uri.endswith('/service_locator.dart')
+            or 'core/injections/service_locator' in uri
+        ):
+            hits.append(f'R3 {rel}: DI import inside feature: {uri}')
+
+        # R4: domain must not reach into another feature's
+        # data/application/presentation layers.
+        if layer == 'domain':
+            m = re.match(
+                r'package:house_mira/features/([^/]+)/([^/]+)/', uri,
+            )
+            if m and m.group(1) != feature and m.group(2) in (
+                'data',
+                'application',
+                'presentation',
+            ):
+                hits.append(f'R4 {rel}: domain reaches into {uri}')
+
+        # R5: flutter_bloc only under features.
+        if feature is not None and uri.startswith('package:provider/'):
+            hits.append(f'R5 {rel}: provider import in feature: {uri}')
+    return hits
+
+
 def layer_of(path: Path) -> str | None:
     try:
         rel = path.relative_to(FEATURES).parts
@@ -89,61 +149,7 @@ def main() -> None:
         except OSError as exc:
             fail('IO', rel, str(exc))
             continue
-        for line in text.splitlines():
-            stripped = line.strip()
-            if stripped.startswith('//'):
-                continue
-            if feature is not None and LOCATE_CALL.search(line):
-                fail('R3', rel, f'direct service location: {stripped[:80]}')
-            match = IMPORT.match(line)
-            if not match:
-                continue
-            uri = match.group(1)
-
-            # R1: domain has zero Flutter imports.
-            if layer == 'domain' and (
-                uri == 'package:flutter/material.dart'
-                or uri.startswith('package:flutter/')
-                or uri.startswith('package:flutter_')
-            ):
-                # package:flutter_localizations etc. never belong in domain.
-                if uri.startswith('package:flutter'):
-                    fail('R1', rel, f'Flutter import in domain: {uri}')
-
-            # R2: Supabase stays at the data boundary.
-            if 'supabase' in uri:
-                allowed = (
-                    layer == 'data'
-                    or rel.startswith(CORE_SUPABASE_ALLOW)
-                    or rel in ROOT_SUPABASE_ALLOW
-                )
-                if not allowed:
-                    fail('R2', rel, f'Supabase import outside data: {uri}')
-
-            # R3: no GetIt/service-locator imports inside features.
-            if feature is not None and (
-                uri.startswith('package:get_it')
-                or uri.endswith('/service_locator.dart')
-                or 'core/injections/service_locator' in uri
-            ):
-                fail('R3', rel, f'DI import inside feature: {uri}')
-
-            # R4: domain must not reach into another feature's
-            # data/application/presentation layers.
-            if layer == 'domain':
-                m = re.match(
-                    r'package:house_mira/features/([^/]+)/([^/]+)/', uri,
-                )
-                if m and m.group(1) != feature and m.group(2) in (
-                    'data',
-                    'application',
-                    'presentation',
-                ):
-                    fail('R4', rel, f'domain reaches into {uri}')
-
-            # R5: flutter_bloc only under features.
-            if feature is not None and uri.startswith('package:provider/'):
-                fail('R5', rel, f'provider import in feature: {uri}')
+        failures.extend(check_text(rel, feature, layer, text))
 
     if failures:
         print('::error::Layer-boundary violations (ADR-0006):')

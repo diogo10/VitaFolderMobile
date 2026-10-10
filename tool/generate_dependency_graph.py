@@ -9,6 +9,12 @@ Scans lib/features imports and reports:
     presentation-level edges;
   * layer rule notes (domain must only touch other domains, never
     data/presentation/application of another feature).
+
+Limitation: only imports that name an explicit layer directory are
+counted (`package:house_mira/features/<feature>/<layer>/...`). Barrel
+imports that stop at the feature root (e.g.
+`package:house_mira/features/foo/foo.dart`) carry no layer segment, so
+they are skipped and never produce an edge.
 """
 
 import re
@@ -20,7 +26,11 @@ ROOT = Path(__file__).resolve().parent.parent
 FEATURES = ROOT / 'lib' / 'features'
 DOC = ROOT / 'docs' / 'architecture' / 'dependency-graph.md'
 
-IMPORT = re.compile(r"""^\s*import\s+['"]package:house_mira/features/([^/]+)/([^/]+)/""")
+# Captures the full import URI in group 1; the feature/layer split is
+# derived from it via FEATURE_PATH so single- and double-quoted imports
+# (including `as`/`show`/`hide` suffixes) all parse identically.
+IMPORT = re.compile(r"""^\s*import\s+['"]([^'"]+)['"]""")
+FEATURE_PATH = re.compile(r'package:house_mira/features/([^/]+)/([^/]+)/')
 HEADER_WIDGET = 'package:house_mira/features/people/presentation/widgets/family_header_widget.dart'
 DOMAIN_OR_APP = {'domain', 'application'}
 
@@ -42,10 +52,13 @@ def scan():
             m = IMPORT.match(line)
             if not m:
                 continue
-            uri = line.split("'")[1] if "'" in line else line.split('"')[1]
+            uri = m.group(1)
+            fm = FEATURE_PATH.search(uri)
+            if not fm:
+                continue
             if uri == HEADER_WIDGET and src_feature != 'people':
                 header_users.append('/'.join(rel))
-            dst_feature, dst_layer = m.group(1), m.group(2)
+            dst_feature, dst_layer = fm.group(1), fm.group(2)
             if dst_feature == src_feature:
                 continue
             kind = (
@@ -106,7 +119,9 @@ def render(edges, per_edge_files, header_users) -> str:
     for f in header_users:
         lines.append(f'  - `{f}`')
     lines.append('')
-    return '\n'.join(lines) + '\n'
+    # lines ends with a '' sentinel, so join already yields one trailing
+    # newline; normalize to exactly one (no double-newline).
+    return '\n'.join(lines).rstrip('\n') + '\n'
 
 
 def main() -> None:

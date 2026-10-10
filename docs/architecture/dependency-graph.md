@@ -89,4 +89,3 @@ flowchart LR
   - `home/presentation/views/widgets/home_success_header_widget.dart`
   - `notes/presentation/views/notes_view.dart`
   - `reminders/presentation/widgets/reminders_header_widget.dart`
-

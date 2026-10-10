@@ -594,8 +594,8 @@ void main() {
       'holds splash until the initial session is recovered (no FOUNC)',
       (tester) async {
         final notifier = AuthStateNotifier(
-        authStateStream: authEvents.stream,
-      );
+          authStateStream: authEvents.stream,
+        );
         addTearDown(notifier.dispose);
         final router = buildRouter(notifier: notifier);
 
@@ -731,7 +731,10 @@ void main() {
 
       // Sign out while on home: guest browsing is allowed, no forced
       // navigation, but the notifier reflects the signed-out state.
-      await emitAuth(tester, const AuthState(AuthChangeEvent.signedOut, null));
+      await emitAuth(
+        tester,
+        const AuthState(AuthChangeEvent.signedOut, null),
+      );
       expect(notifier.isAuthenticated, isFalse);
       expect(router.state.uri.path, '/home');
 
