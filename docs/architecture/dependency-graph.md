@@ -8,19 +8,21 @@ Direction: `A --> B` means a file in feature A imports a file
 from feature B. `domain` edges originate in `domain/` or
 `application/` (business logic); `presentation` edges originate
 in `presentation/` or the feature-local `data/` glue.
+Edge counts are import statements, not distinct files; each
+edge header lists every importing file once.
 
 ```mermaid
 flowchart LR
-    account -.->|"presentation x1"| people
-    account -.->|"presentation x1"| reminders
-    home -->|"domain x4"| people
-    home -.->|"presentation x3"| people
-    home -->|"domain x4"| reminders
-    home -.->|"presentation x5"| reminders
-    notes -->|"domain x1"| people
-    notes -.->|"presentation x2"| people
-    reminders -->|"domain x1"| people
-    reminders -.->|"presentation x3"| people
+    account -.->|"presentation x1 imports"| people
+    account -.->|"presentation x1 imports"| reminders
+    home -->|"domain x4 imports"| people
+    home -.->|"presentation x3 imports"| people
+    home -->|"domain x4 imports"| reminders
+    home -.->|"presentation x5 imports"| reminders
+    notes -->|"domain x1 imports"| people
+    notes -.->|"presentation x2 imports"| people
+    reminders -->|"domain x1 imports"| people
+    reminders -.->|"presentation x3 imports"| people
 ```
 
 ## Edges

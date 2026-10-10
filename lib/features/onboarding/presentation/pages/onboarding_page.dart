@@ -13,8 +13,12 @@ class OnboardingPage extends StatelessWidget {
   /// Resolved by name at the router composition root.
   final OnboardingLocalDatasource datasource;
 
-  /// Observability sink for completion failures; defaults to a shared
-  /// [AppLogger] so the router seam stays dependency-free.
+  /// Observability sink for completion failures, injected at the router
+  /// seam (GetIt `appLogger`, Crashlytics-backed in production). The
+  /// `?? AppLogger()` fallback below is intentional for widget tests that
+  /// build [OnboardingPage] directly without DI: it keeps the failure
+  /// visible via debugPrint plus the retry SnackBar instead of throwing
+  /// on a missing registration.
   final AppLogger? logger;
 
   Future<void> _handleComplete(BuildContext context) async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira/core/observability/app_logger.dart';
 import 'package:house_mira/core/router/app_routes.dart';
 import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:house_mira/features/onboarding/presentation/pages/onboarding_page.dart';
@@ -10,13 +11,16 @@ import 'package:mocktail/mocktail.dart';
 
 class _MockDatasource extends Mock implements OnboardingLocalDatasource {}
 
-GoRouter testRouter(OnboardingLocalDatasource datasource) {
+class _MockAppLogger extends Mock implements AppLogger {}
+
+GoRouter testRouter(OnboardingLocalDatasource datasource, {AppLogger? logger}) {
   return GoRouter(
     initialLocation: '/',
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => OnboardingPage(datasource: datasource),
+        builder: (context, state) =>
+            OnboardingPage(datasource: datasource, logger: logger),
       ),
       GoRoute(
         path: AppRoutes.home,
@@ -28,9 +32,10 @@ GoRouter testRouter(OnboardingLocalDatasource datasource) {
 
 Future<void> pumpPage(
   WidgetTester tester,
-  OnboardingLocalDatasource datasource,
-) async {
-  final router = testRouter(datasource);
+  OnboardingLocalDatasource datasource, {
+  AppLogger? logger,
+}) async {
+  final router = testRouter(datasource, logger: logger);
   addTearDown(router.dispose);
   await tester.pumpWidget(
     MaterialApp.router(
@@ -87,6 +92,27 @@ void main() {
       expect(find.text('home'), findsOneWidget);
       expect(find.text(l.onboardingCompleteFailed), findsNothing);
       verify(datasource.completeOnboarding).called(1);
+    });
+
+    testWidgets('failure is reported to the injected logger', (tester) async {
+      final datasource = _MockDatasource();
+      when(datasource.completeOnboarding).thenThrow(Exception('disk full'));
+      final logger = _MockAppLogger();
+      await pumpPage(tester, datasource, logger: logger);
+      await reachLastPage(tester);
+      final l = labelsOf(tester);
+
+      await tester.tap(find.text(l.onboardingGetStarted));
+      await tester.pump();
+
+      verify(
+        () => logger.warning(
+          'completeOnboarding failed',
+          tag: 'onboarding',
+          error: any(named: 'error'),
+          stackTrace: any(named: 'stackTrace'),
+        ),
+      ).called(1);
     });
   });
 }

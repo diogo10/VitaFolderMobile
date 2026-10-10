@@ -125,11 +125,16 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
   }
 
   void _closeInviteCodeCardClicked() {
+    // Best-effort only: a failing flag store must never surface an
+    // unhandled async error (matches the load-path comment in
+    // [_loadInviteCodeCardVisibility]).
     unawaited(
-      _storage.setBool(
-        'invite_code_card_dismissed_${widget.inviteCode}',
-        value: true,
-      ),
+      _storage
+          .setBool(
+            'invite_code_card_dismissed_${widget.inviteCode}',
+            value: true,
+          )
+          .then((_) {}, onError: (_) {}),
     );
     setState(() => _showInviteCodeCard = false);
   }

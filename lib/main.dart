@@ -175,6 +175,7 @@ class MyApp extends StatefulWidget {
     this.manageProfileCubitFactory,
     this.localStorageDatasourceFactory,
     this.onboardingDatasourceFactory,
+    this.appLoggerFactory,
   });
   final bool onboardingCompleted;
   final AuthStateNotifier? authStateNotifier;
@@ -219,6 +220,10 @@ class MyApp extends StatefulWidget {
   /// Testing seam for the completion-flag store forwarded to
   /// `OnboardingPage` (see [createRouter]): defaults to GetIt.
   final OnboardingLocalDatasource Function()? onboardingDatasourceFactory;
+
+  /// Testing seam for the observability sink forwarded to `OnboardingPage`
+  /// (see [createRouter]): defaults to the GetIt singleton.
+  final AppLogger Function()? appLoggerFactory;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -274,6 +279,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       manageProfileCubitFactory: widget.manageProfileCubitFactory,
       localStorageDatasourceFactory: widget.localStorageDatasourceFactory,
       onboardingDatasourceFactory: widget.onboardingDatasourceFactory,
+      appLoggerFactory: widget.appLoggerFactory,
       showNotificationTestAction: widget.showNotificationTestAction,
     );
     WidgetsBinding.instance.addObserver(this);

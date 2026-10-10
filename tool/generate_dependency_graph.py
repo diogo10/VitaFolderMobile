@@ -4,11 +4,18 @@ Run locally: python3 tool/generate_dependency_graph.py [--write]
   --write  rewrites docs/architecture/dependency-graph.md in place.
 
 Scans lib/features imports and reports:
-  * feature -> feature edges (who imports whom, with file counts), split
-    into domain-level (domain/ or application/ importer) vs
+  * feature -> feature edges (who imports whom, with import counts),
+    split into domain-level (domain/ or application/ importer) vs
     presentation-level edges;
   * layer rule notes (domain/application must only touch other domains,
     never data/presentation/application of another feature).
+
+Counts are import statements, not distinct files: one file with two
+cross-feature imports contributes two to the edge count, while the
+per-edge file list below each edge header names each importing file
+once. Comment handling (full-line `//`, trailing `//`, and `/* ... */`
+block comments) is shared with `tool/check_layer_boundaries.py` via
+[strip_block_comments] so commented-out imports never produce edges.
 
 Limitation: only imports that name an explicit layer directory are
 counted (`package:house_mira/features/<feature>/<layer>/...`). Barrel
@@ -21,6 +28,11 @@ import re
 import sys
 from collections import Counter
 from pathlib import Path
+
+try:
+    from check_layer_boundaries import strip_block_comments
+except ImportError:  # `python tool/generate_dependency_graph.py` from root.
+    from tool.check_layer_boundaries import strip_block_comments
 
 ROOT = Path(__file__).resolve().parent.parent
 FEATURES = ROOT / 'lib' / 'features'
@@ -48,8 +60,11 @@ def scan():
             text = path.read_text()
         except OSError:
             continue
-        for line in text.splitlines():
-            m = IMPORT.match(line)
+        for line in strip_block_comments(text):
+            stripped = line.strip()
+            if not stripped or stripped.startswith('//'):
+                continue
+            m = IMPORT.match(line.split('//', 1)[0])
             if not m:
                 continue
             uri = m.group(1)
@@ -86,13 +101,15 @@ def render(edges, per_edge_files, header_users) -> str:
         'from feature B. `domain` edges originate in `domain/` or',
         '`application/` (business logic); `presentation` edges originate',
         'in `presentation/` or the feature-local `data/` glue.',
+        'Edge counts are import statements, not distinct files; each',
+        'edge header lists every importing file once.',
         '',
         '```mermaid',
         'flowchart LR',
     ]
     for (src, dst, kind), count in sorted(edges.items()):
         style = '-.->' if kind == 'presentation' else '-->'
-        lines.append(f'    {src} {style}|"{kind} x{count}"| {dst}')
+        lines.append(f'    {src} {style}|"{kind} x{count} imports"| {dst}')
     lines += ['```', '', '## Edges', '']
     if not edges:
         lines.append('_No cross-feature imports._')

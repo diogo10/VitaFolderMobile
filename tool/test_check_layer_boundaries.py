@@ -240,6 +240,85 @@ class CheckLayerBoundariesTest(unittest.TestCase):
         )
         self.assertFalse(has_rule(hits, 'R4'), hits)
 
+    def test_export_directives_scanned_like_imports(self) -> None:
+        # R1 fires on exports too: domain must not re-export Flutter.
+        hits = check_text(
+            'lib/features/home/domain/entities/a.dart',
+            'home',
+            'domain',
+            "export 'package:flutter/material.dart';\n",
+        )
+        self.assertTrue(has_rule(hits, 'R1'), hits)
+        # R4 fires on cross-feature layer exports from domain/application.
+        hits = check_text(
+            'lib/features/home/domain/usecase/u.dart',
+            'home',
+            'domain',
+            "export 'package:house_mira/features/people/data/x.dart';\n",
+        )
+        self.assertTrue(has_rule(hits, 'R4'), hits)
+        # Domain-to-domain re-exports stay allowed.
+        hits = check_text(
+            'lib/features/home/domain/usecase/u.dart',
+            'home',
+            'domain',
+            "export 'package:house_mira/features/people/domain/entities/p.dart';\n",
+        )
+        self.assertFalse(has_rule(hits, 'R4'), hits)
+        # Commented-out exports are ignored.
+        hits = check_text(
+            'lib/features/home/domain/usecase/u.dart',
+            'home',
+            'domain',
+            "// export 'package:house_mira/features/people/data/x.dart';\n",
+        )
+        self.assertEqual(hits, [])
+
+    def test_r4_relative_imports_resolving_outside_feature(self) -> None:
+        # From lib/features/home/domain/usecase/u.dart, ../../../people/...
+        # escapes the owning feature: data/application/presentation hits.
+        for layer in ('data', 'application', 'presentation'):
+            with self.subTest(layer=layer):
+                hits = check_text(
+                    'lib/features/home/domain/usecase/u.dart',
+                    'home',
+                    'domain',
+                    f"import '../../../people/{layer}/x.dart';\n",
+                )
+                self.assertTrue(has_rule(hits, 'R4'), hits)
+        # Relative domain-to-domain sharing stays allowed.
+        hits = check_text(
+            'lib/features/home/domain/usecase/u.dart',
+            'home',
+            'domain',
+            "import '../../../people/domain/entities/p.dart';\n",
+        )
+        self.assertFalse(has_rule(hits, 'R4'), hits)
+        # Relative imports within the owning feature stay allowed,
+        # including the grandfathered same-feature domain->data edge.
+        hits = check_text(
+            'lib/features/notes/domain/repository/r.dart',
+            'notes',
+            'domain',
+            "import '../../data/models/note_model.dart';\n",
+        )
+        self.assertFalse(has_rule(hits, 'R4'), hits)
+        # Same rule applies to application-layer importers and exports.
+        hits = check_text(
+            'lib/features/home/application/usecase/u.dart',
+            'home',
+            'application',
+            "import '../../../people/presentation/x.dart';\n",
+        )
+        self.assertTrue(has_rule(hits, 'R4'), hits)
+        hits = check_text(
+            'lib/features/home/domain/usecase/u.dart',
+            'home',
+            'domain',
+            "export '../../../people/data/x.dart';\n",
+        )
+        self.assertTrue(has_rule(hits, 'R4'), hits)
+
     def test_r5_provider_import_in_feature(self) -> None:
         hits = check_text(
             'lib/features/notes/presentation/views/v.dart',
