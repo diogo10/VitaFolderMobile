@@ -48,7 +48,8 @@ doing it in one big-bang PR would break the coverage gate and reviewability.
    repository interfaces, and use cases only (`src/` layout with a barrel
    export; presentation stays private to the package except documented
    shared widgets). Until extraction, treat deep imports as the API:
-   depending on another feature's `data/` is already forbidden (R4).
+   `domain/`/`application/` code depending on another feature's `data/`
+   is already forbidden (R4).
 2. **Domain has zero Flutter/Supabase imports — enforced, not aspirational.**
    - `@immutable` comes from `package:meta` (added as a direct
      dependency), never `package:flutter/foundation.dart`.
@@ -84,8 +85,10 @@ doing it in one big-bang PR would break the coverage gate and reviewability.
 
 ## Consequences
 
-- Cross-feature code can only depend on another feature's `domain/`
-  (R4 — CI enforces). Within one feature, layers still depend inward
+- Cross-feature business logic can only depend on another feature's
+  `domain/` (R4 — CI enforces for `domain/` and `application/`
+  importers; `presentation/` reuse is limited to the documented shared
+  widgets below). Within one feature, layers still depend inward
   (presentation → application → domain) except for grandfathered
   same-feature `domain/` → `data/` imports: the notes/reminders
   repository contracts and use cases reference `NoteModel` /
@@ -116,7 +119,8 @@ doing it in one big-bang PR would break the coverage gate and reviewability.
 
 ## Code-review checklist
 
-- [ ] New cross-feature import targets another feature's `domain/` only
+- [ ] New cross-feature import from `domain/` or `application/` targets
+       another feature's `domain/` only
        (R4 — CI enforces; `dependency-graph.md` regenerated)?
 - [ ] No `package:flutter*` or `dart:ui` import in `domain/` (R1)?
 - [ ] No `supabase` import outside `data/`, `core/auth|functions`, or the

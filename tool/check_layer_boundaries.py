@@ -13,10 +13,15 @@ R2 SUPABASE BOUNDARY  `supabase` imports only in lib/features/*/data/,
 R3 DI BOUNDARY ....... no `get_it` / service-locator imports anywhere
    under lib/features/ (resolution lives in lib/core/injections/,
    the router, and main.dart; widgets take constructor injection).
-R4 DOMAIN ISOLATION .. a file under lib/features/<a>/domain/ must not
-   import another feature's data/, application/, or presentation/
-   (domain-to-domain sharing is allowed and graphed; same-feature
+R4 DOMAIN ISOLATION .. a file under lib/features/<a>/domain/ or
+   .../application/ must not import another feature's data/,
+   application/, or presentation/ (domain-to-domain and
+   application-to-domain sharing is allowed and graphed; same-feature
    domain->data imports are grandfathered tech debt, see ADR-0006).
+   Comment handling: full-line `//` comments are skipped, trailing `//`
+   comments are stripped before the R3 locate-call scan, and `/* ... */`
+   block comments (single-line and multi-line) are stripped before all
+   checks.
 R5 ONE STATE MGMT .... no `package:provider` imports under lib/features/
    (flutter_bloc only; the single root Provider in main.dart is
    grandfathered until migration Phase 1 removes it).
@@ -68,13 +73,43 @@ def check_text(
     layer: str | None,
     text: str,
 ) -> list[str]:
-    """Returns violation strings for one file's text (testable helper)."""
+    """Returns violation strings for one file's text (testable helper).
+
+    Comment handling: full-line `//` comments are skipped, trailing `//`
+    comments are stripped before the R3 locate-call scan, and `/* ... */`
+    block comments (single-line and multi-line) are stripped before all
+    checks.
+    """
     hits: list[str] = []
-    for line in text.splitlines():
+    in_block = False
+    for raw in text.splitlines():
+        line = raw
+        # Strip /* ... */ block comments, tracking spans across lines.
+        while True:
+            if in_block:
+                end = line.find('*/')
+                if end == -1:
+                    line = ''
+                    break
+                line = line[end + 2 :]
+                in_block = False
+            else:
+                start = line.find('/*')
+                if start == -1:
+                    break
+                end = line.find('*/', start + 2)
+                if end == -1:
+                    line = line[:start]
+                    in_block = True
+                    break
+                line = line[:start] + line[end + 2 :]
         stripped = line.strip()
-        if stripped.startswith('//'):
+        if not stripped or stripped.startswith('//'):
             continue
-        if feature is not None and LOCATE_CALL.search(line):
+        # Ignore trailing // comments for locate-call detection so a
+        # commented-out call never flags real code.
+        code = line.split('//', 1)[0]
+        if feature is not None and LOCATE_CALL.search(code):
             hits.append(f'R3 {rel}: direct service location: {stripped[:80]}')
         match = IMPORT.match(line)
         if not match:
@@ -106,9 +141,9 @@ def check_text(
         ):
             hits.append(f'R3 {rel}: DI import inside feature: {uri}')
 
-        # R4: domain must not reach into another feature's
-        # data/application/presentation layers.
-        if layer == 'domain':
+        # R4: domain and application must not reach into another
+        # feature's data/application/presentation layers.
+        if layer in ('domain', 'application'):
             m = re.match(
                 r'package:house_mira/features/([^/]+)/([^/]+)/', uri,
             )

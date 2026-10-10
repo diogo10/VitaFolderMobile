@@ -7,8 +7,8 @@ Scans lib/features imports and reports:
   * feature -> feature edges (who imports whom, with file counts), split
     into domain-level (domain/ or application/ importer) vs
     presentation-level edges;
-  * layer rule notes (domain must only touch other domains, never
-    data/presentation/application of another feature).
+  * layer rule notes (domain/application must only touch other domains,
+    never data/presentation/application of another feature).
 
 Limitation: only imports that name an explicit layer directory are
 counted (`package:house_mira/features/<feature>/<layer>/...`). Barrel

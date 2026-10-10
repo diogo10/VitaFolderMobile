@@ -44,11 +44,18 @@ class _PeopleLoadedWidgetState extends State<PeopleLoadedWidget> {
   }
 
   Future<void> _loadInviteCodeCardVisibility() async {
-    final dismissed = await _storage.getBool(
-      'invite_code_card_dismissed_${widget.inviteCode}',
-    );
-    if (mounted) {
-      setState(() => _showInviteCodeCard = !dismissed);
+    try {
+      final dismissed = await _storage.getBool(
+        'invite_code_card_dismissed_${widget.inviteCode}',
+      );
+      if (mounted) {
+        setState(() => _showInviteCodeCard = !dismissed);
+      }
+    } on Object catch (_) {
+      // Keep the invite-code card visible when the flag store is
+      // unavailable: dismissal is best-effort and must never hide the
+      // card or crash the view.
+      return;
     }
   }
 
