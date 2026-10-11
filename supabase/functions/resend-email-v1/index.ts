@@ -225,7 +225,7 @@ export default {
           Authorization: `Bearer ${RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: "no-reply@vitafolder.com",
+          from: "HouseMira <contact@housemira.com>",
           to,
           subject: copy.subject,
           html,

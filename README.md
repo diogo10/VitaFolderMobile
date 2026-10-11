@@ -213,7 +213,7 @@ Source: `supabase/functions/<name>/index.ts` (Deno).
 | Function | Method | Auth | What it does |
 | --- | --- | --- | --- |
 | `delete-account` | `POST /functions/v1/delete-account` | Caller JWT (`Authorization: Bearer <token>`) | Deletes the caller's auth user via `auth.admin.deleteUser`. Postgres `ON DELETE CASCADE` then removes `profiles`, `family_memberships`, `notification_tokens` and `notification_logs` rows. The `families` row is left intact (`created_by` SET NULL) so other members keep their data. Blocked when the caller is the sole remaining member of an owned family — nothing is deleted. |
-| `resend-email-v1` | `POST /functions/v1/resend-email-v1` | Caller JWT (enforced by `withSupabase({ auth: "user" })`) | Sends the HouseMira family-invite email via the Resend API (`from: no-reply@vitafolder.com`). Body: `{ to, locale?, inviterName?, familyName?, inviteCode? }`. Subject and HTML are rendered server-side (EN/PT, English fallback). CTA: `https://vitafolder-web-page-nextjs.vercel.app/join-family?invite=<code>`. Returns `{ success: true, id }` on success. |
+| `resend-email-v1` | `POST /functions/v1/resend-email-v1` | Caller JWT (enforced by `withSupabase({ auth: "user" })`) | Sends the HouseMira family-invite email via the Resend API (`from: HouseMira <contact@housemira.com>`). Body: `{ to, locale?, inviterName?, familyName?, inviteCode? }`. Subject and HTML are rendered server-side (EN/PT, English fallback). CTA: `https://vitafolder-web-page-nextjs.vercel.app/join-family?invite=<code>`. Returns `{ success: true, id }` on success. |
 
 ### `delete-account` details
 
