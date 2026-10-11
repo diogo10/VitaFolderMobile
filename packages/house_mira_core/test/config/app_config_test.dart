@@ -3,7 +3,7 @@ import 'package:house_mira_core/config/app_config.dart';
 import 'package:house_mira_core/config/app_flavor.dart';
 
 void main() {
-  const validUrl = 'https://example.supabase.co';
+  const validUrl = 'https://mock.supabase.co';
   const validKey = 'test-publishable-key';
 
   group('AppConfig.fromDefines', () {
@@ -63,9 +63,9 @@ void main() {
       for (final badUrl in [
         '',
         'not-a-url',
-        'http://example.supabase.co',
+        'http://mock.supabase.co',
         'https://',
-        'ftp://example.supabase.co',
+        'ftp://mock.supabase.co',
       ]) {
         expect(
           () => AppConfig.fromDefines(
