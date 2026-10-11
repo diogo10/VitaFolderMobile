@@ -1,0 +1,7 @@
+{
+  "commands": {
+    "install": "fvm flutter pub get",
+    "test": "fvm flutter test",
+    "lint": "fvm flutter analyze"
+  }
+}
