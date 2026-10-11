@@ -13,6 +13,18 @@
 # https://pub.dev/packages/very_good_analysis for the enabled rules.
 include: package:very_good_analysis/analysis_options.yaml
 
+# Melos workspace import boundaries (custom lint, CI-enforced):
+# `tool/check_feature_boundaries.py` (rules P1-P4) scans `packages/*`:
+# P1 no cross-package data/ imports, P2 core never imports features,
+# P3 feature-to-feature via domain/ (+ documented shared widgets and
+# the reminders navigation route), P4 get_it only in
+# `*_service_locator.dart`. The legacy monolith guard
+# (`tool/check_layer_boundaries.py`, rules R1-R5) still scans `lib/`.
+# Run `melos boundaries` (or `python3 tool/check_feature_boundaries.py`)
+# locally; CI fails the PR on violation. Per-package `analysis_options.yaml`
+# files (if added) must include this root file so the workspace shares one
+# lint set.
+
 analyzer:
   errors:
     # CI runs with `--fatal-warnings`: warnings fail the build, infos don't.

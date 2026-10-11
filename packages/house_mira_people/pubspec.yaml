@@ -1,0 +1,31 @@
+name: house_mira_people
+description: HouseMira house_mira_people package (Melos workspace).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.4
+
+dependencies:
+  house_mira_core:
+    path: ../house_mira_core
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.0
+  fpdart: ^1.1.0
+  get_it: ^8.0.3
+  go_router: ^14.0.0
+  meta: ^1.17.0
+  supabase_flutter: ^2.0.0
+  url_launcher: ^6.2.0
+
+dev_dependencies:
+  shared_preferences: ^2.5.5
+  provider: ^6.1.2
+  mocktail: ^1.0.4
+  bloc_test: ^10.0.0
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  very_good_analysis: ^10.2.0
+

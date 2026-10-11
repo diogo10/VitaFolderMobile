@@ -1,0 +1,64 @@
+import 'dart:async';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_people/domain/usecase/create_family_usecase.dart';
+import 'package:house_mira_people/domain/usecase/get_people_usecase.dart';
+import 'package:house_mira_people/domain/usecase/join_family_usecase.dart';
+import 'package:house_mira_people/presentation/cubit/people_state.dart';
+
+class PeopleCubit extends Cubit<PeopleState> {
+  PeopleCubit({
+    required this.getPeopleUsecase,
+    required this.createFamilyUsecase,
+    required this.joinFamilyUsecase,
+    required this.authService,
+  }) : super(PeopleInitial());
+  GetPeopleUsecase getPeopleUsecase;
+  CreateFamilyUsecase createFamilyUsecase;
+  JoinFamilyUsecase joinFamilyUsecase;
+  final AuthService authService;
+
+  Future<void> createFamily({required String name}) async {
+    emit(PeopleLoading());
+    final result = await createFamilyUsecase(name: name);
+
+    result.fold((err) => emit(PeopleError()), (created) {
+      unawaited(getPeople());
+    });
+  }
+
+  Future<void> joinFamily({required String familyCode}) async {
+    emit(PeopleLoading());
+    final result = await joinFamilyUsecase(familyCode: familyCode);
+
+    if (result.isLeft()) {
+      emit(PeopleInvalidFamilyCode());
+      return;
+    }
+    // Awaited (not fire-and-forget) so the screen transitions
+    // Loading -> Loaded/Empty deterministically after a successful join.
+    await getPeople();
+  }
+
+  Future<void> getPeople({bool isRefresh = false}) async {
+    if (!isRefresh) {
+      emit(PeopleLoading());
+    }
+    final result = await getPeopleUsecase();
+
+    result.fold((err) => emit(PeopleError()), (people) {
+      if (people.family.name.isEmpty || people.family.inviteCode.isEmpty) {
+        emit(PeopleEmpty());
+        return;
+      }
+      emit(
+        PeopleLoaded(
+          people: people.people,
+          inviteCode: people.family.inviteCode,
+          familyName: people.family.name,
+        ),
+      );
+    });
+  }
+}

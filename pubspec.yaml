@@ -28,6 +28,25 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  # Melos workspace packages (path dependencies, independently versioned).
+  house_mira_core:
+    path: packages/house_mira_core
+  house_mira_people:
+    path: packages/house_mira_people
+  house_mira_reminders:
+    path: packages/house_mira_reminders
+  house_mira_notes:
+    path: packages/house_mira_notes
+  house_mira_home:
+    path: packages/house_mira_home
+  house_mira_account:
+    path: packages/house_mira_account
+  house_mira_login:
+    path: packages/house_mira_login
+  house_mira_onboarding:
+    path: packages/house_mira_onboarding
+  house_mira_paywall:
+    path: packages/house_mira_paywall
   collection: ^1.18.0
 
   # The following adds the Cupertino Icons font to your application.

@@ -1,45 +1,45 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:house_mira/core/auth/auth_service.dart';
-import 'package:house_mira/core/auth/google_sign_in_handler.dart';
-import 'package:house_mira/core/errors/failure.dart';
-import 'package:house_mira/core/subscriptions/subscription_service.dart';
-import 'package:house_mira/features/account/presentation/cubit/account_cubit.dart';
-import 'package:house_mira/features/account/presentation/cubit/account_state.dart';
-import 'package:house_mira/features/home/domain/entities/home_entity.dart';
-import 'package:house_mira/features/home/domain/usecase/get_home_data_usecase.dart';
-import 'package:house_mira/features/home/domain/usecase/has_reminders_usecase.dart';
-import 'package:house_mira/features/home/presentation/cubit/home_cubit.dart';
-import 'package:house_mira/features/home/presentation/cubit/home_state.dart';
-import 'package:house_mira/features/people/domain/entities/family_entity.dart';
-import 'package:house_mira/features/people/domain/entities/people_data.dart';
-import 'package:house_mira/features/people/domain/entities/person_entity.dart';
-import 'package:house_mira/features/people/domain/usecase/delete_family_usecase.dart';
-import 'package:house_mira/features/people/domain/usecase/get_my_family_id_usecase.dart';
-import 'package:house_mira/features/people/domain/usecase/get_people_usecase.dart';
-import 'package:house_mira/features/people/domain/usecase/remove_member_usecase.dart';
-import 'package:house_mira/features/people/domain/usecase/update_family_name_usecase.dart';
-import 'package:house_mira/features/people/presentation/cubit/family_settings_cubit.dart';
-import 'package:house_mira/features/people/presentation/cubit/family_settings_state.dart';
-import 'package:house_mira/features/people/presentation/cubit/people_cubit.dart';
-import 'package:house_mira/features/people/presentation/cubit/people_state.dart';
-import 'package:house_mira/features/people/domain/repository/people_repository.dart';
-import 'package:house_mira/features/people/domain/usecase/create_family_usecase.dart';
-import 'package:house_mira/features/people/domain/usecase/join_family_usecase.dart';
-import 'package:house_mira/features/reminders/application/is_at_reminder_limit_usecase.dart';
-import 'package:house_mira/features/reminders/application/reminder_notification_service.dart';
-import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:house_mira/features/reminders/domain/entities/reminder_lead_time.dart';
-import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
-import 'package:house_mira/features/reminders/domain/repository/reminder_repository.dart';
-import 'package:house_mira/features/reminders/domain/usecase/create_reminder_usecase.dart';
-import 'package:house_mira/features/reminders/domain/usecase/get_reminder_usecase.dart';
-import 'package:house_mira/features/reminders/domain/usecase/update_reminder_usecase.dart';
-import 'package:house_mira/features/reminders/presentation/cubit/create_reminder_cubit.dart';
-import 'package:house_mira/features/reminders/presentation/cubit/reminders_cubit.dart';
-import 'package:house_mira/features/reminders/presentation/cubit/reminders_state.dart';
-import 'package:house_mira/features/reminders/presentation/cubit/reminders_view_mode.dart';
+import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_core/auth/google_sign_in_handler.dart';
+import 'package:house_mira_core/errors/failure.dart';
+import 'package:house_mira_core/subscriptions/subscription_service.dart';
+import 'package:house_mira_account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira_account/presentation/cubit/account_state.dart';
+import 'package:house_mira_home/domain/entities/home_entity.dart';
+import 'package:house_mira_home/domain/usecase/get_home_data_usecase.dart';
+import 'package:house_mira_home/domain/usecase/has_reminders_usecase.dart';
+import 'package:house_mira_home/presentation/cubit/home_cubit.dart';
+import 'package:house_mira_home/presentation/cubit/home_state.dart';
+import 'package:house_mira_people/domain/entities/family_entity.dart';
+import 'package:house_mira_people/domain/entities/people_data.dart';
+import 'package:house_mira_people/domain/entities/person_entity.dart';
+import 'package:house_mira_people/domain/usecase/delete_family_usecase.dart';
+import 'package:house_mira_people/domain/usecase/get_my_family_id_usecase.dart';
+import 'package:house_mira_people/domain/usecase/get_people_usecase.dart';
+import 'package:house_mira_people/domain/usecase/remove_member_usecase.dart';
+import 'package:house_mira_people/domain/usecase/update_family_name_usecase.dart';
+import 'package:house_mira_people/presentation/cubit/family_settings_cubit.dart';
+import 'package:house_mira_people/presentation/cubit/family_settings_state.dart';
+import 'package:house_mira_people/presentation/cubit/people_cubit.dart';
+import 'package:house_mira_people/presentation/cubit/people_state.dart';
+import 'package:house_mira_people/domain/repository/people_repository.dart';
+import 'package:house_mira_people/domain/usecase/create_family_usecase.dart';
+import 'package:house_mira_people/domain/usecase/join_family_usecase.dart';
+import 'package:house_mira_reminders/application/is_at_reminder_limit_usecase.dart';
+import 'package:house_mira_reminders/application/reminder_notification_service.dart';
+import 'package:house_mira_reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira_reminders/domain/entities/reminder_lead_time.dart';
+import 'package:house_mira_reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira_reminders/domain/repository/reminder_repository.dart';
+import 'package:house_mira_reminders/domain/usecase/create_reminder_usecase.dart';
+import 'package:house_mira_reminders/domain/usecase/get_reminder_usecase.dart';
+import 'package:house_mira_reminders/domain/usecase/update_reminder_usecase.dart';
+import 'package:house_mira_reminders/presentation/cubit/create_reminder_cubit.dart';
+import 'package:house_mira_reminders/presentation/cubit/reminders_cubit.dart';
+import 'package:house_mira_reminders/presentation/cubit/reminders_state.dart';
+import 'package:house_mira_reminders/presentation/cubit/reminders_view_mode.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -77,7 +77,8 @@ class _FakeAuthService extends AuthService {
   }
 
   @override
-  Future<PersonEntity?> getAsPersonEntity() async => null;
+  @override
+  Future<({String? name, String? email})?> getCurrentProfile() async => null;
 }
 
 class _FakeAccountAuth extends AuthService {
@@ -100,7 +101,8 @@ class _FakeAccountAuth extends AuthService {
   User? get currentUser => null;
 
   @override
-  Future<PersonEntity?> getAsPersonEntity() async => null;
+  @override
+  Future<({String? name, String? email})?> getCurrentProfile() async => null;
 }
 
 class _FakePeopleRepository implements PeopleRepository {

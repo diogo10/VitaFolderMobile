@@ -1,15 +1,23 @@
-"""Enforces 100% line coverage per file under lib/**/domain/ or lib/**/application/.
+"""Enforces 100% line coverage per file under lib/**/domain/,
+lib/**/application/, packages/*/lib/**/domain/, or
+packages/*/lib/**/application/ (Melos workspace).
 
 Reads coverage/lcov.info (written by `flutter test --coverage`) and fails
 when any business-logic file drops below 100%. Extracted from the inline
 CI script so it can also run locally: `python3 tool/check_business_logic_coverage.py`.
+
+Melos workspace: aggregates the root `coverage/lcov.info` plus every
+`packages/*/coverage/lcov.info` (each package resolves its own `lib/`
+paths, so entries are namespaced per package before merging).
 """
+import glob
 import sys
 
-LCOV = 'coverage/lcov.info'
+LCOV_ROOT = 'coverage/lcov.info'
+LCOV_PACKAGES = 'packages/*/coverage/lcov.info'
 
 
-def parse_lcov(path):
+def parse_lcov(path, namespace):
     files = {}
     current = None
     try:
@@ -17,7 +25,7 @@ def parse_lcov(path):
             for raw in f:
                 line = raw.strip()
                 if line.startswith('SF:'):
-                    current = line[3:]
+                    current = f'{namespace}:{line[3:]}'
                     files.setdefault(current, [0, 0])
                 elif line.startswith('DA:') and current is not None:
                     parts = line[3:].split(',')
@@ -31,9 +39,21 @@ def parse_lcov(path):
                 elif line == 'end_of_record':
                     current = None
     except FileNotFoundError:
-        print(f'::error::Coverage file not found: {path}')
-        sys.exit(1)
+        print(f'::warning::Coverage file not found (skipped): {path}')
     return files
+
+
+def lcov_candidates():
+    found = []
+    try:
+        with open(LCOV_ROOT):
+            found.append((LCOV_ROOT, 'app'))
+    except FileNotFoundError:
+        pass
+    for path in sorted(glob.glob(LCOV_PACKAGES)):
+        namespace = path.split('/')[1]
+        found.append((path, namespace))
+    return found
 
 
 def is_business_logic(path):
@@ -43,7 +63,16 @@ def is_business_logic(path):
 
 
 def main():
-    files = parse_lcov(LCOV)
+    candidates = lcov_candidates()
+    if not candidates:
+        print('::error::No coverage files found (root or packages).')
+        sys.exit(1)
+    files: dict[str, list[int]] = {}
+    for path, namespace in candidates:
+        for key, value in parse_lcov(path, namespace).items():
+            files.setdefault(key, [0, 0])
+            files[key][0] += value[0]
+            files[key][1] += value[1]
     business = {k: v for k, v in files.items() if is_business_logic(k)}
 
     if not business:

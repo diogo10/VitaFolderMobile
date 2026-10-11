@@ -7,7 +7,7 @@ Full skill: `.agents/skills/supabase/SKILL.md` (read before schema/auth work).
 
 - Production code uses the injected `SupabaseClient`
   (`Supabase.instance.client` as default); tests inject mocks.
-- Auth flows live in `lib/core/auth/auth_service.dart`
+- Auth flows live in `packages/house_mira_core/lib/auth/auth_service.dart`
   (email, Google ID-token exchange, reset, sign-out, delete).
   UID always comes from the verified session server-side, never from input.
 - Data access lives in `data/` repositories; map errors to `Failure`.

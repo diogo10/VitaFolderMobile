@@ -1,0 +1,37 @@
+name: house_mira_workspace
+repository: https://github.com/diogo10/VitaFolderMobile
+
+packages:
+  - packages/**
+
+scripts:
+  bootstrap: melos exec -- flutter pub get
+  analyze: melos exec --concurrency=4 -- flutter analyze --no-fatal-infos --fatal-warnings
+  analyze:root: flutter analyze --no-fatal-infos --fatal-warnings
+  test: melos exec --concurrency=4 -- flutter test --coverage
+  test:root: flutter test --coverage
+  # Selective runs per team/feature, e.g.:
+  #   melos test:people / melos test:reminders / melos analyze:core
+  test:people: melos exec --scope=house_mira_people -- flutter test --coverage
+  test:reminders: melos exec --scope=house_mira_reminders -- flutter test --coverage
+  test:notes: melos exec --scope=house_mira_notes -- flutter test --coverage
+  test:home: melos exec --scope=house_mira_home -- flutter test --coverage
+  test:account: melos exec --scope=house_mira_account -- flutter test --coverage
+  test:paywall: melos exec --scope=house_mira_paywall -- flutter test --coverage
+  # onboarding has no in-package tests: its widget tests need app-shell
+  # assets and run in the root suite (test/features/onboarding/).
+  test:login: melos exec --scope=house_mira_login -- flutter test --coverage
+  test:core: melos exec --scope=house_mira_core -- flutter test --coverage
+  analyze:core: melos exec --scope=house_mira_core -- flutter analyze --no-fatal-infos --fatal-warnings
+  boundaries: python3 tool/check_feature_boundaries.py
+  boundaries:legacy: python3 tool/check_layer_boundaries.py
+  coverage: python3 tool/check_business_logic_coverage.py
+  graph: python3 tool/generate_dependency_graph.py --write
+
+command:
+  version:
+    branch: main
+    message: "chore(release): version packages"
+  bootstrap:
+    runPubGetInParallel: true
+    enforceLockfile: false

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:house_mira/core/observability/app_logger.dart';
-import 'package:house_mira/core/router/app_routes.dart';
-import 'package:house_mira/features/onboarding/data/datasource/onboarding_local_datasource.dart';
-import 'package:house_mira/features/onboarding/presentation/pages/onboarding_page.dart';
-import 'package:house_mira/features/onboarding/presentation/views/onboarding_view.dart';
-import 'package:house_mira/generated/app_localizations.dart';
+import 'package:house_mira_core/observability/app_logger.dart';
+import 'package:house_mira_core/router/app_routes.dart';
+import 'package:house_mira_onboarding/data/datasource/onboarding_local_datasource.dart';
+import 'package:house_mira_onboarding/presentation/pages/onboarding_page.dart';
+import 'package:house_mira_onboarding/presentation/views/onboarding_view.dart';
+import 'package:house_mira_core/generated/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockDatasource extends Mock implements OnboardingLocalDatasource {}

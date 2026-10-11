@@ -1,0 +1,640 @@
+import 'dart:async';
+
+import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_core/auth/google_sign_in_handler.dart';
+import 'package:house_mira_core/subscriptions/subscription_service.dart';
+import 'package:house_mira_account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira_account/presentation/cubit/account_state.dart';
+import 'package:house_mira_people/domain/entities/family_entity.dart';
+import 'package:house_mira_people/domain/entities/person_entity.dart';
+import 'package:house_mira_people/domain/repository/people_repository.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class _MockSupabaseClient extends Mock implements SupabaseClient {}
+
+class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
+
+class _FakeAuthService extends AuthService {
+  _FakeAuthService({
+    this.stubUser,
+    this.stubProfile,
+    this.personError,
+    this.signInError,
+    this.signOutError,
+    this.resetError,
+    this.deleteError,
+    this.googleError,
+    SupabaseClient? supabaseClient,
+    IGoogleSignInHandler? googleSignInHandler,
+  }) : super(
+         supabaseClient: supabaseClient ?? _MockSupabaseClient(),
+         googleSignInHandler: googleSignInHandler ?? _MockGoogleSignInHandler(),
+       );
+  User? stubUser;
+  ({String? name, String? email})? stubProfile;
+  Exception? personError;
+  Exception? signInError;
+  Exception? signOutError;
+  Exception? resetError;
+  Exception? deleteError;
+  int signInCalls = 0;
+  int deleteCalls = 0;
+  int signOutCalls = 0;
+  User? googleStubUser;
+  Exception? googleError;
+  int googleSignInCalls = 0;
+
+  @override
+  Future<void> signIn({required String email, required String password}) async {
+    signInCalls++;
+    if (signInError != null) throw signInError!;
+  }
+
+  @override
+  User? get currentUser => stubUser;
+
+  @override
+  @override
+  Future<({String? name, String? email})?> getCurrentProfile() async {
+    if (personError != null) throw personError!;
+    return stubProfile;
+  }
+
+  @override
+  Future<void> signOut() async {
+    signOutCalls++;
+    if (signOutError != null) throw signOutError!;
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    deleteCalls++;
+    if (deleteError != null) throw deleteError!;
+  }
+
+  @override
+  Future<void> resetPassword(String email) async {
+    if (resetError != null) throw resetError!;
+  }
+
+  @override
+  Future<User?> signInWithGoogle() async {
+    googleSignInCalls++;
+    if (googleError != null) throw googleError!;
+    return googleStubUser;
+  }
+}
+
+class _FakePeopleRepository implements PeopleRepository {
+  Either<Exception, FamilyEntity> familyResult = Right(
+    FamilyEntity(name: 'Test', inviteCode: 'ABC123'),
+  );
+  List<String> roles = const ['member'];
+
+  @override
+  Future<Either<Exception, List<PersonEntity>>> getPeople() async =>
+      const Right([]);
+
+  @override
+  Future<Either<Exception, bool>> createFamily({
+    required String name,
+    required String inviteCode,
+  }) async => const Right(true);
+
+  @override
+  Future<Either<Exception, FamilyEntity>> getMyFamily() async => familyResult;
+
+  @override
+  Future<Either<Exception, bool>> joinFamily({
+    required String inviteCode,
+  }) async => const Right(true);
+
+  @override
+  Future<FamilyEntity?> getFamilyBy(String id) async =>
+      FamilyEntity(name: 'Test', inviteCode: 'ABC123');
+
+  @override
+  Future<List<String>> getFamilyIdsForUser(String userId) async => [];
+
+  @override
+  Future<List<PersonEntity>> getProfilesWithRoleForFamily(
+    String familyId,
+  ) async => [];
+
+  @override
+  Future<List<String>> getMyFamilyRole() async => roles;
+
+  @override
+  Future<Either<Exception, bool>> updateFamilyName({
+    required String familyId,
+    required String name,
+  }) async => const Right(true);
+
+  @override
+  Future<Either<Exception, bool>> removeMember({
+    required String familyId,
+    required String userId,
+  }) async => const Right(true);
+
+  @override
+  Future<Either<Exception, bool>> deleteFamily({
+    required String familyId,
+  }) async => const Right(true);
+
+  @override
+  Future<Either<Exception, String?>> getMyFamilyId() async =>
+      const Right('fake-family');
+}
+
+User _testUser() =>
+    User.fromJson({'id': 'user-id', 'email': 'user@example.com'})!;
+
+class _CountingSubscriptions extends SubscriptionService {
+  var invalidations = 0;
+
+  @override
+  void invalidateProCache() {
+    invalidations++;
+    super.invalidateProCache();
+  }
+}
+
+({String? name, String? email}) _testProfile() => (name: 'Test User', email: 'user@example.com');
+
+void main() {
+  group('AccountCubit', () {
+    test('signIn emits AccountLoaded with valid credentials', () async {
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubProfile: _testProfile(),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signIn('user@example.com', 'password123');
+
+      expect(cubit.state, isA<AccountLoaded>());
+      final loaded = cubit.state as AccountLoaded;
+      expect(loaded.userName, 'Test User');
+      expect(loaded.email, 'user@example.com');
+      expect(loaded.familyCode, 'ABC123');
+      expect(loaded.myRole, 'member');
+    });
+
+    test(
+      'signIn with blank credentials emits NoAccount without calling API',
+      () async {
+        final auth = _FakeAuthService(
+          stubUser: _testUser(),
+          stubProfile: _testProfile(),
+        );
+        final cubit = AccountCubit(
+          authService: auth,
+          peopleRepository: _FakePeopleRepository(),
+          subscriptionService: SubscriptionService(),
+        );
+        addTearDown(cubit.close);
+
+        await cubit.signIn('   ', 'password123');
+
+        expect(cubit.state, isA<NoAccount>());
+        expect(auth.signInCalls, 0);
+      },
+    );
+
+    test(
+      'signIn emits LoginFailed when no current user after signIn',
+      () async {
+        final cubit = AccountCubit(
+          authService: _FakeAuthService(),
+          peopleRepository: _FakePeopleRepository(),
+          subscriptionService: SubscriptionService(),
+        );
+        addTearDown(cubit.close);
+
+        await cubit.signIn('user@example.com', 'password123');
+
+        expect(cubit.state, isA<LoginFailed>());
+        expect(
+          (cubit.state as LoginFailed).code,
+          AccountLoginErrorCode.unexpected,
+        );
+      },
+    );
+
+    test('signIn emits LoginFailed on AuthApiException', () async {
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubProfile: _testProfile(),
+          signInError: const AuthApiException('bad'),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signIn('user@example.com', 'wrong');
+
+      expect(cubit.state, isA<LoginFailed>());
+      expect(
+        (cubit.state as LoginFailed).code,
+        AccountLoginErrorCode.invalidCredentials,
+      );
+    });
+
+    test('signInWithGoogle emits AccountLoaded on success', () async {
+      final auth = _FakeAuthService(
+        stubUser: _testUser(),
+        stubProfile: _testProfile(),
+      )..googleStubUser = _testUser();
+      final cubit = AccountCubit(
+        authService: auth,
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithGoogle();
+
+      expect(auth.googleSignInCalls, 1);
+      expect(cubit.state, isA<AccountLoaded>());
+    });
+
+    test('signInWithGoogle emits NoAccount when user cancels', () async {
+      final auth = _FakeAuthService()..googleStubUser = null;
+      final cubit = AccountCubit(
+        authService: auth,
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithGoogle();
+
+      expect(auth.googleSignInCalls, 1);
+      expect(cubit.state, isA<NoAccount>());
+    });
+
+    test('signInWithGoogle emits LoginFailed on AuthException', () async {
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(
+          googleError: const AuthException('Google sign-in failed.'),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithGoogle();
+
+      expect(cubit.state, isA<LoginFailed>());
+      expect(
+        (cubit.state as LoginFailed).code,
+        AccountLoginErrorCode.googleSignInFailed,
+      );
+    });
+
+    test('signInWithGoogle emits LoginFailed on unexpected error', () async {
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(googleError: Exception('boom')),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithGoogle();
+
+      expect(cubit.state, isA<LoginFailed>());
+      expect(
+        (cubit.state as LoginFailed).code,
+        AccountLoginErrorCode.unexpected,
+      );
+    });
+
+    blocTest<AccountCubit, AccountState>(
+      'loadAccount emits loading then loaded when user exists',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubProfile: _testProfile(),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      ),
+      act: (cubit) => cubit.loadAccount(),
+      expect: () => [isA<AccountLoading>(), isA<AccountLoaded>()],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'loadAccount emits loaded with empty family when user has no family',
+      build: () {
+        final people = _FakePeopleRepository()
+          ..familyResult = Left(Exception('No families found'))
+          ..roles = const [];
+        return AccountCubit(
+          authService: _FakeAuthService(
+            stubUser: _testUser(),
+            stubProfile: _testProfile(),
+          ),
+          peopleRepository: people,
+          subscriptionService: SubscriptionService(),
+        );
+      },
+      act: (cubit) => cubit.loadAccount(),
+      expect: () => [
+        isA<AccountLoading>(),
+        isA<AccountLoaded>()
+            .having((s) => s.familyCode, 'familyCode', '')
+            .having((s) => s.myRole, 'myRole', ''),
+      ],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'loadAccount emits loading then NoAccount when user is null',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      ),
+      act: (cubit) => cubit.loadAccount(),
+      expect: () => [isA<AccountLoading>(), isA<NoAccount>()],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'signOut emits loading then logout success',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      ),
+      act: (cubit) => cubit.signOut(),
+      expect: () => [isA<AccountLoading>(), isA<AccountLogoutSuccess>()],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'signOut emits NoAccount when signOut throws',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(signOutError: Exception('boom')),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      ),
+      act: (cubit) => cubit.signOut(),
+      expect: () => [isA<AccountLoading>(), isA<NoAccount>()],
+    );
+
+    test('signOut invalidates the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signOut();
+
+      expect(cubit.state, isA<AccountLogoutSuccess>());
+      expect(subscriptions.invalidations, 1);
+    });
+
+    test('signIn invalidates the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubProfile: _testProfile(),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signIn('user@example.com', 'password123');
+
+      expect(cubit.state, isA<AccountLoaded>());
+      expect(subscriptions.invalidations, 1);
+    });
+
+    test('signInWithGoogle invalidates the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final auth = _FakeAuthService(
+        stubUser: _testUser(),
+        stubProfile: _testProfile(),
+      )..googleStubUser = _testUser();
+      final cubit = AccountCubit(
+        authService: auth,
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithGoogle();
+
+      expect(cubit.state, isA<AccountLoaded>());
+      expect(subscriptions.invalidations, 1);
+    });
+
+    test('failed signOut keeps the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(signOutError: Exception('boom')),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signOut();
+
+      expect(cubit.state, isA<NoAccount>());
+      expect(subscriptions.invalidations, 0);
+    });
+
+    blocTest<AccountCubit, AccountState>(
+      'forgotPassword emits PasswordResetSent on success',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      ),
+      act: (cubit) => cubit.forgotPassword('user@example.com'),
+      expect: () => [isA<PasswordResetSent>()],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'forgotPassword emits emptyEmail error on blank email',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      ),
+      act: (cubit) => cubit.forgotPassword('   '),
+      expect: () => [
+        isA<PasswordResetError>().having(
+          (e) => e.code,
+          'code',
+          PasswordResetErrorCode.emptyEmail,
+        ),
+      ],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'forgotPassword emits sendFailed when reset throws',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(resetError: Exception('boom')),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      ),
+      act: (cubit) => cubit.forgotPassword('user@example.com'),
+      expect: () => [
+        isA<PasswordResetError>().having(
+          (e) => e.code,
+          'code',
+          PasswordResetErrorCode.sendFailed,
+        ),
+      ],
+    );
+    blocTest<AccountCubit, AccountState>(
+      'loadAccount emits NoAccount when the profile lookup throws',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(personError: Exception('boom')),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      ),
+      act: (cubit) => cubit.loadAccount(),
+      expect: () => [isA<AccountLoading>(), isA<NoAccount>()],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'signIn emits LoginFailed on unexpected errors',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubProfile: _testProfile(),
+          signInError: Exception('boom'),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      ),
+      act: (cubit) => cubit.signIn('user@example.com', 'password123'),
+      expect: () => [
+        isA<LoginFailed>().having(
+          (e) => e.code,
+          'code',
+          AccountLoginErrorCode.unexpected,
+        ),
+      ],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'deleteAccount emits deleting then deleted success',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      ),
+      act: (cubit) => cubit.deleteAccount(),
+      expect: () => [isA<AccountDeleting>(), isA<AccountDeletedSuccess>()],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'deleteAccount emits soleOwner failure then reloads the account',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubProfile: _testProfile(),
+          deleteError: SoleOwnerException(familyId: 'family-1'),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      ),
+      act: (cubit) => cubit.deleteAccount(),
+      expect: () => [
+        isA<AccountDeleting>(),
+        isA<AccountDeleteFailed>().having(
+          (e) => e.code,
+          'code',
+          AccountDeleteErrorCode.soleOwner,
+        ),
+        isA<AccountLoading>(),
+        isA<AccountLoaded>(),
+      ],
+    );
+
+    blocTest<AccountCubit, AccountState>(
+      'deleteAccount emits sendFailed failure then reloads the account',
+      build: () => AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubProfile: _testProfile(),
+          deleteError: Exception('boom'),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      ),
+      act: (cubit) => cubit.deleteAccount(),
+      expect: () => [
+        isA<AccountDeleting>(),
+        isA<AccountDeleteFailed>().having(
+          (e) => e.code,
+          'code',
+          AccountDeleteErrorCode.sendFailed,
+        ),
+        isA<AccountLoading>(),
+        isA<AccountLoaded>(),
+      ],
+    );
+
+    test('reloads the account when the auth stream emits signedIn', () async {
+      final controller = StreamController<bool>.broadcast();
+      addTearDown(controller.close);
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubProfile: _testProfile(),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        authSignedInStream: controller.stream,
+        subscriptionService: SubscriptionService(),
+      );
+      addTearDown(cubit.close);
+
+      controller.add(true);
+
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(cubit.state, isA<AccountLoaded>());
+    });
+
+    test('emits NoAccount when the auth stream emits signedOut', () async {
+      final controller = StreamController<bool>.broadcast();
+      addTearDown(controller.close);
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(
+          stubUser: _testUser(),
+          stubProfile: _testProfile(),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        authSignedInStream: controller.stream,
+        subscriptionService: SubscriptionService(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.loadAccount();
+      expect(cubit.state, isA<AccountLoaded>());
+
+      controller.add(false);
+
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(cubit.state, isA<NoAccount>());
+    });
+  });
+}

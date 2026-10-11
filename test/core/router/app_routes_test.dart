@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:house_mira/core/router/app_routes.dart';
-import 'package:house_mira/features/reminders/domain/entities/reminder_entity.dart';
-import 'package:house_mira/features/reminders/domain/entities/reminder_type.dart';
+import 'package:house_mira_core/router/app_routes.dart';
+import 'package:house_mira_reminders/navigation/create_reminder_route.dart';
+import 'package:house_mira_reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira_reminders/domain/entities/reminder_type.dart';
 
 void main() {
   group('resolveAppRedirect', () {

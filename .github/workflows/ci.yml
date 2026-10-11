@@ -27,6 +27,16 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Install workspace package dependencies
+        # Each package in packages/* is independently versioned; the app
+        # resolves them via path dependencies. Resolve them too so
+        # per-package analyze/test (melos exec / selective runs) work.
+        run: |
+          for pkg in packages/*/; do
+            echo "pub get: $pkg"
+            (cd "$pkg" && flutter pub get)
+          done
+
       - name: Dart Analyze
         run: dart analyze --fatal-warnings
 
@@ -37,13 +47,45 @@ jobs:
         # failures: keep warnings/errors fatal, but do not fail on infos.
         run: flutter analyze --no-fatal-infos --fatal-warnings
 
+      - name: Analyze workspace packages
+        # Parallel per-package analysis (same flags); enables selective
+        # runs locally via `melos analyze` / `melos analyze:core`.
+        run: |
+          for pkg in packages/*/; do
+            echo "analyze: $pkg"
+            (cd "$pkg" && flutter analyze --no-fatal-infos --fatal-warnings)
+          done
+
       - name: Run tests with coverage
         run: flutter test --coverage
+
+      - name: Run workspace package tests with coverage
+        # Each package runs its own suite (selective runs locally via
+        # `melos test:<scope>`); the coverage gate aggregates every
+        # packages/*/coverage/lcov.info with the root one. Packages
+        # without a test/ dir (asset-bound suites live in the root)
+        # are skipped.
+        run: |
+          for pkg in packages/*/; do
+            if [ -d "${pkg}test" ]; then
+              echo "test: $pkg"
+              (cd "$pkg" && flutter test --coverage)
+            else
+              echo "skip (no test dir): $pkg"
+            fi
+          done
 
       - name: Enforce layer boundaries (ADR-0006)
         # Rules R1-R5 live in tool/check_layer_boundaries.py (same logic
         # as CI) so they also run locally.
         run: python3 tool/check_layer_boundaries.py
+
+      - name: Enforce package boundaries (custom import lint)
+        # Rules P1-P4 live in tool/check_feature_boundaries.py: no
+        # cross-package data/ imports, core never imports features,
+        # feature-to-feature via domain/ (+ documented shared surfaces),
+        # get_it only in *_service_locator.dart. Locally: melos boundaries.
+        run: python3 tool/check_feature_boundaries.py
 
       - name: Enforce 100% business-logic coverage
         # Gate lives in tool/check_business_logic_coverage.py (same logic as

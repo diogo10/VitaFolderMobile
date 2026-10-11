@@ -1,0 +1,77 @@
+import 'package:get_it/get_it.dart';
+import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_people/data/repository/people_repository_impl.dart';
+import 'package:house_mira_people/domain/repository/people_repository.dart';
+import 'package:house_mira_people/domain/usecase/create_family_usecase.dart';
+import 'package:house_mira_people/domain/usecase/delete_family_usecase.dart';
+import 'package:house_mira_people/domain/usecase/get_my_family_id_usecase.dart';
+import 'package:house_mira_people/domain/usecase/get_people_usecase.dart';
+import 'package:house_mira_people/domain/usecase/join_family_usecase.dart';
+import 'package:house_mira_people/domain/usecase/remove_member_usecase.dart';
+import 'package:house_mira_people/domain/usecase/update_family_name_usecase.dart';
+import 'package:house_mira_people/presentation/cubit/people_cubit.dart';
+
+class PeopleServiceLocator {
+  PeopleServiceLocator(this.sl);
+  final GetIt sl;
+
+  void init() {
+    sl
+      ..registerSingleton<PeopleRepository>(
+        PeopleRepositoryImpl(
+          authService: sl<AuthService>(instanceName: 'authService'),
+        ),
+        instanceName: 'peopleRepositoryImpl',
+      )
+      ..registerSingleton<GetPeopleUsecase>(
+        GetPeopleUsecase(repository: sl(instanceName: 'peopleRepositoryImpl')),
+        instanceName: 'getPeopleUsecase',
+      )
+      ..registerSingleton<GetMyFamilyIdUsecase>(
+        GetMyFamilyIdUsecase(
+          repository: sl(instanceName: 'peopleRepositoryImpl'),
+        ),
+        instanceName: 'getMyFamilyIdUsecase',
+      )
+      ..registerSingleton<CreateFamilyUsecase>(
+        CreateFamilyUsecase(
+          repository: sl(instanceName: 'peopleRepositoryImpl'),
+        ),
+        instanceName: 'createFamilyUsecase',
+      )
+      ..registerSingleton<JoinFamilyUsecase>(
+        JoinFamilyUsecase(repository: sl(instanceName: 'peopleRepositoryImpl')),
+        instanceName: 'joinFamilyUsecase',
+      )
+      ..registerSingleton<UpdateFamilyNameUsecase>(
+        UpdateFamilyNameUsecase(
+          repository: sl(instanceName: 'peopleRepositoryImpl'),
+        ),
+        instanceName: 'updateFamilyNameUsecase',
+      )
+      ..registerSingleton<RemoveMemberUsecase>(
+        RemoveMemberUsecase(
+          repository: sl(instanceName: 'peopleRepositoryImpl'),
+        ),
+        instanceName: 'removeMemberUsecase',
+      )
+      ..registerSingleton<DeleteFamilyUsecase>(
+        DeleteFamilyUsecase(
+          repository: sl(instanceName: 'peopleRepositoryImpl'),
+        ),
+        instanceName: 'deleteFamilyUsecase',
+      )
+      ..registerLazySingleton<PeopleCubit>(
+        () => PeopleCubit(
+          getPeopleUsecase: sl(instanceName: 'getPeopleUsecase'),
+          createFamilyUsecase: sl(instanceName: 'createFamilyUsecase'),
+          joinFamilyUsecase: sl(instanceName: 'joinFamilyUsecase'),
+          authService: sl(instanceName: 'authService'),
+        ),
+        instanceName: 'peopleCubit',
+      );
+    // One-shot cubits (FamilySettingsCubit, InvitePeopleCubit) are built
+    // fresh per visit by the route's default factory (see createRouter
+    // factory contract) and never registered here.
+  }
+}

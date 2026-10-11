@@ -1,7 +1,7 @@
 # State management (Cubit)
 
 `flutter_bloc` Cubits only — no Provider, no raw `setState` for shared
-state. One Cubit per presentation concern: `lib/features/<feature>/presentation/cubit/`.
+state. One Cubit per presentation concern: `packages/house_mira_<feature>/lib/presentation/cubit/`.
 
 ## States
 

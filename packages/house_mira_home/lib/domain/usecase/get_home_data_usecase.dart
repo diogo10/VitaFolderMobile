@@ -1,0 +1,77 @@
+import 'package:fpdart/fpdart.dart';
+import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_core/errors/failure.dart';
+import 'package:house_mira_home/domain/entities/home_entity.dart';
+import 'package:house_mira_people/domain/entities/family_entity.dart';
+import 'package:house_mira_people/domain/repository/people_repository.dart';
+import 'package:house_mira_reminders/domain/entities/reminder_entity.dart';
+import 'package:house_mira_reminders/domain/repository/reminder_repository.dart';
+
+class GetHomeDataUsecase {
+  GetHomeDataUsecase({
+    required this.peopleRepository,
+    required this.reminderRepository,
+    required this.authService,
+  });
+  final PeopleRepository peopleRepository;
+  final ReminderRepository reminderRepository;
+  final AuthService authService;
+
+  Future<Either<Exception, HomeEntity>> call() async {
+    if (!authService.isLoggedIn()) {
+      return Left(NoDataException());
+    }
+
+    final peopleResult = await peopleRepository.getPeople();
+    return peopleResult.fold(
+      (err) async {
+        // A signed-in user without a family membership has no home data yet.
+        // Surface that as empty (same view as logged-out) instead of an error.
+        final userId = authService.currentUserId;
+        if (userId != null) {
+          try {
+            final familyIds = await peopleRepository.getFamilyIdsForUser(
+              userId,
+            );
+            if (familyIds.isEmpty) return Left(NoDataException());
+          } on Object catch (_) {
+            // Fall through to the original error below.
+          }
+        }
+        return Left(err);
+      },
+      (people) async {
+        final familyResult = await peopleRepository.getMyFamily();
+        final family = familyResult.getOrElse(
+          (_) => FamilyEntity(name: '', inviteCode: ''),
+        );
+
+        final roles = await peopleRepository.getMyFamilyRole();
+        final familyIds = await peopleRepository.getFamilyIdsForUser(
+          authService.currentUserId ?? '',
+        );
+        final familyId = familyIds.isEmpty ? null : familyIds.first;
+
+        final reminders = familyId == null
+            ? const <ReminderEntity>[]
+            : await _fetchReminders(familyId);
+
+        return Right(
+          HomeEntity(
+            peopleInCircle: people,
+            familyName: family.name,
+            myRole: roles.isEmpty ? '' : roles.first,
+            activeMembers: people.length,
+            reminders: reminders,
+            hasReminders: reminders.isNotEmpty,
+          ),
+        );
+      },
+    );
+  }
+
+  Future<List<ReminderEntity>> _fetchReminders(String familyId) async {
+    final result = await reminderRepository.getReminders(familyId);
+    return result.getOrElse((_) => const <ReminderEntity>[]);
+  }
+}
