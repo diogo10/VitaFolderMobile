@@ -14,6 +14,7 @@ class AppConfig {
     required this.supabasePublishableKey,
     this.revenueCatAppleApiKey = '',
     this.revenueCatGoogleApiKey = '',
+    this.revenueCatTestApiKey = '',
   });
 
   /// Reads the configuration from `--dart-define` values.
@@ -29,6 +30,11 @@ class AppConfig {
   /// billing is unconfigured and the RevenueCat SDK init is skipped —
   /// unlike Supabase, billing is best-effort so the app still runs without
   /// store keys (e.g. before the store listings exist).
+  ///
+  /// Optional key: `REVENUECAT_TEST_API_KEY` (RevenueCat Test Store key,
+  /// `test_…`). Dev + debug builds use it to test purchases without the
+  /// real stores; release builds never use it (initialization is skipped
+  /// instead of crashing).
   factory AppConfig.fromEnvironment() => AppConfig.fromDefines(
     flavorRaw: const String.fromEnvironment('APP_FLAVOR'),
     supabaseUrl: const String.fromEnvironment('SUPABASE_URL'),
@@ -40,6 +46,9 @@ class AppConfig {
     ),
     revenueCatGoogleApiKey: const String.fromEnvironment(
       'REVENUECAT_GOOGLE_API_KEY',
+    ),
+    revenueCatTestApiKey: const String.fromEnvironment(
+      'REVENUECAT_TEST_API_KEY',
     ),
   );
 
@@ -54,6 +63,7 @@ class AppConfig {
     required String supabasePublishableKey,
     required String revenueCatAppleApiKey,
     required String revenueCatGoogleApiKey,
+    required String revenueCatTestApiKey,
   }) {
     final flavor = parseAppFlavor(flavorRaw);
     if (flavor == null) {
@@ -88,6 +98,7 @@ class AppConfig {
       supabasePublishableKey: supabasePublishableKey,
       revenueCatAppleApiKey: revenueCatAppleApiKey,
       revenueCatGoogleApiKey: revenueCatGoogleApiKey,
+      revenueCatTestApiKey: revenueCatTestApiKey,
     );
   }
 
@@ -100,4 +111,8 @@ class AppConfig {
 
   /// RevenueCat public Google API key (`goog_…`). Empty when unconfigured.
   final String revenueCatGoogleApiKey;
+
+  /// RevenueCat Test Store API key (`test_…`) for dev + debug builds.
+  /// Empty when unconfigured. Never used in release builds.
+  final String revenueCatTestApiKey;
 }

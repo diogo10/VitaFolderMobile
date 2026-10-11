@@ -110,20 +110,34 @@ RevenueCat dashboard → Project Settings → API keys → App specific keys:
 | --- | --- |
 | `REVENUECAT_APPLE_API_KEY` | Public Apple key (`appl_…`), used on iOS/macOS |
 | `REVENUECAT_GOOGLE_API_KEY` | Public Google key (`goog_…`), used on Android |
+| `REVENUECAT_TEST_API_KEY` | Test Store key (`test_…`), used on dev + debug builds only |
 
-Both keys are optional `--dart-define`s (already present as empty strings
+All keys are optional `--dart-define`s (already present as empty strings
 in `env/*.example.json`). Empty means billing is unconfigured and SDK init
 is skipped with a warning — the app still runs, which keeps development
 unblocked before the store listings exist. Never hardcode keys in `lib/`;
 the CI secrets check (`tool/check_no_hardcoded_secrets.sh`) fails on
 `appl_`/`goog_` key literals in Dart source.
 
+Test Store first: create the Test Store in the RevenueCat dashboard
+(Apps & providers), add monthly/annual test products attached to the
+`housemira_pro` entitlement, and expose them via the `default` offering
+(`$rc_monthly`, `$rc_annual`). Dev + debug builds configure the SDK with
+the `test_` key automatically (`useTestStore` in `lib/main.dart`);
+release builds never use it — init is skipped instead, since the SDK
+crashes on purpose with Test Store keys. Never submit a build configured
+with the `test_` key.
+
+The paywall catalog comes from live offerings
+(`SubscriptionService.getOfferingPrices()` → `PaywallData`): real prices
+with the save badge derived from them. When the lookup fails, dev/Test
+Store builds fall back to the mocked catalog while production shows the
+paywall error with retry — buyers never see fake prices.
+
 Native setup already done: Android `MainActivity` subclasses
 `FlutterFragmentActivity` (required by RevenueCat Paywalls) and keeps
 `launchMode="singleTop"`; iOS targets 15.0 (above the 13.0 minimum).
 Before store submission, enable the In-App Purchase capability in Xcode.
-Paywalls and entitlement checks are out of scope for the initial setup and
-land in a follow-up task.
 
 ### Firebase options per flavor
 

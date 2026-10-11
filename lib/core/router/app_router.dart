@@ -499,8 +499,9 @@ AppLogger _defaultAppLoggerFactory() =>
     : AppLogger();
 
 /// One-shot paywall: fresh per visit, owned by `BlocProvider(create:)`.
-/// The catalog is mocked in the repository until store billing is wired.
-/// The shared [SubscriptionService] is injected so a successful trial or
+/// The catalog comes from live RevenueCat offerings, falling back to the
+/// mocked repository catalog on Test Store builds. The shared
+/// [SubscriptionService] is injected so a successful trial or
 /// restore drops the cached entitlement immediately.
 PaywallCubit _defaultPaywallCubitFactory() => PaywallCubit(
   getPaywallDataUsecase: slInstance(instanceName: 'getPaywallDataUsecase'),

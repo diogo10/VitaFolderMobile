@@ -14,6 +14,7 @@ void main() {
         supabasePublishableKey: validKey,
         revenueCatAppleApiKey: '',
         revenueCatGoogleApiKey: '',
+        revenueCatTestApiKey: '',
       );
 
       expect(config.flavor, AppFlavor.dev);
@@ -21,6 +22,7 @@ void main() {
       expect(config.supabasePublishableKey, validKey);
       expect(config.revenueCatAppleApiKey, isEmpty);
       expect(config.revenueCatGoogleApiKey, isEmpty);
+      expect(config.revenueCatTestApiKey, isEmpty);
     });
 
     test('resolves each flavor', () {
@@ -31,6 +33,7 @@ void main() {
           supabasePublishableKey: validKey,
           revenueCatAppleApiKey: '',
           revenueCatGoogleApiKey: '',
+          revenueCatTestApiKey: '',
         );
         expect(config.flavor, flavor);
       }
@@ -44,6 +47,7 @@ void main() {
           supabasePublishableKey: validKey,
           revenueCatAppleApiKey: '',
           revenueCatGoogleApiKey: '',
+          revenueCatTestApiKey: '',
         ),
         throwsStateError,
       );
@@ -54,6 +58,7 @@ void main() {
           supabasePublishableKey: validKey,
           revenueCatAppleApiKey: '',
           revenueCatGoogleApiKey: '',
+          revenueCatTestApiKey: '',
         ),
         throwsStateError,
       );
@@ -74,6 +79,7 @@ void main() {
             supabasePublishableKey: validKey,
             revenueCatAppleApiKey: '',
             revenueCatGoogleApiKey: '',
+            revenueCatTestApiKey: '',
           ),
           throwsStateError,
           reason: 'URL: "$badUrl"',
@@ -89,6 +95,7 @@ void main() {
           supabasePublishableKey: '',
           revenueCatAppleApiKey: '',
           revenueCatGoogleApiKey: '',
+          revenueCatTestApiKey: '',
         ),
         throwsStateError,
       );
@@ -101,10 +108,12 @@ void main() {
         supabasePublishableKey: validKey,
         revenueCatAppleApiKey: 'fake-apple-key',
         revenueCatGoogleApiKey: 'fake-google-key',
+        revenueCatTestApiKey: 'fake-test-key',
       );
 
       expect(config.revenueCatAppleApiKey, 'fake-apple-key');
       expect(config.revenueCatGoogleApiKey, 'fake-google-key');
+      expect(config.revenueCatTestApiKey, 'fake-test-key');
     });
   });
 }

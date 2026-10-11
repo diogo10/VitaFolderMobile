@@ -5,8 +5,9 @@ import 'package:house_mira_paywall/domain/usecase/restore_purchases_usecase.dart
 import 'package:house_mira_paywall/domain/usecase/start_trial_usecase.dart';
 import 'package:house_mira_paywall/presentation/cubit/paywall_state.dart';
 
-/// Paywall presentation state. The catalog is mocked until store billing
-/// is wired; actions surface a snackbar via one-shot outcome states.
+/// Paywall presentation state. The catalog comes from live offerings
+/// (mocked fallback on Test Store builds); actions surface a snackbar
+/// via one-shot outcome states.
 class PaywallCubit extends Cubit<PaywallState> {
   PaywallCubit({
     required GetPaywallDataUsecase getPaywallDataUsecase,

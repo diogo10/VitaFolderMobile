@@ -3,5 +3,6 @@
   "SUPABASE_URL": "https://your-prod-project.supabase.co",
   "SUPABASE_PUBLISHABLE_KEY": "paste-prod-publishable-key-here",
   "REVENUECAT_APPLE_API_KEY": "",
-  "REVENUECAT_GOOGLE_API_KEY": ""
+  "REVENUECAT_GOOGLE_API_KEY": "",
+  "REVENUECAT_TEST_API_KEY": ""
 }

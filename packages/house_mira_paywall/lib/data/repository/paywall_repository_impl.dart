@@ -1,12 +1,24 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:house_mira_core/subscriptions/subscription_service.dart';
 import 'package:house_mira_paywall/domain/entities/paywall_data.dart';
 import 'package:house_mira_paywall/domain/entities/paywall_feature_entity.dart';
 import 'package:house_mira_paywall/domain/entities/paywall_plan_entity.dart';
+import 'package:house_mira_paywall/domain/paywall_offering_mapper.dart';
 import 'package:house_mira_paywall/domain/repository/paywall_repository.dart';
 
-/// Mocked paywall catalog. Returns the static plans and features from the
-/// design until real store offerings are wired through [SubscriptionService].
+/// Paywall catalog: live RevenueCat offerings first, mocked data as the
+/// Test Store fallback.
+///
+/// Failure policy (fail-open in dev, fail-closed in prod): when the
+/// offerings lookup fails, Test Store builds render the static catalog so
+/// development is never blocked, while production builds surface an error
+/// so buyers never see fake prices.
 class PaywallRepositoryImpl implements PaywallRepository {
+  PaywallRepositoryImpl({required SubscriptionService subscriptionService})
+    : _subscriptionService = subscriptionService;
+
+  final SubscriptionService _subscriptionService;
+
   static const mockedData = PaywallData(
     plans: [
       PaywallPlanEntity(
@@ -29,7 +41,21 @@ class PaywallRepositoryImpl implements PaywallRepository {
 
   @override
   Future<Either<Exception, PaywallData>> getPaywallData() async {
-    return const Right(mockedData);
+    try {
+      final prices = await _subscriptionService.getOfferingPrices();
+      if (prices != null) {
+        return Right(mapOfferingPricesToPaywallData(prices));
+      }
+      if (_subscriptionService.isUsingTestStore) {
+        return const Right(mockedData);
+      }
+      return Left(Exception('paywall-unavailable'));
+    } on Object catch (_) {
+      if (_subscriptionService.isUsingTestStore) {
+        return const Right(mockedData);
+      }
+      return Left(Exception('paywall-unavailable'));
+    }
   }
 
   @override

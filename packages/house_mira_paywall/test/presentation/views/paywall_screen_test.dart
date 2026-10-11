@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira_core/subscriptions/store_package_price.dart';
 import 'package:house_mira_core/subscriptions/subscription_service.dart';
 import 'package:house_mira_paywall/data/repository/paywall_repository_impl.dart';
 import 'package:house_mira_paywall/domain/entities/paywall_data.dart';
@@ -35,6 +36,15 @@ class _FailingRepository implements PaywallRepository {
   }
 }
 
+/// Serves the mocked catalog: no offerings, but reports the Test Store.
+class _TestStoreSubscriptions extends SubscriptionService {
+  @override
+  Future<OfferingPrices?> getOfferingPrices() async => null;
+
+  @override
+  bool get isUsingTestStore => true;
+}
+
 PaywallCubit buildCubit(PaywallRepository repository) => PaywallCubit(
   getPaywallDataUsecase: GetPaywallDataUsecase(repository: repository),
   startTrialUsecase: StartTrialUsecase(repository: repository),
@@ -59,7 +69,11 @@ Future<void> pumpScreen(WidgetTester tester, PaywallCubit cubit) async {
 void main() {
   group('PaywallScreen mocked catalog', () {
     testWidgets('renders headline, features, plans and CTA', (tester) async {
-      final cubit = buildCubit(PaywallRepositoryImpl());
+      final cubit = buildCubit(
+        PaywallRepositoryImpl(
+          subscriptionService: _TestStoreSubscriptions(),
+        ),
+      );
       addTearDown(cubit.close);
       await pumpScreen(tester, cubit);
       final l = AppLocalizations.of(
@@ -78,7 +92,11 @@ void main() {
     });
 
     testWidgets('tapping a plan selects it', (tester) async {
-      final cubit = buildCubit(PaywallRepositoryImpl());
+      final cubit = buildCubit(
+        PaywallRepositoryImpl(
+          subscriptionService: _TestStoreSubscriptions(),
+        ),
+      );
       addTearDown(cubit.close);
       await pumpScreen(tester, cubit);
       final l = AppLocalizations.of(
@@ -103,7 +121,11 @@ void main() {
     testWidgets('starting the trial shows the placeholder snackbar', (
       tester,
     ) async {
-      final cubit = buildCubit(PaywallRepositoryImpl());
+      final cubit = buildCubit(
+        PaywallRepositoryImpl(
+          subscriptionService: _TestStoreSubscriptions(),
+        ),
+      );
       addTearDown(cubit.close);
       await pumpScreen(tester, cubit);
       final l = AppLocalizations.of(
@@ -120,7 +142,11 @@ void main() {
     testWidgets('restoring purchases shows the placeholder snackbar', (
       tester,
     ) async {
-      final cubit = buildCubit(PaywallRepositoryImpl());
+      final cubit = buildCubit(
+        PaywallRepositoryImpl(
+          subscriptionService: _TestStoreSubscriptions(),
+        ),
+      );
       addTearDown(cubit.close);
       await pumpScreen(tester, cubit);
       final l = AppLocalizations.of(
@@ -155,7 +181,11 @@ void main() {
     });
 
     testWidgets('close button pops the screen', (tester) async {
-      final cubit = buildCubit(PaywallRepositoryImpl());
+      final cubit = buildCubit(
+        PaywallRepositoryImpl(
+          subscriptionService: _TestStoreSubscriptions(),
+        ),
+      );
       addTearDown(cubit.close);
       final router = GoRouter(
         initialLocation: '/',

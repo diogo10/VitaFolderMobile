@@ -87,6 +87,10 @@ void main() async {
           ).initialize(
             appleApiKey: config.revenueCatAppleApiKey,
             googleApiKey: config.revenueCatGoogleApiKey,
+            testApiKey: config.revenueCatTestApiKey,
+            // Dev + debug builds talk to the RevenueCat Test Store;
+            // staging/prod and release builds always use the real stores.
+            useTestStore: kDebugMode && config.flavor == AppFlavor.dev,
           );
       await trace.putAttribute('initialized', '$initialized');
     });

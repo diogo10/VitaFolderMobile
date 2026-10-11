@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:house_mira_core/subscriptions/subscription_service.dart';
 import 'package:house_mira_paywall/data/repository/paywall_repository_impl.dart';
 import 'package:house_mira_paywall/domain/repository/paywall_repository.dart';
 import 'package:house_mira_paywall/domain/usecase/get_paywall_data_usecase.dart';
@@ -12,7 +13,11 @@ class PaywallServiceLocator {
   void init() {
     sl
       ..registerSingleton<PaywallRepository>(
-        PaywallRepositoryImpl(),
+        PaywallRepositoryImpl(
+          subscriptionService: sl<SubscriptionService>(
+            instanceName: 'subscriptionService',
+          ),
+        ),
         instanceName: 'paywallRepositoryImpl',
       )
       ..registerSingleton<GetPaywallDataUsecase>(

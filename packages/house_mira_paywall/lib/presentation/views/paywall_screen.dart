@@ -14,8 +14,8 @@ import 'package:house_mira_core/theme/sand_palette.dart';
 /// HouseMira Pro paywall, converted from
 /// `designs/html/01-FamilyAdmin - PayWall.html`.
 ///
-/// The catalog is mocked in [PaywallRepositoryImpl] until store billing is
-/// wired; the trial/restore actions surface a placeholder snackbar.
+/// The catalog comes from live RevenueCat offerings (mocked fallback on
+/// Test Store builds); the trial/restore actions surface a placeholder snackbar.
 class PaywallScreen extends StatefulWidget {
   const PaywallScreen({super.key});
 

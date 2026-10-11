@@ -6,6 +6,7 @@
 export 'domain/entities/paywall_data.dart';
 export 'domain/entities/paywall_feature_entity.dart';
 export 'domain/entities/paywall_plan_entity.dart';
+export 'domain/paywall_offering_mapper.dart';
 export 'domain/repository/paywall_repository.dart';
 export 'domain/usecase/get_paywall_data_usecase.dart';
 export 'domain/usecase/restore_purchases_usecase.dart';
