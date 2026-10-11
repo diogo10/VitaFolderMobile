@@ -88,8 +88,10 @@ fix lints, do not add ignore comments.
   `packages/house_mira_reminders/lib/application`,
   `packages/house_mira_people/lib/data`,
   `packages/house_mira_people/lib/presentation`.
-  Each package exposes its public API via `lib/house_mira_<feature>.dart`
-  (domain only) and its DI graph via `lib/*_service_locator.dart`.
+  Each package exposes its public API via its lib/house_mira_<feature>.dart
+  file (domain only, e.g. `packages/house_mira_reminders/lib/house_mira_reminders.dart`)
+  and its DI graph via its lib/*_service_locator.dart file
+  (e.g. `packages/house_mira_reminders/lib/reminder_service_locator.dart`).
   Import rules P1–P6 (`tool/check_feature_boundaries.py`): no
   cross-package data/ imports, core never imports features,
   feature-to-feature via domain/ only.
@@ -116,7 +118,7 @@ fix lints, do not add ignore comments.
 
 ## Environments & secrets
 
-- No backend credentials in `lib/` or `packages/*/lib/`: Supabase URL/key arrive via
+- No backend credentials in `lib/` or any package lib/ directory (e.g. `packages/house_mira_core/lib/`): Supabase URL/key arrive via
   dart-define flags (APP_FLAVOR, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
   through AppConfig.fromEnvironment in `packages/house_mira_core/lib/config/app_config.dart`.
   Startup throws StateError on missing/invalid values — never add fallbacks.
@@ -133,7 +135,7 @@ fvm flutter run --dart-define-from-file=env/dev.json
   (provisioning steps in README "Environments & secrets").
 - CI check-no-hardcoded-secrets (`tool/check_no_hardcoded_secrets.sh`)
   fails on publishable/secret key literals, hardcoded Supabase project URLs
-  in `lib/` or `packages/*/lib/`, or service_role references in `lib/` or `packages/`. Keep `test/` fakes on
+  in `lib/` or any package lib/ directory (e.g. `packages/house_mira_core/lib/`), or service_role references in `lib/` or `packages/`. Keep `test/` fakes on
   reserved example hosts with mock anon keys (see test/widget_test.dart).
 
 ## Testing
@@ -141,7 +143,7 @@ fvm flutter run --dart-define-from-file=env/dev.json
 New code ships with tests: cubit state sequences (including cancel and
 failure paths), unit tests for use-case and entity branches (coverage
 gate), widget tests for button wiring. Feature tests live in
-`packages/house_mira_<feature>/test/`, core tests in
+each package test/ directory (e.g. `packages/house_mira_reminders/test/`), core tests in
 `packages/house_mira_core/test/`; app-shell tests (router, critical
 paths, goldens) stay in `test/`. Throwaway repro tests go in the
 system temp directory outside the repo, not in `test/`.
@@ -156,7 +158,7 @@ Details: [testing](.agents/references/testing.md).
   `supabase/functions/resend-email-v1`, and its docs
   live in `README.md`. Auth flows live in
   `packages/house_mira_core/lib/auth/auth_service.dart` and per-feature DI
-  is wired in each package's `lib/*_service_locator.dart`, aggregated in
+  is wired in each package's lib/*_service_locator.dart file (e.g. `packages/house_mira_reminders/lib/reminder_service_locator.dart`), aggregated in
   `lib/core/injections/service_locator.dart`.
 - Supabase project: VitaFolderMobileBackend, project ref
   jheqalwrnztavzxjsdcj, region West EU (Ireland). Link with
