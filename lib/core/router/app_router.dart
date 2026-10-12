@@ -61,7 +61,7 @@ import 'package:house_mira_reminders/presentation/screens/reminders_view.dart';
 /// are exactly the [resolveAppRedirect] matrix: splash gate, signed-in away
 /// from sign-up, and invalid invite codes falling back to people.
 ///
-/// Deep links: `/invite/<code>` (App Link `https://vitafolder.app/invite/…`)
+/// Deep links: `/invite/<code>` (App Link `https://housemira.com/invite/…`)
 /// lands on the people tab with the code pre-filled for one-tap joining.
 /// Notification taps are payload-routed by `MyApp` via
 /// [notificationLocationFor].

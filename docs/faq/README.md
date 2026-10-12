@@ -146,7 +146,7 @@ Three equivalent ways, all managed from People → **Invite Members** /
    Invite Code" card. The recipient opens People, taps **Join Family**,
    and enters the code.
 2. **Shareable link** — tap **Share Link** to copy/send the invite link
-   (`https://vitafolder.app/invite/<code>`). Opening it takes the
+   (`https://housemira.com/invite/<code>`). Opening it takes the
    recipient straight to the join flow; an invalid or expired link falls
    back to the People tab so they can enter a code manually.
 3. **Email invite** — enter the person's email address (and their

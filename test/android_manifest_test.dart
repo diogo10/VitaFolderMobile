@@ -50,7 +50,7 @@ void main() {
 
     expect(manifest, contains('android.intent.action.VIEW'));
     expect(manifest, contains('android.intent.category.BROWSABLE'));
-    expect(manifest, contains('android:host="vitafolder.app"'));
+    expect(manifest, contains('android:host="housemira.com"'));
     expect(manifest, contains('android:pathPrefix="/invite"'));
   });
 }
