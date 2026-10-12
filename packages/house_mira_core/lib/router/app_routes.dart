@@ -44,7 +44,7 @@ abstract final class AppRoutes {
   /// Public web base for family invites. Must match the backend invite flow
   /// (email template in `EdgetFunctions`, share sheet) and the native
   /// App Link / Associated Domain declarations.
-  static const inviteWebBase = 'https://vitafolder.app/invite';
+  static const inviteWebBase = 'https://housemira.com/invite';
 
   /// Builds the shareable/emailable invite link for [code].
   ///

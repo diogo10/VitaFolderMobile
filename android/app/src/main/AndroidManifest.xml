@@ -27,7 +27,7 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Family-invite App Link: https://vitafolder.app/invite/<code>
+            <!-- Family-invite App Link: https://housemira.com/invite/<code>
                  handled in-app by the `/invite/:code` route (see AppRoutes).
                  Must stay in sync with the backend invite flow
                  (EdgetFunctions.sendEmail) and the iOS Associated Domain. -->
@@ -37,7 +37,7 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
                     android:scheme="https"
-                    android:host="vitafolder.app"
+                    android:host="housemira.com"
                     android:pathPrefix="/invite"/>
             </intent-filter>
         </activity>

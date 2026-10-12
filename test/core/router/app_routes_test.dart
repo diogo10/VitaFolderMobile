@@ -196,18 +196,18 @@ void main() {
     test('builds the App Link for a valid code', () {
       expect(
         AppRoutes.inviteLink('ABC123'),
-        'https://vitafolder.app/invite/ABC123',
+        'https://housemira.com/invite/ABC123',
       );
     });
 
     test('trims whitespace and strips masking characters', () {
       expect(
         AppRoutes.inviteLink('  ABC123  '),
-        'https://vitafolder.app/invite/ABC123',
+        'https://housemira.com/invite/ABC123',
       );
       expect(
         AppRoutes.inviteLink('AB•C123'),
-        'https://vitafolder.app/invite/ABC123',
+        'https://housemira.com/invite/ABC123',
       );
     });
 

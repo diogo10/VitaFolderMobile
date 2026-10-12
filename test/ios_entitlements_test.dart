@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Guards the iOS Universal Link wiring for family invites
-/// (`https://vitafolder.app/invite/<code>`, handled in-app by the
+/// (`https://housemira.com/invite/<code>`, handled in-app by the
 /// `/invite/:code` route). Without the Associated Domain entitlement the OS
 /// opens the link in Safari instead of the app.
 void main() {
@@ -17,7 +17,7 @@ void main() {
       entitlements,
       contains('com.apple.developer.associated-domains'),
     );
-    expect(entitlements, contains('applinks:vitafolder.app'));
+    expect(entitlements, contains('applinks:housemira.com'));
   });
 
   test('wires the entitlements file into the Runner target', () {

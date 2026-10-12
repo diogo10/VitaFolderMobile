@@ -15,7 +15,7 @@
 // missing or unsupported values fall back to 'en'.
 // Subject and HTML are rendered server-side from the locale and invite data.
 // The CTA points at the web join page with the family code appended:
-//   https://vitafolder-web-page-nextjs.vercel.app/join-family?invite=<code>
+//   https://housemira.com/join-family?invite=<code>
 //
 // Responses:
 //   200 { success: true, id }          — email accepted by Resend
@@ -31,7 +31,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "jsr:@supabase/server@^1";
 
 const JOIN_BASE_URL =
-  "https://vitafolder-web-page-nextjs.vercel.app/join-family";
+  "https://housemira.com/join-family";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
