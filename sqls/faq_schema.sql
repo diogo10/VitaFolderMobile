@@ -13,6 +13,11 @@
 -- Then load the content (safe to re-run; see the seed header):
 --   supabase db query --linked --file sqls/faq_seed.sql
 --
+-- Preferred (versioned) path: supabase/migrations/20261013120000_faqs_schema.sql
+-- and supabase/migrations/20261013121000_faqs_seed.sql mirror these sqls/
+-- files. Prefer `supabase db push` so deploys are versioned; the manual
+-- `db query --linked` steps above remain as a fallback.
+--
 -- Verify afterwards (expect public read policies only, RLS enabled):
 --   SELECT policyname, cmd, roles
 --   FROM pg_policies
@@ -32,6 +37,10 @@ CREATE TABLE IF NOT EXISTS "public"."faqs" (
     "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT "faqs_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "faqs_slug_locale_key" UNIQUE ("slug", "locale"),
+    -- Deterministic Help-screen ordering: one position per locale. The
+    -- documented query orders by (sort_order, slug); this constraint keeps
+    -- sort_order collision-free per locale when regenerating from the README.
+    CONSTRAINT "faqs_locale_sort_order_key" UNIQUE ("locale", "sort_order"),
     CONSTRAINT "faqs_locale_check"
         CHECK ("locale" IN ('en', 'pt')),
     CONSTRAINT "faqs_slugs_check"
@@ -47,7 +56,10 @@ CREATE TABLE IF NOT EXISTS "public"."faqs" (
         )
 );
 
-CREATE INDEX IF NOT EXISTS "faqs_locale_order_idx"
+-- Enforces UNIQUE(locale, sort_order) on tables created before the constraint
+-- above existed. Same name as the constraint: a no-op when the table was
+-- freshly created (the constraint already owns an index by that name).
+CREATE UNIQUE INDEX IF NOT EXISTS "faqs_locale_sort_order_key"
     ON "public"."faqs" ("locale", "sort_order");
 
 CREATE INDEX IF NOT EXISTS "faqs_category_idx"
