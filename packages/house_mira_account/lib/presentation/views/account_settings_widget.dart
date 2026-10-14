@@ -1,14 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:house_mira_core/router/app_routes.dart';
 import 'package:house_mira_account/presentation/cubit/account_cubit.dart';
+import 'package:house_mira_account/presentation/utils/privacy_policy_link.dart';
 import 'package:house_mira_core/generated/app_localizations.dart';
+import 'package:house_mira_core/router/app_routes.dart';
 import 'package:house_mira_core/theme/theme_extensions.dart';
 
 class AccountSettingsWidget extends StatelessWidget {
-  const AccountSettingsWidget({required this.familyCode, super.key});
+  const AccountSettingsWidget({
+    required this.familyCode,
+    this.privacyPolicyLauncher,
+    super.key,
+  });
   final String familyCode;
+  final PrivacyPolicyLauncher? privacyPolicyLauncher;
 
   @override
   Widget build(BuildContext context) {
@@ -25,18 +33,22 @@ class AccountSettingsWidget extends StatelessWidget {
                 icon: Icons.person_rounded,
                 title: l.accountSettingsEditProfile,
                 subtitle: l.accountSettingsEditProfileSubtitle,
-                onTap: () => context.push(AppRoutes.manageProfile),
+                onTap: () async {
+                  await context.push(AppRoutes.manageProfile);
+                },
               ),
               _AccountSettingsItemData(
                 icon: Icons.notifications_rounded,
                 title: l.accountSettingsNotifications,
                 subtitle: l.accountSettingsNotificationsSubtitle,
-                onTap: () => context.push(AppRoutes.notificationSettings),
+                onTap: () async {
+                  await context.push(AppRoutes.notificationSettings);
+                },
               ),
             ],
           ),
           const SizedBox(height: 24),
-          if (familyCode.isNotEmpty)
+          if (familyCode.isNotEmpty) ...[
             _AccountSettingsSection(
               title: l.accountSettingsFamilySection,
               items: [
@@ -44,7 +56,9 @@ class AccountSettingsWidget extends StatelessWidget {
                   icon: Icons.house_rounded,
                   title: l.accountSettingsFamilySettings,
                   subtitle: l.accountSettingsFamilySettingsSubtitle,
-                  onTap: () => context.push(AppRoutes.familySettings),
+                  onTap: () async {
+                    await context.push(AppRoutes.familySettings);
+                  },
                 ),
                 _AccountSettingsItemData(
                   icon: Icons.person_add_alt_1_rounded,
@@ -53,12 +67,15 @@ class AccountSettingsWidget extends StatelessWidget {
                     familyCode,
                     l.accountSettingsInviteMembersSubtitle,
                   ),
-                  onTap: () => context.go(AppRoutes.people),
+                  onTap: () {
+                    context.go(AppRoutes.people);
+                    return Future<void>.value();
+                  },
                 ),
               ],
             ),
-          if (familyCode.isNotEmpty) const SizedBox(height: 24),
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
+          ],
           _AccountSettingsSection(
             title: l.accountSettingsSupportSection,
             items: [
@@ -68,17 +85,38 @@ class AccountSettingsWidget extends StatelessWidget {
                 subtitle: l.accountSettingsHelpFaqSubtitle,
               ),
               _AccountSettingsItemData(
-                icon: Icons.privacy_tip_rounded,
-                title: l.accountSettingsPrivacyPolicy,
-                subtitle: l.accountSettingsPrivacyPolicySubtitle,
-              ),
-              _AccountSettingsItemData(
                 icon: Icons.logout_rounded,
                 title: l.accountSettingsSignOut,
                 subtitle: l.accountSettingsSignOutSubtitle,
                 accent: true,
                 onTap: () async {
                   await context.read<AccountCubit>().signOut();
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _AccountSettingsSection(
+            title: l.accountSettingsPolicySection,
+            items: [
+              _AccountSettingsItemData(
+                icon: Icons.privacy_tip_rounded,
+                title: l.accountSettingsPrivacyPolicy,
+                subtitle: l.accountSettingsPrivacyPolicySubtitle,
+                onTap: () async {
+                  try {
+                    final launcher =
+                        privacyPolicyLauncher ?? defaultPrivacyPolicyLauncher;
+                    await launcher(privacyPolicyUri);
+                  } on Object catch (_) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l.accountSettingsPrivacyPolicyError),
+                        ),
+                      );
+                    }
+                  }
                 },
               ),
             ],
@@ -191,7 +229,7 @@ class _AccountSettingsItemData {
   final String title;
   final String subtitle;
   final bool accent;
-  final VoidCallback? onTap;
+  final Future<void> Function()? onTap;
 }
 
 class _AccountSettingsItem extends StatelessWidget {
@@ -241,7 +279,23 @@ class _AccountSettingsItem extends StatelessWidget {
             ),
           ),
           trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
-          onTap: data.onTap,
+          onTap: data.onTap == null
+              ? null
+              : () {
+                  unawaited(() async {
+                    try {
+                      await data.onTap!();
+                    } on Object catch (error, stackTrace) {
+                      FlutterError.reportError(
+                        FlutterErrorDetails(
+                          exception: error,
+                          stack: stackTrace,
+                          library: 'AccountSettingsWidget',
+                        ),
+                      );
+                    }
+                  }());
+                },
         ),
         if (!isLast) const Divider(height: 1),
       ],

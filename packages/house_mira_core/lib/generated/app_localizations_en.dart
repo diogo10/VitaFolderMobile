@@ -433,10 +433,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSettingsHelpFaqSubtitle => 'Get answers, contact support';
 
   @override
+  String get accountSettingsPolicySection => 'POLICY OPTIONS';
+
+  @override
   String get accountSettingsPrivacyPolicy => 'Privacy Policy';
 
   @override
   String get accountSettingsPrivacyPolicySubtitle => 'How we handle your data';
+
+  @override
+  String get accountSettingsPrivacyPolicyError =>
+      'Could not open the Privacy Policy. Please try again.';
 
   @override
   String get accountSettingsSignOut => 'Sign Out';
