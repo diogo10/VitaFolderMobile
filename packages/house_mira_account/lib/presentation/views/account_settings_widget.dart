@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:house_mira_core/router/app_routes.dart';
 import 'package:house_mira_account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira_account/presentation/utils/privacy_policy_link.dart';
 import 'package:house_mira_core/generated/app_localizations.dart';
+import 'package:house_mira_core/router/app_routes.dart';
 import 'package:house_mira_core/theme/theme_extensions.dart';
 
 class AccountSettingsWidget extends StatelessWidget {
@@ -48,7 +48,7 @@ class AccountSettingsWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          if (familyCode.isNotEmpty)
+          if (familyCode.isNotEmpty) ...[
             _AccountSettingsSection(
               title: l.accountSettingsFamilySection,
               items: [
@@ -67,13 +67,15 @@ class AccountSettingsWidget extends StatelessWidget {
                     familyCode,
                     l.accountSettingsInviteMembersSubtitle,
                   ),
-                  onTap: () async {
+                  onTap: () {
                     context.go(AppRoutes.people);
+                    return Future<void>.value();
                   },
                 ),
               ],
             ),
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
+          ],
           _AccountSettingsSection(
             title: l.accountSettingsSupportSection,
             items: [
