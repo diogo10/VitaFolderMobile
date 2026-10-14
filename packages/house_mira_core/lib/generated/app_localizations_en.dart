@@ -446,6 +446,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportRetry => 'Try again';
 
   @override
+  String get supportExternalLinkError => 'Couldn\'t open the link.';
+
+  @override
   String get accountSettingsPolicySection => 'POLICY OPTIONS';
 
   @override

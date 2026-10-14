@@ -211,7 +211,10 @@ class InvitePeopleRoute {
     final code = inviteCode?.trim() ?? '';
     if (code.isNotEmpty) query[AppRoutes.inviteCodeParam] = code;
     if (query.isEmpty) return AppRoutes.invitePeople;
-    return Uri(path: AppRoutes.invitePeople, queryParameters: query).toString();
+    return Uri(
+      path: AppRoutes.invitePeople,
+      queryParameters: query,
+    ).toString();
   }
 
   Future<T?> push<T extends Object?>(BuildContext context) => context.push<T>(

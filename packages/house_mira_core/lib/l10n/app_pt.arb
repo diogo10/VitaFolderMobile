@@ -155,6 +155,7 @@
   "accountSettingsSupportSubtitle": "Central de ajuda, guias e contato",
   "supportLoadError": "Não foi possível carregar a página de suporte.",
   "supportRetry": "Tentar novamente",
+  "supportExternalLinkError": "Não foi possível abrir o link.",
   "accountSettingsPolicySection": "OPÇÕES DE POLÍTICA",
   "accountSettingsPrivacyPolicy": "Política de Privacidade",
   "accountSettingsPrivacyPolicySubtitle": "Como tratamos seus dados",

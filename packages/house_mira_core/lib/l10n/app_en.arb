@@ -176,6 +176,7 @@
   "accountSettingsSupportSubtitle": "Help center, guides and contact us",
   "supportLoadError": "We couldn't load the support page.",
   "supportRetry": "Try again",
+  "supportExternalLinkError": "Couldn't open the link.",
   "accountSettingsPolicySection": "POLICY OPTIONS",
   "accountSettingsPrivacyPolicy": "Privacy Policy",
   "accountSettingsPrivacyPolicySubtitle": "How we handle your data",

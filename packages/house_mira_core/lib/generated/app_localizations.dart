@@ -911,6 +911,12 @@ abstract class AppLocalizations {
   /// **'Try again'**
   String get supportRetry;
 
+  /// No description provided for @supportExternalLinkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the link.'**
+  String get supportExternalLinkError;
+
   /// No description provided for @accountSettingsPolicySection.
   ///
   /// In en, this message translates to:

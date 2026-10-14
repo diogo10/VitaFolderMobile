@@ -456,6 +456,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get supportRetry => 'Tentar novamente';
 
   @override
+  String get supportExternalLinkError => 'Não foi possível abrir o link.';
+
+  @override
   String get accountSettingsPolicySection => 'OPÇÕES DE POLÍTICA';
 
   @override
