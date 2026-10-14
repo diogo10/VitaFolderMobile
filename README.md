@@ -213,6 +213,7 @@ Source: `supabase/functions/<name>/index.ts` (Deno).
 | Function | Method | Auth | What it does |
 | --- | --- | --- | --- |
 | `delete-account` | `POST /functions/v1/delete-account` | Caller JWT (`Authorization: Bearer <token>`) | Deletes the caller's auth user via `auth.admin.deleteUser`. Postgres `ON DELETE CASCADE` then removes `profiles`, `family_memberships`, `notification_tokens` and `notification_logs` rows. The `families` row is left intact (`created_by` SET NULL) so other members keep their data. Blocked when the caller is the sole remaining member of an owned family — nothing is deleted. |
+| `join-family-v1` | `POST /functions/v1/join-family-v1` | Caller JWT (`Authorization: Bearer <token>`); caller must be `owner`/`admin` of the target family | Adds an existing account (by email) to a family (by family code) as `member`. Body: `{ email, familyCode }` (code canonicalized like the app: `ab-1234` → `AB1234`). Idempotent: already-a-member returns success. Returns `{ success: true, family_id }` on success. |
 | `resend-email-v1` | `POST /functions/v1/resend-email-v1` | Caller JWT (enforced by `withSupabase({ auth: "user" })`) | Sends the HouseMira family-invite email via the Resend API (`from: HouseMira <contact@contact.housemira.com>`). Body: `{ to, locale?, inviterName?, familyName?, inviteCode?, familyCode? }` (`inviteCode` still accepted for older clients; the link uses `familyCode`). Subject and HTML are rendered server-side (EN/PT, English fallback). CTA: `https://housemira.com/join-family?code=<familyCode>&email=<to>` (bare `/join-family` when no code; opens the website join page, which bridges into the app and pre-fills the form from `email`). Returns `{ success: true, id }` on success. |
 
 ### `delete-account` details
@@ -239,6 +240,35 @@ Required function secrets:
 | `SUPABASE_ANON_KEY` | Verifies the caller JWT |
 | `SUPABASE_SERVICE_ROLE_KEY` | Membership checks + `auth.admin.deleteUser` |
 
+### `join-family-v1` details
+
+- Source: `supabase/functions/join-family-v1/index.ts` (Deno). Mirrors the client-side join (`PeopleRepositoryImpl.joinFamily`): canonicalize the code (`[A-Z0-9]{6}`, separators/casing ignored), resolve the family by `invite_code`, idempotently insert the `family_memberships` row as `member`, then best-effort insert the `people` row (never fails the join).
+- UID is taken from the verified JWT server-side, never from the request body. The caller must hold role `owner` or `admin` on the target family — RLS is bypassed via the service-role client (the membership INSERT policy only permits self-insert), so this check is the security boundary.
+- The target email must belong to a registered account with a `profiles` row; otherwise `unknown_user` (the account must finish signup first). Note: distinct `family_not_found` / `unknown_user` codes let an owner/admin caller probe registered emails — accepted trade-off for usable errors.
+- CORS preflight (`OPTIONS`) returns `ok`; only `POST` is accepted.
+
+Responses:
+
+| Status | Body | Meaning |
+| --- | --- | --- |
+| 200 | `{ "success": true, "family_id": "<uuid>" }` (+ `"already_member": true` when already joined) | Member added (idempotent) |
+| 400 | `{ "code": "invalid_payload" }` / `{ "code": "invalid_json" }` | Bad email/code shape or body |
+| 401 | `{ "code": "unauthorized" }` | Missing/invalid JWT |
+| 403 | `{ "code": "not_authorized" }` | Caller is not owner/admin of the family |
+| 404 | `{ "code": "family_not_found" }` | No family for the code |
+| 404 | `{ "code": "unknown_user" }` | No fully-registered account for the email |
+| 405 | `{ "code": "method_not_allowed" }` | Not `POST` |
+| 500 | `{ "code": "missing_secret" }` | Supabase secret not set |
+| 500 | `{ "code": "lookup_failed" }` / `{ "code": "membership_failed" }` | Family/role/user lookup or membership insert failed |
+
+Required function secrets:
+
+| Secret | Purpose |
+| --- | --- |
+| `SUPABASE_URL` | Project URL (JWT verification + admin client) |
+| `SUPABASE_ANON_KEY` | Verifies the caller JWT |
+| `SUPABASE_SERVICE_ROLE_KEY` | User lookup + membership/people writes (bypasses RLS; never leaves the server) |
+
 ### Deploy & local dev
 
 ```bash
@@ -250,10 +280,12 @@ supabase secrets set SUPABASE_URL=<url> SUPABASE_ANON_KEY=<key> SUPABASE_SERVICE
 
 # Deploy
 supabase functions deploy delete-account
+supabase functions deploy join-family-v1
 supabase functions deploy resend-email-v1
 
 # Serve locally
 supabase functions serve delete-account
+supabase functions serve join-family-v1
 supabase functions serve resend-email-v1
 ```
 
