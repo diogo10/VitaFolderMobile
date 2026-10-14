@@ -433,6 +433,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSettingsHelpFaqSubtitle => 'Get answers, contact support';
 
   @override
+  String get accountSettingsSupport => 'Support';
+
+  @override
+  String get accountSettingsSupportSubtitle =>
+      'Help center, guides and contact us';
+
+  @override
+  String get supportLoadError => 'We couldn\'t load the support page.';
+
+  @override
+  String get supportRetry => 'Try again';
+
+  @override
+  String get supportExternalLinkError => 'Couldn\'t open the link.';
+
+  @override
   String get accountSettingsPolicySection => 'POLICY OPTIONS';
 
   @override

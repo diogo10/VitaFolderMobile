@@ -22,6 +22,7 @@ abstract final class AppRoutes {
   static const familySettings = '/family-settings';
   static const manageProfile = '/manage-profile';
   static const notificationSettings = '/notification-settings';
+  static const support = '/support';
   static const paywall = '/paywall';
 
   /// Deep-link entry for family invites: `/invite/<code>`.
@@ -45,6 +46,9 @@ abstract final class AppRoutes {
   /// (email template in `EdgetFunctions`, share sheet) and the native
   /// App Link / Associated Domain declarations.
   static const inviteWebBase = 'https://housemira.com/invite';
+
+  /// In-app support center loaded by the settings "Support" item.
+  static const supportUrl = 'https://housemira.com/support';
 
   /// Builds the shareable/emailable invite link for [code].
   ///

@@ -23,6 +23,7 @@ import 'package:house_mira_account/presentation/cubit/notification_settings_cubi
 import 'package:house_mira_account/presentation/views/account_view.dart';
 import 'package:house_mira_account/presentation/views/manage_profile_screen.dart';
 import 'package:house_mira_account/presentation/views/notification_settings_screen.dart';
+import 'package:house_mira_account/presentation/views/support_screen.dart';
 import 'package:house_mira_home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira_home/presentation/views/home_view.dart';
 import 'package:house_mira_login/presentation/cubit/sign_up_cubit.dart';
@@ -70,7 +71,7 @@ import 'package:house_mira_reminders/presentation/screens/reminders_view.dart';
 /// Each `StatefulShellBranch` provides its tab cubit through a
 /// `*CubitFactory` (default: the GetIt lazy singleton), and each one-shot
 /// screen route (`/sign-up`, `/invite-people`, `/manage-profile`,
-/// `/notification-settings`, `/family-settings`, `/paywall`,
+/// `/notification-settings`, `/support`, `/family-settings`, `/paywall`,
 /// `/create-reminder`)
 /// provides its own cubit the same way. go_router builds only the active
 /// branch, so a cold start resolves just the visited route's factory (e.g.
@@ -216,6 +217,10 @@ GoRouter createRouter({
             showTestAction: showNotificationTestAction,
           ),
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.support,
+        builder: (context, state) => const SupportScreen(),
       ),
       GoRoute(
         path: AppRoutes.familySettings,
