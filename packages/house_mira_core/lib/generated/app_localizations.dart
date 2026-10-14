@@ -887,6 +887,12 @@ abstract class AppLocalizations {
   /// **'Get answers, contact support'**
   String get accountSettingsHelpFaqSubtitle;
 
+  /// No description provided for @accountSettingsPolicySection.
+  ///
+  /// In en, this message translates to:
+  /// **'POLICY OPTIONS'**
+  String get accountSettingsPolicySection;
+
   /// No description provided for @accountSettingsPrivacyPolicy.
   ///
   /// In en, this message translates to:

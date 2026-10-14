@@ -99,6 +99,7 @@ void main() {
     WidgetTester tester,
     AccountCubit cubit, {
     String familyCode = 'ABC123',
+    PrivacyPolicyLauncher? privacyPolicyLauncher,
   }) async {
     addTearDown(cubit.close);
     await tester.pumpWidget(
@@ -111,7 +112,10 @@ void main() {
           // column inside a SingleChildScrollView.
           child: Scaffold(
             body: SingleChildScrollView(
-              child: AccountSettingsWidget(familyCode: familyCode),
+              child: AccountSettingsWidget(
+                familyCode: familyCode,
+                privacyPolicyLauncher: privacyPolicyLauncher,
+              ),
             ),
           ),
         ),
@@ -185,6 +189,35 @@ void main() {
 
       expect(find.text('Family Settings'), findsOneWidget);
       expect(find.text('Invite Members'), findsOneWidget);
+    });
+  });
+
+  group('AccountSettingsWidget privacy policy', () {
+    testWidgets('renders under the policy options section', (tester) async {
+      final auth = _FakeAuthService();
+      await pumpSettings(tester, buildCubit(auth));
+
+      expect(find.text('POLICY OPTIONS'), findsOneWidget);
+      expect(find.text('Privacy Policy'), findsOneWidget);
+    });
+
+    testWidgets('tapping opens housemira.com/privacy', (tester) async {
+      final auth = _FakeAuthService();
+      Uri? launched;
+      await pumpSettings(
+        tester,
+        buildCubit(auth),
+        privacyPolicyLauncher: (uri) async {
+          launched = uri;
+        },
+      );
+
+      await tester.ensureVisible(find.text('Privacy Policy'));
+      await tester.tap(find.text('Privacy Policy'));
+      await tester.pumpAndSettle();
+
+      expect(launched, privacyPolicyUri);
+      expect(launched.toString(), 'https://housemira.com/privacy');
     });
   });
 }

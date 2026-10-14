@@ -5,10 +5,26 @@ import 'package:house_mira_core/router/app_routes.dart';
 import 'package:house_mira_account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira_core/generated/app_localizations.dart';
 import 'package:house_mira_core/theme/theme_extensions.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+/// Privacy Policy page opened from Settings.
+final Uri privacyPolicyUri = Uri.parse('https://housemira.com/privacy');
+
+/// Launches [uri] in an in-app web view. Injectable for widget tests.
+typedef PrivacyPolicyLauncher = Future<void> Function(Uri uri);
+
+Future<void> defaultPrivacyPolicyLauncher(Uri uri) async {
+  await launchUrl(uri, mode: LaunchMode.inAppWebView);
+}
 
 class AccountSettingsWidget extends StatelessWidget {
-  const AccountSettingsWidget({required this.familyCode, super.key});
+  const AccountSettingsWidget({
+    required this.familyCode,
+    this.privacyPolicyLauncher,
+    super.key,
+  });
   final String familyCode;
+  final PrivacyPolicyLauncher? privacyPolicyLauncher;
 
   @override
   Widget build(BuildContext context) {
@@ -68,17 +84,28 @@ class AccountSettingsWidget extends StatelessWidget {
                 subtitle: l.accountSettingsHelpFaqSubtitle,
               ),
               _AccountSettingsItemData(
-                icon: Icons.privacy_tip_rounded,
-                title: l.accountSettingsPrivacyPolicy,
-                subtitle: l.accountSettingsPrivacyPolicySubtitle,
-              ),
-              _AccountSettingsItemData(
                 icon: Icons.logout_rounded,
                 title: l.accountSettingsSignOut,
                 subtitle: l.accountSettingsSignOutSubtitle,
                 accent: true,
                 onTap: () async {
                   await context.read<AccountCubit>().signOut();
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _AccountSettingsSection(
+            title: l.accountSettingsPolicySection,
+            items: [
+              _AccountSettingsItemData(
+                icon: Icons.privacy_tip_rounded,
+                title: l.accountSettingsPrivacyPolicy,
+                subtitle: l.accountSettingsPrivacyPolicySubtitle,
+                onTap: () async {
+                  final launcher =
+                      privacyPolicyLauncher ?? defaultPrivacyPolicyLauncher;
+                  await launcher(privacyPolicyUri);
                 },
               ),
             ],

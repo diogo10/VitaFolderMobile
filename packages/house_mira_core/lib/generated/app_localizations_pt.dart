@@ -442,6 +442,9 @@ class AppLocalizationsPt extends AppLocalizations {
       'Obter respostas, falar com suporte';
 
   @override
+  String get accountSettingsPolicySection => 'OPÇÕES DE POLÍTICA';
+
+  @override
   String get accountSettingsPrivacyPolicy => 'Política de Privacidade';
 
   @override
