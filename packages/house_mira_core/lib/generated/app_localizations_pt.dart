@@ -449,6 +449,13 @@ class AppLocalizationsPt extends AppLocalizations {
       'Central de ajuda, guias e contato';
 
   @override
+  String get supportLoadError =>
+      'Não foi possível carregar a página de suporte.';
+
+  @override
+  String get supportRetry => 'Tentar novamente';
+
+  @override
   String get accountSettingsPolicySection => 'OPÇÕES DE POLÍTICA';
 
   @override

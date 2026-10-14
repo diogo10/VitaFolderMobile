@@ -200,14 +200,20 @@ void main() {
       final auth = _FakeAuthService();
       await pumpSettings(tester, buildCubit(auth));
 
-      expect(find.text('Support'), findsOneWidget);
+      final l = AppLocalizations.of(
+        tester.element(find.byType(AccountSettingsWidget)),
+      )!;
+      expect(find.text(l.accountSettingsSupport), findsOneWidget);
     });
 
     testWidgets('shows Support even without a family', (tester) async {
       final auth = _FakeAuthService();
       await pumpSettings(tester, buildCubit(auth), familyCode: '');
 
-      expect(find.text('Support'), findsOneWidget);
+      final l = AppLocalizations.of(
+        tester.element(find.byType(AccountSettingsWidget)),
+      )!;
+      expect(find.text(l.accountSettingsSupport), findsOneWidget);
     });
 
     testWidgets('tapping Support navigates to the support route', (
@@ -245,8 +251,11 @@ void main() {
       );
       await tester.pump();
 
-      await tester.ensureVisible(find.text('Support'));
-      await tester.tap(find.text('Support'));
+      final l = AppLocalizations.of(
+        tester.element(find.byType(AccountSettingsWidget)),
+      )!;
+      await tester.ensureVisible(find.text(l.accountSettingsSupport));
+      await tester.tap(find.text(l.accountSettingsSupport));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 

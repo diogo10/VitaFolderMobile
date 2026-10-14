@@ -899,6 +899,18 @@ abstract class AppLocalizations {
   /// **'Help center, guides and contact us'**
   String get accountSettingsSupportSubtitle;
 
+  /// No description provided for @supportLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load the support page.'**
+  String get supportLoadError;
+
+  /// No description provided for @supportRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get supportRetry;
+
   /// No description provided for @accountSettingsPolicySection.
   ///
   /// In en, this message translates to:

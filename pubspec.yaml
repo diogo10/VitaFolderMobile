@@ -104,9 +104,6 @@ dependencies:
   # URL launcher
   url_launcher: ^6.2.0
 
-  # In-app web content (settings Support screen)
-  webview_flutter: ^4.14.1
-
 dev_dependencies:
   bloc_test: ^10.0.0
   build_runner: ^2.4.13

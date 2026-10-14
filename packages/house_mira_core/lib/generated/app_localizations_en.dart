@@ -440,6 +440,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Help center, guides and contact us';
 
   @override
+  String get supportLoadError => 'We couldn\'t load the support page.';
+
+  @override
+  String get supportRetry => 'Try again';
+
+  @override
   String get accountSettingsPolicySection => 'POLICY OPTIONS';
 
   @override
