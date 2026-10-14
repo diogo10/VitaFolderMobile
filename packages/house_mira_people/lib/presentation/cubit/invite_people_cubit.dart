@@ -10,8 +10,8 @@ class InvitePeopleCubit extends Cubit<InvitePeopleState> {
   /// Sends a family invite email.
   ///
   /// [locale] selects the server-rendered email language (`en`/`pt`,
-  /// English fallback). [inviterName]/[familyName]/[inviteCode] are
-  /// optional: when provided they personalize the email and its join CTA
+  /// English fallback). [inviterName]/[familyName]/[inviteCode]/[familyCode]
+  /// are optional: when provided they personalize the email and its join CTA
   /// (see [EdgetFunctions]); otherwise a generic invite is sent.
   Future<void> sendInvite({
     required String email,
@@ -20,6 +20,7 @@ class InvitePeopleCubit extends Cubit<InvitePeopleState> {
     String? inviterName,
     String? familyName,
     String? inviteCode,
+    String? familyCode,
   }) async {
     emit(InvitePeopleLoading());
     try {
@@ -29,6 +30,7 @@ class InvitePeopleCubit extends Cubit<InvitePeopleState> {
         inviterName: inviterName,
         familyName: familyName,
         inviteCode: inviteCode,
+        familyCode: familyCode,
       );
 
       if (!result) {

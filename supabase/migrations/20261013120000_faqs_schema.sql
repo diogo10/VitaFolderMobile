@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS "public"."faqs" (
     "category_title" "text" NOT NULL,
     "question" "text" NOT NULL,
     "answer_markdown" "text" NOT NULL,
-    "sort_order" "integer" NOT NULL DEFAULT 0,
+    "sort_order" integer NOT NULL DEFAULT 0,
     "created_at" timestamp with time zone DEFAULT now() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT "faqs_pkey" PRIMARY KEY ("id"),

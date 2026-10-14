@@ -10,12 +10,16 @@
 //
 // Request body:
 //   { to: string, locale?: string,
-//     inviterName?: string, familyName?: string, inviteCode?: string }
+//     inviterName?: string, familyName?: string, inviteCode?: string,
+//     familyCode?: string }
 // `locale` accepts 'en'/'pt' (prefix-matched, so 'pt-BR' -> 'pt');
 // missing or unsupported values fall back to 'en'.
 // Subject and HTML are rendered server-side from the locale and invite data.
-// The CTA points at the web join page with the family code appended:
-//   https://housemira.com/join-family?invite=<code>
+// The CTA points at the web join-family page with the family code appended:
+//   https://housemira.com/join-family?code=<familyCode>&email=<to>
+// The email lets the page pre-fill its form. Bare /join-family when no code.
+// `inviteCode` is still accepted for
+// older clients but no longer feeds the link.
 //
 // Responses:
 //   200 { success: true, id }          — email accepted by Resend
@@ -30,8 +34,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "jsr:@supabase/server@^1";
 
-const JOIN_BASE_URL =
-  "https://housemira.com/join-family";
+const JOIN_BASE_URL = "https://housemira.com/join-family";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -193,12 +196,13 @@ export default {
       inviterName?: unknown;
       familyName?: unknown;
       inviteCode?: unknown;
+      familyCode?: unknown;
     };
     const to = typeof body.to === "string" ? body.to.trim() : "";
     if (!emailPattern.test(to)) {
       return json({ code: "invalid_payload" }, 400);
     }
-    for (const key of ["inviterName", "familyName", "inviteCode"] as const) {
+    for (const key of ["inviterName", "familyName", "inviteCode", "familyCode"] as const) {
       const value = body[key];
       if (value !== undefined && typeof value !== "string") {
         return json({ code: "invalid_payload" }, 400);
@@ -208,11 +212,13 @@ export default {
     const locale = resolveLocale(body.locale);
     const inviterName = optionalText(body.inviterName);
     const familyName = optionalText(body.familyName);
-    const inviteCode = optionalText(body.inviteCode);
+    // `inviteCode` is validated above for older clients but no longer
+    // feeds the link — the CTA carries `familyCode` instead.
+    const familyCode = optionalText(body.familyCode);
 
     const copy = inviteCopy(locale, inviterName, familyName);
-    const joinUrl = inviteCode
-      ? `${JOIN_BASE_URL}?invite=${encodeURIComponent(inviteCode)}`
+    const joinUrl = familyCode
+      ? `${JOIN_BASE_URL}?code=${encodeURIComponent(familyCode)}&email=${encodeURIComponent(to)}`
       : JOIN_BASE_URL;
     const html = renderHtml(copy, joinUrl);
 
@@ -225,7 +231,7 @@ export default {
           Authorization: `Bearer ${RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: "HouseMira <contact@housemira.com>",
+          from: "HouseMira <contact@contact.housemira.com>",
           to,
           subject: copy.subject,
           html,

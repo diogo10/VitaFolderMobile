@@ -213,7 +213,7 @@ Source: `supabase/functions/<name>/index.ts` (Deno).
 | Function | Method | Auth | What it does |
 | --- | --- | --- | --- |
 | `delete-account` | `POST /functions/v1/delete-account` | Caller JWT (`Authorization: Bearer <token>`) | Deletes the caller's auth user via `auth.admin.deleteUser`. Postgres `ON DELETE CASCADE` then removes `profiles`, `family_memberships`, `notification_tokens` and `notification_logs` rows. The `families` row is left intact (`created_by` SET NULL) so other members keep their data. Blocked when the caller is the sole remaining member of an owned family — nothing is deleted. |
-| `resend-email-v1` | `POST /functions/v1/resend-email-v1` | Caller JWT (enforced by `withSupabase({ auth: "user" })`) | Sends the HouseMira family-invite email via the Resend API (`from: HouseMira <contact@housemira.com>`). Body: `{ to, locale?, inviterName?, familyName?, inviteCode? }`. Subject and HTML are rendered server-side (EN/PT, English fallback). CTA: `https://housemira.com/join-family?invite=<code>`. Returns `{ success: true, id }` on success. |
+| `resend-email-v1` | `POST /functions/v1/resend-email-v1` | Caller JWT (enforced by `withSupabase({ auth: "user" })`) | Sends the HouseMira family-invite email via the Resend API (`from: HouseMira <contact@contact.housemira.com>`). Body: `{ to, locale?, inviterName?, familyName?, inviteCode?, familyCode? }` (`inviteCode` still accepted for older clients; the link uses `familyCode`). Subject and HTML are rendered server-side (EN/PT, English fallback). CTA: `https://housemira.com/join-family?code=<familyCode>&email=<to>` (bare `/join-family` when no code; opens the website join page, which bridges into the app and pre-fills the form from `email`). Returns `{ success: true, id }` on success. |
 
 ### `delete-account` details
 
@@ -271,8 +271,8 @@ Maps `409 sole_owner` → `SoleOwnerException(familyId)`, `401` → `AuthExcepti
 
 - Source: `supabase/functions/resend-email-v1/index.ts` (Deno).
 - Auth is enforced by `withSupabase({ auth: "user" })` — no valid caller JWT, no handler run.
-- Validates `to` (email shape); optional `locale` (`en`/`pt`, prefix-matched so `pt-BR` → `pt`, English fallback), `inviterName`, `familyName`, `inviteCode` (must be strings when present). CORS preflight (`OPTIONS`) returns `ok`; only `POST` is accepted.
-- Renders subject + HTML server-side in the request locale using the app sand palette (`#FAF8F5` bg, `#634F39` headings, `#C2B299` CTA). CTA: `https://housemira.com/join-family?invite=<code>` (bare `/join-family` when no code).
+- Validates `to` (email shape); optional `locale` (`en`/`pt`, prefix-matched so `pt-BR` → `pt`, English fallback), `inviterName`, `familyName`, `inviteCode` (legacy, still accepted), `familyCode` (feeds the join-family CTA; must be strings when present). CORS preflight (`OPTIONS`) returns `ok`; only `POST` is accepted.
+- Renders subject + HTML server-side in the request locale using the app sand palette (`#FAF8F5` bg, `#634F39` headings, `#C2B299` CTA). CTA: `https://housemira.com/join-family?code=<familyCode>&email=<to>` (bare `/join-family` when no code; opens the website join page, `email` pre-fills its form).
 
 Responses:
 
@@ -300,11 +300,12 @@ await _client.functions.invoke('resend-email-v1', body: {
   'locale': locale, // 'en'/'pt'
   'inviterName': inviterName, // optional
   'familyName': familyName, // optional
-  'inviteCode': inviteCode, // optional, appended to the join URL
+  'inviteCode': inviteCode, // optional, legacy (accepted, unused in link)
+  'familyCode': familyCode, // optional, appended to the join-family URL
 });
 ```
 
-Called from `InvitePeopleScreen` via `InvitePeopleCubit.sendInvite()`: locale comes from `Localizations.localeOf(context).languageCode`, inviter name from `AuthService.getProfileName()` (falls back to the email prefix), family name + invite code travel via the `/invite-people` route extra from `PeopleLoadedWidget`.
+Called from `InvitePeopleScreen` via `InvitePeopleCubit.sendInvite()`: locale comes from `Localizations.localeOf(context).languageCode`, inviter name from `AuthService.getProfileName()` (falls back to the email prefix), family name + codes travel via the `/invite-people` route extra from `PeopleLoadedWidget` (the family code is the family's own code and is forwarded as both `inviteCode` and `familyCode`).
 
 Returns `true` only when the function responds with `{ success: true }`. Covered in `test/core/functions/edget_functions_test.dart`.
 

@@ -58,6 +58,7 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
       inviterName: inviterName,
       familyName: widget.familyName,
       inviteCode: widget.inviteCode,
+      familyCode: widget.inviteCode,
     );
   }
 

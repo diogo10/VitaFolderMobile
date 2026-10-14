@@ -23,6 +23,7 @@ void main() {
           inviterName: any(named: 'inviterName'),
           familyName: any(named: 'familyName'),
           inviteCode: any(named: 'inviteCode'),
+          familyCode: any(named: 'familyCode'),
         ),
       ).thenThrow(result);
     } else {
@@ -33,6 +34,7 @@ void main() {
           inviterName: any(named: 'inviterName'),
           familyName: any(named: 'familyName'),
           inviteCode: any(named: 'inviteCode'),
+          familyCode: any(named: 'familyCode'),
         ),
       ).thenAnswer((_) async => result! as bool);
     }
@@ -57,6 +59,7 @@ void main() {
       inviterName: 'Ana',
       familyName: 'Smith',
       inviteCode: 'ABC-123',
+      familyCode: 'FAMILY-1234',
     ),
     expect: () => [isA<InvitePeopleLoading>(), isA<InvitePeopleSuccess>()],
     verify: (_) {
@@ -67,6 +70,7 @@ void main() {
           inviterName: 'Ana',
           familyName: 'Smith',
           inviteCode: 'ABC-123',
+          familyCode: 'FAMILY-1234',
         ),
       ).called(1);
     },
@@ -92,6 +96,7 @@ void main() {
           inviterName: null,
           familyName: 'Fam',
           inviteCode: 'ABC123',
+          familyCode: null,
         ),
       ).called(1);
     },

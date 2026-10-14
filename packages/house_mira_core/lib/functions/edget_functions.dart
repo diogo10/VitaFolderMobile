@@ -27,15 +27,18 @@ class EdgetFunctions {
   /// edge function, which renders the subject and HTML server-side from
   /// [locale] (`en`/`pt`, English fallback) and the invite data.
   ///
-  /// When [inviteCode] is provided, the email CTA points at the web join
-  /// page with the code appended; without a code it falls back to the
-  /// generic join page — never a fabricated link.
+  /// When [familyCode] is provided, the email CTA points at the web
+  /// join-family page with the code appended
+  /// (`https://housemira.com/join-family?code=<code>`); without a code it
+  /// falls back to the generic join page — never a fabricated link.
+  /// [inviteCode] is still forwarded for older function versions.
   Future<bool> sendEmail({
     required String to,
     required String locale,
     String? inviterName,
     String? familyName,
     String? inviteCode,
+    String? familyCode,
   }) async {
     // Never log the recipient address or names: PII stays out of logs and
     // crash reports; only shape flags are recorded.
@@ -43,6 +46,7 @@ class EdgetFunctions {
       'function': 'resend-email-v1',
       'locale': locale,
       'has_invite_code': inviteCode != null,
+      'has_family_code': familyCode != null,
     };
     _logger.debug('invoking edge function', tag: 'edge', context: context);
     try {
@@ -57,6 +61,7 @@ class EdgetFunctions {
               'inviterName': ?inviterName,
               'familyName': ?familyName,
               'inviteCode': ?inviteCode,
+              'familyCode': ?familyCode,
             },
           );
           final data = res.data;

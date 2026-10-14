@@ -42,9 +42,10 @@ abstract final class AppRoutes {
   /// Query parameter carrying a reminder type for the create screen.
   static const reminderTypeParam = 'type';
 
-  /// Public web base for family invites. Must match the backend invite flow
-  /// (email template in `EdgetFunctions`, share sheet) and the native
-  /// App Link / Associated Domain declarations.
+  /// Public web base for family invites. Must match the share sheet and the
+  /// native App Link / Associated Domain declarations. The invite-email CTA
+  /// instead points at the website join-family page (see `resend-email-v1`),
+  /// which bridges back here.
   static const inviteWebBase = 'https://housemira.com/invite';
 
   /// In-app support center loaded by the settings "Support" item.

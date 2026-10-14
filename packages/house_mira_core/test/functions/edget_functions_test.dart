@@ -36,6 +36,7 @@ void main() {
         inviterName: 'Ana',
         familyName: 'Smith',
         inviteCode: 'ABC-123',
+        familyCode: 'FAMILY-1234',
       );
 
       expect(result, isTrue);
@@ -49,7 +50,12 @@ void main() {
                 .having((b) => b['locale'], 'locale', 'en')
                 .having((b) => b['inviterName'], 'inviterName', 'Ana')
                 .having((b) => b['familyName'], 'familyName', 'Smith')
-                .having((b) => b['inviteCode'], 'inviteCode', 'ABC-123'),
+                .having((b) => b['inviteCode'], 'inviteCode', 'ABC-123')
+                .having(
+                  (b) => b['familyCode'],
+                  'familyCode',
+                  'FAMILY-1234',
+                ),
           ),
         ),
       ).called(1);
@@ -75,6 +81,7 @@ void main() {
       expect(sentBody?.containsKey('inviterName'), isFalse);
       expect(sentBody?.containsKey('familyName'), isFalse);
       expect(sentBody?.containsKey('inviteCode'), isFalse);
+      expect(sentBody?.containsKey('familyCode'), isFalse);
     });
 
     test('returns false when the edge function reports failure', () async {
@@ -159,6 +166,7 @@ void main() {
         locale: 'pt',
         inviterName: 'Ana',
         inviteCode: 'ABC123',
+        familyCode: 'FAMILY-1234',
         familyName: 'Fam',
       );
 
@@ -174,6 +182,7 @@ void main() {
       expect(captured['locale'], 'pt');
       expect(captured['inviterName'], 'Ana');
       expect(captured['inviteCode'], 'ABC123');
+      expect(captured['familyCode'], 'FAMILY-1234');
       expect(captured['familyName'], 'Fam');
       // Subject and HTML are rendered server-side — never sent by the client.
       expect(captured.containsKey('subject'), isFalse);
