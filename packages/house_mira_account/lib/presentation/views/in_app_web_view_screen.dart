@@ -3,63 +3,60 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:house_mira_core/generated/app_localizations.dart';
 import 'package:house_mira_core/observability/app_logger.dart';
-import 'package:house_mira_core/router/app_routes.dart';
 import 'package:house_mira_core/theme/sand_palette.dart';
 import 'package:house_mira_core/widgets/sand/sand_header.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-/// In-app support center opened from the settings "Support" item.
+/// In-app web viewer opened for first-party pages (Support, Privacy Policy).
 ///
-/// Loads [AppRoutes.supportUrl] in a WebView so users read support content
-/// without leaving the app. The [url] parameter exists for tests; production
-/// always uses the default.
-class SupportScreen extends StatefulWidget {
-  const SupportScreen({
+/// Loads [url] in a WebView so users read web content without leaving the
+/// app. Every web link tapped inside stays in the same WebView; only
+/// non-web schemes (`mailto:`, `tel:`) open externally. Both [url] and
+/// [title] are required — call sites pass the page's URL and its localized
+/// header title.
+class InAppWebViewScreen extends StatefulWidget {
+  const InAppWebViewScreen({
+    required this.url,
+    required this.title,
     super.key,
-    this.url = AppRoutes.supportUrl,
     this.logger,
     this.launchExternal,
   });
 
   final String url;
+  final String title;
 
   /// Observability sink for external-link failures. Falls back to a local
-  /// [AppLogger] when absent so widget tests can build [SupportScreen]
-  /// directly without DI.
+  /// [AppLogger] when absent so widget tests can build
+  /// [InAppWebViewScreen] directly without DI.
   final AppLogger? logger;
 
-  /// Override for opening external links in tests. Defaults to [launchUrl]
-  /// with [LaunchMode.externalApplication].
+  /// Override for opening non-web links (`mailto:`, `tel:`) in tests.
+  /// Defaults to [launchUrl] with [LaunchMode.externalApplication].
   final Future<bool> Function(Uri uri)? launchExternal;
 
   @override
-  State<SupportScreen> createState() => SupportScreenState();
+  State<InAppWebViewScreen> createState() => InAppWebViewScreenState();
 }
 
-/// First-party support location; only this host/path stays in the WebView.
-final Uri _supportBase = Uri.parse(AppRoutes.supportUrl);
-
-/// Whether [uri] is a usable support URL: https with a non-empty host.
+/// Whether [uri] is a usable web-viewer URL: https with a non-empty host.
 ///
-/// Used by [SupportScreen] before creating the WebView and on retry so an
-/// invalid URL shows the localized error instead of a blank page.
+/// Used by [InAppWebViewScreen] before creating the WebView and on retry so
+/// an invalid URL shows the localized error instead of a blank page.
 @visibleForTesting
-bool isValidSupportUri(Uri? uri) =>
+bool isValidWebViewUri(Uri? uri) =>
     uri != null && uri.scheme == 'https' && uri.host.isNotEmpty;
 
-/// Whether [uri] stays inside the first-party support section.
+/// Whether [uri] renders inside the in-app WebView.
 ///
-/// Exact host match plus exact path or `$basePath/` prefix, so subdomains,
-/// `support-evil` prefixes, and other hosts open externally.
+/// Every web link (http/https, any host) stays in the WebView so users
+/// never leave the app for another browser. Only non-web schemes
+/// (`mailto:`, `tel:`, …) open externally — the WebView cannot render them.
 @visibleForTesting
-bool isInSupport(Uri uri) {
-  if (uri.host != _supportBase.host) return false;
-  final basePath = _supportBase.path;
-  return uri.path == basePath || uri.path.startsWith('$basePath/');
-}
+bool staysInWebView(Uri uri) => uri.scheme == 'http' || uri.scheme == 'https';
 
-class SupportScreenState extends State<SupportScreen> {
+class InAppWebViewScreenState extends State<InAppWebViewScreen> {
   WebViewController? _controller;
   int _progress = 0;
   bool _hasError = false;
@@ -68,7 +65,7 @@ class SupportScreenState extends State<SupportScreen> {
   void initState() {
     super.initState();
     final uri = Uri.tryParse(widget.url);
-    if (!isValidSupportUri(uri)) {
+    if (!isValidWebViewUri(uri)) {
       _hasError = true;
       return;
     }
@@ -89,14 +86,14 @@ class SupportScreenState extends State<SupportScreen> {
           },
           onNavigationRequest: (request) {
             final target = Uri.tryParse(request.url);
-            if (target != null && isInSupport(target)) {
+            if (target != null && staysInWebView(target)) {
               return NavigationDecision.navigate;
             }
             if (target != null) {
-              // First-party content stays in the WebView; everything else
-              // (third-party https, mailto:, tel:) opens externally so
-              // users can follow contact links. Failures surface the
-              // localized error SnackBar via [_openExternal].
+              // Web links stay in the WebView above; only non-web schemes
+              // (mailto:, tel:) open externally — the WebView cannot render
+              // them. Failures surface the localized error SnackBar via
+              // [_openExternal].
               unawaited(_openExternal(target));
             } else {
               _showExternalLinkError();
@@ -162,7 +159,7 @@ class SupportScreenState extends State<SupportScreen> {
 
   Future<void> _retry() async {
     final uri = Uri.tryParse(widget.url);
-    if (!isValidSupportUri(uri)) return;
+    if (!isValidWebViewUri(uri)) return;
     final controller = _controller;
     if (controller == null) return;
     if (!mounted) return;
@@ -182,7 +179,7 @@ class SupportScreenState extends State<SupportScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            SandHeader(title: l.accountSettingsSupport),
+            SandHeader(title: widget.title),
             if (!_hasError && _progress < 100)
               const LinearProgressIndicator(minHeight: 2),
             Expanded(

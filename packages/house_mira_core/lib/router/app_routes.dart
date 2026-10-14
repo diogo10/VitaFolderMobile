@@ -23,6 +23,7 @@ abstract final class AppRoutes {
   static const manageProfile = '/manage-profile';
   static const notificationSettings = '/notification-settings';
   static const support = '/support';
+  static const privacy = '/privacy';
   static const paywall = '/paywall';
 
   /// Deep-link entry for family invites: `/invite/<code>`.
@@ -50,6 +51,10 @@ abstract final class AppRoutes {
 
   /// In-app support center loaded by the settings "Support" item.
   static const supportUrl = 'https://housemira.com/support';
+
+  /// Privacy Policy page loaded by the settings item in the same in-app
+  /// web viewer as the support center.
+  static const privacyPolicyUrl = 'https://housemira.com/privacy';
 
   /// Builds the shareable/emailable invite link for [code].
   ///

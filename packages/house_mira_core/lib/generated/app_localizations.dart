@@ -875,18 +875,6 @@ abstract class AppLocalizations {
   /// **'SUPPORT'**
   String get accountSettingsSupportSection;
 
-  /// No description provided for @accountSettingsHelpFaq.
-  ///
-  /// In en, this message translates to:
-  /// **'Help & FAQ'**
-  String get accountSettingsHelpFaq;
-
-  /// No description provided for @accountSettingsHelpFaqSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Get answers, contact support'**
-  String get accountSettingsHelpFaqSubtitle;
-
   /// No description provided for @accountSettingsSupport.
   ///
   /// In en, this message translates to:
@@ -934,12 +922,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'How we handle your data'**
   String get accountSettingsPrivacyPolicySubtitle;
-
-  /// No description provided for @accountSettingsPrivacyPolicyError.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not open the Privacy Policy. Please try again.'**
-  String get accountSettingsPrivacyPolicyError;
 
   /// No description provided for @accountSettingsSignOut.
   ///

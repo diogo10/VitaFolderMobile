@@ -170,8 +170,6 @@
     }
   },
   "accountSettingsSupportSection": "SUPPORT",
-  "accountSettingsHelpFaq": "Help & FAQ",
-  "accountSettingsHelpFaqSubtitle": "Get answers, contact support",
   "accountSettingsSupport": "Support",
   "accountSettingsSupportSubtitle": "Help center, guides and contact us",
   "supportLoadError": "We couldn't load the support page.",
@@ -180,7 +178,6 @@
   "accountSettingsPolicySection": "POLICY OPTIONS",
   "accountSettingsPrivacyPolicy": "Privacy Policy",
   "accountSettingsPrivacyPolicySubtitle": "How we handle your data",
-  "accountSettingsPrivacyPolicyError": "Could not open the Privacy Policy. Please try again.",
   "accountSettingsSignOut": "Sign Out",
   "accountSettingsSignOutSubtitle": "Log out of this device",
   "accountSettingsDangerSection": "DANGER ZONE",

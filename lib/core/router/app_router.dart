@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/auth_state_notifier.dart';
 import 'package:house_mira_core/functions/edget_functions.dart';
+import 'package:house_mira_core/generated/app_localizations.dart';
 import 'package:house_mira/core/injections/service_locator.dart';
 import 'package:house_mira_core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira_core/observability/app_logger.dart';
@@ -23,7 +24,7 @@ import 'package:house_mira_account/presentation/cubit/notification_settings_cubi
 import 'package:house_mira_account/presentation/views/account_view.dart';
 import 'package:house_mira_account/presentation/views/manage_profile_screen.dart';
 import 'package:house_mira_account/presentation/views/notification_settings_screen.dart';
-import 'package:house_mira_account/presentation/views/support_screen.dart';
+import 'package:house_mira_account/presentation/views/in_app_web_view_screen.dart';
 import 'package:house_mira_home/presentation/cubit/home_cubit.dart';
 import 'package:house_mira_home/presentation/views/home_view.dart';
 import 'package:house_mira_login/presentation/cubit/sign_up_cubit.dart';
@@ -220,7 +221,17 @@ GoRouter createRouter({
       ),
       GoRoute(
         path: AppRoutes.support,
-        builder: (context, state) => const SupportScreen(),
+        builder: (context, state) => InAppWebViewScreen(
+          url: AppRoutes.supportUrl,
+          title: AppLocalizations.of(context)!.accountSettingsSupport,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.privacy,
+        builder: (context, state) => InAppWebViewScreen(
+          url: AppRoutes.privacyPolicyUrl,
+          title: AppLocalizations.of(context)!.accountSettingsPrivacyPolicy,
+        ),
       ),
       GoRoute(
         path: AppRoutes.familySettings,

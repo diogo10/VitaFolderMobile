@@ -1,64 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:house_mira_account/presentation/views/support_screen.dart';
+import 'package:house_mira_account/presentation/views/in_app_web_view_screen.dart';
 import 'package:house_mira_core/generated/app_localizations.dart';
 import 'package:house_mira_core/observability/app_logger.dart';
 import 'package:house_mira_core/router/app_routes.dart';
 
 void main() {
-  group('SupportScreen', () {
-    test('defaults to the support website URL', () {
-      expect(const SupportScreen().url, AppRoutes.supportUrl);
+  group('InAppWebViewScreen', () {
+    test('stores the url and title', () {
+      const screen = InAppWebViewScreen(
+        url: 'https://housemira.com/privacy',
+        title: 'Privacy Policy',
+      );
+      expect(screen.url, 'https://housemira.com/privacy');
+      expect(screen.title, 'Privacy Policy');
     });
 
     test('exposes the support route location', () {
       expect(AppRoutes.support, '/support');
     });
 
-    group('isValidSupportUri', () {
+    test('exposes the privacy route location', () {
+      expect(AppRoutes.privacy, '/privacy');
+    });
+
+    group('isValidWebViewUri', () {
       test('rejects null', () {
-        expect(isValidSupportUri(null), isFalse);
+        expect(isValidWebViewUri(null), isFalse);
       });
 
       test('rejects non-https and empty host', () {
         expect(
-          isValidSupportUri(Uri.parse('http://housemira.com/support')),
+          isValidWebViewUri(Uri.parse('http://housemira.com/support')),
           isFalse,
         );
-        expect(isValidSupportUri(Uri.parse('https://')), isFalse);
-        expect(isValidSupportUri(Uri.tryParse('not-a-url')), isFalse);
+        expect(isValidWebViewUri(Uri.parse('https://')), isFalse);
+        expect(isValidWebViewUri(Uri.tryParse('not-a-url')), isFalse);
       });
 
       test('accepts the support URL', () {
-        expect(isValidSupportUri(Uri.parse(AppRoutes.supportUrl)), isTrue);
+        expect(isValidWebViewUri(Uri.parse(AppRoutes.supportUrl)), isTrue);
+      });
+
+      test('accepts the privacy URL', () {
+        expect(
+          isValidWebViewUri(Uri.parse(AppRoutes.privacyPolicyUrl)),
+          isTrue,
+        );
       });
     });
 
-    group('isInSupport', () {
-      test('allows the base URL and subpaths', () {
-        expect(isInSupport(Uri.parse('https://housemira.com/support')), isTrue);
+    group('staysInWebView', () {
+      test('keeps every web link in the app, any host or path', () {
         expect(
-          isInSupport(Uri.parse('https://housemira.com/support/')),
+          staysInWebView(Uri.parse('https://housemira.com/support')),
           isTrue,
         );
         expect(
-          isInSupport(Uri.parse('https://housemira.com/support/article')),
+          staysInWebView(Uri.parse('https://housemira.com/support/article')),
           isTrue,
         );
+        expect(
+          staysInWebView(Uri.parse('https://evil.com/support')),
+          isTrue,
+        );
+        expect(staysInWebView(Uri.parse('http://example.com/')), isTrue);
       });
 
-      test('denies other hosts, subdomains, and prefix tricks', () {
-        expect(isInSupport(Uri.parse('https://evil.com/support')), isFalse);
-        expect(
-          isInSupport(Uri.parse('https://sub.housemira.com/support')),
-          isFalse,
-        );
-        expect(
-          isInSupport(Uri.parse('https://housemira.com/support-evil')),
-          isFalse,
-        );
-        expect(isInSupport(Uri.parse('https://housemira.com/other')), isFalse);
-        expect(isInSupport(Uri.parse('https://housemira.com/')), isFalse);
+      test('sends non-web schemes externally', () {
+        expect(staysInWebView(Uri.parse('mailto:a@b.c')), isFalse);
+        expect(staysInWebView(Uri.parse('tel:+123456789')), isFalse);
       });
     });
 
@@ -69,13 +80,13 @@ void main() {
         const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: SupportScreen(url: 'not-a-url'),
+          home: InAppWebViewScreen(url: 'not-a-url', title: 'Support'),
         ),
       );
       await tester.pump();
 
       final l = AppLocalizations.of(
-        tester.element(find.byType(SupportScreen)),
+        tester.element(find.byType(InAppWebViewScreen)),
       )!;
       expect(find.text(l.supportLoadError), findsOneWidget);
       expect(find.text(l.supportRetry), findsOneWidget);
@@ -88,13 +99,13 @@ void main() {
         const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: SupportScreen(url: 'not-a-url'),
+          home: InAppWebViewScreen(url: 'not-a-url', title: 'Support'),
         ),
       );
       await tester.pump();
 
       final l = AppLocalizations.of(
-        tester.element(find.byType(SupportScreen)),
+        tester.element(find.byType(InAppWebViewScreen)),
       )!;
       expect(find.text(l.supportLoadError), findsOneWidget);
 
@@ -114,8 +125,9 @@ void main() {
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: SupportScreen(
+          home: InAppWebViewScreen(
             url: 'not-a-url',
+            title: 'Support',
             logger: AppLogger(sink: (_) {}),
             launchExternal: (_) async => false,
           ),
@@ -123,14 +135,14 @@ void main() {
       );
       await tester.pump();
 
-      final state = tester.state<SupportScreenState>(
-        find.byType(SupportScreen),
+      final state = tester.state<InAppWebViewScreenState>(
+        find.byType(InAppWebViewScreen),
       );
       await state.openExternal(Uri.parse('https://evil.com/'));
       await tester.pump();
 
       final l = AppLocalizations.of(
-        tester.element(find.byType(SupportScreen)),
+        tester.element(find.byType(InAppWebViewScreen)),
       )!;
       expect(find.text(l.supportExternalLinkError), findsOneWidget);
     });

@@ -4,19 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:house_mira_account/presentation/cubit/account_cubit.dart';
-import 'package:house_mira_account/presentation/utils/privacy_policy_link.dart';
 import 'package:house_mira_core/generated/app_localizations.dart';
 import 'package:house_mira_core/router/app_routes.dart';
 import 'package:house_mira_core/theme/theme_extensions.dart';
 
 class AccountSettingsWidget extends StatelessWidget {
-  const AccountSettingsWidget({
-    required this.familyCode,
-    this.privacyPolicyLauncher,
-    super.key,
-  });
+  const AccountSettingsWidget({required this.familyCode, super.key});
   final String familyCode;
-  final PrivacyPolicyLauncher? privacyPolicyLauncher;
 
   @override
   Widget build(BuildContext context) {
@@ -86,11 +80,6 @@ class AccountSettingsWidget extends StatelessWidget {
                 onTap: () => context.push(AppRoutes.support),
               ),
               _AccountSettingsItemData(
-                icon: Icons.help_outline_rounded,
-                title: l.accountSettingsHelpFaq,
-                subtitle: l.accountSettingsHelpFaqSubtitle,
-              ),
-              _AccountSettingsItemData(
                 icon: Icons.logout_rounded,
                 title: l.accountSettingsSignOut,
                 subtitle: l.accountSettingsSignOutSubtitle,
@@ -109,21 +98,7 @@ class AccountSettingsWidget extends StatelessWidget {
                 icon: Icons.privacy_tip_rounded,
                 title: l.accountSettingsPrivacyPolicy,
                 subtitle: l.accountSettingsPrivacyPolicySubtitle,
-                onTap: () async {
-                  try {
-                    final launcher =
-                        privacyPolicyLauncher ?? defaultPrivacyPolicyLauncher;
-                    await launcher(privacyPolicyUri);
-                  } on Object catch (_) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(l.accountSettingsPrivacyPolicyError),
-                        ),
-                      );
-                    }
-                  }
-                },
+                onTap: () => context.push(AppRoutes.privacy),
               ),
             ],
           ),

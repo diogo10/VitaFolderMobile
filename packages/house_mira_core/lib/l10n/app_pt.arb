@@ -149,8 +149,6 @@
     }
   },
   "accountSettingsSupportSection": "SUPORTE",
-  "accountSettingsHelpFaq": "Ajuda e FAQ",
-  "accountSettingsHelpFaqSubtitle": "Obter respostas, falar com suporte",
   "accountSettingsSupport": "Suporte",
   "accountSettingsSupportSubtitle": "Central de ajuda, guias e contato",
   "supportLoadError": "Não foi possível carregar a página de suporte.",
@@ -159,7 +157,6 @@
   "accountSettingsPolicySection": "OPÇÕES DE POLÍTICA",
   "accountSettingsPrivacyPolicy": "Política de Privacidade",
   "accountSettingsPrivacyPolicySubtitle": "Como tratamos seus dados",
-  "accountSettingsPrivacyPolicyError": "Não foi possível abrir a Política de Privacidade. Tente novamente.",
   "accountSettingsSignOut": "Sair",
   "accountSettingsSignOutSubtitle": "Sair deste dispositivo",
   "accountSettingsDangerSection": "ZONA DE PERIGO",

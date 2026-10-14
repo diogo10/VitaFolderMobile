@@ -427,12 +427,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSettingsSupportSection => 'SUPPORT';
 
   @override
-  String get accountSettingsHelpFaq => 'Help & FAQ';
-
-  @override
-  String get accountSettingsHelpFaqSubtitle => 'Get answers, contact support';
-
-  @override
   String get accountSettingsSupport => 'Support';
 
   @override
@@ -456,10 +450,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountSettingsPrivacyPolicySubtitle => 'How we handle your data';
-
-  @override
-  String get accountSettingsPrivacyPolicyError =>
-      'Could not open the Privacy Policy. Please try again.';
 
   @override
   String get accountSettingsSignOut => 'Sign Out';

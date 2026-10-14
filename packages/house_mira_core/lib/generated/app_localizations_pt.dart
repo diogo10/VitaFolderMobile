@@ -435,13 +435,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountSettingsSupportSection => 'SUPORTE';
 
   @override
-  String get accountSettingsHelpFaq => 'Ajuda e FAQ';
-
-  @override
-  String get accountSettingsHelpFaqSubtitle =>
-      'Obter respostas, falar com suporte';
-
-  @override
   String get accountSettingsSupport => 'Suporte';
 
   @override
@@ -466,10 +459,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get accountSettingsPrivacyPolicySubtitle => 'Como tratamos seus dados';
-
-  @override
-  String get accountSettingsPrivacyPolicyError =>
-      'Não foi possível abrir a Política de Privacidade. Tente novamente.';
 
   @override
   String get accountSettingsSignOut => 'Sair';

@@ -7,7 +7,6 @@ import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:house_mira_account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira_account/presentation/cubit/account_state.dart';
-import 'package:house_mira_account/presentation/utils/privacy_policy_link.dart';
 import 'package:house_mira_account/presentation/views/account_settings_widget.dart';
 import 'package:house_mira_core/router/app_routes.dart';
 import 'package:house_mira_people/domain/entities/family_entity.dart';
@@ -102,7 +101,6 @@ void main() {
     WidgetTester tester,
     AccountCubit cubit, {
     String familyCode = 'ABC123',
-    PrivacyPolicyLauncher? privacyPolicyLauncher,
   }) async {
     addTearDown(cubit.close);
     await tester.pumpWidget(
@@ -115,10 +113,7 @@ void main() {
           // column inside a SingleChildScrollView.
           child: Scaffold(
             body: SingleChildScrollView(
-              child: AccountSettingsWidget(
-                familyCode: familyCode,
-                privacyPolicyLauncher: privacyPolicyLauncher,
-              ),
+              child: AccountSettingsWidget(familyCode: familyCode),
             ),
           ),
         ),
@@ -276,45 +271,51 @@ void main() {
       expect(find.text(l.accountSettingsPrivacyPolicy), findsOneWidget);
     });
 
-    testWidgets('tapping opens housemira.com/privacy', (tester) async {
+    testWidgets('tapping Privacy Policy navigates to the privacy route', (
+      tester,
+    ) async {
       final auth = _FakeAuthService();
-      Uri? launched;
-      await pumpSettings(
-        tester,
-        buildCubit(auth),
-        privacyPolicyLauncher: (uri) async {
-          launched = uri;
-        },
+      final cubit = buildCubit(auth);
+      addTearDown(cubit.close);
+      final router = GoRouter(
+        initialLocation: '/settings',
+        routes: [
+          GoRoute(
+            path: '/settings',
+            builder: (_, _) => BlocProvider<AccountCubit>.value(
+              value: cubit,
+              child: const Scaffold(
+                body: SingleChildScrollView(
+                  child: AccountSettingsWidget(familyCode: 'ABC123'),
+                ),
+              ),
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.privacy,
+            builder: (_, _) => const Scaffold(body: Text('privacy-stub')),
+          ),
+        ],
       );
+      await tester.pumpWidget(
+        MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      );
+      await tester.pump();
 
       final l = AppLocalizations.of(
         tester.element(find.byType(AccountSettingsWidget)),
       )!;
       await tester.ensureVisible(find.text(l.accountSettingsPrivacyPolicy));
       await tester.tap(find.text(l.accountSettingsPrivacyPolicy));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
-      expect(launched, privacyPolicyUri);
-    });
-
-    testWidgets('shows an error when the launcher fails', (tester) async {
-      final auth = _FakeAuthService();
-      await pumpSettings(
-        tester,
-        buildCubit(auth),
-        privacyPolicyLauncher: (_) async {
-          throw StateError('unavailable');
-        },
-      );
-
-      final l = AppLocalizations.of(
-        tester.element(find.byType(AccountSettingsWidget)),
-      )!;
-      await tester.ensureVisible(find.text(l.accountSettingsPrivacyPolicy));
-      await tester.tap(find.text(l.accountSettingsPrivacyPolicy));
-      await tester.pumpAndSettle();
-
-      expect(find.text(l.accountSettingsPrivacyPolicyError), findsOneWidget);
+      expect(router.state.uri.path, AppRoutes.privacy);
+      expect(find.text('privacy-stub'), findsOneWidget);
     });
   });
 }

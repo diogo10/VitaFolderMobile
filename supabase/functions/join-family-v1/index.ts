@@ -47,6 +47,8 @@
 //   500 { code: 'missing_secret' }                — Supabase secret not set
 //   500 { code: 'lookup_failed' }                 — family/role/user lookup failed
 //   500 { code: 'membership_failed' }             — membership insert failed
+//   500 { code: 'internal' }                      — unhandled error (logged
+//                                                 server-side)
 //
 // Requires SUPABASE_URL, SUPABASE_ANON_KEY (JWT verification) and
 // SUPABASE_SERVICE_ROLE_KEY (user lookup + membership write) as secrets.
@@ -70,6 +72,17 @@ function normalizeFamilyCode(raw: string): string {
 }
 
 Deno.serve(async (req) => {
+  try {
+    return await handle(req);
+  } catch (error) {
+    // Last resort: never surface a bare "Internal Server Error" — log the
+    // throw server-side and return a coded 500 the caller can report.
+    console.error('join-family-v1: unhandled error', error);
+    return json({ code: 'internal' }, 500);
+  }
+});
+
+async function handle(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -233,7 +246,7 @@ Deno.serve(async (req) => {
   }
 
   return json({ success: true, family_id: familyId }, 200);
-});
+}
 
 async function isMemberOf(
   admin: ReturnType<typeof createClient>,
@@ -303,13 +316,19 @@ async function fullNameFor(
     : undefined;
 }
 
-/// Timing-safe shared-secret comparison: both sides are SHA-256 hashed
-/// first so the comparison is constant-time regardless of input length.
+/// Constant-time shared-secret comparison: both sides are SHA-256 hashed
+/// first (fixed 32 bytes), then compared byte-by-byte accumulating the
+/// difference, so the runtime reveals nothing about prefix matches.
 async function secretsEqual(provided: string, expected: string): Promise<boolean> {
-  const encode = (value: string) =>
+  const digest = (value: string) =>
     crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
-  const [a, b] = await Promise.all([encode(provided), encode(expected)]);
-  return crypto.subtle.timingSafeEqual(new Uint8Array(a), new Uint8Array(b));
+  const [a, b] = await Promise.all([digest(provided), digest(expected)]);
+  const x = new Uint8Array(a);
+  const y = new Uint8Array(b);
+  if (x.length !== y.length) return false;
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= x[i] ^ y[i];
+  return diff === 0;
 }
 
 function json(body: unknown, status: number): Response {

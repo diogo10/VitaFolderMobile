@@ -244,7 +244,7 @@ Required function secrets:
 
 - Source: `supabase/functions/join-family-v1/index.ts` (Deno). Mirrors the client-side join (`PeopleRepositoryImpl.joinFamily`): canonicalize the code (`[A-Z0-9]{6}`, separators/casing ignored), resolve the family by `invite_code`, idempotently insert the `family_memberships` row as `member`, then best-effort insert the `people` row (never fails the join).
 - UID is taken from the verified JWT server-side, never from the request body. The caller must hold role `owner` or `admin` on the target family — RLS is bypassed via the service-role client (the membership INSERT policy only permits self-insert), so this check is the security boundary.
-- Trusted-backend mode: a call carrying a valid `x-join-secret` header skips the owner/admin check (the secret itself is the authorization). The secret lives ONLY in the website backend env — never browser JS, the app, or any client. Compared timing-safe (SHA-256 + `timingSafeEqual`); present-but-wrong returns `403` without JWT fallthrough. The public anon key is never accepted as authorization.
+- Trusted-backend mode: a call carrying a valid `x-join-secret` header skips the owner/admin check (the secret itself is the authorization). The secret lives ONLY in the website backend env — never browser JS, the app, or any client. Compared in constant time (SHA-256 + byte-wise diff accumulation); present-but-wrong returns `403` without JWT fallthrough. The public anon key is never accepted as authorization.
 - The target email must belong to a registered account with a `profiles` row; otherwise `unknown_user` (the account must finish signup first). Note: distinct `family_not_found` / `unknown_user` codes let an owner/admin caller probe registered emails — accepted trade-off for usable errors.
 - CORS preflight (`OPTIONS`) returns `ok`; only `POST` is accepted.
 
@@ -261,6 +261,7 @@ Responses:
 | 405 | `{ "code": "method_not_allowed" }` | Not `POST` |
 | 500 | `{ "code": "missing_secret" }` | Supabase secret not set |
 | 500 | `{ "code": "lookup_failed" }` / `{ "code": "membership_failed" }` | Family/role/user lookup or membership insert failed |
+| 500 | `{ "code": "internal" }` | Unhandled error (logged server-side; never a bare Internal Server Error) |
 
 Required function secrets:
 
