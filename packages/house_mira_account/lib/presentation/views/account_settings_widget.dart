@@ -80,6 +80,12 @@ class AccountSettingsWidget extends StatelessWidget {
             title: l.accountSettingsSupportSection,
             items: [
               _AccountSettingsItemData(
+                icon: Icons.support_agent_rounded,
+                title: l.accountSettingsSupport,
+                subtitle: l.accountSettingsSupportSubtitle,
+                onTap: () => context.push(AppRoutes.support),
+              ),
+              _AccountSettingsItemData(
                 icon: Icons.help_outline_rounded,
                 title: l.accountSettingsHelpFaq,
                 subtitle: l.accountSettingsHelpFaqSubtitle,

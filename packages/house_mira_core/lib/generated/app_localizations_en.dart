@@ -433,6 +433,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSettingsHelpFaqSubtitle => 'Get answers, contact support';
 
   @override
+  String get accountSettingsSupport => 'Support';
+
+  @override
+  String get accountSettingsSupportSubtitle =>
+      'Help center, guides and contact us';
+
+  @override
   String get accountSettingsPolicySection => 'POLICY OPTIONS';
 
   @override

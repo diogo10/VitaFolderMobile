@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:go_router/go_router.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:house_mira_account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira_account/presentation/cubit/account_state.dart';
 import 'package:house_mira_account/presentation/utils/privacy_policy_link.dart';
 import 'package:house_mira_account/presentation/views/account_settings_widget.dart';
+import 'package:house_mira_core/router/app_routes.dart';
 import 'package:house_mira_people/domain/entities/family_entity.dart';
 import 'package:house_mira_people/domain/entities/person_entity.dart';
 import 'package:house_mira_people/domain/repository/people_repository.dart';
@@ -190,6 +192,66 @@ void main() {
 
       expect(find.text('Family Settings'), findsOneWidget);
       expect(find.text('Invite Members'), findsOneWidget);
+    });
+  });
+
+  group('AccountSettingsWidget support item', () {
+    testWidgets('renders the Support menu item', (tester) async {
+      final auth = _FakeAuthService();
+      await pumpSettings(tester, buildCubit(auth));
+
+      expect(find.text('Support'), findsOneWidget);
+    });
+
+    testWidgets('shows Support even without a family', (tester) async {
+      final auth = _FakeAuthService();
+      await pumpSettings(tester, buildCubit(auth), familyCode: '');
+
+      expect(find.text('Support'), findsOneWidget);
+    });
+
+    testWidgets('tapping Support navigates to the support route', (
+      tester,
+    ) async {
+      final auth = _FakeAuthService();
+      final cubit = buildCubit(auth);
+      addTearDown(cubit.close);
+      final router = GoRouter(
+        initialLocation: '/settings',
+        routes: [
+          GoRoute(
+            path: '/settings',
+            builder: (_, _) => BlocProvider<AccountCubit>.value(
+              value: cubit,
+              child: const Scaffold(
+                body: SingleChildScrollView(
+                  child: AccountSettingsWidget(familyCode: 'ABC123'),
+                ),
+              ),
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.support,
+            builder: (_, _) => const Scaffold(body: Text('support-stub')),
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      );
+      await tester.pump();
+
+      await tester.ensureVisible(find.text('Support'));
+      await tester.tap(find.text('Support'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(router.state.uri.path, AppRoutes.support);
+      expect(find.text('support-stub'), findsOneWidget);
     });
   });
 
