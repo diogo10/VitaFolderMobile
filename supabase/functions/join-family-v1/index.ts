@@ -6,12 +6,23 @@
 // family, idempotently insert the membership, then best-effort insert the
 // `people` row.
 //
-// Auth: caller JWT in the Authorization header. The uid is always taken
-// from the verified token, never from the request body. The caller must
-// hold role `owner` or `admin` on the target family, otherwise 403.
+// Auth: two accepted modes.
+//
+//  1. Owner/admin user: caller JWT in the Authorization header. The uid is
+//     always taken from the verified token, never from the request body.
+//     The caller must hold role `owner` or `admin` on the target family,
+//     otherwise 403.
+//  2. Trusted backend: shared secret in the `x-join-secret` header. This
+//     covers server-to-server calls (e.g. the housemira.com backend) where
+//     no owner JWT is available. The secret is held ONLY by the backend —
+//     never ship it in browser JS, the mobile app, or any client: anyone
+//     holding it can add any account to any family. A present-but-wrong
+//     secret returns 403 without falling through to JWT auth.
+//
 // RLS is bypassed via the service-role client (the membership INSERT
-// policy only permits self-insert), so the owner/admin check below is the
-// security boundary — do not weaken it.
+// policy only permits self-insert), so the checks above are the security
+// boundary — do not weaken them. The public SUPABASE_ANON_KEY is never
+// accepted as authorization: it is not a secret.
 //
 // Request body:
 //   { email: string, familyCode: string }
@@ -28,6 +39,7 @@
 //   400 { code: 'invalid_json' }                  — body is not JSON
 //   401 { code: 'unauthorized' }                  — missing/invalid JWT
 //   403 { code: 'not_authorized' }                — caller is not owner/admin
+//                                                 (or wrong join secret)
 //   404 { code: 'family_not_found' }              — no family for the code
 //   404 { code: 'unknown_user' }                  — no (fully registered)
 //                                                 account for the email
@@ -38,6 +50,8 @@
 //
 // Requires SUPABASE_URL, SUPABASE_ANON_KEY (JWT verification) and
 // SUPABASE_SERVICE_ROLE_KEY (user lookup + membership write) as secrets.
+// Trusted-backend mode additionally requires JOIN_FAMILY_SHARED_SECRET;
+// when it is unset, the `x-join-secret` header is always rejected.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -67,7 +81,19 @@ Deno.serve(async (req) => {
     /^Bearer\s+/i,
     '',
   );
-  if (!jwt) {
+
+  // Trusted-backend mode: shared secret, server-to-server only.
+  const backendSecret = req.headers.get('x-join-secret') ?? '';
+  let backendCaller = false;
+  if (backendSecret !== '') {
+    const expectedSecret = Deno.env.get('JOIN_FAMILY_SHARED_SECRET') ?? '';
+    if (expectedSecret === '' ||
+        !(await secretsEqual(backendSecret, expectedSecret))) {
+      return json({ code: 'not_authorized' }, 403);
+    }
+    backendCaller = true;
+  }
+  if (!backendCaller && !jwt) {
     return json({ code: 'unauthorized' }, 401);
   }
 
@@ -79,15 +105,21 @@ Deno.serve(async (req) => {
     return json({ code: 'missing_secret' }, 500);
   }
 
-  // Verify the caller with their own JWT.
-  const caller = createClient(supabaseUrl, anonKey, {
-    global: { headers: { Authorization: `Bearer ${jwt}` } },
-    auth: { persistSession: false },
-  });
-  const { data: userData, error: userError } = await caller.auth.getUser(jwt);
-  const callerId = userData?.user?.id;
-  if (userError || !callerId) {
-    return json({ code: 'unauthorized' }, 401);
+  // Verify the caller with their own JWT (skipped for trusted backends,
+  // which carry no user identity).
+  let callerId: string | null = null;
+  if (!backendCaller) {
+    const caller = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: `Bearer ${jwt}` } },
+      auth: { persistSession: false },
+    });
+    const { data: userData, error: userError } = await caller.auth.getUser(
+      jwt,
+    );
+    callerId = userData?.user?.id ?? null;
+    if (userError || !callerId) {
+      return json({ code: 'unauthorized' }, 401);
+    }
   }
 
   let payload: unknown;
@@ -125,19 +157,24 @@ Deno.serve(async (req) => {
     return json({ code: 'family_not_found' }, 404);
   }
 
-  const { data: callerMembership, error: roleError } = await admin
-    .from('family_memberships')
-    .select('role')
-    .eq('family_id', familyId)
-    .eq('user_id', callerId)
-    .maybeSingle();
-  if (roleError) {
-    console.error('join-family-v1: caller role lookup failed', roleError);
-    return json({ code: 'lookup_failed' }, 500);
-  }
-  const callerRole = (callerMembership as { role?: string } | null)?.role;
-  if (callerRole !== 'owner' && callerRole !== 'admin') {
-    return json({ code: 'not_authorized' }, 403);
+  // Owner/admin check (user-JWT mode only): trusted backends are already
+  // authorized by the shared secret.
+  if (!backendCaller) {
+    const { data: callerMembership, error: roleError } = await admin
+      .from('family_memberships')
+      .select('role')
+      .eq('family_id', familyId)
+      .eq('user_id', callerId!)
+      .maybeSingle();
+    if (roleError) {
+      console.error('join-family-v1: caller role lookup failed', roleError);
+      return json({ code: 'lookup_failed' }, 500);
+    }
+    const callerRole =
+      (callerMembership as { role?: string } | null)?.role;
+    if (callerRole !== 'owner' && callerRole !== 'admin') {
+      return json({ code: 'not_authorized' }, 403);
+    }
   }
 
   const targetId = await findUserIdByEmail(admin, email);
@@ -264,6 +301,15 @@ async function fullNameFor(
   return typeof name === 'string' && name.trim() !== ''
     ? name.trim()
     : undefined;
+}
+
+/// Timing-safe shared-secret comparison: both sides are SHA-256 hashed
+/// first so the comparison is constant-time regardless of input length.
+async function secretsEqual(provided: string, expected: string): Promise<boolean> {
+  const encode = (value: string) =>
+    crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  const [a, b] = await Promise.all([encode(provided), encode(expected)]);
+  return crypto.subtle.timingSafeEqual(new Uint8Array(a), new Uint8Array(b));
 }
 
 function json(body: unknown, status: number): Response {
