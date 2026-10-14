@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:house_mira_account/presentation/views/support_screen.dart';
 import 'package:house_mira_core/generated/app_localizations.dart';
+import 'package:house_mira_core/observability/app_logger.dart';
 import 'package:house_mira_core/router/app_routes.dart';
 
 void main() {
@@ -56,10 +57,7 @@ void main() {
           isInSupport(Uri.parse('https://housemira.com/support-evil')),
           isFalse,
         );
-        expect(
-          isInSupport(Uri.parse('https://housemira.com/other')),
-          isFalse,
-        );
+        expect(isInSupport(Uri.parse('https://housemira.com/other')), isFalse);
         expect(isInSupport(Uri.parse('https://housemira.com/')), isFalse);
       });
     });
@@ -107,6 +105,34 @@ void main() {
       // instead of flipping to a blank WebView.
       expect(find.text(l.supportLoadError), findsOneWidget);
       expect(find.text(l.supportRetry), findsOneWidget);
+    });
+
+    testWidgets('shows a snackbar when opening an external link fails', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: SupportScreen(
+            url: 'not-a-url',
+            logger: AppLogger(sink: (_) {}),
+            launchExternal: (_) async => false,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final state = tester.state<SupportScreenState>(
+        find.byType(SupportScreen),
+      );
+      await state.openExternal(Uri.parse('https://evil.com/'));
+      await tester.pump();
+
+      final l = AppLocalizations.of(
+        tester.element(find.byType(SupportScreen)),
+      )!;
+      expect(find.text(l.supportExternalLinkError), findsOneWidget);
     });
   });
 }

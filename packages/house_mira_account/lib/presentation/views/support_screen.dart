@@ -34,7 +34,7 @@ class SupportScreen extends StatefulWidget {
   final Future<bool> Function(Uri uri)? launchExternal;
 
   @override
-  State<SupportScreen> createState() => _SupportScreenState();
+  State<SupportScreen> createState() => SupportScreenState();
 }
 
 /// First-party support location; only this host/path stays in the WebView.
@@ -48,8 +48,6 @@ final Uri _supportBase = Uri.parse(AppRoutes.supportUrl);
 bool isValidSupportUri(Uri? uri) =>
     uri != null && uri.scheme == 'https' && uri.host.isNotEmpty;
 
-bool _isValidSupportUri(Uri? uri) => isValidSupportUri(uri);
-
 /// Whether [uri] stays inside the first-party support section.
 ///
 /// Exact host match plus exact path or `$basePath/` prefix, so subdomains,
@@ -61,7 +59,7 @@ bool isInSupport(Uri uri) {
   return uri.path == basePath || uri.path.startsWith('$basePath/');
 }
 
-class _SupportScreenState extends State<SupportScreen> {
+class SupportScreenState extends State<SupportScreen> {
   WebViewController? _controller;
   int _progress = 0;
   bool _hasError = false;
@@ -70,7 +68,7 @@ class _SupportScreenState extends State<SupportScreen> {
   void initState() {
     super.initState();
     final uri = Uri.tryParse(widget.url);
-    if (!_isValidSupportUri(uri)) {
+    if (!isValidSupportUri(uri)) {
       _hasError = true;
       return;
     }
@@ -80,38 +78,53 @@ class _SupportScreenState extends State<SupportScreen> {
   }
 
   Future<void> _init(WebViewController controller, Uri uri) async {
-    await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-    if (!mounted) return;
-    await controller.setNavigationDelegate(
-      NavigationDelegate(
-        onProgress: (progress) {
-          if (!mounted) return;
-          setState(() => _progress = progress);
-        },
-        onNavigationRequest: (request) {
-          final target = Uri.tryParse(request.url);
-          if (target != null && isInSupport(target)) {
-            return NavigationDecision.navigate;
-          }
-          if (target != null &&
-              (target.isScheme('http') || target.isScheme('https'))) {
-            unawaited(_openExternal(target));
-          }
-          return NavigationDecision.prevent;
-        },
-        onWebResourceError: (error) {
-          // Subresource failures (images, analytics) must not replace the
-          // page with the error UI. `isForMainFrame` is nullable on some
-          // platforms, so only an explicit false is ignored.
-          if (error.isForMainFrame == false) return;
-          if (!mounted) return;
-          setState(() => _hasError = true);
-        },
-      ),
-    );
-    if (!mounted) return;
-    await controller.loadRequest(uri);
+    try {
+      await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      if (!mounted) return;
+      await controller.setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (progress) {
+            if (!mounted) return;
+            setState(() => _progress = progress);
+          },
+          onNavigationRequest: (request) {
+            final target = Uri.tryParse(request.url);
+            if (target != null && isInSupport(target)) {
+              return NavigationDecision.navigate;
+            }
+            if (target != null) {
+              // First-party content stays in the WebView; everything else
+              // (third-party https, mailto:, tel:) opens externally so
+              // users can follow contact links. Failures surface the
+              // localized error SnackBar via [_openExternal].
+              unawaited(_openExternal(target));
+            } else {
+              _showExternalLinkError();
+            }
+            return NavigationDecision.prevent;
+          },
+          onWebResourceError: (error) {
+            // Subresource failures (images, analytics) must not replace the
+            // page with the error UI. `isForMainFrame` is nullable on some
+            // platforms, so only an explicit false is ignored.
+            if (error.isForMainFrame == false) return;
+            if (!mounted) return;
+            setState(() => _hasError = true);
+          },
+        ),
+      );
+      if (!mounted) return;
+      await controller.loadRequest(uri);
+    } on Object catch (_) {
+      if (!mounted) return;
+      setState(() => _hasError = true);
+    }
   }
+
+  /// Opens [target] externally; exposed for widget tests so the
+  /// external-link failure path can be exercised without a WebView.
+  @visibleForTesting
+  Future<void> openExternal(Uri target) => _openExternal(target);
 
   Future<void> _openExternal(Uri target) async {
     final launcher =
@@ -125,13 +138,7 @@ class _SupportScreenState extends State<SupportScreen> {
           tag: 'support',
           context: {'host': target.host},
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.supportExternalLinkError,
-            ),
-          ),
-        );
+        _showExternalLinkError();
       }
     } on Object catch (error, stackTrace) {
       (widget.logger ?? AppLogger()).warning(
@@ -140,21 +147,22 @@ class _SupportScreenState extends State<SupportScreen> {
         error: error,
         stackTrace: stackTrace,
       );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.supportExternalLinkError,
-            ),
-          ),
-        );
-      }
+      _showExternalLinkError();
     }
+  }
+
+  void _showExternalLinkError() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.supportExternalLinkError),
+      ),
+    );
   }
 
   Future<void> _retry() async {
     final uri = Uri.tryParse(widget.url);
-    if (!_isValidSupportUri(uri)) return;
+    if (!isValidSupportUri(uri)) return;
     final controller = _controller;
     if (controller == null) return;
     if (!mounted) return;
