@@ -154,6 +154,7 @@
   "accountSettingsPolicySection": "OPÇÕES DE POLÍTICA",
   "accountSettingsPrivacyPolicy": "Política de Privacidade",
   "accountSettingsPrivacyPolicySubtitle": "Como tratamos seus dados",
+  "accountSettingsPrivacyPolicyError": "Não foi possível abrir a Política de Privacidade. Tente novamente.",
   "accountSettingsSignOut": "Sair",
   "accountSettingsSignOutSubtitle": "Sair deste dispositivo",
   "accountSettingsDangerSection": "ZONA DE PERIGO",

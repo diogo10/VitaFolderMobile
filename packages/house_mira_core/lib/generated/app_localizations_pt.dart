@@ -451,6 +451,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountSettingsPrivacyPolicySubtitle => 'Como tratamos seus dados';
 
   @override
+  String get accountSettingsPrivacyPolicyError =>
+      'Não foi possível abrir a Política de Privacidade. Tente novamente.';
+
+  @override
   String get accountSettingsSignOut => 'Sair';
 
   @override

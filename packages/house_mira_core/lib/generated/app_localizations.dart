@@ -905,6 +905,12 @@ abstract class AppLocalizations {
   /// **'How we handle your data'**
   String get accountSettingsPrivacyPolicySubtitle;
 
+  /// No description provided for @accountSettingsPrivacyPolicyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the Privacy Policy. Please try again.'**
+  String get accountSettingsPrivacyPolicyError;
+
   /// No description provided for @accountSettingsSignOut.
   ///
   /// In en, this message translates to:

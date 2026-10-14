@@ -6,6 +6,7 @@ import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:house_mira_account/presentation/cubit/account_cubit.dart';
 import 'package:house_mira_account/presentation/cubit/account_state.dart';
+import 'package:house_mira_account/presentation/utils/privacy_policy_link.dart';
 import 'package:house_mira_account/presentation/views/account_settings_widget.dart';
 import 'package:house_mira_people/domain/entities/family_entity.dart';
 import 'package:house_mira_people/domain/entities/person_entity.dart';
@@ -197,8 +198,11 @@ void main() {
       final auth = _FakeAuthService();
       await pumpSettings(tester, buildCubit(auth));
 
-      expect(find.text('POLICY OPTIONS'), findsOneWidget);
-      expect(find.text('Privacy Policy'), findsOneWidget);
+      final l = AppLocalizations.of(
+        tester.element(find.byType(AccountSettingsWidget)),
+      )!;
+      expect(find.text(l.accountSettingsPolicySection), findsOneWidget);
+      expect(find.text(l.accountSettingsPrivacyPolicy), findsOneWidget);
     });
 
     testWidgets('tapping opens housemira.com/privacy', (tester) async {
@@ -212,12 +216,34 @@ void main() {
         },
       );
 
-      await tester.ensureVisible(find.text('Privacy Policy'));
-      await tester.tap(find.text('Privacy Policy'));
+      final l = AppLocalizations.of(
+        tester.element(find.byType(AccountSettingsWidget)),
+      )!;
+      await tester.ensureVisible(find.text(l.accountSettingsPrivacyPolicy));
+      await tester.tap(find.text(l.accountSettingsPrivacyPolicy));
       await tester.pumpAndSettle();
 
       expect(launched, privacyPolicyUri);
-      expect(launched.toString(), 'https://housemira.com/privacy');
+    });
+
+    testWidgets('shows an error when the launcher fails', (tester) async {
+      final auth = _FakeAuthService();
+      await pumpSettings(
+        tester,
+        buildCubit(auth),
+        privacyPolicyLauncher: (_) async {
+          throw StateError('unavailable');
+        },
+      );
+
+      final l = AppLocalizations.of(
+        tester.element(find.byType(AccountSettingsWidget)),
+      )!;
+      await tester.ensureVisible(find.text(l.accountSettingsPrivacyPolicy));
+      await tester.tap(find.text(l.accountSettingsPrivacyPolicy));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l.accountSettingsPrivacyPolicyError), findsOneWidget);
     });
   });
 }

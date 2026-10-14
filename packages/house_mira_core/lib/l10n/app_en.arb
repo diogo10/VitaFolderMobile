@@ -175,6 +175,7 @@
   "accountSettingsPolicySection": "POLICY OPTIONS",
   "accountSettingsPrivacyPolicy": "Privacy Policy",
   "accountSettingsPrivacyPolicySubtitle": "How we handle your data",
+  "accountSettingsPrivacyPolicyError": "Could not open the Privacy Policy. Please try again.",
   "accountSettingsSignOut": "Sign Out",
   "accountSettingsSignOutSubtitle": "Log out of this device",
   "accountSettingsDangerSection": "DANGER ZONE",
