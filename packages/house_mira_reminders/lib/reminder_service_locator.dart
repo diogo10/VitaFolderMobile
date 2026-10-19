@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_core/config/remote_config_service.dart';
 import 'package:house_mira_core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira_core/observability/app_logger.dart';
 import 'package:house_mira_core/observability/crash_reporter.dart';
@@ -73,6 +74,9 @@ class ReminderServiceLocator {
             instanceName: 'subscriptionService',
           ),
           reminderRepository: sl(instanceName: 'reminderRepositoryImpl'),
+          remoteConfigService: sl<RemoteConfigService>(
+            instanceName: 'remoteConfigService',
+          ),
         ),
         instanceName: 'isAtReminderLimitUsecase',
       )

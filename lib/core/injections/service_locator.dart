@@ -13,6 +13,7 @@ import 'package:house_mira_core/local_storage/local_storage_datasource.dart';
 import 'package:house_mira_core/observability/app_logger.dart';
 import 'package:house_mira_core/observability/crash_reporter.dart';
 import 'package:house_mira_core/observability/performance_tracer.dart';
+import 'package:house_mira_core/config/remote_config_service.dart';
 import 'package:house_mira_core/subscriptions/subscription_service.dart';
 import 'package:house_mira_onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -73,6 +74,10 @@ class ServiceLocator {
       ..registerSingleton<SubscriptionService>(
         subscriptionService ?? SubscriptionService(logger: effectiveLogger),
         instanceName: 'subscriptionService',
+      )
+      ..registerSingleton<RemoteConfigService>(
+        RemoteConfigService(logger: effectiveLogger),
+        instanceName: 'remoteConfigService',
       );
 
     PeopleServiceLocator(slInstance).init();

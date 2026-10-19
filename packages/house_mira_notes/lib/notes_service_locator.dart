@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_core/config/remote_config_service.dart';
 import 'package:house_mira_core/subscriptions/subscription_service.dart';
 import 'package:house_mira_notes/application/is_at_note_limit_usecase.dart';
 import 'package:house_mira_notes/data/repository/notes_repository_impl.dart';
@@ -49,6 +50,9 @@ class NotesServiceLocator {
             instanceName: 'subscriptionService',
           ),
           notesRepository: sl(instanceName: 'notesRepositoryImpl'),
+          remoteConfigService: sl<RemoteConfigService>(
+            instanceName: 'remoteConfigService',
+          ),
         ),
         instanceName: 'isAtNoteLimitUsecase',
       )

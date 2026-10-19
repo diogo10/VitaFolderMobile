@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_core/config/remote_config_service.dart';
 import 'package:house_mira_core/errors/failure.dart';
+import 'package:house_mira_core/observability/app_logger.dart';
 import 'package:house_mira_core/subscriptions/subscription_service.dart';
 import 'package:house_mira_core/subscriptions/usage_limits.dart';
 import 'package:house_mira_people/domain/entities/person_entity.dart';
@@ -37,6 +40,8 @@ class _PaidSubscriptions extends SubscriptionService {
   @override
   Future<bool> isPro({String? userId}) async => true;
 }
+
+class _MockRemoteConfig extends Mock implements FirebaseRemoteConfig {}
 
 class _NoopNotificationService implements IReminderNotificationService {
   @override
@@ -232,6 +237,14 @@ void main() {
       ).thenAnswer((_) async => Right(rows(10)));
       // Free tier: the add-button gate counts via the repository.
       final freeSubs = _FreeSubscriptions();
+      final remoteConfig = _MockRemoteConfig();
+      when(
+        () => remoteConfig.getBool('enable_limit_and_paywall'),
+      ).thenAnswer((_) => true);
+      final remoteConfigService = RemoteConfigService(
+        remoteConfig: remoteConfig,
+        logger: AppLogger(),
+      );
       await tester.pumpWidget(
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -246,6 +259,7 @@ void main() {
               isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
                 subscriptionService: freeSubs,
                 reminderRepository: reminderRepository,
+                remoteConfigService: remoteConfigService,
               ),
             ),
             child: const RemindersView(),
