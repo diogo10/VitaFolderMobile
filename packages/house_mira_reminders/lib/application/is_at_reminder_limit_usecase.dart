@@ -1,3 +1,4 @@
+import 'package:house_mira_core/config/remote_config_service.dart';
 import 'package:house_mira_core/subscriptions/subscription_service.dart';
 import 'package:house_mira_core/subscriptions/usage_limits.dart';
 import 'package:house_mira_reminders/domain/repository/reminder_repository.dart';
@@ -6,9 +7,13 @@ import 'package:house_mira_reminders/domain/repository/reminder_repository.dart'
 ///
 /// Returns `true` when a free-tier user has hit
 /// [UsageLimits.freeRemindersLimit]. Paid users never hit the cap.
-/// Fail-closed on billing (`isPro` false on lookup error, so free limits
-/// apply), fail-open (`false`) on count errors so a count failure never
-/// blocks creation; callers re-check before saving anyway.
+///
+/// The remote flag [`RemoteConfigService.enableLimitAndPaywall`] is the
+/// master switch: when it is `false` usage limits are disabled entirely and
+/// this always returns `false`. When `true` the normal free-tier cap
+/// applies. Fail-closed on billing (`isPro` false on lookup error, so free
+/// limits apply), fail-open (`false`) on count errors so a count failure
+/// never blocks creation; callers re-check before saving anyway.
 ///
 /// The count is a per-family shared quota while the entitlement is
 /// per-user (see [UsageLimits]): a free user in a full family is blocked
@@ -23,14 +28,19 @@ class IsAtReminderLimitUsecase {
   const IsAtReminderLimitUsecase({
     required this.subscriptionService,
     required this.reminderRepository,
+    this.remoteConfigService,
   });
 
   final SubscriptionService subscriptionService;
   final ReminderRepository reminderRepository;
+  final RemoteConfigService? remoteConfigService;
 
   /// [userId] scopes the entitlement-cache lookup to one account (see
   /// `SubscriptionService.isPro`); pass `AuthService.currentUserId`.
   Future<bool> call({String? familyId, String? userId}) async {
+    // Master switch: when the remote flag is off (or no config service is
+    // wired), usage limits are disabled entirely and no cap is enforced.
+    if (remoteConfigService?.enableLimitAndPaywall != true) return false;
     try {
       if (familyId == null) return false;
       if (await subscriptionService.isPro(userId: userId)) return false;

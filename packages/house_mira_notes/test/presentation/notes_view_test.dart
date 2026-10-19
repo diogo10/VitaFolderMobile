@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_core/config/remote_config_service.dart';
 import 'package:house_mira_core/errors/failure.dart';
+import 'package:house_mira_core/observability/app_logger.dart';
 import 'package:house_mira_core/subscriptions/subscription_service.dart';
 import 'package:house_mira_core/subscriptions/usage_limits.dart';
 import 'package:house_mira_core/widgets/sand/sand_primary_button.dart';
@@ -32,6 +35,8 @@ class _MockNotes extends Mock implements NotesRepository {}
 class _MockPeople extends Mock implements PeopleRepository {}
 
 class _MockAuth extends Mock implements AuthService {}
+
+class _MockRemoteConfig extends Mock implements FirebaseRemoteConfig {}
 
 /// Paid by default so existing tests exercise the uncapped path.
 class _PaidSubscriptions extends SubscriptionService {
@@ -69,21 +74,33 @@ NotesCubit buildCubit({
   required PeopleRepository people,
   required AuthService auth,
   SubscriptionService? subscriptions,
-}) => NotesCubit(
-  getNotesUsecase: GetNotesUsecase(
-    repository: notes,
+  bool limitEnabled = true,
+}) {
+  final remoteConfig = _MockRemoteConfig();
+  when(
+    () => remoteConfig.getBool('enable_limit_and_paywall'),
+  ).thenReturn(limitEnabled);
+  final remoteConfigService = RemoteConfigService(
+    remoteConfig: remoteConfig,
+    logger: AppLogger(),
+  );
+  return NotesCubit(
+    getNotesUsecase: GetNotesUsecase(
+      repository: notes,
+      peopleRepository: people,
+    ),
+    createNoteUsecase: CreateNoteUsecase(repository: notes),
+    updateNoteUsecase: UpdateNoteUsecase(repository: notes),
+    deleteNoteUsecase: DeleteNoteUsecase(repository: notes),
     peopleRepository: people,
-  ),
-  createNoteUsecase: CreateNoteUsecase(repository: notes),
-  updateNoteUsecase: UpdateNoteUsecase(repository: notes),
-  deleteNoteUsecase: DeleteNoteUsecase(repository: notes),
-  peopleRepository: people,
-  authService: auth,
-  isAtNoteLimitUsecase: IsAtNoteLimitUsecase(
-    subscriptionService: subscriptions ?? _PaidSubscriptions(),
-    notesRepository: notes,
-  ),
-);
+    authService: auth,
+    isAtNoteLimitUsecase: IsAtNoteLimitUsecase(
+      subscriptionService: subscriptions ?? _PaidSubscriptions(),
+      notesRepository: notes,
+      remoteConfigService: remoteConfigService,
+    ),
+  );
+}
 
 Widget pumpWithCubit(NotesCubit cubit, Widget child, {Locale? locale}) {
   return MaterialApp(

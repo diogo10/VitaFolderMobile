@@ -1,8 +1,11 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_core/config/remote_config_service.dart';
 import 'package:house_mira_core/errors/failure.dart';
+import 'package:house_mira_core/observability/app_logger.dart';
 import 'package:house_mira_core/subscriptions/subscription_service.dart';
 import 'package:house_mira_notes/application/is_at_note_limit_usecase.dart';
 import 'package:house_mira_notes/data/models/note_model.dart';
@@ -25,6 +28,8 @@ class _MockPeople extends Mock implements PeopleRepository {}
 
 class _MockAuth extends Mock implements AuthService {}
 
+class _MockRemoteConfig extends Mock implements FirebaseRemoteConfig {}
+
 class _MockSubscriptions extends Mock implements SubscriptionService {}
 
 NoteEntity note({String id = 'n1'}) {
@@ -46,6 +51,8 @@ void main() {
   late _MockPeople people;
   late _MockAuth auth;
   late _MockSubscriptions subscriptions;
+  late _MockRemoteConfig remoteConfig;
+  late RemoteConfigService remoteConfigService;
 
   setUpAll(() {
     registerFallbackValue(note());
@@ -69,11 +76,21 @@ void main() {
     people = _MockPeople();
     auth = _MockAuth();
     subscriptions = _MockSubscriptions();
+    remoteConfig = _MockRemoteConfig();
     // Paid by default so existing tests exercise the uncapped path;
     // limit tests override with `isPro(userId:) == false`.
     when(
       () => subscriptions.isPro(userId: any(named: 'userId')),
     ).thenAnswer((_) async => true);
+    // Limits enabled by default so existing limit-gate tests keep passing;
+    // individual tests override the flag via the mock.
+    when(
+      () => remoteConfig.getBool('enable_limit_and_paywall'),
+    ).thenAnswer((_) => true);
+    remoteConfigService = RemoteConfigService(
+      remoteConfig: remoteConfig,
+      logger: AppLogger(),
+    );
     when(() => people.getMyFamily()).thenAnswer(
       (_) async => Right<Exception, FamilyEntity>(
         FamilyEntity(name: 'Smith Family', inviteCode: 'ABC'),
@@ -97,6 +114,7 @@ void main() {
     isAtNoteLimitUsecase: IsAtNoteLimitUsecase(
       subscriptionService: subscriptions,
       notesRepository: notes,
+      remoteConfigService: remoteConfigService,
     ),
   );
 

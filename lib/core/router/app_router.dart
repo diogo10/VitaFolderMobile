@@ -129,6 +129,12 @@ GoRouter createRouter({
   // (passed from `main`, where the flavor is known). Staging/prod and
   // profile/release always pass false.
   bool showNotificationTestAction = false,
+
+  /// Whether Remote Config has enabled usage limits and the paywall.
+  ///
+  /// When `false` (the default), the `/paywall` route redirects home and
+  /// usage limits are not enforced, so the paywall is effectively disabled.
+  bool enableLimitAndPaywall = false,
 }) {
   final notifier = authStateNotifier;
   final coordinator = refreshCoordinator ?? TabRefreshCoordinator();
@@ -153,6 +159,7 @@ GoRouter createRouter({
       manageProfileCubitFactory ?? _defaultManageProfileCubitFactory;
   final resolvePaywallCubit =
       paywallCubitFactory ?? _defaultPaywallCubitFactory;
+  final paywallEnabled = enableLimitAndPaywall;
   final resolveStorage =
       localStorageDatasourceFactory ?? _defaultLocalStorageDatasourceFactory;
   final resolveOnboardingDatasource =
@@ -242,6 +249,10 @@ GoRouter createRouter({
       ),
       GoRoute(
         path: AppRoutes.paywall,
+        // The paywall is disabled when the remote flag is off: redirect to
+        // home so the route never renders a paywall the user cannot reach
+        // through the (also disabled) limit-gated creation flows.
+        redirect: (context, state) => paywallEnabled ? null : AppRoutes.home,
         builder: (context, state) => BlocProvider<PaywallCubit>(
           create: (_) => resolvePaywallCubit(),
           child: const PaywallScreen(),

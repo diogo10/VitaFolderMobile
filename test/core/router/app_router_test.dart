@@ -560,6 +560,9 @@ void main() {
         onboardingCompleted: true,
         authStateNotifier: notifier,
         initialLocation: '/paywall',
+        // Limits are disabled by default; enable the flag so the paywall
+        // route renders in this test.
+        enableLimitAndPaywall: true,
         homeCubitFactory: () => HomeCubit(
           getHomeDataUsecase: getHomeData,
           hasRemindersUsecase: hasReminders,

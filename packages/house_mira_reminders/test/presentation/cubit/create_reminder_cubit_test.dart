@@ -1,8 +1,11 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
+import 'package:house_mira_core/config/remote_config_service.dart';
 import 'package:house_mira_core/errors/failure.dart';
+import 'package:house_mira_core/observability/app_logger.dart';
 import 'package:house_mira_core/subscriptions/subscription_service.dart';
 import 'package:house_mira_people/domain/repository/people_repository.dart';
 import 'package:house_mira_reminders/application/is_at_reminder_limit_usecase.dart';
@@ -35,6 +38,8 @@ class _FakeSubscriptionService extends Mock implements SubscriptionService {}
 
 class _FakeReminderRepository extends Mock implements ReminderRepository {}
 
+class _MockRemoteConfig extends Mock implements FirebaseRemoteConfig {}
+
 void main() {
   late _FakeAuthService authService;
   late _FakePeopleRepository peopleRepository;
@@ -43,6 +48,8 @@ void main() {
   late _FakeNotificationService notificationService;
   late _FakeSubscriptionService subscriptionService;
   late _FakeReminderRepository reminderRepository;
+  late _MockRemoteConfig remoteConfig;
+  late RemoteConfigService remoteConfigService;
 
   setUp(() {
     authService = _FakeAuthService();
@@ -52,6 +59,14 @@ void main() {
     notificationService = _FakeNotificationService();
     subscriptionService = _FakeSubscriptionService();
     reminderRepository = _FakeReminderRepository();
+    remoteConfig = _MockRemoteConfig();
+    when(
+      () => remoteConfig.getBool('enable_limit_and_paywall'),
+    ).thenAnswer((_) => true);
+    remoteConfigService = RemoteConfigService(
+      remoteConfig: remoteConfig,
+      logger: AppLogger(),
+    );
     // Paid by default so existing tests exercise the uncapped path;
     // limit tests override with `isPro(userId:) == false`.
     when(
@@ -102,6 +117,7 @@ void main() {
     isAtReminderLimitUsecase: IsAtReminderLimitUsecase(
       subscriptionService: subscriptionService,
       reminderRepository: reminderRepository,
+      remoteConfigService: remoteConfigService,
     ),
   );
 
