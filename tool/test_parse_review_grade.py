@@ -38,9 +38,69 @@ class ParseReviewGradeTest(unittest.TestCase):
         self.assertEqual(grade, "A")
         self.assertIn("## Findings", text)
 
-    def test_grade_after_preamble_is_rejected(self) -> None:
-        # The grade must be the first line; a later grade line is not trusted.
-        stream = [part("msg_1", "text", text="Let me look at the diff.\nGRADE: A" + REVIEW_BODY)]
+    def test_grade_after_a_short_preamble_is_accepted(self) -> None:
+        # The models answer with a status line before the grade; the review
+        # must still be graded.
+        stream = [
+            part(
+                "msg_1",
+                "text",
+                text="Grading your PR - checking the widget wiring.\nGRADE: A"
+                + REVIEW_BODY,
+            )
+        ]
+
+        grade, _ = parse_grade(stream)
+
+        self.assertEqual(grade, "A")
+
+    def test_grade_after_a_two_line_preamble_is_accepted(self) -> None:
+        stream = [
+            part(
+                "msg_1",
+                "text",
+                text="Reviewing the diff.\nOne more look at the tests.\nGRADE: B"
+                + REVIEW_BODY,
+            )
+        ]
+
+        grade, _ = parse_grade(stream)
+
+        self.assertEqual(grade, "B")
+
+    def test_grade_after_a_long_preamble_is_rejected(self) -> None:
+        # The grade must still be in the header.
+        stream = [
+            part(
+                "msg_1",
+                "text",
+                text="One.\nTwo.\nThree.\nFour.\nGRADE: A" + REVIEW_BODY,
+            )
+        ]
+
+        grade, _ = parse_grade(stream)
+
+        self.assertEqual(grade, "")
+
+    def test_grade_after_a_section_heading_is_rejected(self) -> None:
+        # A grade in the body is not trusted, even right below a heading.
+        stream = [
+            part(
+                "msg_1",
+                "text",
+                text="## Summary\nGRADE: A\n\n## Findings\n- nit\n",
+            )
+        ]
+
+        grade, _ = parse_grade(stream)
+
+        self.assertEqual(grade, "")
+
+    def test_several_grades_are_rejected(self) -> None:
+        # An ambiguous message is never an approval.
+        stream = [
+            part("msg_1", "text", text="GRADE: A" + REVIEW_BODY + "\nGRADE: B\n")
+        ]
 
         grade, _ = parse_grade(stream)
 

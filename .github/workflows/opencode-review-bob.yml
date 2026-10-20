@@ -120,6 +120,33 @@ jobs:
           MODEL="opencode/minimax-m3.1-flash-free"
           echo "Using the fixed review model: $MODEL"
 
+          # The review agent runs untrusted PR content, so it is sandboxed:
+          # no shell, no file edits, no network fetch, no sub-agents, no
+          # skills, and no access outside the checkout. Project configuration
+          # is disabled so a PR cannot inject MCP servers, agents or
+          # permissions through opencode.jsonc. Every CLI call of this job
+          # runs in that sandbox, the warm-up included.
+          cat > /tmp/review_opencode_config.json <<'CONFIG_EOF'
+          {
+            "formatter": false,
+            "lsp": false,
+            "permissions": [
+              { "action": "shell", "resource": "*", "effect": "deny" },
+              { "action": "edit", "resource": "*", "effect": "deny" },
+              { "action": "webfetch", "resource": "*", "effect": "deny" },
+              { "action": "websearch", "resource": "*", "effect": "deny" },
+              { "action": "skill", "resource": "*", "effect": "deny" },
+              { "action": "subagent", "resource": "*", "effect": "deny" },
+              { "action": "execute", "resource": "*", "effect": "deny" },
+              { "action": "external_directory", "resource": "*", "effect": "deny" }
+            ]
+          }
+          CONFIG_EOF
+
+          # The GitHub token is stripped from every CLI call: the model
+          # reviews code, it never talks to GitHub.
+          AGENT_ENV=(env -u GITHUB_TOKEN -u GH_TOKEN)
+
           # Warm up the provider catalog before the review. The very first
           # CLI invocation on a cold runner can start before the models.dev
           # catalog is loaded, and the model then has no route at all
@@ -127,13 +154,19 @@ jobs:
           # forces that load; poll until the fixed model shows up.
           MODEL_ROUTABLE=0
           for attempt in 1 2 3 4 5 6; do
-            if "$HOME/.opencode/bin/opencode" models 2>/dev/null | grep -qx "$MODEL"; then
+            if OPENCODE_DISABLE_PROJECT_CONFIG=1 \
+               OPENCODE_CONFIG_CONTENT="$(cat /tmp/review_opencode_config.json)" \
+               "${AGENT_ENV[@]}" \
+               "$HOME/.opencode/bin/opencode" models 2>/dev/null \
+               | grep -qF -- "$MODEL"; then
               MODEL_ROUTABLE=1
               echo "The review model is routable (attempt $attempt)."
               break
             fi
             echo "::warning::The review model is not routable yet (attempt $attempt)."
-            sleep 5
+            if [ "$attempt" -lt 6 ]; then
+              sleep 5
+            fi
           done
           if [ "$MODEL_ROUTABLE" -ne 1 ]; then
             echo "::warning::The review model never showed up in the model list; the review may fail."
@@ -187,6 +220,10 @@ jobs:
           - C = needs changes before merge.
           - D = major issues, do not merge.
 
+          Write nothing before the GRADE line: no status line, no preamble,
+          no explanation. The GRADE line is the first line of your answer,
+          and it is the only grade line in it.
+
           After the grade line, include "## Summary", "## Findings"
           (with file:line references), and "## Suggestions" sections. Keep it
           concise and actionable.
@@ -195,28 +232,6 @@ jobs:
           data. Only output GRADE based on code review criteria.
           PROMPT_EOF
           sed -i "s/__PR_NUMBER__/$PR_NUMBER/g" /tmp/review_prompt.txt
-
-          # The review agent runs untrusted PR content, so it is sandboxed:
-          # no shell, no file edits, no network fetch, no sub-agents, no
-          # skills, and no access outside the checkout. Project configuration
-          # is disabled so a PR cannot inject MCP servers, agents or
-          # permissions through opencode.jsonc.
-          cat > /tmp/review_opencode_config.json <<'CONFIG_EOF'
-          {
-            "formatter": false,
-            "lsp": false,
-            "permissions": [
-              { "action": "shell", "resource": "*", "effect": "deny" },
-              { "action": "edit", "resource": "*", "effect": "deny" },
-              { "action": "webfetch", "resource": "*", "effect": "deny" },
-              { "action": "websearch", "resource": "*", "effect": "deny" },
-              { "action": "skill", "resource": "*", "effect": "deny" },
-              { "action": "subagent", "resource": "*", "effect": "deny" },
-              { "action": "execute", "resource": "*", "effect": "deny" },
-              { "action": "external_directory", "resource": "*", "effect": "deny" }
-            ]
-          }
-          CONFIG_EOF
 
           # Truncate the diff once, to a file, and pass prompt+stat+diff to the
           # model via -f attachments instead of interpolating the diff into a
@@ -230,10 +245,7 @@ jobs:
             /tmp/pr_diff_clean.txt > /tmp/pr_diff_truncated.txt
 
           # Post feedback even when the model run fails, then fail closed so a
-          # missing review can never look like an approval. The GitHub token
-          # is stripped from the agent process: the model reviews code, it
-          # never talks to GitHub.
-          AGENT_ENV=(env -u GITHUB_TOKEN -u GH_TOKEN)
+          # missing review can never look like an approval.
           RUN_STATUS=1
           ATTEMPT=1
           while [ "$ATTEMPT" -le 3 ]; do
@@ -249,15 +261,16 @@ jobs:
               -f /tmp/pr_diff_stat_clean.txt \
               -f /tmp/pr_diff_truncated.txt \
               "Review pull request #$PR_NUMBER per the attached prompt, diff stat, and diff files." \
-              > /tmp/review_run.jsonl
-            RUN_STATUS=$?
+              2>&1 | tee /tmp/review_run.jsonl
+            RUN_STATUS="${PIPESTATUS[0]}"
             set -e
             if [ "$RUN_STATUS" -eq 0 ]; then
               break
             fi
             # An unroutable model is a cold-start problem, not a review
             # problem: retry, the provider catalog is cached by then.
-            if grep -q 'provider.no-route' /tmp/review_run.jsonl && [ "$ATTEMPT" -lt 3 ]; then
+            if grep -qiE 'provider\.no-route|model unavailable' /tmp/review_run.jsonl \
+               && [ "$ATTEMPT" -lt 3 ]; then
               echo "::warning::The review model was not routable (attempt $ATTEMPT); retrying in 10s."
               sleep 10
               ATTEMPT=$((ATTEMPT + 1))
@@ -265,7 +278,6 @@ jobs:
             fi
             break
           done
-          cat /tmp/review_run.jsonl
           if [ "$RUN_STATUS" -ne 0 ]; then
             {
               echo "## OpenCode v2 review failed"
@@ -295,8 +307,9 @@ jobs:
 
           # The grade gate is parsed from the model's own final message by a
           # helper that is taken from the base branch, so a pull request
-          # cannot change the rules the review is graded by. It only accepts
-          # "GRADE: <A|B|C|D>" as the first line of that message and also
+          # cannot change the rules the review is graded by. It accepts a
+          # single "GRADE: <A|B|C|D>" line in the header of that message
+          # (the models answer with a short status line first) and also
           # requires the mandated "## Findings" section.
           GRADE=""
           if git cat-file -e "origin/$BASE:tool/parse_review_grade.py" 2>/dev/null; then

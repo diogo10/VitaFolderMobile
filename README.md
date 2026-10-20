@@ -218,11 +218,15 @@ agent over the pull request diff.
   the agent may not run shell commands, edit files, fetch URLs, use skills
   or read outside the checkout. The GitHub token is stripped from the agent
   process; only the workflow itself talks to GitHub.
-- **Strict grade gate.** The review must start with `GRADE: <A|B|C|D>` and
-  contain a `## Findings` section. `A`/`B` label the PR `automerge` and
+- **Strict grade gate.** The review must carry a single `GRADE: <A|B|C|D>`
+  line in its header (the models answer with a short status line before it)
+  and contain a `## Findings` section. `A`/`B` label the PR `automerge` and
   approve it, `C`/`D` (or a missing grade) only post the review comment.
   Grade lines planted in the diff are stripped before the diff reaches the
-  model, and the gate is parsed by `tool/parse_review_grade.py`.
+  model, and the gate is parsed by `tool/parse_review_grade.py`. That parser
+  is taken from the base branch, so a pull request can never change the
+  rules it is graded by — a gate change only takes effect for the pull
+  requests that follow it.
 - **Fixed model, no credentials.** The review always runs on
   `opencode/minimax-m3.1-flash-free`, the free model the repository
   configures in `opencode.jsonc`, so the bot and local development use the

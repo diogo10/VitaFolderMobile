@@ -3,14 +3,20 @@
 The CI review workflow runs `opencode run --format json`, which emits one
 JSON object per line (JSONL). Every line carries a `part`; text parts hold
 the model's output. This script picks the *final* assistant message, requires
-its first non-empty line to be exactly `GRADE: <A|B|C|D>`, and prints the
-letter.
+its header to carry the grade line `GRADE: <A|B|C|D>`, and prints the letter.
 
 The gate is deliberately strict and fails closed: a run whose output does not
-start with a grade line yields no grade, so the workflow can never mistake a
+carry a grade line yields no grade, so the workflow can never mistake a
 malformed or injected review for an approval. The final message must also
 contain the `## Findings` section the review prompt mandates, so a bare
 `GRADE: A` echoed from the diff cannot satisfy the gate on its own.
+
+The grade may sit behind a short preamble: models routinely answer with a
+status line first ("Grading your PR - checking ..."). The gate therefore
+accepts the grade in the first few non-empty lines, but only when the message
+carries exactly one grade line and the grade is still in the header, before
+any markdown heading. Anything else - no grade, several grades, or a grade
+buried in the body - is rejected.
 
 Usage:
   opencode run --format json ... | python3 tool/parse_review_grade.py \
@@ -31,7 +37,12 @@ from typing import Any
 
 GRADE_PATTERN = re.compile(r"^GRADE: ([ABCD])$")
 FINDINGS_PATTERN = re.compile(r"^\s{0,3}#{1,6}\s*findings\b", re.IGNORECASE | re.MULTILINE)
+HEADING_PATTERN = re.compile(r"^\s{0,3}#{1,6}\s")
 ANSI_PATTERN = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
+
+# How many non-empty lines may precede the grade line. The models answer
+# with at most a two-line status line before the grade.
+HEADER_LINES = 3
 
 
 def _strip_ansi(text: str) -> str:
@@ -72,23 +83,46 @@ def _final_message_text(parts: list[tuple[str, str]]) -> str:
     return "\n".join(text for message_id, text in parts if message_id == last_message_id)
 
 
+def _find_grade(text: str) -> str:
+    """Returns the grade from the header of the review, or "" when invalid.
+
+    The grade must be the only grade line of the message and it must sit in
+    the header: within the first `HEADER_LINES` non-empty lines and before
+    any markdown heading. A grade buried in the review body is not trusted.
+    """
+    lines = text.splitlines()
+    grades = [
+        (index, match.group(1))
+        for index, line in enumerate(lines)
+        if (match := GRADE_PATTERN.match(line.strip())) is not None
+    ]
+    if len(grades) != 1:
+        # No grade at all, or an ambiguous message with several grades.
+        return ""
+    index, grade = grades[0]
+    preceding = lines[:index]
+    if sum(1 for line in preceding if line.strip()) >= HEADER_LINES:
+        # Too much text before the grade: the grade is not in the header.
+        return ""
+    if any(HEADING_PATTERN.match(line) for line in preceding):
+        # The grade comes after a section heading, so it is part of the body.
+        return ""
+    return grade
+
+
 def parse_grade(stream: Any) -> tuple[str, str]:
     """Returns (grade, final_message_text); grade is empty when invalid."""
     text = _final_message_text(_collect_text_parts(stream))
     if not text.strip():
         return "", text
-    first_line = next(
-        (line.strip() for line in text.splitlines() if line.strip()),
-        "",
-    )
-    match = GRADE_PATTERN.match(first_line)
-    if match is None:
+    grade = _find_grade(text)
+    if not grade:
         return "", text
     if FINDINGS_PATTERN.search(text) is None:
         # The review prompt mandates a "## Findings" section; without it the
         # output is not a complete review, so it never counts as approval.
         return "", text
-    return match.group(1), text
+    return grade, text
 
 
 def main() -> int:
