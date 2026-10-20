@@ -63,7 +63,7 @@ jobs:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
           INPUT_PR: ${{ inputs.pr }}
           EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
-          OPENCODE_MODEL: opencode/muse-spark-1.3-contributor-free
+          OPENCODE_MODEL: minimax/MiniMax-M3.1-Flash
         run: |
           set -euo pipefail
 

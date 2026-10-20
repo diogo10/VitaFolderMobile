@@ -190,5 +190,13 @@ Details: [testing](.agents/references/testing.md).
   supabase link --project-ref jheqalwrnztavzxjsdcj, then deploy with
   supabase functions deploy <name> (e.g. resend-email-v1).
   Required function secret RESEND_API_KEY is already set on the project.
+- Crashlytics: the `firebase` MCP server (opencode.jsonc -> mcp.servers.firebase)
+  exposes the Crashlytics tool group for project diogoprojects-617e2
+  (Android app id 1:140355243144:android:a6ac1f14183172f272633d, iOS
+  1:140355243144:ios:08ceded889bb563c72633d). Use
+  crashlytics_get_report / crashlytics_list_events /
+  crashlytics_batch_get_events to triage real crashes. The server runs with a
+  `--tools` allow-list, so deploy/mutation tools (and crashlytics_update_issue)
+  are not exposed. Setup and auth: README "Crashlytics MCP server".
 - Never expose service-role keys. Commit, push, or open a PR only when
   explicitly asked.
