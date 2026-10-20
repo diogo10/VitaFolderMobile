@@ -230,6 +230,11 @@ agent over the pull request diff.
   credentials at all: there is no `OPENCODE_API_KEY` or `MINIMAX_API_KEY`
   secret to configure, and no provider credential is exposed to the agent.
   The model is not overridable — the `model` input was removed.
+- **Cold-start safe.** On a cold runner the first CLI invocation can start
+  before the provider catalog is loaded, and the model then has no route at
+  all (`Model unavailable`). The job warms the catalog up first (it lists the
+  models until the fixed one shows up) and retries the review when the model
+  was not routable, so a cold start cannot silently skip the review.
 
 ## APK Distribution
 
