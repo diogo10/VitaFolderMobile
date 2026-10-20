@@ -7,25 +7,10 @@ on:
         description: 'PR number to review (defaults to the triggering PR)'
         required: false
         type: string
-      model:
-        description: 'Model in provider/model format (defaults to a free OpenCode model)'
-        required: false
-        type: string
-    secrets:
-      OPENCODE_API_KEY:
-        description: 'Optional OpenCode/Zen API key (free models work without it)'
-        required: false
-      MINIMAX_API_KEY:
-        description: 'Optional MiniMax API key (only needed for minimax/* models)'
-        required: false
   workflow_dispatch:
     inputs:
       pr:
         description: 'PR number to review (required for manual runs)'
-        required: false
-        type: string
-      model:
-        description: 'Model in provider/model format (defaults to a free OpenCode model)'
         required: false
         type: string
 
@@ -97,11 +82,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
-          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           INPUT_PR: ${{ inputs.pr }}
           EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
-          REQUESTED_MODEL: ${{ inputs.model }}
         run: |
           set -euo pipefail
 
@@ -131,65 +113,12 @@ jobs:
           fi
           git fetch origin "$BASE" --depth=50 || true
 
-          # Pick the review model. By default it is the model the repository
-          # configures in opencode.jsonc, so the bot and local development
-          # use the same one.
-          MODEL="$REQUESTED_MODEL"
-          if [ -n "$MODEL" ]; then
-            echo "Using the requested model: $MODEL"
-          else
-            # The reader comes from the base branch when it is available, so
-            # the parsing rules are the reviewed ones. The configuration is
-            # the checked-out one: the review runs on the model the
-            # repository currently configures.
-            if git cat-file -e "origin/$BASE:tool/read_opencode_model.py" 2>/dev/null; then
-              git show "origin/$BASE:tool/read_opencode_model.py" > /tmp/read_opencode_model.py
-            else
-              cp tool/read_opencode_model.py /tmp/read_opencode_model.py
-            fi
-            MODEL="$(python3 /tmp/read_opencode_model.py opencode.jsonc || true)"
-            if [ -z "$MODEL" ]; then
-              echo "::warning::Could not read a model from opencode.jsonc."
-            else
-              echo "Using the model from opencode.jsonc: $MODEL"
-            fi
-          fi
-
-          # Every provider needs a credential: without one, OpenCode has no
-          # routable model at all and the run fails with a cryptic
-          # "Model unavailable". Resolve the credential from the model so
-          # the failure is an actionable message instead.
-          case "$MODEL" in
-            minimax/* | minimax-cn/* | minimax-coding-plan/* | minimax-cn-coding-plan/*)
-              REQUIRED_CREDENTIAL="MINIMAX_API_KEY"
-              ;;
-            opencode/* | opencode-go/*)
-              REQUIRED_CREDENTIAL="OPENCODE_API_KEY"
-              ;;
-            github-copilot/*)
-              REQUIRED_CREDENTIAL="GITHUB_TOKEN"
-              ;;
-            *)
-              REQUIRED_CREDENTIAL="$(printf '%s' "${MODEL%%/*}" | tr '[:lower:]-' '[:upper:]_')_API_KEY"
-              ;;
-          esac
-          CREDENTIAL_VALUE="${!REQUIRED_CREDENTIAL:-}"
-          if [ -z "$CREDENTIAL_VALUE" ]; then
-            {
-              echo "## OpenCode v2 review cannot run"
-              echo ""
-              echo "The review model \`${MODEL:-<none>}\` needs the \`$REQUIRED_CREDENTIAL\`"
-              echo "repository secret, which is not configured."
-              echo ""
-              echo "Add it in Settings -> Secrets and variables -> Actions, or run"
-              echo "the review with a model whose provider is already configured"
-              echo "(\`model\` input)."
-            } > /tmp/review_no_credential.txt
-            gh pr comment "$PR_NUMBER" --body-file /tmp/review_no_credential.txt || true
-            echo "::error::No credential for model '$MODEL'. Add the $REQUIRED_CREDENTIAL repository secret."
-            exit 1
-          fi
-          echo "Credential for $MODEL: $REQUIRED_CREDENTIAL (configured)"
+          # The review always runs on one fixed model: the free
+          # opencode/minimax-m3.1-flash-free, the same one the repository
+          # configures in opencode.jsonc for local development. It needs no
+          # API key, so the workflow takes no provider credentials at all.
+          MODEL="opencode/minimax-m3.1-flash-free"
+          echo "Using the fixed review model: $MODEL"
 
           # Manual runs may target a PR on another branch: check out its head
           # so the diff and the working tree describe the same PR.
@@ -284,14 +213,8 @@ jobs:
           # Post feedback even when the model run fails, then fail closed so a
           # missing review can never look like an approval. The GitHub token
           # is stripped from the agent process: the model reviews code, it
-          # never talks to GitHub. The Copilot provider is the exception - it
-          # authenticates with GITHUB_TOKEN - and the sandbox (no shell, no
-          # web tools) is what keeps that token from reaching the model.
-          if [ "$REQUIRED_CREDENTIAL" = "GITHUB_TOKEN" ]; then
-            AGENT_ENV=(env -u GH_TOKEN)
-          else
-            AGENT_ENV=(env -u GITHUB_TOKEN -u GH_TOKEN)
-          fi
+          # never talks to GitHub.
+          AGENT_ENV=(env -u GITHUB_TOKEN -u GH_TOKEN)
           set +e
           OPENCODE_DISABLE_PROJECT_CONFIG=1 \
           OPENCODE_CONFIG_CONTENT="$(cat /tmp/review_opencode_config.json)" \
@@ -326,9 +249,8 @@ jobs:
               echo '```'
               echo "</details>"
               echo ""
-              echo "If the log mentions an unavailable model, the credential is"
-              echo "missing, invalid, or the model was renamed in the provider"
-              echo "catalog."
+              echo "If the log mentions an unavailable model, the model was"
+              echo "renamed or removed from the provider catalog."
             } > /tmp/review_failure.txt
             gh pr comment "$PR_NUMBER" --body-file /tmp/review_failure.txt || true
             echo "::error::OpenCode review run failed (status $RUN_STATUS)."

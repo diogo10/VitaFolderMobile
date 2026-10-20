@@ -223,15 +223,13 @@ agent over the pull request diff.
   approve it, `C`/`D` (or a missing grade) only post the review comment.
   Grade lines planted in the diff are stripped before the diff reaches the
   model, and the gate is parsed by `tool/parse_review_grade.py`.
-- **Model and credentials.** The review uses the same model as the
-  repository configuration (`opencode.jsonc`, read from the base branch), so
-  the bot and local development agree on one model. The configuration selects
-  the free `opencode/minimax-m3.1-flash-free` model, so the review costs
-  nothing, but the provider still needs its key: `opencode/*` needs
-  `OPENCODE_API_KEY` (a `minimax/*` model would need `MINIMAX_API_KEY`).
-  Without it the job stops with an explicit message and a pull request
-  comment naming the secret to add. A manual run can override the model
-  through the `model` input.
+- **Fixed model, no credentials.** The review always runs on
+  `opencode/minimax-m3.1-flash-free`, the free model the repository
+  configures in `opencode.jsonc`, so the bot and local development use the
+  same one. That model needs no API key, so the workflow takes no provider
+  credentials at all: there is no `OPENCODE_API_KEY` or `MINIMAX_API_KEY`
+  secret to configure, and no provider credential is exposed to the agent.
+  The model is not overridable — the `model` input was removed.
 
 ## APK Distribution
 

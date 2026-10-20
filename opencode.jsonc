@@ -1,6 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "formatter": true,
+  // Fixed model: the free OpenCode Zen model. It needs no API key, so no
+  // provider credential is ever configured or passed to the agent.
   "model": "opencode/minimax-m3.1-flash-free",
   "instructions": [
     "AGENTS.md"

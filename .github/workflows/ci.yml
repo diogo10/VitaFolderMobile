@@ -142,4 +142,5 @@ jobs:
       pull-requests: write
       issues: write
     uses: ./.github/workflows/opencode-review-bob.yml
-    secrets: inherit
+    # No secrets are passed: the review runs on the free fixed model, which
+    # needs no API key. The workflow only uses the automatic GITHUB_TOKEN.
