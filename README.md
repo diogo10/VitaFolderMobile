@@ -201,6 +201,33 @@ per-flavor Firebase apps. To provision separate projects:
 3. Run `fvm flutter analyze` and `fvm flutter test` to ensure code quality
 4. Submit a pull request with a clear description
 
+### Automated PR review (Bob)
+
+Every PR gets an automated review: the `call-bob` job of the CI workflow
+calls `.github/workflows/opencode-review-bob.yml`, which runs an OpenCode
+agent over the pull request diff.
+
+- **Pinned, verified CLI.** `tool/install_opencode_cli.sh` downloads the
+  pinned npm tarball for the runner's platform and verifies its SHA-512
+  (Subresource Integrity) and the binary's SHA-256 before running it. The
+  upstream `opencode.ai` installer is deliberately not used: it always
+  serves the newest script, so pinning its checksum breaks CI on every
+  upstream release.
+- **Sandboxed agent.** Project configuration is disabled (a PR cannot
+  inject MCP servers, agents or permissions through `opencode.jsonc`), and
+  the agent may not run shell commands, edit files, fetch URLs, use skills
+  or read outside the checkout. The GitHub token is stripped from the agent
+  process; only the workflow itself talks to GitHub.
+- **Strict grade gate.** The review must start with `GRADE: <A|B|C|D>` and
+  contain a `## Findings` section. `A`/`B` label the PR `automerge` and
+  approve it, `C`/`D` (or a missing grade) only post the review comment.
+  Grade lines planted in the diff are stripped before the diff reaches the
+  model, and the gate is parsed by `tool/parse_review_grade.py`.
+- **Model.** The default is the free `opencode/minimax-m3.1-flash-free`
+  (no key needed). Add the `OPENCODE_API_KEY` secret for an OpenCode Zen
+  key, or `MINIMAX_API_KEY` together with a `minimax/*` model. A manual run
+  can override the model through the `model` input.
+
 ## APK Distribution
 
 Merging into `main` triggers `.github/workflows/build_apk.yml`:

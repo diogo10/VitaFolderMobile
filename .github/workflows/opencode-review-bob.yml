@@ -7,14 +7,25 @@ on:
         description: 'PR number to review (defaults to the triggering PR)'
         required: false
         type: string
+      model:
+        description: 'Model in provider/model format (defaults to a free OpenCode model)'
+        required: false
+        type: string
     secrets:
       OPENCODE_API_KEY:
         description: 'Optional OpenCode/Zen API key (free models work without it)'
+        required: false
+      MINIMAX_API_KEY:
+        description: 'Optional MiniMax API key (only needed for minimax/* models)'
         required: false
   workflow_dispatch:
     inputs:
       pr:
         description: 'PR number to review (required for manual runs)'
+        required: false
+        type: string
+      model:
+        description: 'Model in provider/model format (defaults to a free OpenCode model)'
         required: false
         type: string
 
@@ -26,12 +37,15 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     concurrency:
       group: opencode-review-bob-${{ inputs.pr }}${{ github.event.pull_request.number }}${{ github.ref }}
       cancel-in-progress: true
     permissions:
-      contents: read
+      # Matches the caller: the review bot labels, approves and merges.
+      # A caller may still narrow these (the effective permissions are the
+      # intersection of both workflows).
+      contents: write
       pull-requests: write
       issues: write
     steps:
@@ -40,20 +54,43 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Install OpenCode v2 CLI
-        env:
-          OPENCODE_VERSION: 2.0.15
-          OPENCODE_INSTALLER_URL: https://opencode.ai/v2/install
-          OPENCODE_INSTALLER_SHA256: bc70dd317fd12ef09350cdb1667e55e19f9e7b3d2897d3a1b750b165ae579d87
+      # TRUST MODEL
+      # This workflow reviews untrusted pull request content, so the agent is
+      # sandboxed (no shell, no edits, no network, no skills, no access
+      # outside the checkout) and it never receives the GitHub token: only
+      # the workflow itself talks to GitHub. The grade that unlocks the
+      # auto-merge is parsed from the model's own final message by a helper
+      # taken from the base branch, and grade lines planted in the diff are
+      # stripped before the model sees them.
+      #
+      # Residual risk: for `pull_request` events the workflow file itself
+      # comes from the pull request, so a pull request can still change the
+      # rules of this job. Restrict auto-merge to trusted branches, or require
+      # a human approval, if that is not acceptable.
+
+      - name: Resolve OpenCode CLI target
+        id: opencode-target
         run: |
           set -euo pipefail
+          read -r target version sha256 < <(tool/install_opencode_cli.sh --print-target)
+          echo "target=$target" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
 
-          # Pinned installer: download first, verify checksum, then run with a
-          # pinned --version (never pipe curl to bash).
-          curl -fsSL "$OPENCODE_INSTALLER_URL" -o /tmp/opencode-install.sh
-          echo "$OPENCODE_INSTALLER_SHA256  /tmp/opencode-install.sh" | sha256sum -c -
-          bash /tmp/opencode-install.sh --version "$OPENCODE_VERSION" --no-modify-path
-          "$HOME/.opencode/bin/opencode" --version
+      - name: Cache OpenCode CLI
+        id: opencode-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.opencode/bin
+          # The key carries the pinned version and binary checksum, so a cache
+          # entry can never serve a different binary. The installer re-checks
+          # the checksum after restoring it.
+          key: opencode-cli-${{ steps.opencode-target.outputs.target }}-${{ steps.opencode-target.outputs.version }}-${{ steps.opencode-target.outputs.sha256 }}
+
+      - name: Install OpenCode v2 CLI
+        run: |
+          set -euo pipefail
+          tool/install_opencode_cli.sh
 
       - name: Review PR with OpenCode v2
         id: review
@@ -61,9 +98,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           INPUT_PR: ${{ inputs.pr }}
           EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
-          OPENCODE_MODEL: minimax/MiniMax-M3.1-Flash
+          OPENCODE_MODEL: ${{ inputs.model || 'opencode/minimax-m3.1-flash-free' }}
         run: |
           set -euo pipefail
 
@@ -83,7 +121,7 @@ jobs:
             echo "::error::Could not resolve a numeric PR number (got: '$PR_NUMBER')."
             exit 1
           fi
-          echo "Reviewing PR #$PR_NUMBER"
+          echo "Reviewing PR #$PR_NUMBER with model $OPENCODE_MODEL"
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
           # Manual runs may target a PR on another branch: check out its head
@@ -149,23 +187,56 @@ jobs:
           PROMPT_EOF
           sed -i "s/__PR_NUMBER__/$PR_NUMBER/g" /tmp/review_prompt.txt
 
+          # The review agent runs untrusted PR content, so it is sandboxed:
+          # no shell, no file edits, no network fetch, no sub-agents, no
+          # skills, and no access outside the checkout. Project configuration
+          # is disabled so a PR cannot inject MCP servers, agents or
+          # permissions through opencode.jsonc.
+          cat > /tmp/review_opencode_config.json <<'CONFIG_EOF'
+          {
+            "formatter": false,
+            "lsp": false,
+            "permissions": [
+              { "action": "shell", "resource": "*", "effect": "deny" },
+              { "action": "edit", "resource": "*", "effect": "deny" },
+              { "action": "webfetch", "resource": "*", "effect": "deny" },
+              { "action": "websearch", "resource": "*", "effect": "deny" },
+              { "action": "skill", "resource": "*", "effect": "deny" },
+              { "action": "subagent", "resource": "*", "effect": "deny" },
+              { "action": "execute", "resource": "*", "effect": "deny" },
+              { "action": "external_directory", "resource": "*", "effect": "deny" }
+            ]
+          }
+          CONFIG_EOF
+
           # Truncate the diff once, to a file, and pass prompt+stat+diff to the
           # model via -f attachments instead of interpolating the diff into a
           # shell variable / CLI argument. Truncate on line boundaries so no
           # partial line (a possible injection vector) is passed along.
+          # Lines that try to plant a grade are dropped: the review is graded
+          # on the model's own verdict, never on text the diff supplied.
+          grep -v 'GRADE:' /tmp/pr_diff.txt > /tmp/pr_diff_clean.txt || true
+          grep -v 'GRADE:' /tmp/pr_diff_stat.txt > /tmp/pr_diff_stat_clean.txt || true
           awk 'BEGIN { limit=100000; n=0 } { l=length($0)+1; if (n+l > limit) exit; n+=l; print }' \
-            /tmp/pr_diff.txt > /tmp/pr_diff_truncated.txt
+            /tmp/pr_diff_clean.txt > /tmp/pr_diff_truncated.txt
 
           # Post feedback even when the model run fails, then fail closed so a
-          # missing review can never look like an approval.
+          # missing review can never look like an approval. The GitHub token
+          # is stripped from the agent process: the model reviews code, it
+          # never talks to GitHub.
           set +e
-          "$HOME/.opencode/bin/opencode" run \
+          OPENCODE_DISABLE_PROJECT_CONFIG=1 \
+          OPENCODE_CONFIG_CONTENT="$(cat /tmp/review_opencode_config.json)" \
+            env -u GITHUB_TOKEN -u GH_TOKEN \
+            "$HOME/.opencode/bin/opencode" run \
+            --standalone \
             --model "$OPENCODE_MODEL" \
+            --format json \
             -f /tmp/review_prompt.txt \
-            -f /tmp/pr_diff_stat.txt \
+            -f /tmp/pr_diff_stat_clean.txt \
             -f /tmp/pr_diff_truncated.txt \
             "Review pull request #$PR_NUMBER per the attached prompt, diff stat, and diff files." \
-            | tee /tmp/review_output.txt
+            | tee /tmp/review_run.jsonl
           RUN_STATUS="${PIPESTATUS[0]}"
           set -e
           if [ "$RUN_STATUS" -ne 0 ]; then
@@ -177,10 +248,10 @@ jobs:
               echo "<details><summary>Runner log</summary>"
               echo ""
               echo '```'
-              if [ "$(wc -c < /tmp/review_output.txt)" -gt 20000 ]; then
-                tail -c 20000 /tmp/review_output.txt | tail -n +2
+              if [ "$(wc -c < /tmp/review_run.jsonl)" -gt 20000 ]; then
+                tail -c 20000 /tmp/review_run.jsonl | tail -n +2
               else
-                cat /tmp/review_output.txt
+                cat /tmp/review_run.jsonl
               fi
               echo '```'
               echo "</details>"
@@ -190,15 +261,26 @@ jobs:
             exit 1
           fi
 
-          # Strict grade gate: only line 1 counts, and it must match
-          # ^GRADE: [ABCD]$. Grades buried elsewhere (e.g. injected via the
-          # diff) are untrusted and never merge-ready.
-          FIRST_LINE="$(head -n 1 /tmp/review_output.txt | tr -d '\r')"
+          # The grade gate is parsed from the model's own final message by a
+          # helper that is taken from the base branch, so a pull request
+          # cannot change the rules the review is graded by. It only accepts
+          # "GRADE: <A|B|C|D>" as the first line of that message and also
+          # requires the mandated "## Findings" section.
           GRADE=""
-          if [[ "$FIRST_LINE" =~ ^GRADE:\ [ABCD]$ ]]; then
-            GRADE="${FIRST_LINE#GRADE: }"
+          if git cat-file -e "origin/$BASE:tool/parse_review_grade.py" 2>/dev/null; then
+            git show "origin/$BASE:tool/parse_review_grade.py" > /tmp/parse_review_grade.py
+            echo "Using the grade parser from origin/$BASE."
+          else
+            cp tool/parse_review_grade.py /tmp/parse_review_grade.py
+            echo "::warning::Could not read the grade parser from origin/$BASE; using the working-tree copy."
           fi
-          echo "Parsed grade: ${GRADE:-<none>} (first line: '$FIRST_LINE')"
+          if GRADE="$(python3 /tmp/parse_review_grade.py --text-out /tmp/review_comment.txt < /tmp/review_run.jsonl)"; then
+            echo "Parsed grade: $GRADE"
+          else
+            # The review text is still published; only the grade is missing,
+            # so the pull request is not treated as merge-ready.
+            echo "::warning::No valid grade in the review output; treating the review as not merge-ready."
+          fi
           echo "grade=${GRADE:-}" >> "$GITHUB_OUTPUT"
 
       - name: Publish review, label automerge, and approve/merge on grade A or B
@@ -216,21 +298,32 @@ jobs:
 
           # GitHub caps comment bodies; truncate long reviews for the comment
           # on line boundaries.
+          if [ ! -s /tmp/review_comment.txt ]; then
+            {
+              echo "## OpenCode v2 review"
+              echo ""
+              echo "The review run did not produce a parsable report."
+            } > /tmp/review_comment.txt
+          fi
           awk 'BEGIN { limit=60000; n=0 } { l=length($0)+1; if (n+l > limit) exit; n+=l; print }' \
-            /tmp/review_output.txt > /tmp/review_comment.txt
-          gh pr comment "$PR_NUMBER" --body-file /tmp/review_comment.txt
+            /tmp/review_comment.txt > /tmp/review_comment_truncated.txt
+          gh pr comment "$PR_NUMBER" --body-file /tmp/review_comment_truncated.txt
 
-          # Merge gate: GRADE was strictly parsed from line 1 as
-          # ^GRADE: [ABCD]$, so reaching "A"/"B" here is equivalent to a
-          # strict ^GRADE: [AB]$ match on line 1.
+          # Merge gate: GRADE was strictly parsed from the first line of the
+          # model's final message as ^GRADE: [ABCD]$, so reaching "A"/"B"
+          # here is equivalent to a strict ^GRADE: [AB]$ match on line 1.
           if [ "$GRADE" = "A" ] || [ "$GRADE" = "B" ]; then
             echo "Grade $GRADE is merge-ready: labeling automerge, approving and merging."
             gh label create automerge \
               --description "Merge-ready per automated review; eligible for automerge." \
               --color "0E8A16" 2>/dev/null || true
-            gh pr edit "$PR_NUMBER" --add-label "automerge"
+            gh pr edit "$PR_NUMBER" --add-label "automerge" || \
+              echo "::warning::Could not add the automerge label."
+            # Approving and merging are best effort: a repository policy can
+            # forbid a bot approval, and that must not fail the review job.
             gh pr review "$PR_NUMBER" --approve \
-              --body "OpenCode v2 review grade: $GRADE. Approving per review policy."
+              --body "OpenCode v2 review grade: $GRADE. Approving per review policy." || \
+              echo "::warning::Could not submit an approving review (repository policy may forbid it)."
             gh pr merge "$PR_NUMBER" --squash || \
               echo "::warning::gh pr merge failed (checks may still be running or branch protection may require manual merge)."
           else
