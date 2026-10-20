@@ -5,7 +5,7 @@ flutter_bloc Cubits, GetIt DI, go_router. Keep it clean, small, and tested.
 
 References: [architecture](.agents/references/architecture.md) ·
 [cubit](.agents/references/cubit.md) · [testing](.agents/references/testing.md) ·
-[supabase](.agents/references/supabase.md)
+[supabase](.agents/references/supabase.md) · [fonts](.agents/references/fonts.md)
 
 ## Commands (always use fvm, never bare flutter or dart)
 
@@ -56,9 +56,7 @@ After a change, run in order and expect:
 2. `fvm flutter test` → `All tests passed!`
 3. `melos test` (business-logic change only) →
    `python3 tool/check_business_logic_coverage.py` reports 100% per file
-   under each package's domain/ and application/ layers (e.g.
-   `packages/house_mira_reminders/lib/domain`,
-   `packages/house_mira_reminders/lib/application`).
+   under each package's domain/ and application/ layers.
 4. `python3 tool/check_feature_boundaries.py` → `Package boundaries hold`
    (no cross-package data/ imports, core never imports features).
 
@@ -109,6 +107,9 @@ fix lints, do not add ignore comments.
 - Async: await inside async functions; sync callbacks either become async
   with await or use unawaited for fire-and-forget. Catch with on Object
   catch (never a bare catch, never narrow silently).
+- Fonts ship in the bundle (never reintroduce a runtime font fetch) and Android
+  notification icons use bare drawable names.
+  See [fonts](.agents/references/fonts.md).
 
 ## Error handling — never fake data
 

@@ -218,7 +218,14 @@ class ReminderNotificationService implements IReminderNotificationService {
       // Must be a white-on-transparent drawable: an adaptive-icon mipmap
       // is not a valid small icon and notifications using one are dropped
       // by the OS at fire time.
-      android: AndroidInitializationSettings('@drawable/ic_notification'),
+      //
+      // The name must be the bare drawable resource name. The plugin
+      // resolves it with `Resources.getIdentifier(name, "drawable", pkg)`,
+      // which returns 0 for a qualified name such as
+      // `@drawable/ic_notification` — that made every `initialize()` call
+      // fail with `invalid_icon` and left the default small icon
+      // unresolved, so no reminder notification was ever displayed.
+      android: AndroidInitializationSettings('ic_notification'),
       // System permission is already requested at startup by
       // NotificationPermissionService; do not prompt again here.
       iOS: DarwinInitializationSettings(

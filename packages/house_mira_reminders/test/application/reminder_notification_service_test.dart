@@ -43,7 +43,7 @@ void main() {
     registerFallbackValue(AndroidScheduleMode.inexactAllowWhileIdle);
     registerFallbackValue(
       const InitializationSettings(
-        android: AndroidInitializationSettings('@drawable/ic_notification'),
+        android: AndroidInitializationSettings('ic_notification'),
       ),
     );
     registerFallbackValue(
@@ -834,7 +834,13 @@ void main() {
         ),
       ).captured;
       final settings = captured.single as InitializationSettings;
-      expect(settings.android?.defaultIcon, '@drawable/ic_notification');
+      // The bare drawable resource name. The plugin resolves it with
+      // `Resources.getIdentifier(name, "drawable", pkg)`, which returns 0 for
+      // a qualified `@drawable/...` name — `initialize()` then fails with
+      // `invalid_icon` and the default small icon stays unresolved, so no
+      // notification is ever displayed.
+      expect(settings.android?.defaultIcon, 'ic_notification');
+      expect(settings.android?.defaultIcon, isNot(startsWith('@')));
     });
 
     test('skips channel setup when platform lookup throws', () async {

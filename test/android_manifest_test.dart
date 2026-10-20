@@ -53,4 +53,40 @@ void main() {
     expect(manifest, contains('android:host="housemira.com"'));
     expect(manifest, contains('android:pathPrefix="/invite"'));
   });
+
+  group('notification small icon', () {
+    const servicePath =
+        'packages/house_mira_reminders/lib/application/'
+        'reminder_notification_service.dart';
+    const drawableDir = 'android/app/src/main/res/drawable';
+
+    /// The bare drawable name the plugin resolves with
+    /// `Resources.getIdentifier(name, "drawable", packageName)`. A qualified
+    /// name such as `@drawable/ic_notification` resolves to 0 and makes
+    /// `initialize()` fail with `invalid_icon`, which leaves the default
+    /// small icon unresolved and drops every reminder notification.
+    final iconName = RegExp(
+      r"AndroidInitializationSettings\('([^']+)'\)",
+    ).firstMatch(File(servicePath).readAsStringSync())?.group(1);
+
+    test('the service passes a bare drawable resource name', () {
+      expect(iconName, isNotNull);
+      expect(iconName, isNot(contains('@')));
+      expect(iconName, isNot(contains('/')));
+    });
+
+    test('the referenced drawable exists in the Android resources', () {
+      expect(iconName, isNotNull);
+
+      final drawable = File('$drawableDir/$iconName.xml');
+
+      expect(
+        drawable.existsSync(),
+        isTrue,
+        reason:
+            'missing ${drawable.path}; the notification small icon must be a '
+            'white-on-transparent silhouette, not an adaptive-icon mipmap',
+      );
+    });
+  });
 }

@@ -48,6 +48,29 @@ fvm dart run build_runner watch --delete-conflicting-outputs
 - Never fallback to default values when parsing fails — always return `null`
 - Use generated `l10n` translations for displayed text
 
+### Fonts
+
+The app ships its fonts inside the bundle: nothing is downloaded at runtime,
+so release builds never crash on a missing font.
+
+| Family | Use | Weights | Files |
+| --- | --- | --- | --- |
+| Figtree | Theme/body (`AppConstants.fontFamily`) | 400, 500, 600, 700, 800 | `assets/fonts/Figtree-*.ttf` |
+| Outfit | Headings and labels | 500, 600, 700, 800 | `assets/fonts/Outfit-*.ttf` |
+
+Both families come from [Google Fonts](https://fonts.google.com) and are
+licensed under the SIL Open Font License 1.1
+(`assets/fonts/OFL-Figtree.txt`, `assets/fonts/OFL-Outfit.txt`).
+
+To add a weight or a family:
+
+1. Download the file from Google Fonts and keep the `<Family>-<Weight>.ttf`
+   naming.
+2. Declare it in the app `pubspec.yaml` under `flutter: fonts:` with the
+   matching `weight`.
+3. Run `fvm flutter test test/theme/font_bundle_test.dart` — the test fails
+   when a declared family or weight does not match the bundled file.
+
 ## Environments & secrets (dev/staging/prod)
 
 Each flavor points at a **separate Supabase project** so dev/staging traffic
@@ -177,6 +200,45 @@ per-flavor Firebase apps. To provision separate projects:
 2. Make your changes
 3. Run `fvm flutter analyze` and `fvm flutter test` to ensure code quality
 4. Submit a pull request with a clear description
+
+### Automated PR review (Bob)
+
+Every PR gets an automated review: the `call-bob` job of the CI workflow
+calls `.github/workflows/opencode-review-bob.yml`, which runs an OpenCode
+agent over the pull request diff.
+
+- **Pinned, verified CLI.** `tool/install_opencode_cli.sh` downloads the
+  pinned npm tarball for the runner's platform and verifies its SHA-512
+  (Subresource Integrity) and the binary's SHA-256 before running it. The
+  upstream `opencode.ai` installer is deliberately not used: it always
+  serves the newest script, so pinning its checksum breaks CI on every
+  upstream release.
+- **Sandboxed agent.** Project configuration is disabled (a PR cannot
+  inject MCP servers, agents or permissions through `opencode.jsonc`), and
+  the agent may not run shell commands, edit files, fetch URLs, use skills
+  or read outside the checkout. The GitHub token is stripped from the agent
+  process; only the workflow itself talks to GitHub.
+- **Strict grade gate.** The review must carry a single `GRADE: <A|B|C|D>`
+  line in its header (the models answer with a short status line before it)
+  and contain a `## Findings` section. `A`/`B` label the PR `automerge` and
+  approve it, `C`/`D` (or a missing grade) only post the review comment.
+  Grade lines planted in the diff are stripped before the diff reaches the
+  model, and the gate is parsed by `tool/parse_review_grade.py`. That parser
+  is taken from the base branch, so a pull request can never change the
+  rules it is graded by — a gate change only takes effect for the pull
+  requests that follow it.
+- **Fixed model, no credentials.** The review always runs on
+  `opencode/minimax-m3.1-flash-free`, the free model the repository
+  configures in `opencode.jsonc`, so the bot and local development use the
+  same one. That model needs no API key, so the workflow takes no provider
+  credentials at all: there is no `OPENCODE_API_KEY` or `MINIMAX_API_KEY`
+  secret to configure, and no provider credential is exposed to the agent.
+  The model is not overridable — the `model` input was removed.
+- **Cold-start safe.** On a cold runner the first CLI invocation can start
+  before the provider catalog is loaded, and the model then has no route at
+  all (`Model unavailable`). The job warms the catalog up first (it lists the
+  models until the fixed one shows up) and retries the review when the model
+  was not routable, so a cold start cannot silently skip the review.
 
 ## APK Distribution
 

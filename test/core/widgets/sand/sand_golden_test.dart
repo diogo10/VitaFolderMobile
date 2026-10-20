@@ -15,9 +15,9 @@ import 'package:house_mira_core/theme/app_theme.dart';
 /// `test/goldens/sand/`. CI runs without the flag so pixel drift fails.
 void main() {
   // NOTE: sand goldens deliberately avoid AppTheme.lightTheme/darkTheme:
-  // AppTheme.theme() resolves Figtree via Google Fonts at runtime, which
-  // needs the network (or a `flutter pub run google_fonts:generate` bundle).
-  // A plain Material scheme keeps pixels deterministic offline and in CI.
+  // the app theme pins the bundled Figtree family, and widget tests render
+  // every family with the test font. A plain Material scheme keeps pixels
+  // deterministic offline and in CI.
   ThemeData sandTestTheme() =>
       ThemeData(colorScheme: AppTheme.lightScheme(), useMaterial3: true);
 

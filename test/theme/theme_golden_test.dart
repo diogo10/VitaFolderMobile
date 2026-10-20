@@ -13,10 +13,10 @@ import 'package:house_mira_core/theme/theme_extensions.dart';
 /// [ThemeExtensions]/[AppConstants] contracts so refactors that keep pixels
 /// but break the API still fail fast.
 void main() {
-  // NOTE: goldens use font-free schemes on purpose. AppTheme.theme() resolves
-  // Figtree via Google Fonts at runtime (network or a generated font bundle),
-  // which makes pixels non-deterministic offline/CI. ColorScheme factories
-  // below are font-free, so they pin the same tokens without the fetch.
+  // NOTE: goldens use font-free schemes on purpose. The app theme pins the
+  // bundled Figtree family, and widget tests render every family with the
+  // test font, so the ColorScheme factories below pin the same tokens
+  // without any text rendering.
   ThemeData fontFreeTheme(ColorScheme scheme) =>
       ThemeData(colorScheme: scheme, useMaterial3: true);
 
