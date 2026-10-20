@@ -133,28 +133,21 @@ jobs:
 
           # Pick the review model. By default it is the model the repository
           # configures in opencode.jsonc, so the bot and local development
-          # use the same one. The configuration is read from the base branch
-          # first, so a pull request cannot switch the model the review runs
-          # on.
+          # use the same one.
           MODEL="$REQUESTED_MODEL"
           if [ -n "$MODEL" ]; then
             echo "Using the requested model: $MODEL"
           else
-            # The configuration and the reader come from the base branch, so
-            # a pull request cannot switch the model the review runs on.
+            # The reader comes from the base branch when it is available, so
+            # the parsing rules are the reviewed ones. The configuration is
+            # the checked-out one: the review runs on the model the
+            # repository currently configures.
             if git cat-file -e "origin/$BASE:tool/read_opencode_model.py" 2>/dev/null; then
               git show "origin/$BASE:tool/read_opencode_model.py" > /tmp/read_opencode_model.py
             else
               cp tool/read_opencode_model.py /tmp/read_opencode_model.py
             fi
-            MODEL=""
-            if git cat-file -e "origin/$BASE:opencode.jsonc" 2>/dev/null; then
-              git show "origin/$BASE:opencode.jsonc" > /tmp/opencode_base.jsonc
-              MODEL="$(python3 /tmp/read_opencode_model.py /tmp/opencode_base.jsonc || true)"
-            fi
-            if [ -z "$MODEL" ]; then
-              MODEL="$(python3 /tmp/read_opencode_model.py opencode.jsonc || true)"
-            fi
+            MODEL="$(python3 /tmp/read_opencode_model.py opencode.jsonc || true)"
             if [ -z "$MODEL" ]; then
               echo "::warning::Could not read a model from opencode.jsonc."
             else
