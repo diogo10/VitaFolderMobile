@@ -110,6 +110,31 @@ fix lints, do not add ignore comments.
   with await or use unawaited for fire-and-forget. Catch with on Object
   catch (never a bare catch, never narrow silently).
 
+## Fonts
+
+- Fonts ship inside the bundle; nothing is downloaded at runtime. Families
+  are declared in the app `pubspec.yaml` under `flutter: fonts:` (Figtree and
+  Outfit — see README "Fonts"). A family used in a `TextStyle` but not
+  declared renders with the platform fallback font, and a theme that resolves
+  fonts over the network crashes release builds on startup.
+- Never reintroduce a runtime font fetch (`google_fonts` and its
+  `allowRuntimeFetching` flag were removed for that reason). Add a weight or
+  a family to `pubspec.yaml` and to `assets/fonts/`, keeping the
+  `<Family>-<Weight>.ttf` naming.
+- Guard: `test/theme/font_bundle_test.dart` verifies every declared family
+  and weight against the bundled font files.
+
+## Android notifications
+
+- Notification icons are passed to `flutter_local_notifications` as the bare
+  drawable name (`ic_notification`, not `@drawable/ic_notification`): the
+  plugin resolves it with `Resources.getIdentifier(name, "drawable", pkg)`,
+  which returns 0 for a qualified name, so `initialize()` fails with
+  `invalid_icon` and no notification is ever displayed.
+- Guard: `test/android_manifest_test.dart` ties the icon name in
+  `reminder_notification_service.dart` to the drawable in
+  `android/app/src/main/res/drawable/`.
+
 ## Error handling — never fake data
 
 - Never fall back to defaults on parse/validation failure: return null.
