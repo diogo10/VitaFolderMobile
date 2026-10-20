@@ -223,10 +223,12 @@ agent over the pull request diff.
   approve it, `C`/`D` (or a missing grade) only post the review comment.
   Grade lines planted in the diff are stripped before the diff reaches the
   model, and the gate is parsed by `tool/parse_review_grade.py`.
-- **Model.** The default is the free `opencode/minimax-m3.1-flash-free`
-  (no key needed). Add the `OPENCODE_API_KEY` secret for an OpenCode Zen
-  key, or `MINIMAX_API_KEY` together with a `minimax/*` model. A manual run
-  can override the model through the `model` input.
+- **Model and credentials.** Every model provider needs a credential, so the
+  review job needs one repository secret: `OPENCODE_API_KEY` (an OpenCode/Zen
+  key, used with the free `opencode/minimax-m3.1-flash-free` model) or
+  `MINIMAX_API_KEY` (used with `minimax/MiniMax-M3.1-Flash`). Without one the
+  job stops with an explicit message instead of a cryptic provider error. A
+  manual run can override the model through the `model` input.
 
 ## APK Distribution
 

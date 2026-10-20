@@ -101,7 +101,7 @@ jobs:
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           INPUT_PR: ${{ inputs.pr }}
           EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
-          OPENCODE_MODEL: ${{ inputs.model || 'opencode/minimax-m3.1-flash-free' }}
+          REQUESTED_MODEL: ${{ inputs.model }}
         run: |
           set -euo pipefail
 
@@ -121,8 +121,39 @@ jobs:
             echo "::error::Could not resolve a numeric PR number (got: '$PR_NUMBER')."
             exit 1
           fi
-          echo "Reviewing PR #$PR_NUMBER with model $OPENCODE_MODEL"
+          echo "Reviewing PR #$PR_NUMBER"
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+          # Pick the review model. Every provider needs a credential: without
+          # one, OpenCode has no routable model at all and the run fails with
+          # a cryptic "Model unavailable". Resolve it here so the failure is
+          # an actionable message instead.
+          MODEL="$REQUESTED_MODEL"
+          if [ -z "$MODEL" ]; then
+            if [ -n "$OPENCODE_API_KEY" ]; then
+              MODEL="opencode/minimax-m3.1-flash-free"
+            elif [ -n "$MINIMAX_API_KEY" ]; then
+              MODEL="minimax/MiniMax-M3.1-Flash"
+            else
+              {
+                echo "## OpenCode v2 review cannot run"
+                echo ""
+                echo "No model credential is configured for the review agent."
+                echo ""
+                echo "Add one of these repository secrets in"
+                echo "Settings -> Secrets and variables -> Actions:"
+                echo ""
+                echo "- \`OPENCODE_API_KEY\` - an OpenCode (Zen) API key, used with"
+                echo "  the free \`opencode/minimax-m3.1-flash-free\` model."
+                echo "- \`MINIMAX_API_KEY\` - a MiniMax API key, used with the"
+                echo "  \`minimax/MiniMax-M3.1-Flash\` model."
+              } > /tmp/review_no_credential.txt
+              gh pr comment "$PR_NUMBER" --body-file /tmp/review_no_credential.txt || true
+              echo "::error::No model credential configured. Add the OPENCODE_API_KEY or MINIMAX_API_KEY repository secret."
+              exit 1
+            fi
+          fi
+          echo "Using model: $MODEL"
 
           # Manual runs may target a PR on another branch: check out its head
           # so the diff and the working tree describe the same PR.
@@ -230,7 +261,7 @@ jobs:
             env -u GITHUB_TOKEN -u GH_TOKEN \
             "$HOME/.opencode/bin/opencode" run \
             --standalone \
-            --model "$OPENCODE_MODEL" \
+            --model "$MODEL" \
             --format json \
             -f /tmp/review_prompt.txt \
             -f /tmp/pr_diff_stat_clean.txt \
@@ -245,6 +276,8 @@ jobs:
               echo ""
               echo "The review run exited with status $RUN_STATUS for PR #$PR_NUMBER."
               echo ""
+              echo "Model: \`$MODEL\`"
+              echo ""
               echo "<details><summary>Runner log</summary>"
               echo ""
               echo '```'
@@ -255,6 +288,10 @@ jobs:
               fi
               echo '```'
               echo "</details>"
+              echo ""
+              echo "If the log mentions an unavailable model, the credential is"
+              echo "missing, invalid, or the model was renamed in the provider"
+              echo "catalog."
             } > /tmp/review_failure.txt
             gh pr comment "$PR_NUMBER" --body-file /tmp/review_failure.txt || true
             echo "::error::OpenCode review run failed (status $RUN_STATUS)."
