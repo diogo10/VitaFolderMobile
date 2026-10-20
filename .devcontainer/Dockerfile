@@ -1,7 +1,8 @@
 FROM dart
 
 RUN apt-get update
-RUN apt-get install -y curl git unzip xz-utils zip libglu1-mesa python3 python3-pip gh jq
+# nodejs/npm are required by the Firebase MCP server (firebase-tools needs Node >= 20).
+RUN apt-get install -y curl git unzip xz-utils zip libglu1-mesa python3 python3-pip gh jq nodejs npm
 
 RUN apt-get clean
 

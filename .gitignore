@@ -111,6 +111,13 @@ coverage/
 env/*.json
 !env/*.example.json
 
+# Google Cloud service-account keys (private keys - never commit).
+# The Firebase Crashlytics reader key lives here; the real copy used by the
+# MCP server is at ~/.config/gcloud/firebase-crashlytics-sa.json.
+firebase-crashlytics-sa.json
+*-sa.json
+*.private_key.json
+
 # Symbols
 app.*.symbols
 

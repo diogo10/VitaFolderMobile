@@ -1,9 +1,60 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "formatter": true,
-  "model": "opencode/muse-spark-1.3-contributor-free",
+  "model": "minimax/MiniMax-M3.1-Flash",
   "instructions": [
     "AGENTS.md"
+  ],
+  // Firebase MCP server (firebase-tools). It gives the agent access to
+  // Crashlytics issues, events and reports for the Firebase project in
+  // `firebase.json` (projectId: diogoprojects-617e2) so crashes can be
+  // triaged from the shell.
+  //
+  // `--tools` is an explicit allow-list enforced by the MCP server itself
+  // (no deploy / no issue mutation). Add `crashlytics_update_issue` here if
+  // you want the agent to close fixed crashes.
+  //
+  // Requires Node.js >= 20 and Firebase CLI credentials
+  // (`firebase login` or GOOGLE_APPLICATION_CREDENTIALS). See README
+  // "Crashlytics MCP server".
+  "mcp": {
+    "servers": {
+      "firebase": {
+        "type": "local",
+        "command": [
+          "npx",
+          "-y",
+          "firebase-tools@latest",
+          "mcp",
+          "--tools",
+          "crashlytics_get_report,crashlytics_list_events,crashlytics_batch_get_events,crashlytics_get_issue,crashlytics_list_notes,crashlytics_create_note,firebase_read_resources,firebase_get_environment,firebase_get_project,firebase_list_apps"
+        ],
+        "cwd": ".",
+        "environment": {
+          "GOOGLE_APPLICATION_CREDENTIALS": "{env:GOOGLE_APPLICATION_CREDENTIALS}"
+        },
+        "timeout": {
+          "startup": 180000
+        }
+      }
+    }
+  },
+  "permissions": [
+    // Never let the agent run interactive auth flows from a tool call.
+    { "action": "firebase_login", "resource": "*", "effect": "deny" },
+    { "action": "firebase_logout", "resource": "*", "effect": "deny" },
+    // Never let the agent mutate Firebase infrastructure or deploy.
+    { "action": "firebase_deploy", "resource": "*", "effect": "deny" },
+    { "action": "firebase_deploy_status", "resource": "*", "effect": "deny" },
+    { "action": "firebase_init", "resource": "*", "effect": "deny" },
+    { "action": "firebase_create_project", "resource": "*", "effect": "deny" },
+    { "action": "firebase_create_app", "resource": "*", "effect": "deny" },
+    { "action": "firebase_create_android_sha", "resource": "*", "effect": "deny" },
+    { "action": "firebase_update_environment", "resource": "*", "effect": "deny" },
+    // Crashlytics issue state and notes are human-tracked: keep them read-only
+    // unless the user explicitly asks for the change.
+    { "action": "crashlytics_update_issue", "resource": "*", "effect": "deny" },
+    { "action": "crashlytics_delete_note", "resource": "*", "effect": "deny" }
   ],
   "commands": {
     "test": {
@@ -25,7 +76,7 @@
   "agents": {
     "plan": {
       "mode": "primary",
-      "model": "opencode/muse-spark-1.3-contributor-free",
+      "model": "minimax/MiniMax-M3.1-Flash",
       "permissions": [
         { "action": "edit", "resource": "*", "effect": "deny" },
         { "action": "shell", "resource": "*", "effect": "deny" }
@@ -33,7 +84,7 @@
     },
     "code-reviewer": {
       "description": "Reviews code for best practices and potential issues",
-      "model": "opencode/muse-spark-1.3-contributor-free",
+      "model": "minimax/MiniMax-M3.1-Flash",
       "mode": "subagent",
       "system": "You are a code reviewer. Focus on security, performance, and maintainability.",
       // Deny file modification tools for review-only agent

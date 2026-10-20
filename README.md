@@ -205,6 +205,159 @@ Set these in GitHub repo → Settings → Secrets → Actions:
 2. Add tester emails
 3. Project settings → Service accounts → Generate new private key → store as `FIREBASE_SERVICE_ACCOUNT`
 
+## Crashlytics MCP server
+
+Agents can read Crashlytics data (issues, sample stack traces, aggregated
+reports) for the Firebase project in `firebase.json`
+(`diogoprojects-617e2`) through the official **Firebase MCP server**
+(`firebase-tools`). It is wired up in `opencode.jsonc` under
+`mcp.servers.firebase` with an explicit tool allow-list, so the server runs
+with the repo root as its project directory, picks up `firebase.json`
+automatically, and exposes nothing beyond Crashlytics reads.
+
+| MCP tool | What it does |
+| --- | --- |
+| `crashlytics_get_report` | Aggregated reports: `topIssues`, `topVariants`, `topVersions`, `topOperatingSystems`, `topAndroidDevices`, ... |
+| `crashlytics_list_events` | Most recent crash/exception events matching a filter |
+| `crashlytics_batch_get_events` | Full sample events (stack traces) by resource name |
+| `crashlytics_get_issue` | Issue details and metadata |
+| `crashlytics_list_notes` / `crashlytics_create_note` | Notes attached to an issue |
+| `crashlytics_update_issue` | Open / close / mute an issue (not enabled by default, see Guardrails) |
+
+### Prerequisites
+
+- Node.js >= 20 — `firebase-tools` runs on Node. The devcontainer image
+  installs `nodejs`/`npm` (`.devcontainer/Dockerfile`); on a host machine
+  install Node 20+ yourself.
+- Firebase CLI credentials (below). Without them every Crashlytics tool
+  fails with *"The user is not currently logged into the Firebase CLI"*.
+- The **Firebase Crashlytics API** must be enabled on the GCP project
+  (`firebasecrashlytics.googleapis.com`). It is `DISABLED` by default on
+  this project, and every read then fails with
+  *"Firebase Crashlytics API has not been used in project 140355243144
+  before or it is disabled"*. Enable it once at
+  <https://console.developers.google.com/apis/api/firebasecrashlytics.googleapis.com/overview?project=140355243144>
+  (GCP console → project `diogoprojects-617e2` → APIs & Services → Library
+  → *Firebase Crashlytics API* → Enable). Enabling it in the Firebase
+  console alone is not enough — the GCP API must be on.
+
+### Authentication
+
+The MCP server uses the same credentials as the Firebase CLI. Two options:
+
+**A. Application Default Credentials (service account)** — recommended for
+containers and CI:
+
+1. GCP console → project `diogoprojects-617e2` (project number
+   `140355243144`) → IAM & Admin → Service Accounts → **Create service
+   account**. Name it e.g. `house-mira-crashlytics-reader`.
+2. Grant it **Firebase Crashlytics Viewer** (`roles/firebase.crashlytics.viewer`)
+   on that project. Nothing else — it is a read-only role.
+3. Create a JSON key and store it **outside the repo**:
+
+   ```bash
+   mkdir -p ~/.config/gcloud
+   cp <downloaded-key>.json ~/.config/gcloud/firebase-crashlytics-sa.json
+   chmod 600 ~/.config/gcloud/firebase-crashlytics-sa.json
+   ```
+
+4. Point the tooling at it. The OpenCode background service needs the
+   variable in its environment — set it on the service (this survives
+   restarts, so it is the recommended route):
+
+   ```bash
+   opencode service set env GOOGLE_APPLICATION_CREDENTIALS \
+     "$HOME/.config/gcloud/firebase-crashlytics-sa.json"
+   ```
+
+   Or export it in the shell that starts OpenCode:
+
+   ```bash
+   export GOOGLE_APPLICATION_CREDENTIALS="$HOME/.config/gcloud/firebase-crashlytics-sa.json"
+   opencode service restart   # the background service must re-read the env
+   ```
+
+   The devcontainer `~/.bashrc` already exports it conditionally when the
+   key file exists. `opencode.jsonc` forwards
+   `GOOGLE_APPLICATION_CREDENTIALS` to the MCP server process, so no key
+   material ever lands in the repository.
+
+**B. Firebase CLI login** — for a workstation:
+
+```bash
+firebase login --no-localhost   # headless: prints a URL + session id
+firebase login <authorizationCode>
+```
+
+The signed-in account needs the **Firebase Crashlytics Viewer**
+(`roles/firebase.crashlytics.viewer`) role on the project. Without
+credentials every Crashlytics tool fails with *"The user is not currently
+logged into the Firebase CLI"*.
+
+### App IDs
+
+Every Crashlytics tool takes the Firebase **app id**, not the project id.
+
+| Platform | App ID |
+| --- | --- |
+| Android | `1:140355243144:android:a6ac1f14183172f272633d` |
+| iOS | `1:140355243144:ios:08ceded889bb563c72633d` |
+
+### Verify
+
+```bash
+opencode mcp list   # firebase: connected
+```
+
+Then ask the agent, for example: *"list the top Crashlytics issues for the
+Android app"* or *"fetch the stack trace of the newest fatal crash"*.
+
+### Guardrails
+
+The server is started with an explicit `--tools` allow-list, so the agent can
+only ever see these ten tools:
+
+```
+crashlytics_get_report, crashlytics_list_events, crashlytics_batch_get_events,
+crashlytics_get_issue, crashlytics_list_notes, crashlytics_create_note,
+firebase_read_resources, firebase_get_environment, firebase_get_project,
+firebase_list_apps
+```
+
+Everything that touches Firebase infrastructure (`firebase_deploy`,
+`firebase_init`, `firebase_create_*`, `firebase_update_environment`) and the
+Crashlytics mutations `crashlytics_update_issue` /
+`crashlytics_delete_note` are not exposed at all. A second layer in
+`opencode.jsonc` (`permissions`) denies the same tools plus the interactive
+auth tools (`firebase_login`, `firebase_logout`).
+
+To let the agent close fixed crashes, add `crashlytics_update_issue` to the
+`--tools` list and drop the matching `permissions` entry.
+
+### REST API fallback
+
+The MCP server is a thin wrapper over the Crashlytics REST API
+(`https://firebasecrashlytics.googleapis.com/v1alpha`), which can be called
+directly from CI or a script:
+
+```bash
+TOKEN=$(gcloud auth print-access-token)   # or a service-account access token
+APP_ID="1:140355243144:android:a6ac1f14183172f272633d"
+curl -sS -H "Authorization: Bearer $TOKEN" \
+  "https://firebasecrashlytics.googleapis.com/v1alpha/projects/140355243144/apps/$APP_ID/reports/topIssues?page_size=10"
+```
+
+Paths (the project segment is the project **number**, not the project id):
+
+| Path | Methods |
+| --- | --- |
+| `/projects/{projectNumber}/apps/{appId}/reports/{reportName}` | GET |
+| `/projects/{projectNumber}/apps/{appId}/events` | GET |
+| `/projects/{projectNumber}/apps/{appId}/events:batchGet?names=...` | GET |
+| `/projects/{projectNumber}/apps/{appId}/issues/{issueId}` | GET, PATCH (`?updateMask=state`) |
+| `/projects/{projectNumber}/apps/{appId}/issues/{issueId}/notes` | GET, POST |
+| `/projects/{projectNumber}/apps/{appId}/issues/{issueId}/notes/{noteId}` | DELETE |
+
 ## Supabase Edge Functions
 
 Deployed on the linked project (`VitaFolderMobileBackend`).
