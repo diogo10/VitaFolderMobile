@@ -231,7 +231,8 @@ class AppConstants {
   /// Label Small (11px) - Small annotations
   static const double fontSizeLabelSmall = 11;
 
-  /// Primary font family - Figtree via Google Fonts
+  /// Primary font family - Figtree, bundled with the app (see the app
+  /// `pubspec.yaml` `flutter: fonts:` section)
   static const String fontFamily = 'Figtree';
 
   // ═══════════════════════════════════════════════════════════════════════════

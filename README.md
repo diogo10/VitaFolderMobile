@@ -48,6 +48,29 @@ fvm dart run build_runner watch --delete-conflicting-outputs
 - Never fallback to default values when parsing fails — always return `null`
 - Use generated `l10n` translations for displayed text
 
+### Fonts
+
+The app ships its fonts inside the bundle: nothing is downloaded at runtime,
+so release builds never crash on a missing font.
+
+| Family | Use | Weights | Files |
+| --- | --- | --- | --- |
+| Figtree | Theme/body (`AppConstants.fontFamily`) | 400, 500, 600, 700, 800 | `assets/fonts/Figtree-*.ttf` |
+| Outfit | Headings and labels | 500, 600, 700, 800 | `assets/fonts/Outfit-*.ttf` |
+
+Both families come from [Google Fonts](https://fonts.google.com) and are
+licensed under the SIL Open Font License 1.1
+(`assets/fonts/OFL-Figtree.txt`, `assets/fonts/OFL-Outfit.txt`).
+
+To add a weight or a family:
+
+1. Download the file from Google Fonts and keep the `<Family>-<Weight>.ttf`
+   naming.
+2. Declare it in the app `pubspec.yaml` under `flutter: fonts:` with the
+   matching `weight`.
+3. Run `fvm flutter test test/theme/font_bundle_test.dart` — the test fails
+   when a declared family or weight does not match the bundled file.
+
 ## Environments & secrets (dev/staging/prod)
 
 Each flavor points at a **separate Supabase project** so dev/staging traffic

@@ -78,9 +78,6 @@ dependencies:
   # Routing
   go_router: ^14.0.0
 
-  # Fonts
-  google_fonts: ^6.2.1
-
   # Google Sign-In (native ID token for Supabase exchange)
   google_sign_in: ^7.2.0
 
@@ -137,33 +134,37 @@ flutter:
   assets:
     - assets/images/onboarding/
 
-
-
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
 
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-# For details regarding fonts from package dependencies,
-# see https://flutter.dev/to/font-from-package
-
-scripts:
-  bundle-fonts: flutter pub run google_fonts:generate
+  # Fonts ship with the bundle (no runtime download, so release builds never
+  # fail on a missing font). The files are the Google Fonts API downloads of
+  # Figtree and Outfit (SIL Open Font License 1.1 - see assets/fonts/OFL-*.txt).
+  # Keep the file names in sync with the Google Fonts naming
+  # (<Family>-<Weight>.ttf) and the weight values with the files themselves.
+  fonts:
+    - family: Figtree
+      fonts:
+        - asset: assets/fonts/Figtree-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Figtree-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Figtree-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Figtree-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Figtree-ExtraBold.ttf
+          weight: 800
+    - family: Outfit
+      fonts:
+        - asset: assets/fonts/Outfit-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Outfit-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Outfit-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Outfit-ExtraBold.ttf
+          weight: 800
