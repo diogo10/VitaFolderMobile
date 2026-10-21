@@ -10,5 +10,13 @@
 	<array>
 		<string>applinks:housemira.com</string>
 	</array>
+	<!-- Sign in with Apple (native Apple ID authentication).
+	     The capability must also be enabled on the App ID
+	     (com.housemira.app) in the Apple Developer portal, otherwise the
+	     native sheet fails without any visible error. -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 </dict>
 </plist>

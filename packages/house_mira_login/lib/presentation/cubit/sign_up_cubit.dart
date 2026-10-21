@@ -92,4 +92,47 @@ class SignUpCubit extends Cubit<SignUpState> {
       );
     }
   }
+
+  /// Signs in with Apple via the native identity token exchange.
+  ///
+  /// Emits [SignUpLoading] first, then [SignUpSuccess] on success,
+  /// [SignUpInitial] when the user cancels the Apple flow (back to the
+  /// form, nothing happened), or [SignUpError] with
+  /// [SignUpErrorCode.appleSignInFailed] when the failure is an Apple
+  /// sign-in error (message carries the specific cause for logging, see
+  /// [SignUpError.message]). Unexpected errors emit [SignUpError] with
+  /// [SignUpErrorCode.unexpected] so the view shows actionable feedback.
+  Future<void> signInWithApple() async {
+    emit(SignUpLoading());
+
+    try {
+      final user = await _authService.signInWithApple();
+
+      if (user == null) {
+        _logger.info('Apple sign-in canceled by the user', tag: 'auth');
+        emit(SignUpInitial());
+        return;
+      }
+
+      _logger.info('Apple sign-in succeeded', tag: 'auth');
+      emit(SignUpSuccess());
+    } on Object catch (e, stackTrace) {
+      final code = _authService.isAuthError(e)
+          ? SignUpErrorCode.appleSignInFailed
+          : SignUpErrorCode.unexpected;
+      _logger.error(
+        'Apple sign-in failed',
+        tag: 'auth',
+        context: {'code': code.name},
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(
+        SignUpError(
+          code: code,
+          message: _authService.authErrorMessage(e) ?? e.toString(),
+        ),
+      );
+    }
+  }
 }

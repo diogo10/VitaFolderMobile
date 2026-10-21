@@ -43,8 +43,8 @@ Rules:
 - Emit `Loading` first, then **exactly one** outcome state.
 - Translate service exceptions to states; never leak `AuthException` /
   Supabase errors to widgets.
-- Cancelled flows (e.g. Google sign-in returns `null`) emit the neutral
-  state (`NoAccount`), not a failure.
+- Cancelled flows (e.g. Google or Apple sign-in returns `null`) emit the
+  neutral state (`NoAccount`), not a failure.
 - Delegate side effects to injected services (`AuthService`,
   repositories, use cases). Real example:
   `lib/features/account/presentation/cubit/account_cubit.dart`.

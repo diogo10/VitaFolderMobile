@@ -420,6 +420,47 @@ Paths (the project segment is the project **number**, not the project id):
 | `/projects/{projectNumber}/apps/{appId}/issues/{issueId}/notes` | GET, POST |
 | `/projects/{projectNumber}/apps/{appId}/issues/{issueId}/notes/{noteId}` | DELETE |
 
+## Sign in with Apple
+
+Native Apple ID authentication (`sign_in_with_apple`) next to the Google
+Sign-In button, on the sign-in screen (`/account`) and the sign-up screen
+(`/sign-up`).
+
+Client code:
+
+| Piece | Where |
+| --- | --- |
+| Handler (plugin bridge, nonce, error mapping) | `packages/house_mira_core/lib/auth/apple_sign_in_handler.dart` |
+| Token exchange + session creation | `AuthService.signInWithApple` (`packages/house_mira_core/lib/auth/auth_service.dart`) |
+| DI wiring | `lib/core/injections/service_locator.dart` |
+| UI | `packages/house_mira_account/.../account_no_account_auth_widget.dart`, `packages/house_mira_login/.../sign_up_screen.dart` |
+
+How the flow works:
+
+1. The handler generates a raw nonce per attempt and sends its SHA-256
+   hash to Apple (embedded in the `nonce` claim of the identity token).
+2. The identity token is exchanged with Supabase via
+   `auth.signInWithIdToken(provider: OAuthProvider.apple, idToken: …,
+   nonce: <raw nonce>)`. Supabase hashes the raw nonce again and compares
+   it with the claim, which rejects replayed tokens.
+3. Apple's identity token never carries the user's name: Apple only
+   returns it on the **first** authorization. The handler exposes it and
+   the service stores it in the user metadata and the `profiles` row
+   (best-effort, never fails the sign-in).
+
+The **Continue with Apple** button is only rendered on Apple platforms
+(`isAppleSignInSupported`): the plugin's web flow on Android needs an
+Apple Services ID plus a redirect endpoint, so the button is hidden
+instead of leading to a dead end.
+
+One-time setup (not part of the repo):
+
+| Where | What |
+| --- | --- |
+| Apple Developer portal | Enable the **Sign in with Apple** capability on the App ID `com.housemira.app` (and regenerate the provisioning profile). |
+| Xcode | The capability is declared in `ios/Runner/Runner.entitlements` (`com.apple.developer.applesignin`) and in the Runner target capabilities. |
+| Supabase dashboard → Authentication → Providers → Apple | Enable the provider and add `com.housemira.app` to **Client IDs** (the audience of the native identity token). A native-only setup needs no Services ID and no client secret. |
+
 ## Supabase Edge Functions
 
 Deployed on the linked project (`VitaFolderMobileBackend`).

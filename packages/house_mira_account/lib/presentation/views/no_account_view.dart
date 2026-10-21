@@ -57,6 +57,9 @@ class _NoAccountViewState extends State<NoAccountView> {
                       onGoogleSignIn: () async {
                         await context.read<AccountCubit>().signInWithGoogle();
                       },
+                      onAppleSignIn: () async {
+                        await context.read<AccountCubit>().signInWithApple();
+                      },
                       onForgotPassword: () async {
                         await context.read<AccountCubit>().forgotPassword(
                           _emailController.text,

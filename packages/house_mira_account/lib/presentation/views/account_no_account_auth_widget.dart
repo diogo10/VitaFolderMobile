@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/router/app_routes.dart';
 import 'package:house_mira_core/widgets/sand/google_g_icon.dart';
 import 'package:house_mira_core/widgets/sand/sand_primary_button.dart';
@@ -14,6 +15,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
     required this.passwordController,
     required this.onSignIn,
     required this.onGoogleSignIn,
+    required this.onAppleSignIn,
     required this.onForgotPassword,
     super.key,
     this.isLoading = false,
@@ -22,6 +24,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
   final TextEditingController passwordController;
   final VoidCallback onSignIn;
   final VoidCallback onGoogleSignIn;
+  final VoidCallback onAppleSignIn;
   final VoidCallback onForgotPassword;
   final bool isLoading;
 
@@ -36,11 +39,16 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
           label: l.accountNoAccountContinueGoogle,
           onTap: onGoogleSignIn,
         ),
-        const SizedBox(height: 12),
-        SandSocialButton(
-          icon: const Icon(Icons.apple, size: 18, color: SandPalette.sand700),
-          label: l.accountNoAccountContinueApple,
-        ),
+        // Native Sign in with Apple only exists on Apple platforms: the
+        // button is hidden elsewhere instead of leading to a dead end.
+        if (isAppleSignInSupported) ...[
+          const SizedBox(height: 12),
+          SandSocialButton(
+            icon: const Icon(Icons.apple, size: 18, color: SandPalette.sand700),
+            label: l.accountNoAccountContinueApple,
+            onTap: onAppleSignIn,
+          ),
+        ],
         const SizedBox(height: 20),
         Row(
           children: [

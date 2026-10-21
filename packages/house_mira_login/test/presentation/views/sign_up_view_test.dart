@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:house_mira_core/widgets/sand/google_g_icon.dart';
@@ -15,11 +17,14 @@ class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
 
+class _MockAppleSignInHandler extends Mock implements IAppleSignInHandler {}
+
 class _FakeAuthService extends AuthService {
   _FakeAuthService()
     : super(
         supabaseClient: _MockSupabaseClient(),
         googleSignInHandler: _MockGoogleSignInHandler(),
+        appleSignInHandler: _MockAppleSignInHandler(),
       );
 
   String? lastSignUpEmail;
@@ -29,6 +34,9 @@ class _FakeAuthService extends AuthService {
   int googleSignInCalls = 0;
   User? googleStubUser;
   Exception? googleError;
+  int appleSignInCalls = 0;
+  User? appleStubUser;
+  Exception? appleError;
 
   @override
   Future<User?> signUp({
@@ -51,6 +59,13 @@ class _FakeAuthService extends AuthService {
     if (googleError != null) throw googleError!;
     return googleStubUser;
   }
+
+  @override
+  Future<User?> signInWithApple() async {
+    appleSignInCalls++;
+    if (appleError != null) throw appleError!;
+    return appleStubUser;
+  }
 }
 
 void main() {
@@ -59,6 +74,20 @@ void main() {
   setUp(() {
     authService = _FakeAuthService();
   });
+
+  /// Runs [body] with the iOS platform, where the native Sign in with
+  /// Apple button is available.
+  ///
+  /// The override is reset inside the test body: the test framework fails
+  /// a test that leaves a foundation debug variable changed.
+  Future<void> onIosPlatform(Future<void> Function() body) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    try {
+      await body();
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  }
 
   Future<void> pumpSignUp(WidgetTester tester) async {
     final router = GoRouter(
@@ -270,6 +299,86 @@ void main() {
       expect(authService.googleSignInCalls, 1);
       expect(find.text(l.signUpGoogleSignInFailed), findsOneWidget);
       expect(find.text('home-shell'), findsNothing);
+    });
+
+    testWidgets('renders the Apple button on Apple platforms', (
+      tester,
+    ) async {
+      await onIosPlatform(() async {
+        await pumpSignUp(tester);
+
+        expect(find.text('Sign up with Apple'), findsOneWidget);
+        expect(find.byIcon(Icons.apple), findsOneWidget);
+      });
+    });
+
+    testWidgets('hides the Apple button where it is not available', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      try {
+        await pumpSignUp(tester);
+
+        expect(find.text('Sign up with Apple'), findsNothing);
+        expect(find.byIcon(Icons.apple), findsNothing);
+        expect(find.text('Sign up with Google'), findsOneWidget);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
+    });
+
+    testWidgets('delegates to Apple sign-in from the Apple button', (
+      tester,
+    ) async {
+      await onIosPlatform(() async {
+        await pumpSignUp(tester);
+
+        await tester.ensureVisible(find.text('Sign up with Apple'));
+        await tester.pump();
+        await tester.tap(find.text('Sign up with Apple'));
+        await tester.pump();
+
+        expect(authService.appleSignInCalls, 1);
+      });
+    });
+
+    testWidgets('navigates home after successful Apple sign-in', (
+      tester,
+    ) async {
+      authService.appleStubUser = User.fromJson({
+        'id': 'u1',
+        'email': 'user@example.com',
+      });
+      await onIosPlatform(() async {
+        await pumpSignUp(tester);
+
+        await tester.ensureVisible(find.text('Sign up with Apple'));
+        await tester.pump();
+        await tester.tap(find.text('Sign up with Apple'));
+        await tester.pumpAndSettle();
+
+        expect(authService.appleSignInCalls, 1);
+        expect(find.text('home-shell'), findsOneWidget);
+      });
+    });
+
+    testWidgets('shows actionable feedback when Apple sign-in fails', (
+      tester,
+    ) async {
+      authService.appleError = const AuthException('Apple sign-in failed.');
+      await onIosPlatform(() async {
+        await pumpSignUp(tester);
+        final l = AppLocalizations.of(tester.element(find.byType(SignUpView)))!;
+
+        await tester.ensureVisible(find.text(l.signUpContinueApple));
+        await tester.pump();
+        await tester.tap(find.text(l.signUpContinueApple));
+        await tester.pumpAndSettle();
+
+        expect(authService.appleSignInCalls, 1);
+        expect(find.text(l.signUpAppleSignInFailed), findsOneWidget);
+        expect(find.text('home-shell'), findsNothing);
+      });
     });
   });
 }

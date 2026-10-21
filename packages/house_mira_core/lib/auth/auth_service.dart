@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/auth/auth_state_notifier.dart'
     show AuthStateNotifier;
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
@@ -25,16 +26,19 @@ class AuthService {
   AuthService({
     required SupabaseClient supabaseClient,
     required IGoogleSignInHandler googleSignInHandler,
+    required IAppleSignInHandler appleSignInHandler,
     CrashReporter? crashReporter,
     AppLogger? logger,
     PerformanceTracer? tracer,
   }) : _client = supabaseClient,
        _googleHandler = googleSignInHandler,
+       _appleHandler = appleSignInHandler,
        _logger = logger ?? AppLogger(crashReporter: crashReporter),
        _tracer = tracer ?? NoOpPerformanceTracer();
 
   final SupabaseClient _client;
   final IGoogleSignInHandler _googleHandler;
+  final IAppleSignInHandler _appleHandler;
   final AppLogger _logger;
   final PerformanceTracer _tracer;
 
@@ -240,8 +244,126 @@ class AuthService {
     return _client.auth.resetPasswordForEmail(email);
   }
 
+  /// Signs in with Apple using the native identity token exchange.
+  ///
+  /// Retrieves the Apple identity token via [IAppleSignInHandler] and
+  /// exchanges it for a Supabase session with `auth.signInWithIdToken`.
+  /// The raw nonce generated for the request is sent along, so Supabase
+  /// can verify the `nonce` claim of the identity token and reject
+  /// replayed tokens.
+  ///
+  /// Returns the signed-in [User], or `null` when the user cancels the
+  /// Apple flow. Throws [AuthException] with an actionable message when
+  /// the identity token is missing or the exchange fails. Every failure is
+  /// logged (without PII) so Firebase Test Lab / Crashlytics captures the
+  /// specific cause while the UI shows a localized, actionable message.
+  Future<User?> signInWithApple() async {
+    final AppleAuthCredentials? credentials;
+    try {
+      credentials = await _appleHandler.signIn();
+    } on AppleSignInException catch (e, stackTrace) {
+      _logger.error(
+        'Apple sign-in failed',
+        tag: 'auth',
+        context: {'code': e.code.name},
+        error: e,
+        stackTrace: stackTrace,
+      );
+      throw const AuthException('Apple sign-in failed. Please try again.');
+    } on Object catch (e, stackTrace) {
+      _logger.error(
+        'Apple sign-in failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      throw const AuthException('Apple sign-in failed. Please try again.');
+    }
+
+    if (credentials == null) {
+      _logger.info('Apple sign-in canceled by the user', tag: 'auth');
+      return null;
+    }
+
+    _logger.debug('exchanging Apple identity token with Supabase', tag: 'auth');
+    final AuthResponse response;
+    try {
+      response = await _client.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: credentials.identityToken,
+        nonce: credentials.nonce,
+      );
+    } on AuthException catch (e, stackTrace) {
+      _logger.error(
+        'Supabase ID token exchange failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    } on Object catch (e, stackTrace) {
+      _logger.error(
+        'Supabase ID token exchange failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      throw const AuthException('Apple sign-in failed. Please try again.');
+    }
+
+    if (response.user == null) {
+      _logger.error('Supabase exchange returned no user', tag: 'auth');
+      throw const AuthException('Apple sign-in failed. Please try again.');
+    }
+
+    final user = response.user!;
+    await _persistAppleFullName(credentials);
+
+    final metadata = user.userMetadata ?? {};
+    await _ensureProfile(
+      userId: user.id,
+      fullName: metadata['full_name'] as String? ?? credentials.fullName,
+      email: user.email ?? credentials.email,
+    );
+
+    _logger.info('Apple sign-in succeeded', tag: 'auth');
+    return response.user;
+  }
+
+  /// Stores the name Apple returned on the first authorization.
+  ///
+  /// Apple's identity token never contains the user's name: Apple only
+  /// returns it in the credential of the very first authorization. It is
+  /// written to the user metadata so later sign-ins can show it.
+  /// Best-effort: a failure never fails the sign-in.
+  Future<void> _persistAppleFullName(AppleAuthCredentials credentials) async {
+    final fullName = credentials.fullName;
+    if (fullName == null) return;
+    try {
+      await _client.auth.updateUser(
+        UserAttributes(
+          data: <String, dynamic>{
+            'full_name': fullName,
+            if (credentials.givenName != null)
+              'given_name': credentials.givenName,
+            if (credentials.familyName != null)
+              'family_name': credentials.familyName,
+          },
+        ),
+      );
+    } on Object catch (e, stackTrace) {
+      _logger.warning(
+        'storing the Apple full name failed',
+        tag: 'auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   Future<void> signOut() async {
     await _googleHandler.signOut();
+    await _appleHandler.signOut();
     await _client.auth.signOut();
   }
 

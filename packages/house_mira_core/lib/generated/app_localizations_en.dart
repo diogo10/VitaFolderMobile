@@ -568,6 +568,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Google sign-in failed. Please check your connection and try again.';
 
   @override
+  String get accountAppleSignInFailed =>
+      'Apple sign-in failed. Please check your connection and try again.';
+
+  @override
   String get accountPasswordResetSent =>
       'We\'ve sent a link to your email to reset your password.';
 
@@ -660,6 +664,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signUpContinueGoogle => 'Sign up with Google';
 
   @override
+  String get signUpContinueApple => 'Sign up with Apple';
+
+  @override
   String get signUpOrEmail => 'or email';
 
   @override
@@ -733,6 +740,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get signUpGoogleSignInFailed =>
       'Google sign-in failed. Please check your connection and try again.';
+
+  @override
+  String get signUpAppleSignInFailed =>
+      'Apple sign-in failed. Please check your connection and try again.';
 
   @override
   String get peopleInvalidFamilyCode =>

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/router/app_routes.dart';
 import 'package:house_mira_core/widgets/sand/google_g_icon.dart';
 import 'package:house_mira_core/widgets/sand/sand_brand_mark.dart';
@@ -70,6 +71,8 @@ class _SignUpViewState extends State<SignUpView> {
                   SignUpErrorCode.unexpected => l.signUpUnexpectedError,
                   SignUpErrorCode.googleSignInFailed =>
                     l.signUpGoogleSignInFailed,
+                  SignUpErrorCode.appleSignInFailed =>
+                    l.signUpAppleSignInFailed,
                 };
                 ScaffoldMessenger.of(
                   context,
@@ -130,6 +133,27 @@ class _SignUpViewState extends State<SignUpView> {
                                   .signInWithGoogle();
                             },
                     ),
+                    // Native Sign in with Apple only exists on Apple
+                    // platforms: the button is hidden elsewhere instead of
+                    // leading to a dead end.
+                    if (isAppleSignInSupported) ...[
+                      const SizedBox(height: 12),
+                      SandSocialButton(
+                        icon: const Icon(
+                          Icons.apple,
+                          size: 18,
+                          color: SandPalette.sand700,
+                        ),
+                        label: l.signUpContinueApple,
+                        onTap: isLoading
+                            ? null
+                            : () async {
+                                await context
+                                    .read<SignUpCubit>()
+                                    .signInWithApple();
+                              },
+                      ),
+                    ],
                     const SizedBox(height: 24),
                     Row(
                       children: [

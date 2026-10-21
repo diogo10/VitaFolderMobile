@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:house_mira_core/errors/failure.dart';
@@ -47,6 +48,8 @@ class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
 class _MockGoogleHandler extends Mock implements IGoogleSignInHandler {}
 
+class _MockAppleHandler extends Mock implements IAppleSignInHandler {}
+
 /// Paid by default so existing tests exercise the uncapped path.
 class _PaidSubscriptions extends SubscriptionService {
   @override
@@ -58,6 +61,7 @@ class _FakeAuthService extends AuthService {
     : super(
         supabaseClient: _MockSupabaseClient(),
         googleSignInHandler: _MockGoogleHandler(),
+        appleSignInHandler: _MockAppleHandler(),
       );
   String? stubUserId;
   int signInCalls = 0;
@@ -86,6 +90,7 @@ class _FakeAccountAuth extends AuthService {
     : super(
         supabaseClient: _MockSupabaseClient(),
         googleSignInHandler: _MockGoogleHandler(),
+        appleSignInHandler: _MockAppleHandler(),
       );
   int signInCalls = 0;
 

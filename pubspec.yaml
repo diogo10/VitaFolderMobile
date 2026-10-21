@@ -78,6 +78,9 @@ dependencies:
   # Routing
   go_router: ^14.0.0
 
+  # Apple Sign-In (native ID token for Supabase exchange)
+  sign_in_with_apple: ^8.1.0
+
   # Google Sign-In (native ID token for Supabase exchange)
   google_sign_in: ^7.2.0
 

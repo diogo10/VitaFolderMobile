@@ -34,6 +34,7 @@ class AccountLogoutSuccess extends AccountState {
 enum AccountLoginErrorCode {
   invalidCredentials,
   googleSignInFailed,
+  appleSignInFailed,
   unexpected,
 }
 

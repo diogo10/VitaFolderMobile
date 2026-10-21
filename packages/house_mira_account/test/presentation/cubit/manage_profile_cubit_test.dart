@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:house_mira_account/presentation/cubit/manage_profile_cubit.dart';
@@ -11,11 +12,14 @@ class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
 
+class _MockAppleSignInHandler extends Mock implements IAppleSignInHandler {}
+
 class _FakeAuthService extends AuthService {
   _FakeAuthService({this.updateError, this.profileName})
     : super(
         supabaseClient: _MockSupabaseClient(),
         googleSignInHandler: _MockGoogleSignInHandler(),
+        appleSignInHandler: _MockAppleSignInHandler(),
       );
   Exception? updateError;
   String? lastName;
