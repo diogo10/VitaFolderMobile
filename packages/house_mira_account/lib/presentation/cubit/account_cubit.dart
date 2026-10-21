@@ -182,6 +182,45 @@ class AccountCubit extends Cubit<AccountState> {
     }
   }
 
+  /// Signs in with Apple via the native identity token exchange.
+  ///
+  /// Delegates to [AuthService.signInWithApple]. Emits [NoAccount] when
+  /// the user cancels the Apple flow (nothing happened, back to the
+  /// form), [LoginFailed] with a typed [AccountLoginErrorCode] when the
+  /// exchange fails, and loads the account on success like [signIn] does.
+  /// Unexpected errors also emit [LoginFailed] so the view can show
+  /// actionable feedback instead of silently returning to the form.
+  Future<void> signInWithApple() async {
+    emit(const AccountLoading());
+
+    try {
+      final user = await _authService.signInWithApple();
+
+      if (user == null) {
+        _logger.info('Apple sign-in canceled by the user', tag: 'account');
+        emit(const NoAccount());
+        return;
+      }
+
+      _logger.info('Apple sign-in succeeded', tag: 'account');
+      _subscriptionService.invalidateProCache();
+      emit(const AccountLoginSuccess());
+      await loadAccount();
+    } on Object catch (e, stackTrace) {
+      final code = _authService.isAuthError(e)
+          ? AccountLoginErrorCode.appleSignInFailed
+          : AccountLoginErrorCode.unexpected;
+      _logger.error(
+        'Apple sign-in failed',
+        tag: 'account',
+        context: {'code': code.name},
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(LoginFailed(code: code));
+    }
+  }
+
   Future<void> signOut() async {
     emit(const AccountLoading());
 

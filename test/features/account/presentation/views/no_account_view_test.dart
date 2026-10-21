@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:house_mira_core/widgets/sand/google_g_icon.dart';
@@ -21,22 +23,27 @@ class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
 
+class _MockAppleSignInHandler extends Mock implements IAppleSignInHandler {}
+
 class _FakeAuthService extends AuthService {
   _FakeAuthService()
     : super(
         supabaseClient: _MockSupabaseClient(),
         googleSignInHandler: _MockGoogleSignInHandler(),
+        appleSignInHandler: _MockAppleSignInHandler(),
       );
 
-  Completer<({String? name, String? email})?> personCompleter = Completer<({String? name, String? email})?>()
-    ..complete(null);
+  Completer<({String? name, String? email})?> personCompleter =
+      Completer<({String? name, String? email})?>()..complete(null);
   String? lastSignInEmail;
   String? lastSignInPassword;
   String? lastResetEmail;
   int googleSignInCalls = 0;
+  int appleSignInCalls = 0;
 
   @override
-  Future<({String? name, String? email})?> getCurrentProfile() => personCompleter.future;
+  Future<({String? name, String? email})?> getCurrentProfile() =>
+      personCompleter.future;
 
   @override
   Future<void> signIn({required String email, required String password}) async {
@@ -52,6 +59,12 @@ class _FakeAuthService extends AuthService {
   @override
   Future<User?> signInWithGoogle() async {
     googleSignInCalls++;
+    return null;
+  }
+
+  @override
+  Future<User?> signInWithApple() async {
+    appleSignInCalls++;
     return null;
   }
 
@@ -125,6 +138,20 @@ void main() {
     peopleRepository = _FakePeopleRepository();
   });
 
+  /// Runs [body] with the iOS platform, where the native Sign in with
+  /// Apple button is available.
+  ///
+  /// The override is reset inside the test body: the test framework fails
+  /// a test that leaves a foundation debug variable changed.
+  Future<void> onIosPlatform(Future<void> Function() body) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    try {
+      await body();
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  }
+
   Future<void> pumpNoAccount(WidgetTester tester, AccountCubit cubit) async {
     addTearDown(cubit.close);
     await tester.pumpWidget(
@@ -148,46 +175,48 @@ void main() {
 
   group('NoAccountView', () {
     testWidgets('renders hero, auth and trust content', (tester) async {
-      await pumpNoAccount(tester, buildCubit());
+      await onIosPlatform(() async {
+        await pumpNoAccount(tester, buildCubit());
 
-      expect(find.text('HouseMira'), findsOneWidget);
-      expect(
-        find.textContaining('Your family,', findRichText: true),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining('organised together', findRichText: true),
-        findsOneWidget,
-      );
-      expect(
-        find.text(
-          'Manage your circle, set reminders and collaborate as a '
-          'family — all in one place.',
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('Chores'), findsOneWidget);
-      expect(find.text('Appointments'), findsOneWidget);
-      expect(find.text('Family Circle'), findsOneWidget);
+        expect(find.text('HouseMira'), findsOneWidget);
+        expect(
+          find.textContaining('Your family,', findRichText: true),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('organised together', findRichText: true),
+          findsOneWidget,
+        );
+        expect(
+          find.text(
+            'Manage your circle, set reminders and collaborate as a '
+            'family — all in one place.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('Chores'), findsOneWidget);
+        expect(find.text('Appointments'), findsOneWidget);
+        expect(find.text('Family Circle'), findsOneWidget);
 
-      expect(find.byType(GoogleGIcon), findsOneWidget);
-      expect(find.byIcon(Icons.apple), findsOneWidget);
-      expect(find.text('Continue with Google'), findsOneWidget);
-      expect(find.text('Continue with Apple'), findsOneWidget);
-      expect(find.text('or sign in with email'), findsOneWidget);
+        expect(find.byType(GoogleGIcon), findsOneWidget);
+        expect(find.byIcon(Icons.apple), findsOneWidget);
+        expect(find.text('Continue with Google'), findsOneWidget);
+        expect(find.text('Continue with Apple'), findsOneWidget);
+        expect(find.text('or sign in with email'), findsOneWidget);
 
-      expect(find.text('Email address'), findsOneWidget);
-      expect(find.text('Password'), findsOneWidget);
-      expect(find.text('Forgot password?'), findsOneWidget);
-      expect(find.text('Sign In'), findsOneWidget);
-      expect(
-        find.textContaining('Create a free account', findRichText: true),
-        findsOneWidget,
-      );
+        expect(find.text('Email address'), findsOneWidget);
+        expect(find.text('Password'), findsOneWidget);
+        expect(find.text('Forgot password?'), findsOneWidget);
+        expect(find.text('Sign In'), findsOneWidget);
+        expect(
+          find.textContaining('Create a free account', findRichText: true),
+          findsOneWidget,
+        );
 
-      expect(find.text('Secure & private'), findsOneWidget);
-      expect(find.text('Free to start'), findsOneWidget);
-      expect(find.text('Family plan'), findsOneWidget);
+        expect(find.text('Secure & private'), findsOneWidget);
+        expect(find.text('Free to start'), findsOneWidget);
+        expect(find.text('Family plan'), findsOneWidget);
+      });
     });
 
     testWidgets('signs in with entered credentials', (tester) async {
@@ -215,6 +244,36 @@ void main() {
       await tester.pump();
 
       expect(authService.googleSignInCalls, 1);
+    });
+
+    testWidgets('delegates to Apple sign-in from Apple button', (
+      tester,
+    ) async {
+      await onIosPlatform(() async {
+        await pumpNoAccount(tester, buildCubit());
+
+        await tester.ensureVisible(find.text('Continue with Apple'));
+        await tester.pump();
+        await tester.tap(find.text('Continue with Apple'));
+        await tester.pump();
+
+        expect(authService.appleSignInCalls, 1);
+      });
+    });
+
+    testWidgets('hides the Apple button where it is not available', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      try {
+        await pumpNoAccount(tester, buildCubit());
+
+        expect(find.byIcon(Icons.apple), findsNothing);
+        expect(find.text('Continue with Apple'), findsNothing);
+        expect(find.text('Continue with Google'), findsOneWidget);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
     });
 
     testWidgets('requests password reset with entered email', (tester) async {
@@ -245,7 +304,8 @@ void main() {
       tester,
     ) async {
       // Pending lookup keeps the cubit in AccountLoading while pumping.
-      authService.personCompleter = Completer<({String? name, String? email})?>();
+      authService.personCompleter =
+          Completer<({String? name, String? email})?>();
       final cubit = buildCubit();
       unawaited(cubit.loadAccount());
 

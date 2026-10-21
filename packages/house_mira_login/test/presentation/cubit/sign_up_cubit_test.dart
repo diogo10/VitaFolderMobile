@@ -178,5 +178,62 @@ void main() {
         ),
       ],
     );
+
+    blocTest<SignUpCubit, SignUpState>(
+      'signInWithApple emits loading then success',
+      build: build,
+      setUp: () {
+        when(() => auth.signInWithApple()).thenAnswer((_) async => _user());
+      },
+      act: (cubit) => cubit.signInWithApple(),
+      expect: () => [isA<SignUpLoading>(), isA<SignUpSuccess>()],
+      verify: (_) {
+        verify(() => auth.signInWithApple()).called(1);
+      },
+    );
+
+    blocTest<SignUpCubit, SignUpState>(
+      'signInWithApple emits initial when the user cancels',
+      build: build,
+      setUp: () {
+        when(() => auth.signInWithApple()).thenAnswer((_) async => null);
+      },
+      act: (cubit) => cubit.signInWithApple(),
+      expect: () => [isA<SignUpLoading>(), isA<SignUpInitial>()],
+    );
+
+    blocTest<SignUpCubit, SignUpState>(
+      'signInWithApple emits message from AuthException',
+      build: build,
+      setUp: () {
+        when(
+          () => auth.signInWithApple(),
+        ).thenThrow(const AuthException('Apple sign-in failed.'));
+      },
+      act: (cubit) => cubit.signInWithApple(),
+      expect: () => [
+        isA<SignUpLoading>(),
+        isA<SignUpError>()
+            .having((e) => e.message, 'message', 'Apple sign-in failed.')
+            .having((e) => e.code, 'code', SignUpErrorCode.appleSignInFailed),
+      ],
+    );
+
+    blocTest<SignUpCubit, SignUpState>(
+      'signInWithApple emits unexpected code on unexpected error',
+      build: build,
+      setUp: () {
+        when(() => auth.signInWithApple()).thenThrow(Exception('boom'));
+      },
+      act: (cubit) => cubit.signInWithApple(),
+      expect: () => [
+        isA<SignUpLoading>(),
+        isA<SignUpError>().having(
+          (e) => e.code,
+          'code',
+          SignUpErrorCode.unexpected,
+        ),
+      ],
+    );
   });
 }

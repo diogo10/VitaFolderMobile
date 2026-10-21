@@ -26,4 +26,15 @@ void main() {
     expect(project, contains('Runner/Runner.entitlements'));
     expect(project, contains('CODE_SIGN_ENTITLEMENTS'));
   });
+
+  test('declares the Sign in with Apple capability', () {
+    final entitlements = File(entitlementsPath).readAsStringSync();
+    final project = File(projectPath).readAsStringSync();
+
+    // The entitlement is what lets the app show the native Apple ID
+    // sheet: without it the sign-in fails without any visible error.
+    expect(entitlements, contains('com.apple.developer.applesignin'));
+    expect(entitlements, contains('Default'));
+    expect(project, contains('com.apple.SignInWithApple'));
+  });
 }

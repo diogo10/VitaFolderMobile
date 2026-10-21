@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:house_mira_core/subscriptions/subscription_service.dart';
@@ -18,6 +19,8 @@ class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
 
+class _MockAppleSignInHandler extends Mock implements IAppleSignInHandler {}
+
 class _FakeAuthService extends AuthService {
   _FakeAuthService({
     this.stubUser,
@@ -28,11 +31,13 @@ class _FakeAuthService extends AuthService {
     this.resetError,
     this.deleteError,
     this.googleError,
+    this.appleError,
     SupabaseClient? supabaseClient,
     IGoogleSignInHandler? googleSignInHandler,
   }) : super(
          supabaseClient: supabaseClient ?? _MockSupabaseClient(),
          googleSignInHandler: googleSignInHandler ?? _MockGoogleSignInHandler(),
+         appleSignInHandler: _MockAppleSignInHandler(),
        );
   User? stubUser;
   ({String? name, String? email})? stubProfile;
@@ -47,6 +52,9 @@ class _FakeAuthService extends AuthService {
   User? googleStubUser;
   Exception? googleError;
   int googleSignInCalls = 0;
+  User? appleStubUser;
+  Exception? appleError;
+  int appleSignInCalls = 0;
 
   @override
   Future<void> signIn({required String email, required String password}) async {
@@ -86,6 +94,13 @@ class _FakeAuthService extends AuthService {
     googleSignInCalls++;
     if (googleError != null) throw googleError!;
     return googleStubUser;
+  }
+
+  @override
+  Future<User?> signInWithApple() async {
+    appleSignInCalls++;
+    if (appleError != null) throw appleError!;
+    return appleStubUser;
   }
 }
 
@@ -163,7 +178,8 @@ class _CountingSubscriptions extends SubscriptionService {
   }
 }
 
-({String? name, String? email}) _testProfile() => (name: 'Test User', email: 'user@example.com');
+({String? name, String? email}) _testProfile() =>
+    (name: 'Test User', email: 'user@example.com');
 
 void main() {
   group('AccountCubit', () {
@@ -319,6 +335,75 @@ void main() {
       );
     });
 
+    test('signInWithApple emits AccountLoaded on success', () async {
+      final auth = _FakeAuthService(
+        stubUser: _testUser(),
+        stubProfile: _testProfile(),
+      )..appleStubUser = _testUser();
+      final cubit = AccountCubit(
+        authService: auth,
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithApple();
+
+      expect(auth.appleSignInCalls, 1);
+      expect(cubit.state, isA<AccountLoaded>());
+    });
+
+    test('signInWithApple emits NoAccount when user cancels', () async {
+      final auth = _FakeAuthService()..appleStubUser = null;
+      final cubit = AccountCubit(
+        authService: auth,
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithApple();
+
+      expect(auth.appleSignInCalls, 1);
+      expect(cubit.state, isA<NoAccount>());
+    });
+
+    test('signInWithApple emits LoginFailed on AuthException', () async {
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(
+          appleError: const AuthException('Apple sign-in failed.'),
+        ),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithApple();
+
+      expect(cubit.state, isA<LoginFailed>());
+      expect(
+        (cubit.state as LoginFailed).code,
+        AccountLoginErrorCode.appleSignInFailed,
+      );
+    });
+
+    test('signInWithApple emits LoginFailed on unexpected error', () async {
+      final cubit = AccountCubit(
+        authService: _FakeAuthService(appleError: Exception('boom')),
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: SubscriptionService(),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithApple();
+
+      expect(cubit.state, isA<LoginFailed>());
+      expect(
+        (cubit.state as LoginFailed).code,
+        AccountLoginErrorCode.unexpected,
+      );
+    });
+
     blocTest<AccountCubit, AccountState>(
       'loadAccount emits loading then loaded when user exists',
       build: () => AccountCubit(
@@ -437,6 +522,25 @@ void main() {
       addTearDown(cubit.close);
 
       await cubit.signInWithGoogle();
+
+      expect(cubit.state, isA<AccountLoaded>());
+      expect(subscriptions.invalidations, 1);
+    });
+
+    test('signInWithApple invalidates the cached entitlement', () async {
+      final subscriptions = _CountingSubscriptions();
+      final auth = _FakeAuthService(
+        stubUser: _testUser(),
+        stubProfile: _testProfile(),
+      )..appleStubUser = _testUser();
+      final cubit = AccountCubit(
+        authService: auth,
+        peopleRepository: _FakePeopleRepository(),
+        subscriptionService: subscriptions,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.signInWithApple();
 
       expect(cubit.state, isA<AccountLoaded>());
       expect(subscriptions.invalidations, 1);

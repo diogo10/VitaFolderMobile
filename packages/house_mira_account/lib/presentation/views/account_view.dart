@@ -76,6 +76,8 @@ class _AccountViewState extends State<AccountView> {
           final message = switch (state.code) {
             AccountLoginErrorCode.googleSignInFailed =>
               l.accountGoogleSignInFailed,
+            AccountLoginErrorCode.appleSignInFailed =>
+              l.accountAppleSignInFailed,
             AccountLoginErrorCode.invalidCredentials ||
             AccountLoginErrorCode.unexpected => l.accountLoginFailed,
           };

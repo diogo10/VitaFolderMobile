@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:house_mira_core/functions/edget_functions.dart';
@@ -14,6 +15,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
+
+class _MockAppleSignInHandler extends Mock implements IAppleSignInHandler {}
 
 void main() {
   setUpAll(() async {
@@ -35,6 +38,7 @@ void main() {
             create: (_) => AuthService(
               supabaseClient: Supabase.instance.client,
               googleSignInHandler: _MockGoogleSignInHandler(),
+              appleSignInHandler: _MockAppleSignInHandler(),
             ),
             child: InvitePeopleScreen(
               familyName: familyName,

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:house_mira_core/observability/app_logger.dart';
@@ -12,6 +13,8 @@ class _MockSupabaseClient extends Mock implements SupabaseClient {}
 class _MockGoTrueClient extends Mock implements GoTrueClient {}
 
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
+
+class _MockAppleSignInHandler extends Mock implements IAppleSignInHandler {}
 
 class _MockFunctionsClient extends Mock implements FunctionsClient {}
 
@@ -118,6 +121,7 @@ void main() {
   AuthService build() => AuthService(
     supabaseClient: supabase,
     googleSignInHandler: googleHandler,
+    appleSignInHandler: _MockAppleSignInHandler(),
     crashReporter: crash,
     logger: AppLogger(crashReporter: crash, sink: lines.add),
     tracer: tracer,

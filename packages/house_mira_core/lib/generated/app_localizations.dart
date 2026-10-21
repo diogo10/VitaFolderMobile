@@ -1127,6 +1127,12 @@ abstract class AppLocalizations {
   /// **'Google sign-in failed. Please check your connection and try again.'**
   String get accountGoogleSignInFailed;
 
+  /// No description provided for @accountAppleSignInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple sign-in failed. Please check your connection and try again.'**
+  String get accountAppleSignInFailed;
+
   /// No description provided for @accountPasswordResetSent.
   ///
   /// In en, this message translates to:
@@ -1301,6 +1307,12 @@ abstract class AppLocalizations {
   /// **'Sign up with Google'**
   String get signUpContinueGoogle;
 
+  /// No description provided for @signUpContinueApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up with Apple'**
+  String get signUpContinueApple;
+
   /// No description provided for @signUpOrEmail.
   ///
   /// In en, this message translates to:
@@ -1444,6 +1456,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Google sign-in failed. Please check your connection and try again.'**
   String get signUpGoogleSignInFailed;
+
+  /// No description provided for @signUpAppleSignInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple sign-in failed. Please check your connection and try again.'**
+  String get signUpAppleSignInFailed;
 
   /// No description provided for @peopleInvalidFamilyCode.
   ///

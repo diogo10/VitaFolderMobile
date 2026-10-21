@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:house_mira_core/analytics/analytics_service.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:house_mira_core/errors/failure.dart';
@@ -100,6 +101,8 @@ class _MockSupabaseClient extends Mock implements SupabaseClient {}
 
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
 
+class _MockAppleSignInHandler extends Mock implements IAppleSignInHandler {}
+
 /// Paid by default so existing tests exercise the uncapped path.
 class _PaidSubscriptions extends SubscriptionService {
   @override
@@ -111,6 +114,7 @@ class _FakeAuthService extends AuthService {
     : super(
         supabaseClient: _MockSupabaseClient(),
         googleSignInHandler: _MockGoogleSignInHandler(),
+        appleSignInHandler: _MockAppleSignInHandler(),
       );
 
   @override

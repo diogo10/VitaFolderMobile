@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:mocktail/mocktail.dart';
@@ -16,6 +17,8 @@ class _MockAuthResponse extends Mock implements AuthResponse {}
 class _MockUserResponse extends Mock implements UserResponse {}
 
 class _MockGoogleSignInHandler extends Mock implements IGoogleSignInHandler {}
+
+class _MockAppleSignInHandler extends Mock implements IAppleSignInHandler {}
 
 class _MockFunctionsClient extends Mock implements FunctionsClient {}
 
@@ -132,16 +135,21 @@ void main() {
   late _MockSupabaseClient supabase;
   late _MockGoTrueClient auth;
   late _MockGoogleSignInHandler googleHandler;
+  late _MockAppleSignInHandler appleHandler;
 
   setUp(() {
     supabase = _MockSupabaseClient();
     auth = _MockGoTrueClient();
     googleHandler = _MockGoogleSignInHandler();
+    appleHandler = _MockAppleSignInHandler();
     when(() => supabase.auth).thenReturn(auth);
   });
 
-  AuthService build() =>
-      AuthService(supabaseClient: supabase, googleSignInHandler: googleHandler);
+  AuthService build() => AuthService(
+    supabaseClient: supabase,
+    googleSignInHandler: googleHandler,
+    appleSignInHandler: appleHandler,
+  );
 
   group('currentUser / isLoggedIn / currentUserId', () {
     test('exposes the current user when signed in', () {
@@ -563,6 +571,256 @@ void main() {
     );
   });
 
+  group('AuthService.signInWithApple', () {
+    test('exchanges the Apple identity token for a Supabase session', () async {
+      final response = _MockAuthResponse();
+      when(() => response.user).thenReturn(_user());
+      when(
+        () => auth.signInWithIdToken(
+          provider: any(named: 'provider'),
+          idToken: any(named: 'idToken'),
+          nonce: any(named: 'nonce'),
+        ),
+      ).thenAnswer((_) async => response);
+      when(() => appleHandler.signIn()).thenAnswer(
+        (_) async => const AppleAuthCredentials(
+          identityToken: 'apple-identity-token',
+          nonce: 'apple-nonce',
+        ),
+      );
+      _stubUpdateEq(supabase: supabase);
+
+      final user = await build().signInWithApple();
+
+      expect(user?.id, 'u1');
+      verify(
+        () => auth.signInWithIdToken(
+          provider: OAuthProvider.apple,
+          idToken: 'apple-identity-token',
+          nonce: 'apple-nonce',
+        ),
+      ).called(1);
+    });
+
+    test('returns null without exchanging when the user cancels', () async {
+      when(() => appleHandler.signIn()).thenAnswer((_) async => null);
+
+      final user = await build().signInWithApple();
+
+      expect(user, isNull);
+      verifyNever(
+        () => auth.signInWithIdToken(
+          provider: any(named: 'provider'),
+          idToken: any(named: 'idToken'),
+        ),
+      );
+    });
+
+    test('throws AuthException when the Apple sign-in fails', () async {
+      when(() => appleHandler.signIn()).thenThrow(
+        const AppleSignInException(
+          AppleSignInErrorCode.failed,
+          detail: 'authorization failed',
+        ),
+      );
+
+      expect(
+        () => build().signInWithApple(),
+        throwsA(
+          isA<AuthException>().having(
+            (e) => e.message,
+            'message',
+            'Apple sign-in failed. Please try again.',
+          ),
+        ),
+      );
+    });
+
+    test(
+      'wraps unexpected handler errors in an actionable AuthException',
+      () async {
+        when(() => appleHandler.signIn()).thenThrow(Exception('boom'));
+
+        expect(
+          () => build().signInWithApple(),
+          throwsA(
+            isA<AuthException>().having(
+              (e) => e.message,
+              'message',
+              'Apple sign-in failed. Please try again.',
+            ),
+          ),
+        );
+      },
+    );
+
+    test('throws AuthException when the exchange returns no user', () async {
+      final response = _MockAuthResponse();
+      when(() => response.user).thenReturn(null);
+      when(
+        () => auth.signInWithIdToken(
+          provider: any(named: 'provider'),
+          idToken: any(named: 'idToken'),
+          nonce: any(named: 'nonce'),
+        ),
+      ).thenAnswer((_) async => response);
+      when(() => appleHandler.signIn()).thenAnswer(
+        (_) async => const AppleAuthCredentials(
+          identityToken: 'token',
+          nonce: 'nonce',
+        ),
+      );
+
+      expect(() => build().signInWithApple(), throwsA(isA<AuthException>()));
+    });
+
+    test('propagates network failures during the token exchange', () async {
+      when(() => appleHandler.signIn()).thenAnswer(
+        (_) async => const AppleAuthCredentials(
+          identityToken: 'token',
+          nonce: 'nonce',
+        ),
+      );
+      when(
+        () => auth.signInWithIdToken(
+          provider: any(named: 'provider'),
+          idToken: any(named: 'idToken'),
+          nonce: any(named: 'nonce'),
+        ),
+      ).thenThrow(const AuthException('Network request failed'));
+
+      expect(() => build().signInWithApple(), throwsA(isA<AuthException>()));
+    });
+
+    test(
+      'wraps unexpected exchange errors in an actionable AuthException',
+      () async {
+        when(() => appleHandler.signIn()).thenAnswer(
+          (_) async => const AppleAuthCredentials(
+            identityToken: 'token',
+            nonce: 'nonce',
+          ),
+        );
+        when(
+          () => auth.signInWithIdToken(
+            provider: any(named: 'provider'),
+            idToken: any(named: 'idToken'),
+            nonce: any(named: 'nonce'),
+          ),
+        ).thenThrow(Exception('boom'));
+
+        expect(
+          () => build().signInWithApple(),
+          throwsA(
+            isA<AuthException>().having(
+              (e) => e.message,
+              'message',
+              'Apple sign-in failed. Please try again.',
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'stores the full name Apple returned on the first authorization',
+      () async {
+        final appleUser = User.fromJson({
+          'id': 'u1',
+          'email': 'ada@example.com',
+        });
+        if (appleUser == null) throw StateError('Failed to build user');
+        final response = _MockAuthResponse();
+        when(() => response.user).thenReturn(appleUser);
+        when(
+          () => auth.signInWithIdToken(
+            provider: any(named: 'provider'),
+            idToken: any(named: 'idToken'),
+            nonce: any(named: 'nonce'),
+          ),
+        ).thenAnswer((_) async => response);
+        when(() => appleHandler.signIn()).thenAnswer(
+          (_) async => const AppleAuthCredentials(
+            identityToken: 'token',
+            nonce: 'nonce',
+            givenName: 'Ada',
+            familyName: 'Lovelace',
+          ),
+        );
+        final userResponse = _MockUserResponse();
+        when(() => userResponse.user).thenReturn(appleUser);
+        when(
+          () => auth.updateUser(any()),
+        ).thenAnswer((_) async => userResponse);
+        _stubUpdateEq(supabase: supabase);
+
+        await build().signInWithApple();
+
+        verify(
+          () => auth.updateUser(
+            any(
+              that: isA<UserAttributes>().having(
+                (attributes) => attributes.data,
+                'data',
+                containsPair('full_name', 'Ada Lovelace'),
+              ),
+            ),
+          ),
+        ).called(1);
+        verify(() => supabase.from('profiles')).called(1);
+      },
+    );
+
+    test('does not update the metadata without an Apple name', () async {
+      final response = _MockAuthResponse();
+      when(() => response.user).thenReturn(_user());
+      when(
+        () => auth.signInWithIdToken(
+          provider: any(named: 'provider'),
+          idToken: any(named: 'idToken'),
+          nonce: any(named: 'nonce'),
+        ),
+      ).thenAnswer((_) async => response);
+      when(() => appleHandler.signIn()).thenAnswer(
+        (_) async => const AppleAuthCredentials(
+          identityToken: 'token',
+          nonce: 'nonce',
+        ),
+      );
+      _stubUpdateEq(supabase: supabase);
+
+      await build().signInWithApple();
+
+      verifyNever(() => auth.updateUser(any()));
+    });
+
+    test('keeps the sign-in working when the name cannot be stored', () async {
+      final response = _MockAuthResponse();
+      when(() => response.user).thenReturn(_user());
+      when(
+        () => auth.signInWithIdToken(
+          provider: any(named: 'provider'),
+          idToken: any(named: 'idToken'),
+          nonce: any(named: 'nonce'),
+        ),
+      ).thenAnswer((_) async => response);
+      when(() => appleHandler.signIn()).thenAnswer(
+        (_) async => const AppleAuthCredentials(
+          identityToken: 'token',
+          nonce: 'nonce',
+          givenName: 'Ada',
+          familyName: 'Lovelace',
+        ),
+      );
+      when(() => auth.updateUser(any())).thenThrow(Exception('boom'));
+      _stubUpdateEq(supabase: supabase);
+
+      final user = await build().signInWithApple();
+
+      expect(user?.id, 'u1');
+    });
+  });
+
   group('AuthService passwords', () {
     test('triggerForgetPassword forwards the email', () async {
       when(() => auth.resetPasswordForEmail(any())).thenAnswer((_) async {});
@@ -619,16 +877,19 @@ void main() {
   group('AuthService.signOut', () {
     test('signs out from Google and Supabase', () async {
       when(() => googleHandler.signOut()).thenAnswer((_) async {});
+      when(() => appleHandler.signOut()).thenAnswer((_) async {});
       when(() => auth.signOut()).thenAnswer((_) async {});
 
       await build().signOut();
 
       verify(() => googleHandler.signOut()).called(1);
+      verify(() => appleHandler.signOut()).called(1);
       verify(() => auth.signOut()).called(1);
     });
 
     test('propagates Supabase sign-out failures', () async {
       when(() => googleHandler.signOut()).thenAnswer((_) async {});
+      when(() => appleHandler.signOut()).thenAnswer((_) async {});
       when(
         () => auth.signOut(),
       ).thenThrow(const AuthException('Network error'));

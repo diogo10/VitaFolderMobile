@@ -106,10 +106,12 @@ that screen.
 
 ### Can I sign in with Google or Apple?
 
-Yes. The sign-in screen offers **Continue with Google** and **Continue
-with Apple** alongside email sign-in. If a social sign-in fails, check
-your connection and try again; cancelling the Google prompt simply returns
-you to the sign-in screen without an error.
+Yes. The sign-in screen offers **Continue with Google** alongside email
+sign-in. On iPhone, iPad and Mac it also offers **Continue with Apple**,
+which uses the native Apple ID sheet (the button is hidden where Sign in
+with Apple is not available). If a social sign-in fails, check your
+connection and try again; cancelling the prompt simply returns you to the
+sign-in screen without an error.
 
 ### I forgot my password. What do I do?
 

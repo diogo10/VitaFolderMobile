@@ -578,6 +578,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Falha no login com o Google. Verifique sua conexão e tente novamente.';
 
   @override
+  String get accountAppleSignInFailed =>
+      'Falha no login com a Apple. Verifique sua conexão e tente novamente.';
+
+  @override
   String get accountPasswordResetSent =>
       'Enviamos um link para o seu email redefinir sua senha.';
 
@@ -670,6 +674,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get signUpContinueGoogle => 'Cadastre-se com Google';
 
   @override
+  String get signUpContinueApple => 'Cadastre-se com Apple';
+
+  @override
   String get signUpOrEmail => 'ou email';
 
   @override
@@ -744,6 +751,10 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get signUpGoogleSignInFailed =>
       'Falha no login com o Google. Verifique sua conexão e tente novamente.';
+
+  @override
+  String get signUpAppleSignInFailed =>
+      'Falha no login com a Apple. Verifique sua conexão e tente novamente.';
 
   @override
   String get peopleInvalidFamilyCode =>

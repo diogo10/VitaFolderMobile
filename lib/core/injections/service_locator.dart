@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:house_mira_core/analytics/analytics_service.dart';
+import 'package:house_mira_core/auth/apple_sign_in_handler.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/auth/google_sign_in_handler.dart';
 import 'package:house_mira_core/functions/edget_functions.dart';
@@ -54,6 +55,7 @@ class ServiceLocator {
         AuthService(
           supabaseClient: Supabase.instance.client,
           googleSignInHandler: GoogleSignInHandler(logger: effectiveLogger),
+          appleSignInHandler: AppleSignInHandler(logger: effectiveLogger),
           logger: effectiveLogger,
           tracer: effectiveTracer,
         ),

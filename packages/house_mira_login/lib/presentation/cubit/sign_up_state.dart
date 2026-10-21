@@ -14,7 +14,7 @@ class SignUpSuccess extends SignUpState {
   SignUpSuccess();
 }
 
-enum SignUpErrorCode { unexpected, googleSignInFailed }
+enum SignUpErrorCode { unexpected, googleSignInFailed, appleSignInFailed }
 
 class SignUpError extends SignUpState {
   SignUpError({required this.code, this.message});

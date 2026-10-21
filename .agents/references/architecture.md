@@ -23,7 +23,7 @@ core never imports features, feature-to-feature via domain/ only).
 
 ## Core (`packages/house_mira_core/lib/`)
 
-`auth/` (AuthService, Google handler), `router/` (route table),
+`auth/` (AuthService, Google + Apple handlers), `router/` (route table),
 `local_storage/`, `functions/` (edge-function client), `errors/`
 (`Failure`), `widgets/sand/` (design system), `analytics/`, `network/`,
 `theme/`, `l10n/` + `generated/`, `notifications/` (cross-feature
