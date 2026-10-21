@@ -53,7 +53,7 @@ class ServiceLocator {
       ..registerSingleton<AuthService>(
         AuthService(
           supabaseClient: Supabase.instance.client,
-          googleSignInHandler: GoogleSignInHandler(),
+          googleSignInHandler: GoogleSignInHandler(logger: effectiveLogger),
           logger: effectiveLogger,
           tracer: effectiveTracer,
         ),
