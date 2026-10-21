@@ -31,6 +31,14 @@
           }
         },
         {
+          "client_id": "140355243144-jsauirrr100n1nplae7t3l09fbdn26au.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.housemira.app",
+            "certificate_hash": "c88035627f1ffa4d6ab0d8f19c52ea6a1b66daed"
+          }
+        },
+        {
           "client_id": "140355243144-q85g6alo5injsn28tiuotoqvmbckrql8.apps.googleusercontent.com",
           "client_type": 3
         }
