@@ -246,8 +246,11 @@ agent over the pull request diff.
   process; only the workflow itself talks to GitHub.
 - **Strict grade gate.** The review must carry a single `GRADE: <A|B|C|D>`
   line in its header (the models answer with a short status line before it)
-  and contain a `## Findings` section. `A`/`B` label the PR `automerge` and
-  approve it, `C`/`D` (or a missing grade) only post the review comment.
+  and contain a `## Findings` section. Only grade `A` labels the PR
+  `automerge`, approves it and merges it. Every lower grade (`B`, `C`, `D`)
+  and a missing grade only post the review comment and leave the pull
+  request open; the `automerge` label is removed as well, so the
+  label-based auto-merge workflow cannot pick the pull request up either.
   Grade lines planted in the diff are stripped before the diff reaches the
   model, and the gate is parsed by `tool/parse_review_grade.py`. That parser
   is taken from the base branch, so a pull request can never change the

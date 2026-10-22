@@ -46,7 +46,9 @@ jobs:
       # the workflow itself talks to GitHub. The grade that unlocks the
       # auto-merge is parsed from the model's own final message by a helper
       # taken from the base branch, and grade lines planted in the diff are
-      # stripped before the model sees them.
+      # stripped before the model sees them. Only grade A unlocks the
+      # auto-merge: every other grade (B, C, D or none) leaves the pull
+      # request open.
       #
       # Residual risk: for `pull_request` events the workflow file itself
       # comes from the pull request, so a pull request can still change the
@@ -328,7 +330,7 @@ jobs:
           fi
           echo "grade=${GRADE:-}" >> "$GITHUB_OUTPUT"
 
-      - name: Publish review, label automerge, and approve/merge on grade A or B
+      - name: Publish review, label automerge, and approve/merge on grade A
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -355,9 +357,11 @@ jobs:
           gh pr comment "$PR_NUMBER" --body-file /tmp/review_comment_truncated.txt
 
           # Merge gate: GRADE was strictly parsed from the first line of the
-          # model's final message as ^GRADE: [ABCD]$, so reaching "A"/"B"
-          # here is equivalent to a strict ^GRADE: [AB]$ match on line 1.
-          if [ "$GRADE" = "A" ] || [ "$GRADE" = "B" ]; then
+          # model's final message as ^GRADE: [ABCD]$, so reaching "A" here is
+          # equivalent to a strict ^GRADE: A$ match on line 1. Grade A is the
+          # only merge-ready verdict: every lower grade (B, C, D) and a
+          # missing grade leave the pull request open.
+          if [ "$GRADE" = "A" ]; then
             echo "Grade $GRADE is merge-ready: labeling automerge, approving and merging."
             gh label create automerge \
               --description "Merge-ready per automated review; eligible for automerge." \
@@ -373,4 +377,13 @@ jobs:
               echo "::warning::gh pr merge failed (checks may still be running or branch protection may require manual merge)."
           else
             echo "Grade ${GRADE:-<none>} is not merge-ready: leaving review comment only."
+            # An earlier run may have labelled this pull request as
+            # merge-ready (e.g. under the previous A-or-B policy). Drop the
+            # label again, so the label-based auto-merge workflow cannot pick
+            # the pull request up either.
+            if gh pr edit "$PR_NUMBER" --remove-label "automerge" 2>/dev/null; then
+              echo "Removed the automerge label: only grade A is auto-merged."
+            else
+              echo "::warning::Could not remove the automerge label (it was probably not set)."
+            fi
           fi
