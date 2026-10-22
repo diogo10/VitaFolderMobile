@@ -174,5 +174,23 @@ Details: [testing](.agents/references/testing.md).
   crashlytics_batch_get_events to triage real crashes. The server runs with a
   `--tools` allow-list, so deploy/mutation tools (and crashlytics_update_issue)
   are not exposed. Setup and auth: README "Crashlytics MCP server".
+  Credentials: ADC service account at
+  ~/.config/gcloud/application_default_credentials.json (copy it there
+  from the downloaded key; the MCP server re-reads it per call, no restart
+  needed). Active project comes from .firebaserc. If a tool answers
+  "The user is not currently logged into the Firebase CLI" the ADC file is
+  missing; if it answers "PRECONDITION_FAILED ... requires an active
+  project" .firebaserc is missing. The service account holds the read-only
+  roles/firebase.crashlytics.viewer, so crashlytics_create_note answers
+  "403 PERMISSION_DENIED" - print the note text for the user instead.
+- Crash review workflow: on a request like "Review the Firebase Crashes",
+  load the `firebase-crashlytics` skill (.agents/skills/firebase-crashlytics/)
+  and follow it: fetch topIssues via crashlytics_get_report, pull each
+  issue's sampleEvent stack trace with crashlytics_batch_get_events, map the
+  stack frame to the repo, fix the root cause, then verify per the order
+  above. Check the issue's lastSeenVersion against pubspec.yaml first: an
+  issue that only affects older builds is stale and needs a note, not a
+  code change. iOS report calls 404 today (no data yet) - not an auth
+  problem.
 - Never expose service-role keys. Commit, push, or open a PR only when
   explicitly asked.
