@@ -243,6 +243,37 @@ void main() {
   });
 
   group('NoteEditorScreen', () {
+    testWidgets('list marker at the start of the content inserts the marker', (
+      tester,
+    ) async {
+      when(() => auth.currentUserId).thenReturn('u1');
+      final cubit = buildCubit(notes: notes, people: people, auth: auth);
+
+      await tester.pumpWidget(
+        pumpWithCubit(cubit, NoteEditorScreen(note: note(content: 'Hello'))),
+      );
+      await tester.pumpAndSettle();
+
+      // Cursor at the very beginning of the content: the line-prefix search
+      // started at index -1 and threw
+      // `RangeError: Invalid value: Only valid value is 0: -1` while
+      // handling the tap (NON_FATAL Crashlytics issue `978e9b8f`).
+      final editable = tester.widget<EditableText>(
+        find.descendant(
+          of: find.byType(TextFormField).at(1),
+          matching: find.byType(EditableText),
+        ),
+      );
+      editable.controller.selection = const TextSelection.collapsed(offset: 0);
+
+      await tester.tap(find.byIcon(Icons.format_list_bulleted_rounded));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(editable.controller.text, '- Hello');
+      await cubit.close();
+    });
+
     testWidgets('whitespace-only shows inline errors, no save', (
       tester,
     ) async {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
@@ -235,5 +237,105 @@ void main() {
         ),
       ],
     );
+  });
+
+  group('SignUpCubit closed while a sign-in is in flight', () {
+    /// Runs [act], closes the cubit while the call is still pending, then
+    /// completes the call with [complete].
+    ///
+    /// The user can leave the sign-up screen while the native flow is up,
+    /// which closes the cubit. Emitting into a closed cubit throws
+    /// `Bad state: Cannot emit new states after calling close` and crashed
+    /// the app (FATAL Crashlytics issue `04df8a6a`).
+    Future<List<SignUpState>> closeDuringCall({
+      required Future<void> Function(SignUpCubit cubit) act,
+      required void Function() complete,
+    }) async {
+      final cubit = SignUpCubit(auth);
+      final states = <SignUpState>[];
+      final firstState = Completer<SignUpState>();
+      final subscription = cubit.stream.listen((state) {
+        if (!firstState.isCompleted) firstState.complete(state);
+        states.add(state);
+      });
+
+      final pending = act(cubit);
+      await firstState.future;
+      await cubit.close();
+      complete();
+
+      await expectLater(pending, completes);
+      await Future<void>.delayed(Duration.zero);
+      await subscription.cancel();
+      return states;
+    }
+
+    test(
+      'signInWithGoogle does not emit an error after the cubit is closed',
+      () async {
+        final completer = Completer<User?>();
+        when(() => auth.signInWithGoogle()).thenAnswer((_) => completer.future);
+
+        final states = await closeDuringCall(
+          act: (cubit) => cubit.signInWithGoogle(),
+          complete: () => completer.completeError(Exception('boom')),
+        );
+
+        expect(states, hasLength(1));
+        expect(states.single, isA<SignUpLoading>());
+      },
+    );
+
+    test(
+      'signInWithGoogle does not emit success after the cubit is closed',
+      () async {
+        final completer = Completer<User?>();
+        when(() => auth.signInWithGoogle()).thenAnswer((_) => completer.future);
+
+        final states = await closeDuringCall(
+          act: (cubit) => cubit.signInWithGoogle(),
+          complete: () => completer.complete(_user()),
+        );
+
+        expect(states, hasLength(1));
+        expect(states.single, isA<SignUpLoading>());
+      },
+    );
+
+    test(
+      'signInWithApple does not emit an error after the cubit is closed',
+      () async {
+        final completer = Completer<User?>();
+        when(() => auth.signInWithApple()).thenAnswer((_) => completer.future);
+
+        final states = await closeDuringCall(
+          act: (cubit) => cubit.signInWithApple(),
+          complete: () => completer.completeError(Exception('boom')),
+        );
+
+        expect(states, hasLength(1));
+        expect(states.single, isA<SignUpLoading>());
+      },
+    );
+
+    test('signUp does not emit an error after the cubit is closed', () async {
+      final completer = Completer<User?>();
+      when(
+        () => auth.signUp(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+          name: any(named: 'name'),
+        ),
+      ).thenAnswer((_) => completer.future);
+
+      final states = await closeDuringCall(
+        act: (cubit) =>
+            cubit.signUp(email: 'a@b.c', password: 'secret123', name: 'Ana'),
+        complete: () => completer.completeError(Exception('boom')),
+      );
+
+      expect(states, hasLength(1));
+      expect(states.single, isA<SignUpLoading>());
+    });
   });
 }

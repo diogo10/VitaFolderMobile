@@ -30,17 +30,29 @@ class PaywallCubit extends Cubit<PaywallState> {
   /// and tests pass a fake.
   final SubscriptionService _subscriptionService;
 
+  /// Emits [state] only while the cubit is still open.
+  ///
+  /// The paywall owns this cubit through `BlocProvider(create:)`, so
+  /// leaving the screen closes it while the store call or the offering
+  /// fetch is still in flight. Emitting into a closed cubit throws `Bad
+  /// state: Cannot emit new states after calling close` and crashes the
+  /// app (FATAL Crashlytics issue `04df8a6a`).
+  void _emitIfOpen(PaywallState state) {
+    if (isClosed) return;
+    emit(state);
+  }
+
   Future<void> loadPaywall() async {
     emit(const PaywallLoading());
     try {
       final result = await _getPaywallDataUsecase();
       result.fold(
-        (_) => emit(const PaywallLoadFailed()),
+        (_) => _emitIfOpen(const PaywallLoadFailed()),
         (data) {
           // Never render an empty catalog: explicit failure beats a
           // plan list with no selectable plan.
           if (data.plans.isEmpty) {
-            emit(const PaywallLoadFailed());
+            _emitIfOpen(const PaywallLoadFailed());
             return;
           }
           final selected = data.plans
@@ -49,13 +61,13 @@ class PaywallCubit extends Cubit<PaywallState> {
                 orElse: () => data.plans.first,
               )
               .id;
-          emit(
+          _emitIfOpen(
             PaywallLoaded(data: data, selectedPlanId: selected),
           );
         },
       );
     } on Object catch (_) {
-      emit(const PaywallLoadFailed());
+      _emitIfOpen(const PaywallLoadFailed());
     }
   }
 
@@ -75,7 +87,7 @@ class PaywallCubit extends Cubit<PaywallState> {
     try {
       final result = await _startTrialUsecase(planId: current.selectedPlanId);
       result.fold(
-        (_) => emit(
+        (_) => _emitIfOpen(
           PaywallActionFailed(
             data: current.data,
             selectedPlanId: current.selectedPlanId,
@@ -83,7 +95,7 @@ class PaywallCubit extends Cubit<PaywallState> {
         ),
         (_) {
           _subscriptionService.invalidateProCache();
-          emit(
+          _emitIfOpen(
             PaywallTrialStarted(
               data: current.data,
               selectedPlanId: current.selectedPlanId,
@@ -93,7 +105,7 @@ class PaywallCubit extends Cubit<PaywallState> {
         },
       );
     } on Object catch (_) {
-      emit(
+      _emitIfOpen(
         PaywallActionFailed(
           data: current.data,
           selectedPlanId: current.selectedPlanId,
@@ -109,7 +121,7 @@ class PaywallCubit extends Cubit<PaywallState> {
     try {
       final result = await _restorePurchasesUsecase();
       result.fold(
-        (_) => emit(
+        (_) => _emitIfOpen(
           PaywallActionFailed(
             data: current.data,
             selectedPlanId: current.selectedPlanId,
@@ -117,7 +129,7 @@ class PaywallCubit extends Cubit<PaywallState> {
         ),
         (_) {
           _subscriptionService.invalidateProCache();
-          emit(
+          _emitIfOpen(
             PaywallRestoreCompleted(
               data: current.data,
               selectedPlanId: current.selectedPlanId,
@@ -126,7 +138,7 @@ class PaywallCubit extends Cubit<PaywallState> {
         },
       );
     } on Object catch (_) {
-      emit(
+      _emitIfOpen(
         PaywallActionFailed(
           data: current.data,
           selectedPlanId: current.selectedPlanId,

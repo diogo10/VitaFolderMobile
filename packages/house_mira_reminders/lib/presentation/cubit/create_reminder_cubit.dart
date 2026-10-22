@@ -36,6 +36,18 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
   /// GetIt directly.
   IReminderNotificationService get notificationService => _notificationService;
 
+  /// Emits [state] only while the cubit is still open.
+  ///
+  /// The editor screen owns this cubit through `BlocProvider(create:)`,
+  /// so leaving the screen closes it while the reminder is still being
+  /// saved. Emitting into a closed cubit throws `Bad state: Cannot emit
+  /// new states after calling close` and crashes the app (FATAL
+  /// Crashlytics issue `04df8a6a`).
+  void _emitIfOpen(CreateReminderState state) {
+    if (isClosed) return;
+    emit(state);
+  }
+
   Future<void> createReminder({
     required String title,
     required String body,
@@ -50,13 +62,17 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
     try {
       final familyId = await _resolveFamilyId();
       if (familyId == null) {
-        emit(CreateReminderError(code: CreateReminderErrorCode.noFamily));
+        _emitIfOpen(
+          CreateReminderError(code: CreateReminderErrorCode.noFamily),
+        );
         return;
       }
 
       final userId = authService.currentUserId;
       if (userId == null) {
-        emit(CreateReminderError(code: CreateReminderErrorCode.authRequired));
+        _emitIfOpen(
+          CreateReminderError(code: CreateReminderErrorCode.authRequired),
+        );
         return;
       }
 
@@ -64,7 +80,9 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
       // check never re-resolves. Capped users get the limit error (the
       // editor offers an upgrade action). Updates are never capped.
       if (await isAtFreeLimit(familyId: familyId)) {
-        emit(CreateReminderError(code: CreateReminderErrorCode.limitReached));
+        _emitIfOpen(
+          CreateReminderError(code: CreateReminderErrorCode.limitReached),
+        );
         return;
       }
 
@@ -83,7 +101,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
       final result = await _createReminderUsecase(reminder, familyId);
 
       await result.fold(
-        (err) async => emit(CreateReminderError(message: err.message)),
+        (err) async => _emitIfOpen(CreateReminderError(message: err.message)),
         (reminderId) async {
           final sync = await _syncNotification(
             reminderId: reminderId,
@@ -94,7 +112,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
             body: body,
             repeatRule: repeatRule,
           );
-          emit(
+          _emitIfOpen(
             CreateReminderSuccess(
               reminderId: reminderId,
               notificationArmed: sync.armed,
@@ -105,7 +123,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
         },
       );
     } on Object catch (_) {
-      emit(CreateReminderError());
+      _emitIfOpen(CreateReminderError());
     }
   }
 
@@ -139,9 +157,11 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
       await result.fold(
         (err) async {
           if (err is WriteBlockedFailure) {
-            emit(CreateReminderError(code: CreateReminderErrorCode.notAllowed));
+            _emitIfOpen(
+              CreateReminderError(code: CreateReminderErrorCode.notAllowed),
+            );
           } else {
-            emit(CreateReminderError(message: err.message));
+            _emitIfOpen(CreateReminderError(message: err.message));
           }
         },
         (_) async {
@@ -154,7 +174,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
             body: body,
             repeatRule: repeatRule,
           );
-          emit(
+          _emitIfOpen(
             UpdatedReminderSuccess(
               notificationArmed: sync.armed,
               notificationTimePassed: sync.timePassed,
@@ -164,7 +184,7 @@ class CreateReminderCubit extends Cubit<CreateReminderState> {
         },
       );
     } on Object catch (_) {
-      emit(CreateReminderError());
+      _emitIfOpen(CreateReminderError());
     }
   }
 
