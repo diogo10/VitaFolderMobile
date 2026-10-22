@@ -192,6 +192,25 @@ class ExecuteTest(unittest.TestCase):
 
         self.assertEqual(warnings, [])
 
+    def test_the_results_report_the_failed_step(self) -> None:
+        runner = FakeRunner({("pr merge",): CommandResult(1, "", "checks are running")})
+
+        results = execute_actions(plan_actions("57", "A"), runner, echo=silent, warn=silent)
+
+        failed = [result.name for result in results if result.failed]
+        self.assertEqual(failed, ["merge"])
+
+    def test_a_best_effort_step_is_not_a_failed_step(self) -> None:
+        runner = FakeRunner(
+            {("label create",): CommandResult(1, "", "label already exists")}
+        )
+
+        results = execute_actions(plan_actions("57", "A"), runner, echo=silent, warn=silent)
+
+        failed = [result.name for result in results if result.failed]
+        self.assertNotIn("create_label", failed)
+        self.assertEqual(failed, [])
+
 
 class RecordedGradeTest(unittest.TestCase):
     def _status(self, *statuses: dict[str, object]) -> FakeRunner:
@@ -237,6 +256,7 @@ class RecordedGradeTest(unittest.TestCase):
 
         recorded = read_status("abc1234", "owner/name", runner)
 
+        self.assertEqual(recorded.grade, "")
         self.assertFalse(recorded.merge_ready)
 
     def test_a_lower_grade_is_not_merge_ready(self) -> None:
@@ -251,6 +271,22 @@ class RecordedGradeTest(unittest.TestCase):
 
         recorded = read_status("abc1234", "owner/name", runner)
 
+        self.assertEqual(recorded.grade, "C")
+        self.assertFalse(recorded.merge_ready)
+
+    def test_a_missing_grade_is_not_merge_ready(self) -> None:
+        runner = self._status(
+            {
+                "id": 1,
+                "context": "opencode-review-grade",
+                "state": "neutral",
+                "description": "GRADE=none needs a human merge",
+            }
+        )
+
+        recorded = read_status("abc1234", "owner/name", runner)
+
+        self.assertEqual(recorded.grade, "")
         self.assertFalse(recorded.merge_ready)
 
     def test_a_missing_status_is_not_merge_ready(self) -> None:
@@ -349,7 +385,17 @@ class GateTest(unittest.TestCase):
         runner = self._runner()
 
         exit_code = command_gate(
-            parse("gate", "--pr", "57", "--grade", "A", "--repo", "owner/name"),
+            parse(
+                "gate",
+                "--pr",
+                "57",
+                "--grade",
+                "A",
+                "--reviewed-sha",
+                "abc1234",
+                "--repo",
+                "owner/name",
+            ),
             runner=runner,
             echo=silent,
             warn=silent,
@@ -367,7 +413,17 @@ class GateTest(unittest.TestCase):
         runner = self._runner()
 
         command_gate(
-            parse("gate", "--pr", "57", "--grade", "A", "--repo", "owner/name"),
+            parse(
+                "gate",
+                "--pr",
+                "57",
+                "--grade",
+                "A",
+                "--reviewed-sha",
+                "abc1234",
+                "--repo",
+                "owner/name",
+            ),
             runner=runner,
             echo=silent,
             warn=silent,
@@ -382,7 +438,17 @@ class GateTest(unittest.TestCase):
         runner = self._runner()
 
         exit_code = command_gate(
-            parse("gate", "--pr", "57", "--grade", "B", "--repo", "owner/name"),
+            parse(
+                "gate",
+                "--pr",
+                "57",
+                "--grade",
+                "B",
+                "--reviewed-sha",
+                "abc1234",
+                "--repo",
+                "owner/name",
+            ),
             runner=runner,
             echo=silent,
             warn=silent,
@@ -400,7 +466,15 @@ class GateTest(unittest.TestCase):
         runner = self._runner()
 
         exit_code = command_gate(
-            parse("gate", "--pr", "57", "--repo", "owner/name"),
+            parse(
+                "gate",
+                "--pr",
+                "57",
+                "--reviewed-sha",
+                "abc1234",
+                "--repo",
+                "owner/name",
+            ),
             runner=runner,
             echo=silent,
             warn=silent,
@@ -410,6 +484,133 @@ class GateTest(unittest.TestCase):
         self.assertFalse(runner.ran("pr merge"))
         self.assertTrue(runner.ran("--remove-label", "automerge"))
         self.assertTrue(runner.ran("statuses/abc1234", "GRADE=none needs a human merge"))
+
+    def test_a_moved_head_commit_is_not_graded_and_not_merged(self) -> None:
+        # The pull request received a commit while the review ran: the
+        # grade belongs to the reviewed commit and must not be applied to
+        # the new head commit.
+        runner = self._runner()
+        warnings: list[str] = []
+
+        exit_code = command_gate(
+            parse(
+                "gate",
+                "--pr",
+                "57",
+                "--grade",
+                "A",
+                "--reviewed-sha",
+                "old1234",
+                "--repo",
+                "owner/name",
+            ),
+            runner=runner,
+            echo=silent,
+            warn=warnings.append,
+        )
+
+        self.assertEqual(exit_code, 1)
+        self.assertFalse(runner.ran("statuses/"))
+        self.assertFalse(runner.ran("pr merge"))
+        self.assertFalse(runner.ran("--add-label"))
+        self.assertTrue(runner.ran("--remove-label", "automerge"))
+        self.assertTrue(any("head commit moved" in warning for warning in warnings))
+
+    def test_an_unresolved_head_commit_is_not_graded_and_not_merged(self) -> None:
+        runner = FakeRunner({("pr view", "headRefOid"): CommandResult(1, "", "HTTP 500")})
+        warnings: list[str] = []
+
+        exit_code = command_gate(
+            parse(
+                "gate",
+                "--pr",
+                "57",
+                "--grade",
+                "A",
+                "--reviewed-sha",
+                "abc1234",
+                "--repo",
+                "owner/name",
+            ),
+            runner=runner,
+            echo=silent,
+            warn=warnings.append,
+        )
+
+        self.assertEqual(exit_code, 1)
+        self.assertFalse(runner.ran("statuses/"))
+        self.assertFalse(runner.ran("pr merge"))
+        self.assertFalse(runner.ran("--add-label"))
+        self.assertTrue(runner.ran("--remove-label", "automerge"))
+        self.assertTrue(any("head commit" in warning for warning in warnings))
+
+    def test_a_failed_merge_is_reported(self) -> None:
+        runner = FakeRunner(
+            {
+                ("pr view", "headRefOid"): CommandResult(0, "abc1234\n"),
+                ("pr merge",): CommandResult(1, "", "checks are running"),
+            }
+        )
+        messages: list[str] = []
+
+        exit_code = command_gate(
+            parse(
+                "gate",
+                "--pr",
+                "57",
+                "--grade",
+                "A",
+                "--reviewed-sha",
+                "abc1234",
+                "--repo",
+                "owner/name",
+            ),
+            runner=runner,
+            echo=messages.append,
+            warn=silent,
+        )
+
+        self.assertEqual(exit_code, 1)
+        self.assertTrue(
+            any(
+                "could not complete" in message and "merge" in message
+                for message in messages
+            )
+        )
+
+    def test_a_failed_label_removal_is_reported(self) -> None:
+        runner = FakeRunner(
+            {
+                ("pr view", "headRefOid"): CommandResult(0, "abc1234\n"),
+                ("--remove-label",): CommandResult(1, "", "HTTP 403"),
+            }
+        )
+        messages: list[str] = []
+
+        exit_code = command_gate(
+            parse(
+                "gate",
+                "--pr",
+                "57",
+                "--grade",
+                "B",
+                "--reviewed-sha",
+                "abc1234",
+                "--repo",
+                "owner/name",
+            ),
+            runner=runner,
+            echo=messages.append,
+            warn=silent,
+        )
+
+        self.assertEqual(exit_code, 1)
+        self.assertTrue(
+            any(
+                "could not complete" in message and "remove_label" in message
+                for message in messages
+            )
+        )
 
 
 class EnforceTest(unittest.TestCase):

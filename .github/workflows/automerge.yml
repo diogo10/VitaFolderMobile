@@ -18,6 +18,10 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  # The enforcement step drops the `automerge` label of the pull requests
+  # that are not merge-ready: labels live on issues, so writing them
+  # needs `issues: write`.
+  issues: write
   checks: read
   statuses: read
 
@@ -47,16 +51,17 @@ jobs:
           # request open for a human.
           #
           # The gate script is taken from the base branch, so a pull request
-          # cannot change the rules that decide whether it is merged.
+          # cannot change the rules that decide whether it is merged. When
+          # it cannot be read, the step fails: the working-tree copy is the
+          # one the pull request controls (fail closed).
           BASE="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name 2>/dev/null || echo main)"
           git fetch origin "$BASE" --depth=1 || true
-          if git cat-file -e "origin/$BASE:tool/review_merge_gate.py" 2>/dev/null; then
-            git show "origin/$BASE:tool/review_merge_gate.py" > /tmp/review_merge_gate.py
-            echo "Using the merge gate from origin/$BASE."
-          else
-            cp tool/review_merge_gate.py /tmp/review_merge_gate.py
-            echo "::warning::Could not read the merge gate from origin/$BASE; using the working-tree copy."
+          if ! git cat-file -e "origin/$BASE:tool/review_merge_gate.py" 2>/dev/null; then
+            echo "::error::Could not read the merge gate from origin/$BASE; refusing to merge anything (fail closed)."
+            exit 1
           fi
+          git show "origin/$BASE:tool/review_merge_gate.py" > /tmp/review_merge_gate.py
+          echo "Using the merge gate from origin/$BASE."
           # The gate fails (and nothing is merged) when it cannot tell
           # whether a pull request is merge-ready.
           python3 /tmp/review_merge_gate.py enforce

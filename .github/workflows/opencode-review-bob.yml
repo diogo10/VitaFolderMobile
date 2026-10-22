@@ -109,13 +109,16 @@ jobs:
         run: |
           set -euo pipefail
 
-          if git cat-file -e "origin/$BASE_BRANCH:tool/review_merge_gate.py" 2>/dev/null; then
-            git show "origin/$BASE_BRANCH:tool/review_merge_gate.py" > /tmp/review_merge_gate.py
-            echo "Using the merge gate from origin/$BASE_BRANCH."
-          else
-            cp tool/review_merge_gate.py /tmp/review_merge_gate.py
-            echo "::warning::Could not read the merge gate from origin/$BASE_BRANCH; using the working-tree copy."
+          # The gate comes from the base branch, so a pull request cannot
+          # change the rules it is merged by. When it cannot be read, the
+          # step fails: the working-tree copy is the one the pull request
+          # controls (fail closed).
+          if ! git cat-file -e "origin/$BASE_BRANCH:tool/review_merge_gate.py" 2>/dev/null; then
+            echo "::error::Could not read the merge gate from origin/$BASE_BRANCH; refusing to review (fail closed)."
+            exit 1
           fi
+          git show "origin/$BASE_BRANCH:tool/review_merge_gate.py" > /tmp/review_merge_gate.py
+          echo "Using the merge gate from origin/$BASE_BRANCH."
 
       - name: "Fail closed: drop a stale automerge label before the review"
         env:
@@ -234,6 +237,21 @@ jobs:
             gh pr checkout "$PR_NUMBER"
           fi
 
+          # The commit that is reviewed. It is captured next to the diff,
+          # so the merge gate can refuse to apply the grade to a pull
+          # request that received new commits while the review ran.
+          #
+          # The head commit is read from the API instead of
+          # `git rev-parse HEAD`: the checkout holds the merge ref of the
+          # pull request, so HEAD is the merge commit and not the head
+          # commit the merge gate compares the grade against.
+          REVIEWED_SHA="$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)"
+          if [ -z "$REVIEWED_SHA" ]; then
+            echo "::error::Could not resolve the head commit of PR #$PR_NUMBER."
+            exit 1
+          fi
+          echo "Reviewed commit: $REVIEWED_SHA"
+
           git diff "origin/$BASE...HEAD" > /tmp/pr_diff.txt 2>/dev/null || true
           if [ ! -s /tmp/pr_diff.txt ]; then
             gh pr diff "$PR_NUMBER" > /tmp/pr_diff.txt
@@ -242,6 +260,14 @@ jobs:
             echo "::error::PR diff is empty, nothing to review."
             exit 1
           fi
+          # The diff must describe the reviewed commit: when the pull
+          # request moved while the diff was built, the review would be
+          # of a commit that is not the one the grade is bound to.
+          if [ "$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)" != "$REVIEWED_SHA" ]; then
+            echo "::error::PR #$PR_NUMBER received a new commit while the diff was built; refusing to review a moving target."
+            exit 1
+          fi
+          echo "reviewed_sha=$REVIEWED_SHA" >> "$GITHUB_OUTPUT"
 
           # NOTE: `gh pr diff` has no --stat flag, so build the stat from
           # `git diff` first and fall back to the PR metadata API.
@@ -371,13 +397,12 @@ jobs:
           # (the models answer with a short status line first) and also
           # requires the mandated "## Findings" section.
           GRADE=""
-          if git cat-file -e "origin/$BASE:tool/parse_review_grade.py" 2>/dev/null; then
-            git show "origin/$BASE:tool/parse_review_grade.py" > /tmp/parse_review_grade.py
-            echo "Using the grade parser from origin/$BASE."
-          else
-            cp tool/parse_review_grade.py /tmp/parse_review_grade.py
-            echo "::warning::Could not read the grade parser from origin/$BASE; using the working-tree copy."
+          if ! git cat-file -e "origin/$BASE:tool/parse_review_grade.py" 2>/dev/null; then
+            echo "::error::Could not read the grade parser from origin/$BASE; refusing to grade the review (fail closed)."
+            exit 1
           fi
+          git show "origin/$BASE:tool/parse_review_grade.py" > /tmp/parse_review_grade.py
+          echo "Using the grade parser from origin/$BASE."
           if GRADE="$(python3 /tmp/parse_review_grade.py --text-out /tmp/review_comment.txt < /tmp/review_run.jsonl)"; then
             echo "Parsed grade: $GRADE"
           else
@@ -393,12 +418,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REVIEW_PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
           REVIEW_GRADE: ${{ steps.review.outputs.grade }}
+          REVIEW_REVIEWED_SHA: ${{ steps.review.outputs.reviewed_sha }}
         run: |
           set -euo pipefail
 
           PR_NUMBER="$REVIEW_PR_NUMBER"
           GRADE="$REVIEW_GRADE"
-          echo "PR #$PR_NUMBER graded: ${GRADE:-<none>}"
+          REVIEWED_SHA="$REVIEW_REVIEWED_SHA"
+          echo "PR #$PR_NUMBER graded: ${GRADE:-<none>} (reviewed commit: $REVIEWED_SHA)"
 
           # GitHub caps comment bodies; truncate long reviews for the comment
           # on line boundaries.
@@ -421,4 +448,11 @@ jobs:
           # label. The gate itself lives in tool/review_merge_gate.py (taken
           # from the base branch), so it is unit tested and a pull request
           # cannot change the rules it is merged by.
-          python3 /tmp/review_merge_gate.py gate --pr "$PR_NUMBER" --grade "$GRADE"
+          #
+          # The grade is bound to the reviewed commit: when the head commit
+          # moved while the review ran, the gate records nothing and merges
+          # nothing (fail closed). The re-review of the new commit decides.
+          python3 /tmp/review_merge_gate.py gate \
+            --pr "$PR_NUMBER" \
+            --grade "$GRADE" \
+            --reviewed-sha "$REVIEWED_SHA"

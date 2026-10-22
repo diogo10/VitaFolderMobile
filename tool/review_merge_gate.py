@@ -17,6 +17,11 @@ final message by `tool/parse_review_grade.py` and handed over as-is. Only
 the exact grade `A` merges - everything else holds the pull request, so the
 gate fails closed.
 
+The grade is bound to the commit that was actually reviewed
+(`--reviewed-sha`): when the head commit of the pull request moved while
+the review ran, the grade belongs to a commit that is no longer the head,
+so it is not recorded and nothing is merged.
+
 The verdict is also recorded as a commit status on the head commit of the
 pull request (`opencode-review-grade`). The auto-merge workflow re-checks
 that status before it merges anything, so a pull request that received new
@@ -29,8 +34,9 @@ Usage:
   # commit as "review pending").
   python3 tool/review_merge_gate.py prepare --pr 57
 
-  # After the review: record the grade and apply the gate.
-  python3 tool/review_merge_gate.py gate --pr 57 --grade A
+  # After the review: record the grade and apply the gate. The reviewed
+  # commit is the head commit of the pull request when the diff was built.
+  python3 tool/review_merge_gate.py gate --pr 57 --grade A --reviewed-sha 1dcfe7a
 
   # Before the auto-merge workflow merges: drop the label from every open
   # pull request that is not merge-ready.
@@ -38,8 +44,9 @@ Usage:
 
 Exit codes:
   0  the gate ran (a failing GitHub call is reported as a warning)
-  1  the gate could not be applied (e.g. a stale label could not be
-     dropped, so nothing was merged)
+  1  the gate could not be applied (e.g. the reviewed commit is no longer
+     the head commit, or a stale label could not be dropped, so nothing
+     was merged)
   2  the command line was invalid
 """
 
@@ -50,7 +57,6 @@ import json
 import os
 import re
 import subprocess
-import sys
 from dataclasses import dataclass
 from typing import Callable, Sequence
 
@@ -170,6 +176,12 @@ class ActionResult:
     name: str
     ok: bool
     output: str
+    best_effort: bool = False
+
+    @property
+    def failed(self) -> bool:
+        """Whether the action failed and had to be completed."""
+        return not self.ok and not self.best_effort
 
 
 def plan_actions(pr_number: str, grade: str | None) -> tuple[Action, ...]:
@@ -246,7 +258,9 @@ def execute_actions(
         result = runner(action.command)
         if result.ok:
             succeeded.add(action.name)
-        results.append(ActionResult(action.name, result.ok, result.output))
+        results.append(
+            ActionResult(action.name, result.ok, result.output, action.best_effort)
+        )
         if result.ok:
             echo(f"Ran '{action.name}'.")
         elif action.best_effort:
@@ -268,9 +282,17 @@ class RecordedGrade:
 
     @property
     def grade(self) -> str:
-        """The recorded grade letter, or "" when there is none."""
+        """The recorded grade letter, or "" when there is none.
+
+        The status descriptions of a missing grade (`none`) and of a
+        running review (`pending`) carry no grade letter, so they are
+        reported as no grade at all.
+        """
         match = GRADE_STATUS_PATTERN.match(self.description.strip())
-        return match.group(1) if match else ""
+        if match is None:
+            return ""
+        recorded = match.group(1)
+        return recorded if recorded in GRADES else ""
 
     @property
     def merge_ready(self) -> bool:
@@ -353,6 +375,24 @@ def remove_label(pr_number: str, runner: Runner = run_command) -> CommandResult:
     return runner(("gh", "pr", "edit", pr_number, "--remove-label", AUTOMERGE_LABEL))
 
 
+def drop_automerge_label(
+    pr_number: str,
+    runner: Runner = run_command,
+    echo: Echo = echo,
+    warn: Echo = warn,
+) -> bool:
+    """Drops the `automerge` label of a pull request.
+
+    Returns whether the label could be dropped.
+    """
+    removal = remove_label(pr_number, runner)
+    if removal.ok:
+        echo(f"Removed the '{AUTOMERGE_LABEL}' label.")
+        return True
+    warn(f"Could not remove the '{AUTOMERGE_LABEL}' label: {removal.output}")
+    return False
+
+
 def command_prepare(
     args: argparse.Namespace,
     runner: Runner = run_command,
@@ -395,37 +435,90 @@ def command_prepare(
     return 0
 
 
+def gate_exit_code(
+    decision: MergeDecision,
+    results: Sequence[ActionResult],
+    warn: Echo = warn,
+) -> int:
+    """Returns the exit code of the gate for the actions it ran.
+
+    The gate fails when the merge it promised did not happen, or when the
+    `automerge` label it had to drop is still there: both mean that the
+    pull request must not be merged (fail closed).
+    """
+    if decision.merge_ready:
+        merge = next((result for result in results if result.name == "merge"), None)
+        if merge is None or not merge.ok:
+            warn("The pull request was not merged by the gate (fail closed).")
+            return 1
+        return 0
+    removal = next(
+        (result for result in results if result.name == "remove_label"), None
+    )
+    if removal is None or not removal.ok:
+        warn(
+            f"The '{AUTOMERGE_LABEL}' label could not be dropped; the "
+            "auto-merge workflow may still pick the pull request up "
+            "(fail closed)."
+        )
+        return 1
+    return 0
+
+
 def command_gate(
     args: argparse.Namespace,
     runner: Runner = run_command,
     echo: Echo = echo,
     warn: Echo = warn,
 ) -> int:
-    """Records the review grade and applies the merge gate."""
+    """Records the review grade and applies the merge gate.
+
+    The grade belongs to the commit that was reviewed (`--reviewed-sha`):
+    when the head commit of the pull request moved while the review ran,
+    the grade is not recorded and nothing is merged (fail closed). The
+    re-review that the new commit triggers decides then.
+    """
     repository = resolve_repository(runner, args.repo)
     decision = decide(args.grade)
     echo(
         f"Grade {decision.grade or '<none>'}: "
         f"{'merge-ready' if decision.merge_ready else 'not merge-ready'}."
     )
+    reviewed_sha = str(getattr(args, "reviewed_sha", "") or "").strip()
     sha = head_sha(args.pr, runner)
     if not sha:
-        warn("Could not resolve the head commit; the review grade was not recorded.")
-    else:
-        status = post_status(
-            sha,
-            decision.status_state,
-            decision.status_description,
-            repository,
-            runner,
+        warn(
+            "Could not resolve the head commit of the pull request; the "
+            "review grade was not recorded and nothing was merged (fail closed)."
         )
-        if not status.ok:
-            warn(f"Could not record the review grade: {status.output}")
-        else:
-            echo(f"Recorded the review grade on {sha[:7]}.")
-    execute_actions(plan_actions(args.pr, args.grade), runner, echo, warn)
+        drop_automerge_label(args.pr, runner, echo, warn)
+        return 1
+    if reviewed_sha != sha:
+        warn(
+            f"The head commit moved while the review ran "
+            f"({reviewed_sha[:7]} -> {sha[:7]}); the grade belongs to a commit "
+            "that is no longer the head, so it was not recorded and nothing "
+            "was merged (fail closed)."
+        )
+        drop_automerge_label(args.pr, runner, echo, warn)
+        return 1
+    status = post_status(
+        sha,
+        decision.status_state,
+        decision.status_description,
+        repository,
+        runner,
+    )
+    if not status.ok:
+        warn(f"Could not record the review grade: {status.output}")
+    else:
+        echo(f"Recorded the review grade on {sha[:7]}.")
+    results = execute_actions(plan_actions(args.pr, args.grade), runner, echo, warn)
+    failed = [result.name for result in results if result.failed]
+    if failed:
+        echo(f"The merge gate could not complete these steps: {', '.join(failed)}.")
     echo(f"decision={'merge' if decision.merge_ready else 'hold'}")
-    return 0
+    return gate_exit_code(decision, results, warn)
 
 
 def command_enforce(
@@ -531,6 +624,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--grade",
         default="",
         help="The review grade (A, B, C or D). Everything else holds the pull request.",
+    )
+    gate_parser.add_argument(
+        "--reviewed-sha",
+        required=True,
+        help=(
+            "The commit that was reviewed. The gate refuses to record the "
+            "grade when it is no longer the head commit of the pull request."
+        ),
     )
 
     subparsers.add_parser(
