@@ -135,6 +135,12 @@ GoRouter createRouter({
   /// When `false` (the default), the `/paywall` route redirects home and
   /// usage limits are not enforced, so the paywall is effectively disabled.
   bool enableLimitAndPaywall = false,
+
+  /// Whether Remote Config has enabled the "Sign in with Apple" button.
+  ///
+  /// When `false` (the default), the Apple button is hidden on the
+  /// sign-in and sign-up screens.
+  bool showAppleLogin = false,
 }) {
   final notifier = authStateNotifier;
   final coordinator = refreshCoordinator ?? TabRefreshCoordinator();
@@ -191,7 +197,7 @@ GoRouter createRouter({
         path: AppRoutes.signUp,
         builder: (context, state) => BlocProvider<SignUpCubit>(
           create: (_) => resolveSignUpCubit(),
-          child: const SignUpView(),
+          child: SignUpView(showAppleLogin: showAppleLogin),
         ),
       ),
       GoRoute(
@@ -428,7 +434,10 @@ GoRouter createRouter({
                   };
                   return BlocProvider<AccountCubit>.value(
                     value: cubit,
-                    child: AccountView(onAuthChanged: coordinator.refreshAll),
+                    child: AccountView(
+                      onAuthChanged: coordinator.refreshAll,
+                      showAppleLogin: showAppleLogin,
+                    ),
                   );
                 },
               ),

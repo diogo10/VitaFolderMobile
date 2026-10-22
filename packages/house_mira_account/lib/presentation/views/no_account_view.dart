@@ -8,7 +8,13 @@ import 'package:house_mira_account/presentation/views/account_no_account_header_
 import 'package:house_mira_core/theme/sand_palette.dart';
 
 class NoAccountView extends StatefulWidget {
-  const NoAccountView({super.key});
+  const NoAccountView({super.key, this.showAppleLogin = false});
+
+  /// Whether the "Continue with Apple" button may be rendered.
+  ///
+  /// Forwarded from the Remote Config flag `show_apple_login` (defaults to
+  /// `false`, so the button stays hidden until the flag is enabled).
+  final bool showAppleLogin;
 
   @override
   State<NoAccountView> createState() => _NoAccountViewState();
@@ -48,6 +54,7 @@ class _NoAccountViewState extends State<NoAccountView> {
                       emailController: _emailController,
                       passwordController: _passwordController,
                       isLoading: state is AccountLoading,
+                      showAppleLogin: widget.showAppleLogin,
                       onSignIn: () async {
                         await context.read<AccountCubit>().signIn(
                           _emailController.text,

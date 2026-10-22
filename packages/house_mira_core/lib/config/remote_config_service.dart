@@ -38,6 +38,23 @@ class RemoteConfigService {
 
   static const _kEnableLimitAndPaywall = 'enable_limit_and_paywall';
 
+  /// Feature flag: when `true`, the "Sign in with Apple" button is
+  /// rendered; when `false` (the default), the button is hidden.
+  ///
+  /// The flag only gates the button; the platform gate (native Sign in
+  /// with Apple exists on Apple platforms only) still applies, so the
+  /// button is shown when the flag is on **and** the platform supports
+  /// it.
+  ///
+  /// Returns `false` before [initialize] has installed a live config.
+  bool get showAppleLogin {
+    final remoteConfig = _remoteConfig;
+    if (remoteConfig == null) return false;
+    return remoteConfig.getBool(_kShowAppleLogin);
+  }
+
+  static const _kShowAppleLogin = 'show_apple_login';
+
   /// Sets defaults, fetches, and activates Remote Config.
   ///
   /// Installs the live [FirebaseRemoteConfig.instance] on first call when
@@ -45,11 +62,13 @@ class RemoteConfigService {
   /// (it is: production calls this after `Firebase.initializeApp`).
   /// Failures are logged and the cached defaults are used, so a remote
   /// config outage never blocks the app and never accidentally enables
-  /// paid gating. The default for [_kEnableLimitAndPaywall] is `false`.
+  /// paid gating. The default for [_kEnableLimitAndPaywall] and
+  /// [_kShowAppleLogin] is `false`.
   Future<void> initialize() async {
     _remoteConfig ??= FirebaseRemoteConfig.instance;
     await _remoteConfig!.setDefaults(const {
       _kEnableLimitAndPaywall: false,
+      _kShowAppleLogin: false,
     });
     try {
       final activated = await _remoteConfig!.fetchAndActivate();
@@ -58,6 +77,7 @@ class RemoteConfigService {
         tag: 'remote_config',
         context: {
           'enable_limit_and_paywall': enableLimitAndPaywall,
+          'show_apple_login': showAppleLogin,
           'activated': activated,
         },
       );

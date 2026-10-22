@@ -140,6 +140,8 @@ void main() {
     AuthService? authService,
     OnboardingLocalDatasource Function()? onboardingDatasourceFactory,
     AppLogger Function()? appLoggerFactory,
+    bool showAppleLogin = false,
+    String? initialLocation,
   }) {
     final resolvedAuth = authService ?? _MockAuthService();
     final getPeopleUsecase = _MockGetPeopleUsecase();
@@ -201,6 +203,7 @@ void main() {
     return createRouter(
       onboardingCompleted: onboardingCompleted,
       authStateNotifier: notifier,
+      initialLocation: initialLocation,
       homeCubitFactory: () => homeCubit,
       peopleCubitFactory: () => peopleCubit,
       remindersCubitFactory: () => remindersCubit,
@@ -210,6 +213,7 @@ void main() {
       onboardingDatasourceFactory:
           onboardingDatasourceFactory ?? OnboardingLocalDatasource.new,
       appLoggerFactory: appLoggerFactory,
+      showAppleLogin: showAppleLogin,
     );
   }
 
@@ -599,6 +603,64 @@ void main() {
 
       expect(find.byType(PaywallScreen), findsOneWidget);
       verify(() => paywallCubit.loadPaywall()).called(1);
+    });
+  });
+
+  group('Apple login feature flag', () {
+    testWidgets('forwards the flag to the sign-up screen', (tester) async {
+      final notifier = AuthStateNotifier();
+      addTearDown(notifier.dispose);
+      final router = buildRouter(
+        notifier: notifier,
+        showAppleLogin: true,
+        initialLocation: '/sign-up',
+      );
+
+      await pumpRouter(tester, router);
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+
+      expect(
+        tester.widget<SignUpView>(find.byType(SignUpView)).showAppleLogin,
+        isTrue,
+      );
+    });
+
+    testWidgets('keeps the Apple login hidden by default', (tester) async {
+      final notifier = AuthStateNotifier();
+      addTearDown(notifier.dispose);
+      final router = buildRouter(
+        notifier: notifier,
+        initialLocation: '/sign-up',
+      );
+
+      await pumpRouter(tester, router);
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+
+      expect(
+        tester.widget<SignUpView>(find.byType(SignUpView)).showAppleLogin,
+        isFalse,
+      );
+    });
+
+    testWidgets('forwards the flag to the account screen', (tester) async {
+      final notifier = AuthStateNotifier();
+      addTearDown(notifier.dispose);
+      final router = buildRouter(
+        notifier: notifier,
+        showAppleLogin: true,
+        initialLocation: '/account',
+      );
+
+      await pumpRouter(tester, router);
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+
+      expect(
+        tester.widget<AccountView>(find.byType(AccountView)).showAppleLogin,
+        isTrue,
+      );
     });
   });
 

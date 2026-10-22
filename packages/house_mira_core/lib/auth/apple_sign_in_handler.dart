@@ -15,6 +15,15 @@ bool get isAppleSignInSupported =>
     defaultTargetPlatform == TargetPlatform.iOS ||
     defaultTargetPlatform == TargetPlatform.macOS;
 
+/// Whether the "Sign in with Apple" button should be rendered.
+///
+/// Two gates apply: the remote feature flag (`show_apple_login`) must be
+/// enabled, and the platform must support the native flow
+/// ([isAppleSignInSupported]). The flag alone never reveals the button on
+/// a platform where it would dead-end.
+bool isAppleLoginButtonVisible({required bool featureEnabled}) =>
+    featureEnabled && isAppleSignInSupported;
+
 /// Apple authentication credentials retrieved from the native sign-in flow.
 class AppleAuthCredentials {
   /// Creates the credentials used for the Supabase ID token exchange.

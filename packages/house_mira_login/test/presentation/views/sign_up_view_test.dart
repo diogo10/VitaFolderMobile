@@ -89,13 +89,17 @@ void main() {
     }
   }
 
-  Future<void> pumpSignUp(WidgetTester tester) async {
+  Future<void> pumpSignUp(
+    WidgetTester tester, {
+    bool showAppleLogin = false,
+  }) async {
     final router = GoRouter(
       initialLocation: '/sign-up',
       routes: [
         GoRoute(
           path: '/sign-up',
-          builder: (context, state) => const SignUpView(),
+          builder: (context, state) =>
+              SignUpView(showAppleLogin: showAppleLogin),
         ),
         GoRoute(
           path: '/home',
@@ -305,7 +309,7 @@ void main() {
       tester,
     ) async {
       await onIosPlatform(() async {
-        await pumpSignUp(tester);
+        await pumpSignUp(tester, showAppleLogin: true);
 
         expect(find.text('Sign up with Apple'), findsOneWidget);
         expect(find.byIcon(Icons.apple), findsOneWidget);
@@ -317,7 +321,7 @@ void main() {
     ) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       try {
-        await pumpSignUp(tester);
+        await pumpSignUp(tester, showAppleLogin: true);
 
         expect(find.text('Sign up with Apple'), findsNothing);
         expect(find.byIcon(Icons.apple), findsNothing);
@@ -327,11 +331,23 @@ void main() {
       }
     });
 
-    testWidgets('delegates to Apple sign-in from the Apple button', (
+    testWidgets('hides the Apple button while the feature flag is off', (
       tester,
     ) async {
       await onIosPlatform(() async {
         await pumpSignUp(tester);
+
+        expect(find.text('Sign up with Apple'), findsNothing);
+        expect(find.byIcon(Icons.apple), findsNothing);
+        expect(find.text('Sign up with Google'), findsOneWidget);
+      });
+    });
+
+    testWidgets('delegates to Apple sign-in from the Apple button', (
+      tester,
+    ) async {
+      await onIosPlatform(() async {
+        await pumpSignUp(tester, showAppleLogin: true);
 
         await tester.ensureVisible(find.text('Sign up with Apple'));
         await tester.pump();
@@ -350,7 +366,7 @@ void main() {
         'email': 'user@example.com',
       });
       await onIosPlatform(() async {
-        await pumpSignUp(tester);
+        await pumpSignUp(tester, showAppleLogin: true);
 
         await tester.ensureVisible(find.text('Sign up with Apple'));
         await tester.pump();
@@ -367,7 +383,7 @@ void main() {
     ) async {
       authService.appleError = const AuthException('Apple sign-in failed.');
       await onIosPlatform(() async {
-        await pumpSignUp(tester);
+        await pumpSignUp(tester, showAppleLogin: true);
         final l = AppLocalizations.of(tester.element(find.byType(SignUpView)))!;
 
         await tester.ensureVisible(find.text(l.signUpContinueApple));

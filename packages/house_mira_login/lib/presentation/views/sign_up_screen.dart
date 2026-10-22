@@ -14,7 +14,15 @@ import 'package:house_mira_core/generated/app_localizations.dart';
 import 'package:house_mira_core/theme/sand_palette.dart';
 
 class SignUpView extends StatefulWidget {
-  const SignUpView({super.key});
+  const SignUpView({super.key, this.showAppleLogin = false});
+
+  /// Whether the "Sign up with Apple" button may be rendered.
+  ///
+  /// Comes from the Remote Config flag `show_apple_login` (defaults to
+  /// `false`, so the button stays hidden until the flag is enabled). The
+  /// button is only rendered on platforms where native Sign in with Apple
+  /// works.
+  final bool showAppleLogin;
 
   @override
   State<SignUpView> createState() => _SignUpViewState();
@@ -133,10 +141,13 @@ class _SignUpViewState extends State<SignUpView> {
                                   .signInWithGoogle();
                             },
                     ),
-                    // Native Sign in with Apple only exists on Apple
-                    // platforms: the button is hidden elsewhere instead of
-                    // leading to a dead end.
-                    if (isAppleSignInSupported) ...[
+                    // The Apple button is opt-in via the Remote Config
+                    // flag `show_apple_login` (default off) and only
+                    // exists on Apple platforms: elsewhere it is hidden
+                    // instead of leading to a dead end.
+                    if (isAppleLoginButtonVisible(
+                      featureEnabled: widget.showAppleLogin,
+                    )) ...[
                       const SizedBox(height: 12),
                       SandSocialButton(
                         icon: const Icon(

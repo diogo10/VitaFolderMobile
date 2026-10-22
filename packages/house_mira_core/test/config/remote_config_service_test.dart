@@ -16,6 +16,9 @@ void main() {
     when(
       () => remoteConfig.getBool('enable_limit_and_paywall'),
     ).thenReturn(false);
+    when(
+      () => remoteConfig.getBool('show_apple_login'),
+    ).thenReturn(false);
     service = RemoteConfigService(
       remoteConfig: remoteConfig,
       logger: AppLogger(),
@@ -43,13 +46,30 @@ void main() {
     });
   });
 
+  group('showAppleLogin', () {
+    test('defaults to false when no live config is wired', () {
+      final noConfig = RemoteConfigService(logger: AppLogger());
+      expect(noConfig.showAppleLogin, isFalse);
+    });
+
+    test('returns false when the flag is off', () {
+      when(() => remoteConfig.getBool('show_apple_login')).thenReturn(false);
+      expect(service.showAppleLogin, isFalse);
+    });
+
+    test('returns true when the flag is on', () {
+      when(() => remoteConfig.getBool('show_apple_login')).thenReturn(true);
+      expect(service.showAppleLogin, isTrue);
+    });
+  });
+
   group('initialize', () {
-    test('sets the flag default to false and activates', () async {
+    test('sets the flag defaults to false and activates', () async {
       when(() => remoteConfig.fetchAndActivate()).thenAnswer((_) async => true);
       await service.initialize();
       verify(
         () => remoteConfig.setDefaults(
-          {'enable_limit_and_paywall': false},
+          {'enable_limit_and_paywall': false, 'show_apple_login': false},
         ),
       ).called(1);
       verify(() => remoteConfig.fetchAndActivate()).called(1);
@@ -62,6 +82,7 @@ void main() {
       // Should not throw; defaults keep the flag off.
       await service.initialize();
       expect(service.enableLimitAndPaywall, isFalse);
+      expect(service.showAppleLogin, isFalse);
     });
   });
 }

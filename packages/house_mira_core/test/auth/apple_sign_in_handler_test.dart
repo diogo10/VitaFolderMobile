@@ -270,4 +270,29 @@ void main() {
       expect(isAppleSignInSupported, isFalse);
     });
   });
+
+  group('isAppleLoginButtonVisible', () {
+    tearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    test('is hidden when the feature flag is off', () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+
+      expect(
+        isAppleLoginButtonVisible(featureEnabled: false),
+        isFalse,
+      );
+    });
+
+    test('is visible when the feature flag is on', () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+
+      expect(isAppleLoginButtonVisible(featureEnabled: true), isTrue);
+    });
+
+    test('stays hidden on unsupported platforms even when enabled', () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+
+      expect(isAppleLoginButtonVisible(featureEnabled: true), isFalse);
+    });
+  });
 }

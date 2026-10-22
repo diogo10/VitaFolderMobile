@@ -161,6 +161,12 @@ void main() async {
         enableLimitAndPaywall: slInstance<RemoteConfigService>(
           instanceName: 'remoteConfigService',
         ).enableLimitAndPaywall,
+        // The "Sign in with Apple" button is opt-in: the Remote Config
+        // flag `show_apple_login` defaults to false, so the button stays
+        // hidden until it is explicitly enabled in Firebase.
+        showAppleLogin: slInstance<RemoteConfigService>(
+          instanceName: 'remoteConfigService',
+        ).showAppleLogin,
         // Dev-only diagnostics (e.g. the send-test-notification action):
         // visible on dev-flavor debug builds only, never staging/prod and
         // never profile/release.
@@ -177,6 +183,7 @@ class MyApp extends StatefulWidget {
     super.key,
     this.showNotificationTestAction = false,
     this.enableLimitAndPaywall = false,
+    this.showAppleLogin = false,
     this.authStateNotifier,
     this.notificationService,
     this.initialLocation,
@@ -209,6 +216,13 @@ class MyApp extends StatefulWidget {
   /// so the app never gates usage or shows the paywall unless the flag is
   /// explicitly enabled.
   final bool enableLimitAndPaywall;
+
+  /// Whether Remote Config has enabled the "Sign in with Apple" button.
+  ///
+  /// Set from the fetched Remote Config flag `show_apple_login` in `main`;
+  /// defaults to false so the Apple button stays hidden unless the flag is
+  /// explicitly enabled.
+  final bool showAppleLogin;
 
   /// Testing seam (and deep-link entry): overrides the service resolved
   /// from GetIt for notification tap/launch routing.
@@ -307,6 +321,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       appLoggerFactory: widget.appLoggerFactory,
       showNotificationTestAction: widget.showNotificationTestAction,
       enableLimitAndPaywall: widget.enableLimitAndPaywall,
+      showAppleLogin: widget.showAppleLogin,
     );
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
