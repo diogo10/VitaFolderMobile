@@ -19,16 +19,28 @@ class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
 
   static const _notificationsEnabledKey = 'notifications_enabled';
 
+  /// Emits [state] only while the cubit is still open.
+  ///
+  /// The screen owns this cubit through `BlocProvider(create:)`, so
+  /// leaving it closes the cubit while the permission dialog or the
+  /// storage write is still in flight. Emitting into a closed cubit
+  /// throws `Bad state: Cannot emit new states after calling close` and
+  /// crashes the app (FATAL Crashlytics issue `04df8a6a`).
+  void _emitIfOpen(NotificationSettingsState state) {
+    if (isClosed) return;
+    emit(state);
+  }
+
   Future<void> loadSettings() async {
     try {
       final notificationsEnabled = await _storage.getBool(
         _notificationsEnabledKey,
       );
-      emit(
+      _emitIfOpen(
         NotificationSettingsLoaded(notificationsEnabled: notificationsEnabled),
       );
     } on Object catch (_) {
-      emit(NotificationSettingsError());
+      _emitIfOpen(NotificationSettingsError());
     }
   }
 
@@ -38,16 +50,16 @@ class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
       switch (result) {
         case NotificationPermissionResult.granted:
           await _storage.setBool(_notificationsEnabledKey, value: true);
-          emit(_currentLoaded(notificationsEnabled: true));
+          _emitIfOpen(_currentLoaded(notificationsEnabled: true));
         case NotificationPermissionResult.permanentlyDenied:
-          emit(
+          _emitIfOpen(
             _currentLoaded(
               notificationsEnabled: false,
               permissionDenied: NotificationPermissionDenied.permanentlyDenied,
             ),
           );
         case NotificationPermissionResult.denied:
-          emit(
+          _emitIfOpen(
             _currentLoaded(
               notificationsEnabled: false,
               permissionDenied: NotificationPermissionDenied.denied,
@@ -58,7 +70,7 @@ class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
     }
 
     await _storage.setBool(_notificationsEnabledKey, value: false);
-    emit(_currentLoaded(notificationsEnabled: false));
+    _emitIfOpen(_currentLoaded(notificationsEnabled: false));
   }
 
   NotificationSettingsLoaded _currentLoaded({
@@ -98,7 +110,7 @@ class NotificationSettingsCubit extends Cubit<NotificationSettingsState> {
     } on Object catch (_) {
       sent = false;
     }
-    emit(
+    _emitIfOpen(
       _currentLoaded(
         testResult: sent
             ? NotificationTestResult.sent

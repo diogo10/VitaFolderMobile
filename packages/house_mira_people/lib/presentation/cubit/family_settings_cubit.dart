@@ -30,6 +30,18 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
   final DeleteFamilyUsecase _deleteFamilyUsecase;
   final AuthService _authService;
 
+  /// Emits [state] only while the cubit is still open.
+  ///
+  /// The screen owns this cubit through `BlocProvider(create:)`, so
+  /// leaving it closes the cubit while a settings request is still in
+  /// flight. Emitting into a closed cubit throws `Bad state: Cannot emit
+  /// new states after calling close` and crashes the app (FATAL
+  /// Crashlytics issue `04df8a6a`).
+  void _emitIfOpen(FamilySettingsState state) {
+    if (isClosed) return;
+    emit(state);
+  }
+
   Future<void> loadSettings() async {
     emit(const FamilySettingsLoading());
 
@@ -37,7 +49,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
       final result = await _getPeopleUsecase();
 
       result.fold(
-        (error) => emit(
+        (error) => _emitIfOpen(
           const FamilySettingsError(code: FamilySettingsErrorCode.loadFailed),
         ),
         (peopleData) {
@@ -61,7 +73,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
           final role = currentUserRole?.toLowerCase();
           final isAdmin = role == 'admin' || role == 'owner';
 
-          emit(
+          _emitIfOpen(
             FamilySettingsLoaded(
               familyName: peopleData.family.name,
               members: peopleData.people,
@@ -72,7 +84,9 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
         },
       );
     } on Object catch (_) {
-      emit(const FamilySettingsError(code: FamilySettingsErrorCode.loadFailed));
+      _emitIfOpen(
+        const FamilySettingsError(code: FamilySettingsErrorCode.loadFailed),
+      );
     }
   }
 
@@ -139,7 +153,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
       // Get family ID
       final familyIdResult = await _getMyFamilyIdUsecase();
       if (familyIdResult.isLeft()) {
-        emit(
+        _emitIfOpen(
           const FamilySettingsError(code: FamilySettingsErrorCode.saveFailed),
         );
         return;
@@ -147,7 +161,9 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
       final familyId = familyIdResult.fold((_) => null, (id) => id);
 
       if (familyId == null) {
-        emit(const FamilySettingsError(code: FamilySettingsErrorCode.notFound));
+        _emitIfOpen(
+          const FamilySettingsError(code: FamilySettingsErrorCode.notFound),
+        );
         return;
       }
 
@@ -158,7 +174,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
           name: trimmedPending,
         );
         if (nameResult.isLeft()) {
-          emit(
+          _emitIfOpen(
             const FamilySettingsError(code: FamilySettingsErrorCode.saveFailed),
           );
           return;
@@ -172,19 +188,21 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
           userId: memberId,
         );
         if (removeResult.isLeft()) {
-          emit(
+          _emitIfOpen(
             const FamilySettingsError(code: FamilySettingsErrorCode.saveFailed),
           );
           return;
         }
       }
 
-      emit(const FamilySettingsSaveSuccess());
+      _emitIfOpen(const FamilySettingsSaveSuccess());
 
       // Reload settings after save
       await loadSettings();
     } on Object catch (_) {
-      emit(const FamilySettingsError(code: FamilySettingsErrorCode.saveFailed));
+      _emitIfOpen(
+        const FamilySettingsError(code: FamilySettingsErrorCode.saveFailed),
+      );
     }
   }
 
@@ -211,7 +229,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
       // Get family ID
       final familyIdResult = await _getMyFamilyIdUsecase();
       if (familyIdResult.isLeft()) {
-        emit(
+        _emitIfOpen(
           const FamilySettingsError(code: FamilySettingsErrorCode.leaveFailed),
         );
         return;
@@ -219,13 +237,17 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
       final familyId = familyIdResult.fold((_) => null, (id) => id);
 
       if (familyId == null) {
-        emit(const FamilySettingsError(code: FamilySettingsErrorCode.notFound));
+        _emitIfOpen(
+          const FamilySettingsError(code: FamilySettingsErrorCode.notFound),
+        );
         return;
       }
 
       final userId = _authService.currentUserId;
       if (userId == null || userId.isEmpty) {
-        emit(const FamilySettingsError(code: FamilySettingsErrorCode.notFound));
+        _emitIfOpen(
+          const FamilySettingsError(code: FamilySettingsErrorCode.notFound),
+        );
         return;
       }
 
@@ -236,13 +258,13 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
         userId: userId,
       );
       result.fold(
-        (_) => emit(
+        (_) => _emitIfOpen(
           const FamilySettingsError(code: FamilySettingsErrorCode.leaveFailed),
         ),
-        (_) => emit(const FamilySettingsLeaveSuccess()),
+        (_) => _emitIfOpen(const FamilySettingsLeaveSuccess()),
       );
     } on Object catch (_) {
-      emit(
+      _emitIfOpen(
         const FamilySettingsError(code: FamilySettingsErrorCode.leaveFailed),
       );
     }
@@ -260,7 +282,7 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
       // Get family ID
       final familyIdResult = await _getMyFamilyIdUsecase();
       if (familyIdResult.isLeft()) {
-        emit(
+        _emitIfOpen(
           const FamilySettingsError(code: FamilySettingsErrorCode.deleteFailed),
         );
         return;
@@ -268,19 +290,21 @@ class FamilySettingsCubit extends Cubit<FamilySettingsState> {
       final familyId = familyIdResult.fold((_) => null, (id) => id);
 
       if (familyId == null) {
-        emit(const FamilySettingsError(code: FamilySettingsErrorCode.notFound));
+        _emitIfOpen(
+          const FamilySettingsError(code: FamilySettingsErrorCode.notFound),
+        );
         return;
       }
 
       final result = await _deleteFamilyUsecase(familyId: familyId);
       result.fold(
-        (_) => emit(
+        (_) => _emitIfOpen(
           const FamilySettingsError(code: FamilySettingsErrorCode.deleteFailed),
         ),
-        (_) => emit(const FamilySettingsDeleteSuccess()),
+        (_) => _emitIfOpen(const FamilySettingsDeleteSuccess()),
       );
     } on Object catch (_) {
-      emit(
+      _emitIfOpen(
         const FamilySettingsError(code: FamilySettingsErrorCode.deleteFailed),
       );
     }

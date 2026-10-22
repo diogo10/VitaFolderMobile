@@ -340,7 +340,10 @@ containers and CI:
    `140355243144`) → IAM & Admin → Service Accounts → **Create service
    account**. Name it e.g. `house-mira-crashlytics-reader`.
 2. Grant it **Firebase Crashlytics Viewer** (`roles/firebase.crashlytics.viewer`)
-   on that project. Nothing else — it is a read-only role.
+   on that project. Nothing else — it is a read-only role. It covers every
+   report, issue and event read; `crashlytics_create_note` additionally needs
+   `firebasecrashlytics.notes.create` (e.g. `roles/firebase.crashlytics.admin`)
+   and answers `403 PERMISSION_DENIED` without it.
 3. Create a JSON key and store it **outside the repo**:
 
    ```bash
@@ -349,26 +352,38 @@ containers and CI:
    chmod 600 ~/.config/gcloud/firebase-crashlytics-sa.json
    ```
 
-4. Point the tooling at it. The OpenCode background service needs the
-   variable in its environment — set it on the service (this survives
-   restarts, so it is the recommended route):
+4. **Install it as the ADC file.** `firebase-tools` resolves credentials
+   through `google-auth-library`, which looks in this order:
+   `GOOGLE_APPLICATION_CREDENTIALS` → `~/.config/gcloud/application_default_credentials.json`
+   → `gcloud` user credentials → GCE metadata. The **well-known file** is
+   the route that works with the OpenCode MCP server:
 
    ```bash
-   opencode service set env GOOGLE_APPLICATION_CREDENTIALS \
-     "$HOME/.config/gcloud/firebase-crashlytics-sa.json"
+   cp ~/.config/gcloud/firebase-crashlytics-sa.json \
+      ~/.config/gcloud/application_default_credentials.json
+   chmod 600 ~/.config/gcloud/application_default_credentials.json
    ```
 
-   Or export it in the shell that starts OpenCode:
+   The MCP server re-reads ADC on every call, so this takes effect
+   immediately — **no `opencode service restart` and no OpenCode restart**.
+
+   The env var also works, but only when the MCP server process inherits
+   it, which means restarting the service:
 
    ```bash
    export GOOGLE_APPLICATION_CREDENTIALS="$HOME/.config/gcloud/firebase-crashlytics-sa.json"
    opencode service restart   # the background service must re-read the env
    ```
 
-   The devcontainer `~/.bashrc` already exports it conditionally when the
-   key file exists. `opencode.jsonc` forwards
-   `GOOGLE_APPLICATION_CREDENTIALS` to the MCP server process, so no key
-   material ever lands in the repository.
+   `opencode.jsonc` forwards `GOOGLE_APPLICATION_CREDENTIALS` to the MCP
+   server process, so no key material ever lands in the repository. Do not
+   rely on `opencode service set env GOOGLE_APPLICATION_CREDENTIALS ...` —
+   in the devcontainer it answers `Command cancelled` and the value is lost
+   on the next restart (`opencode service get` returns `{}`).
+
+   Keep the key out of the working tree. A copy at the repo root is
+   ignored by `.gitignore` (`*-sa.json`), but the canonical location is
+   `~/.config/gcloud/`.
 
 **B. Firebase CLI login** — for a workstation:
 
@@ -378,9 +393,29 @@ firebase login <authorizationCode>
 ```
 
 The signed-in account needs the **Firebase Crashlytics Viewer**
-(`roles/firebase.crashlytics.viewer`) role on the project. Without
-credentials every Crashlytics tool fails with *"The user is not currently
-logged into the Firebase CLI"*.
+(`roles/firebase.crashlytics.viewer`) role on the project. The login state
+lives in `~/.config/configstore/firebase-tools.json`, which is usually empty
+in a fresh container — prefer option A there. Without credentials every
+Crashlytics tool fails with *"The user is not currently logged into the
+Firebase CLI"*.
+
+### Active project
+
+`firebase_get_project` and `firebase_list_apps` need an **active project**,
+which is a separate thing from the credentials. `firebase_update_environment`
+is not in the tool allow-list, so the active project is pinned by
+`.firebaserc` in the repo root (safe to commit, contains no secrets):
+
+```json
+{
+  "projects": {
+    "default": "diogoprojects-617e2"
+  }
+}
+```
+
+Without it those two tools fail with *"PRECONDITION_FAILED: To proceed
+requires an active project"*. The Crashlytics tools do not need it.
 
 ### App IDs
 
@@ -391,14 +426,77 @@ Every Crashlytics tool takes the Firebase **app id**, not the project id.
 | Android | `1:140355243144:android:a6ac1f14183172f272633d` |
 | iOS | `1:140355243144:ios:08ceded889bb563c72633d` |
 
+The iOS app is registered in Firebase but has no Crashlytics data yet, so
+iOS report calls answer `404 Requested entity was not found`. That is a
+data gap, not an auth failure — do not go chasing credentials when it
+happens.
+
 ### Verify
 
 ```bash
 opencode mcp list   # firebase: connected
+ls -l ~/.config/gcloud/application_default_credentials.json
 ```
 
-Then ask the agent, for example: *"list the top Crashlytics issues for the
-Android app"* or *"fetch the stack trace of the newest fatal crash"*.
+`connected` only means the MCP process started — it says nothing about
+credentials. To prove the credentials work, call a Crashlytics tool
+(`crashlytics_get_report` with `report: "topIssues"`) and check that it
+returns issues instead of *"The user is not currently logged into the
+Firebase CLI"*.
+
+### Asking an agent to review crashes
+
+The MCP server is already wired up in `opencode.jsonc`, so an agent can pull
+live crash data with a plain-language request. Canonical prompts:
+
+| Prompt | What the agent does |
+| --- | --- |
+| *"Review the Firebase Crashes"* | Full triage: fetch, diagnose, fix, verify |
+| *"What are the top crashing issues in the Android app?"* | Report only, no code changes |
+| *"Fetch the stack trace of issue `<issueId>`"* | `crashlytics_batch_get_events` with the issue's `sampleEvent` |
+| *"Which app version crashes the most?"* | `crashlytics_get_report` with `report: "topVersions"` |
+| *"Which devices crash the most?"* | `crashlytics_get_report` with `report: "topAndroidDevices"` |
+| *"Add a note to issue `<issueId>` saying the fix landed in `<version>`"* | `crashlytics_create_note` (needs a write role — see [Authentication](#authentication)) |
+
+The whole workflow is packaged as a skill, so asking for a crash review
+picks it up automatically:
+
+```
+.agents/skills/firebase-crashlytics/
+├── SKILL.md                 # preflight, triage workflow, guardrails
+└── references/triage.md     # report fields, crash classes seen so far
+```
+
+Ask for it explicitly with `@firebase-crashlytics` if you want the agent to
+start from the checklist rather than from the prompt. The triage recipe
+behind *"Review the Firebase Crashes"*:
+
+1. `crashlytics_get_report` with `report: "topIssues"`. Pass
+   `filter.intervalStartTime` / `filter.intervalEndTime` for a specific
+   window; the default is the last 7 days.
+2. For every issue worth fixing, `crashlytics_batch_get_events` with the
+   issue's `sampleEvent` resource name to get the real stack trace — the
+   issue `subtitle` is only a one-line summary and often not enough.
+3. Map the stack frame to the repo and fix the root cause. The crash
+   report gives the Dart file, e.g.
+   `package:house_mira_reminders/application/reminder_notification_service.dart`.
+4. Verify with the order in `AGENTS.md` (`fvm flutter analyze` →
+   `fvm flutter test`).
+5. Optionally `crashlytics_create_note` on the issue recording what changed
+   and in which release.
+
+Check the issue's `lastSeenVersion` against `pubspec.yaml` before touching
+code: an issue that only affects versions older than the current one is
+**stale** (the fix already shipped) and needs a note, not a rewrite.
+
+Notes that keep the loop cheap:
+
+- `crashlytics_list_events` requires `filter.issueId` or
+  `filter.issueVariantId` — it cannot list free-form events.
+- `crashlytics_get_report` reports the aggregate; the stack trace lives in
+  `crashlytics_batch_get_events`.
+- `crashlytics_update_issue` (close/mute a fixed issue) is **not** exposed.
+  Only `crashlytics_create_note` can record that a fix shipped.
 
 ### Guardrails
 

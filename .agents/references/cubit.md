@@ -30,6 +30,17 @@ Annotate `@immutable` when overriding `==`/`hashCode`.
   emit the neutral state (`NoAccount`), not a failure.
 - Delegate side effects to injected services (`AuthService`,
   repositories); cubits hold no Supabase imports.
+- **Never emit into a closed cubit.** A route-scoped cubit (the router
+  hands it to `BlocProvider(create:)`) is closed as soon as the user
+  leaves the screen, and that happens while an async flow is still
+  running — the native Google/Apple sheet, a store call, a backend
+  request. `Cubit.emit` then throws
+  `StateError: Cannot emit new states after calling close`, which reaches
+  Crashlytics as a fatal error and the user sees as a crash (FATAL
+  Crashlytics issue `04df8a6a`). Every emit that can run after an
+  `await` therefore goes through the cubit's `_emitIfOpen` helper, which
+  drops the state instead of throwing. Guard:
+  `test/cubit_emit_guard_test.dart`.
 
 ## Views
 

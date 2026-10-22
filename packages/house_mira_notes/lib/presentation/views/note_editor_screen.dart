@@ -128,7 +128,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     final start = selection.start >= 0 ? selection.start : text.length;
     final end = selection.end >= 0 ? selection.end : text.length;
     if (linePrefix) {
-      final lineStart = text.lastIndexOf('\n', start - 1) + 1;
+      // `lastIndexOf` rejects a negative start index, so the search may
+      // only run from index 1 onwards. With the cursor at the very
+      // beginning of the text the line starts at 0; searching from
+      // `start - 1` threw `RangeError: Invalid value: Only valid value is
+      // 0: -1` while handling the tap (NON_FATAL Crashlytics issue
+      // `978e9b8f2b7a8c57baab4aa495af58d2`).
+      final lineStart = start <= 0 ? 0 : text.lastIndexOf('\n', start - 1) + 1;
       final updated =
           '${text.substring(0, lineStart)}$marker${text.substring(lineStart)}';
       controller.value = TextEditingValue(

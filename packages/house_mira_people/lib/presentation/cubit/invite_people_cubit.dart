@@ -7,6 +7,18 @@ class InvitePeopleCubit extends Cubit<InvitePeopleState> {
     : super(InvitePeopleInitial());
   EdgetFunctions edgetFunctions;
 
+  /// Emits [state] only while the cubit is still open.
+  ///
+  /// The invite screen owns this cubit through `BlocProvider(create:)`,
+  /// so leaving the screen closes it while the invite email is still
+  /// being sent. Emitting into a closed cubit throws `Bad state: Cannot
+  /// emit new states after calling close` and crashes the app (FATAL
+  /// Crashlytics issue `04df8a6a`).
+  void _emitIfOpen(InvitePeopleState state) {
+    if (isClosed) return;
+    emit(state);
+  }
+
   /// Sends a family invite email.
   ///
   /// [locale] selects the server-rendered email language (`en`/`pt`,
@@ -34,13 +46,13 @@ class InvitePeopleCubit extends Cubit<InvitePeopleState> {
       );
 
       if (!result) {
-        emit(InvitePeopleError(code: InvitePeopleErrorCode.sendFailed));
+        _emitIfOpen(InvitePeopleError(code: InvitePeopleErrorCode.sendFailed));
         return;
       }
 
-      emit(InvitePeopleSuccess());
+      _emitIfOpen(InvitePeopleSuccess());
     } on Object catch (e) {
-      emit(InvitePeopleError(message: e.toString()));
+      _emitIfOpen(InvitePeopleError(message: e.toString()));
     }
   }
 }

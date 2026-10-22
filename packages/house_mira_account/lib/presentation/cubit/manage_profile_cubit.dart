@@ -8,14 +8,26 @@ class ManageProfileCubit extends Cubit<ManageProfileState> {
       super(ManageProfileInitial());
   final AuthService _authService;
 
+  /// Emits [state] only while the cubit is still open.
+  ///
+  /// The screen owns this cubit through `BlocProvider(create:)`, so
+  /// leaving it closes the cubit while the profile update is still in
+  /// flight. Emitting into a closed cubit throws `Bad state: Cannot emit
+  /// new states after calling close` and crashes the app (FATAL
+  /// Crashlytics issue `04df8a6a`).
+  void _emitIfOpen(ManageProfileState state) {
+    if (isClosed) return;
+    emit(state);
+  }
+
   Future<void> saveName(String name) async {
     emit(ManageProfileLoading());
 
     try {
       await _authService.updateName(name.trim());
-      emit(ManageProfileSuccess());
+      _emitIfOpen(ManageProfileSuccess());
     } on Object catch (e) {
-      emit(ManageProfileError(message: e.toString()));
+      _emitIfOpen(ManageProfileError(message: e.toString()));
     }
   }
 
