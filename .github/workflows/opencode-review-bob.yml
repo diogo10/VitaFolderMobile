@@ -33,6 +33,10 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
+      # The review grade is recorded as a commit status on the head commit
+      # of the pull request; the auto-merge workflow only merges a pull
+      # request whose head commit carries that status.
+      statuses: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -46,14 +50,86 @@ jobs:
       # the workflow itself talks to GitHub. The grade that unlocks the
       # auto-merge is parsed from the model's own final message by a helper
       # taken from the base branch, and grade lines planted in the diff are
-      # stripped before the model sees them. Only grade A unlocks the
-      # auto-merge: every other grade (B, C, D or none) leaves the pull
-      # request open.
+      # stripped before the model sees them. The merge gate itself lives in
+      # tool/review_merge_gate.py, which is taken from the base branch too.
+      # Only grade A unlocks the auto-merge: every other grade (B, C, D or
+      # none) leaves the pull request open, and the `automerge` label is
+      # dropped before the review even starts, so a stale label can never
+      # merge a pull request that was not (re-)reviewed.
       #
       # Residual risk: for `pull_request` events the workflow file itself
       # comes from the pull request, so a pull request can still change the
       # rules of this job. Restrict auto-merge to trusted branches, or require
       # a human approval, if that is not acceptable.
+
+      - name: Resolve the pull request to review
+        id: pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_PR: ${{ inputs.pr }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+
+          PR_NUMBER="$INPUT_PR"
+          if [ -n "$INPUT_PR" ] && [ -n "$EVENT_PR_NUMBER" ] && [ "$INPUT_PR" != "$EVENT_PR_NUMBER" ]; then
+            echo "::error::Ambiguous PR number: inputs.pr='$INPUT_PR' conflicts with event PR '$EVENT_PR_NUMBER'."
+            exit 1
+          fi
+          if [ -z "$PR_NUMBER" ]; then
+            PR_NUMBER="$EVENT_PR_NUMBER"
+          fi
+          if [ -z "$PR_NUMBER" ]; then
+            echo "::error::PR number is required (inputs.pr or github.event.pull_request.number). Refusing to guess."
+            exit 1
+          fi
+          if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+            echo "::error::Could not resolve a numeric PR number (got: '$PR_NUMBER')."
+            exit 1
+          fi
+          echo "Reviewing PR #$PR_NUMBER"
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+          # The base branch carries the trusted helpers (the grade parser
+          # and the merge gate): they are taken from there, so a pull
+          # request cannot change the rules it is graded and merged by.
+          DEFAULT_BRANCH="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name 2>/dev/null || echo main)"
+          BASE="$(gh pr view "$PR_NUMBER" --json baseRefName --jq .baseRefName 2>/dev/null || printf '%s' "$DEFAULT_BRANCH")"
+          if [ -z "$BASE" ] || [ "$BASE" = "null" ]; then
+            BASE="$DEFAULT_BRANCH"
+          fi
+          echo "Base branch: $BASE"
+          echo "base_branch=$BASE" >> "$GITHUB_OUTPUT"
+          git fetch origin "$BASE" --depth=50 || true
+
+      - name: Resolve the trusted merge gate
+        env:
+          BASE_BRANCH: ${{ steps.pr.outputs.base_branch }}
+        run: |
+          set -euo pipefail
+
+          if git cat-file -e "origin/$BASE_BRANCH:tool/review_merge_gate.py" 2>/dev/null; then
+            git show "origin/$BASE_BRANCH:tool/review_merge_gate.py" > /tmp/review_merge_gate.py
+            echo "Using the merge gate from origin/$BASE_BRANCH."
+          else
+            cp tool/review_merge_gate.py /tmp/review_merge_gate.py
+            echo "::warning::Could not read the merge gate from origin/$BASE_BRANCH; using the working-tree copy."
+          fi
+
+      - name: "Fail closed: drop a stale automerge label before the review"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PREPARE_PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+
+          # Fail closed: a label left over by an earlier run must not merge
+          # this pull request while the review is still running (or when the
+          # review fails). The gate refuses to continue when the label
+          # cannot be dropped.
+          python3 /tmp/review_merge_gate.py prepare --pr "$PREPARE_PR_NUMBER"
 
       - name: Resolve OpenCode CLI target
         id: opencode-target
@@ -85,35 +161,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_PR: ${{ inputs.pr }}
-          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          BASE_BRANCH: ${{ steps.pr.outputs.base_branch }}
         run: |
           set -euo pipefail
 
-          PR_NUMBER="$INPUT_PR"
-          if [ -n "$INPUT_PR" ] && [ -n "$EVENT_PR_NUMBER" ] && [ "$INPUT_PR" != "$EVENT_PR_NUMBER" ]; then
-            echo "::error::Ambiguous PR number: inputs.pr='$INPUT_PR' conflicts with event PR '$EVENT_PR_NUMBER'."
-            exit 1
-          fi
-          if [ -z "$PR_NUMBER" ]; then
-            PR_NUMBER="$EVENT_PR_NUMBER"
-          fi
-          if [ -z "$PR_NUMBER" ]; then
-            echo "::error::PR number is required (inputs.pr or github.event.pull_request.number). Refusing to guess."
-            exit 1
-          fi
-          if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
-            echo "::error::Could not resolve a numeric PR number (got: '$PR_NUMBER')."
-            exit 1
-          fi
-          echo "Reviewing PR #$PR_NUMBER"
-          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
-
-          DEFAULT_BRANCH="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name 2>/dev/null || echo main)"
-          BASE="$(gh pr view "$PR_NUMBER" --json baseRefName --jq .baseRefName 2>/dev/null || printf '%s' "$DEFAULT_BRANCH")"
-          if [ -z "$BASE" ] || [ "$BASE" = "null" ]; then
-            BASE="$DEFAULT_BRANCH"
-          fi
-          git fetch origin "$BASE" --depth=50 || true
+          BASE="$BASE_BRANCH"
+          echo "Reviewing PR #$PR_NUMBER (base: $BASE)"
 
           # The review always runs on one fixed model: the free
           # opencode/minimax-m3.1-flash-free, the same one the repository
@@ -218,9 +272,12 @@ jobs:
           Your output MUST start with exactly one line in the form "GRADE: X"
           where X is one of A, B, C, D:
           - A = excellent, merge-ready as is.
-          - B = good with only minor nits, safe to merge.
+          - B = good with only minor nits, but it needs a human merge.
           - C = needs changes before merge.
           - D = major issues, do not merge.
+
+          Only grade A is merged automatically; every other grade (and a
+          missing grade) leaves the pull request open for a human.
 
           Write nothing before the GRADE line: no status line, no preamble,
           no explanation. The GRADE line is the first line of your answer,
@@ -330,11 +387,11 @@ jobs:
           fi
           echo "grade=${GRADE:-}" >> "$GITHUB_OUTPUT"
 
-      - name: Publish review, label automerge, and approve/merge on grade A
+      - name: Publish review and apply the merge gate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REVIEW_PR_NUMBER: ${{ steps.review.outputs.pr_number }}
+          REVIEW_PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
           REVIEW_GRADE: ${{ steps.review.outputs.grade }}
         run: |
           set -euo pipefail
@@ -360,30 +417,8 @@ jobs:
           # model's final message as ^GRADE: [ABCD]$, so reaching "A" here is
           # equivalent to a strict ^GRADE: A$ match on line 1. Grade A is the
           # only merge-ready verdict: every lower grade (B, C, D) and a
-          # missing grade leave the pull request open.
-          if [ "$GRADE" = "A" ]; then
-            echo "Grade $GRADE is merge-ready: labeling automerge, approving and merging."
-            gh label create automerge \
-              --description "Merge-ready per automated review; eligible for automerge." \
-              --color "0E8A16" 2>/dev/null || true
-            gh pr edit "$PR_NUMBER" --add-label "automerge" || \
-              echo "::warning::Could not add the automerge label."
-            # Approving and merging are best effort: a repository policy can
-            # forbid a bot approval, and that must not fail the review job.
-            gh pr review "$PR_NUMBER" --approve \
-              --body "OpenCode v2 review grade: $GRADE. Approving per review policy." || \
-              echo "::warning::Could not submit an approving review (repository policy may forbid it)."
-            gh pr merge "$PR_NUMBER" --squash || \
-              echo "::warning::gh pr merge failed (checks may still be running or branch protection may require manual merge)."
-          else
-            echo "Grade ${GRADE:-<none>} is not merge-ready: leaving review comment only."
-            # An earlier run may have labelled this pull request as
-            # merge-ready (e.g. under the previous A-or-B policy). Drop the
-            # label again, so the label-based auto-merge workflow cannot pick
-            # the pull request up either.
-            if gh pr edit "$PR_NUMBER" --remove-label "automerge" 2>/dev/null; then
-              echo "Removed the automerge label: only grade A is auto-merged."
-            else
-              echo "::warning::Could not remove the automerge label (it was probably not set)."
-            fi
-          fi
+          # missing grade leave the pull request open and drop the automerge
+          # label. The gate itself lives in tool/review_merge_gate.py (taken
+          # from the base branch), so it is unit tested and a pull request
+          # cannot change the rules it is merged by.
+          python3 /tmp/review_merge_gate.py gate --pr "$PR_NUMBER" --grade "$GRADE"

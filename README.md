@@ -256,6 +256,23 @@ agent over the pull request diff.
   is taken from the base branch, so a pull request can never change the
   rules it is graded by — a gate change only takes effect for the pull
   requests that follow it.
+- **Fail-closed merge gate.** The merge decision lives in
+  `tool/review_merge_gate.py` (taken from the base branch, like the grade
+  parser) and is covered by unit tests
+  (`python3 -m unittest tool.test_review_merge_gate -v`, run in CI):
+  `A` merges, `B`/`C`/`D`/a missing grade never do, and every non-`A`
+  verdict drops the `automerge` label.
+- **No stale label can merge a pull request.** Before the review even
+  starts, the gate drops a leftover `automerge` label and marks the head
+  commit as "review pending"; if the label cannot be dropped, the review
+  job fails instead of merging. The verdict is then recorded as a commit
+  status (`opencode-review-grade`) on the head commit, and the `Automerge`
+  workflow re-checks that status before it merges anything: a pull request
+  is only merged while its *current* head commit carries a successful
+  `GRADE=A` status. New commits after an `A` grade, a review that never
+  finished and a lower grade all keep the pull request open for a human.
+  The label-driven merge uses `MERGE_METHOD: squash`, like the review job,
+  and the label is dropped again once the merge succeeded.
 - **Fixed model, no credentials.** The review always runs on
   `opencode/minimax-m3.1-flash-free`, the free model the repository
   configures in `opencode.jsonc`, so the bot and local development use the

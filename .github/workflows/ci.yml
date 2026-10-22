@@ -75,6 +75,13 @@ jobs:
             fi
           done
 
+      - name: Test the review tooling
+        # The grade parser and the merge gate decide whether a pull request
+        # is merged automatically: both are covered by unit tests.
+        run: |
+          python3 -m unittest tool.test_parse_review_grade -v
+          python3 -m unittest tool.test_review_merge_gate -v
+
       - name: Enforce layer boundaries (ADR-0006)
         # Rules R1-R5 live in tool/check_layer_boundaries.py (same logic
         # as CI) so they also run locally.
@@ -141,6 +148,10 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
+      # The review grade is recorded as a commit status on the head commit
+      # of the pull request; the auto-merge workflow only merges a pull
+      # request whose head commit carries that status.
+      statuses: write
     uses: ./.github/workflows/opencode-review-bob.yml
     # No secrets are passed: the review runs on the free fixed model, which
     # needs no API key. The workflow only uses the automatic GITHUB_TOKEN.
