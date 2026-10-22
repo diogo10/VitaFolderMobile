@@ -19,6 +19,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
     required this.onForgotPassword,
     super.key,
     this.isLoading = false,
+    this.showAppleLogin = false,
   });
   final TextEditingController emailController;
   final TextEditingController passwordController;
@@ -27,6 +28,14 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
   final VoidCallback onAppleSignIn;
   final VoidCallback onForgotPassword;
   final bool isLoading;
+
+  /// Whether the "Continue with Apple" button may be rendered.
+  ///
+  /// Comes from the Remote Config flag `show_apple_login` (defaults to
+  /// `false`, so the button stays hidden until the flag is enabled). The
+  /// button is only rendered on platforms where native Sign in with Apple
+  /// works.
+  final bool showAppleLogin;
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +48,11 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
           label: l.accountNoAccountContinueGoogle,
           onTap: onGoogleSignIn,
         ),
-        // Native Sign in with Apple only exists on Apple platforms: the
-        // button is hidden elsewhere instead of leading to a dead end.
-        if (isAppleSignInSupported) ...[
+        // The Apple button is opt-in via the Remote Config flag
+        // `show_apple_login` (default off) and only exists on Apple
+        // platforms: elsewhere it is hidden instead of leading to a dead
+        // end.
+        if (isAppleLoginButtonVisible(featureEnabled: showAppleLogin)) ...[
           const SizedBox(height: 12),
           SandSocialButton(
             icon: const Icon(Icons.apple, size: 18, color: SandPalette.sand700),

@@ -9,13 +9,23 @@ import 'package:house_mira_account/presentation/views/no_account_view.dart';
 import 'package:house_mira_core/generated/app_localizations.dart';
 
 class AccountView extends StatefulWidget {
-  const AccountView({super.key, this.onAuthChanged});
+  const AccountView({
+    super.key,
+    this.onAuthChanged,
+    this.showAppleLogin = false,
+  });
 
   /// Refreshes the visited tabs after sign-in/out or account deletion.
   /// Wired by the route builder to the coordinator's refreshAll; `null`
   /// until a tab has been visited, in which case there is nothing to refresh
   /// (tabs load on first visit).
   final void Function()? onAuthChanged;
+
+  /// Whether the "Continue with Apple" button may be rendered.
+  ///
+  /// Forwarded from the Remote Config flag `show_apple_login` (defaults to
+  /// `false`, so the button stays hidden until the flag is enabled).
+  final bool showAppleLogin;
 
   @override
   State<AccountView> createState() => _AccountViewState();
@@ -116,7 +126,7 @@ class _AccountViewState extends State<AccountView> {
             state is LoginFailed ||
             state is PasswordResetSent ||
             state is PasswordResetError) {
-          return const NoAccountView();
+          return NoAccountView(showAppleLogin: widget.showAppleLogin);
         }
 
         if (state is AccountLoaded) {

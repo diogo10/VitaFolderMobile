@@ -152,7 +152,11 @@ void main() {
     }
   }
 
-  Future<void> pumpNoAccount(WidgetTester tester, AccountCubit cubit) async {
+  Future<void> pumpNoAccount(
+    WidgetTester tester,
+    AccountCubit cubit, {
+    bool showAppleLogin = false,
+  }) async {
     addTearDown(cubit.close);
     await tester.pumpWidget(
       MaterialApp(
@@ -160,7 +164,7 @@ void main() {
         supportedLocales: AppLocalizations.supportedLocales,
         home: BlocProvider<AccountCubit>.value(
           value: cubit,
-          child: const NoAccountView(),
+          child: NoAccountView(showAppleLogin: showAppleLogin),
         ),
       ),
     );
@@ -176,7 +180,7 @@ void main() {
   group('NoAccountView', () {
     testWidgets('renders hero, auth and trust content', (tester) async {
       await onIosPlatform(() async {
-        await pumpNoAccount(tester, buildCubit());
+        await pumpNoAccount(tester, buildCubit(), showAppleLogin: true);
 
         expect(find.text('HouseMira'), findsOneWidget);
         expect(
@@ -250,7 +254,7 @@ void main() {
       tester,
     ) async {
       await onIosPlatform(() async {
-        await pumpNoAccount(tester, buildCubit());
+        await pumpNoAccount(tester, buildCubit(), showAppleLogin: true);
 
         await tester.ensureVisible(find.text('Continue with Apple'));
         await tester.pump();
@@ -266,7 +270,7 @@ void main() {
     ) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       try {
-        await pumpNoAccount(tester, buildCubit());
+        await pumpNoAccount(tester, buildCubit(), showAppleLogin: true);
 
         expect(find.byIcon(Icons.apple), findsNothing);
         expect(find.text('Continue with Apple'), findsNothing);
@@ -274,6 +278,18 @@ void main() {
       } finally {
         debugDefaultTargetPlatformOverride = null;
       }
+    });
+
+    testWidgets('hides the Apple button while the feature flag is off', (
+      tester,
+    ) async {
+      await onIosPlatform(() async {
+        await pumpNoAccount(tester, buildCubit());
+
+        expect(find.byIcon(Icons.apple), findsNothing);
+        expect(find.text('Continue with Apple'), findsNothing);
+        expect(find.text('Continue with Google'), findsOneWidget);
+      });
     });
 
     testWidgets('requests password reset with entered email', (tester) async {

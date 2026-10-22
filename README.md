@@ -176,6 +176,32 @@ per-flavor Firebase apps. To provision separate projects:
 4. Natively: per-flavor `google-services.json` (Android product flavors) and
    `GoogleService-Info.plist` (Xcode schemes/targets).
 
+### Feature flags (Firebase Remote Config)
+
+Feature flags live in Firebase Remote Config and are read through
+`RemoteConfigService` (`packages/house_mira_core/lib/config/remote_config_service.dart`).
+They are fetched once at startup (`main.dart` calls `initialize()` after
+`Firebase.initializeApp`) and cached for the life of the process. Every flag
+defaults to `false`, so the app ships with all remote gates off until the
+flag is explicitly enabled in the Firebase console. A fetch failure is logged
+and the defaults are used: Remote Config never blocks startup.
+
+| Flag | Default | Effect |
+| --- | --- | --- |
+| `enable_limit_and_paywall` | `false` | Usage limits (reminders/notes) are enforced and the `/paywall` route is reachable. |
+| `show_apple_login` | `false` | The "Sign in with Apple" button is rendered on the sign-in (`/account`) and sign-up (`/sign-up`) screens. |
+
+The flag is read at startup and forwarded to the UI as a plain boolean
+(`main.dart` → `MyApp.showAppleLogin` → `createRouter` → the views), so
+presentation never touches GetIt or Firebase directly.
+
+`show_apple_login` only turns the button **on**: it never reveals it where
+the native flow does not exist. The button additionally requires an Apple
+platform (`isAppleLoginButtonVisible` in
+`packages/house_mira_core/lib/auth/apple_sign_in_handler.dart`), because the
+plugin's web flow on Android needs an Apple Services ID plus a redirect
+endpoint.
+
 ### Key rotation policy
 
 - The publishable key is public by design (RLS protects data), but treat it
@@ -448,10 +474,12 @@ How the flow works:
    the service stores it in the user metadata and the `profiles` row
    (best-effort, never fails the sign-in).
 
-The **Continue with Apple** button is only rendered on Apple platforms
-(`isAppleSignInSupported`): the plugin's web flow on Android needs an
-Apple Services ID plus a redirect endpoint, so the button is hidden
-instead of leading to a dead end.
+The **Continue with Apple** button is opt-in: it is only rendered when the
+Remote Config flag `show_apple_login` is enabled (default `false`, see
+[Feature flags](#feature-flags-firebase-remote-config)) **and** the platform
+supports the native flow (`isAppleSignInSupported`): the plugin's web flow on
+Android needs an Apple Services ID plus a redirect endpoint, so the button is
+hidden instead of leading to a dead end.
 
 One-time setup (not part of the repo):
 
