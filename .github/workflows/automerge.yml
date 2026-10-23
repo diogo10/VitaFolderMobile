@@ -55,7 +55,12 @@ jobs:
           # it cannot be read, the step fails: the working-tree copy is the
           # one the pull request controls (fail closed).
           BASE="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name 2>/dev/null || echo main)"
-          git fetch origin "$BASE" --depth=1 || true
+          # `git fetch origin <branch>` only writes FETCH_HEAD: name the
+          # remote-tracking ref explicitly, or the gate below is unreadable.
+          if ! git fetch origin "+refs/heads/$BASE:refs/remotes/origin/$BASE" --depth=1; then
+            echo "::error::Could not fetch the base branch origin/$BASE; refusing to merge anything (fail closed)."
+            exit 1
+          fi
           if ! git cat-file -e "origin/$BASE:tool/review_merge_gate.py" 2>/dev/null; then
             echo "::error::Could not read the merge gate from origin/$BASE; refusing to merge anything (fail closed)."
             exit 1

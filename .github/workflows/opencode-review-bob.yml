@@ -101,7 +101,17 @@ jobs:
           fi
           echo "Base branch: $BASE"
           echo "base_branch=$BASE" >> "$GITHUB_OUTPUT"
-          git fetch origin "$BASE" --depth=50 || true
+
+          # Fetch the base branch into its remote-tracking ref. The pull
+          # request checkout only fetches the merge ref, and
+          # `git fetch origin <branch>` writes FETCH_HEAD without creating
+          # refs/remotes/origin/<branch>: without the explicit destination
+          # `origin/<base>` does not exist in this job, so the trusted
+          # helpers below could never be read from it.
+          if ! git fetch origin "+refs/heads/$BASE:refs/remotes/origin/$BASE" --depth=50; then
+            echo "::error::Could not fetch the base branch origin/$BASE; refusing to review (fail closed)."
+            exit 1
+          fi
 
       - name: Resolve the trusted merge gate
         env:
