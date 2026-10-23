@@ -231,7 +231,9 @@ endpoint.
 
 Every PR gets an automated review: the `call-bob` job of the CI workflow
 calls `.github/workflows/opencode-review-bob.yml`, which runs an OpenCode
-agent over the pull request diff.
+agent over the pull request diff. The step-by-step pipeline, the grade
+semantics and the fail-closed matrix are documented in
+[docs/opencode-review-bob.md](docs/opencode-review-bob.md).
 
 - **Pinned, verified CLI.** `tool/install_opencode_cli.sh` downloads the
   pinned npm tarball for the runner's platform and verifies its SHA-512
