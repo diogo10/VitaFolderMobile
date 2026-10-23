@@ -18,6 +18,10 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  # The enforcement step drops the `automerge` label of the pull requests
+  # that are not merge-ready: labels live on issues, so writing them
+  # needs `issues: write`.
+  issues: write
   checks: read
   statuses: read
 
@@ -26,5 +30,50 @@ jobs:
     name: Automerge
     runs-on: ubuntu-latest
     steps:
+      - name: Check out the repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Enforce the review gate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Only a pull request whose head commit carries a successful
+          # "GRADE=A" review status may be merged. Every other pull request
+          # loses the `automerge` label before the merge step runs, so this
+          # workflow cannot merge it: a lower grade, a review that never
+          # finished and new commits after an A grade all keep the pull
+          # request open for a human.
+          #
+          # The gate script is taken from the base branch, so a pull request
+          # cannot change the rules that decide whether it is merged. When
+          # it cannot be read, the step fails: the working-tree copy is the
+          # one the pull request controls (fail closed).
+          BASE="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name 2>/dev/null || echo main)"
+          # `git fetch origin <branch>` only writes FETCH_HEAD: name the
+          # remote-tracking ref explicitly, or the gate below is unreadable.
+          if ! git fetch origin "+refs/heads/$BASE:refs/remotes/origin/$BASE" --depth=1; then
+            echo "::error::Could not fetch the base branch origin/$BASE; refusing to merge anything (fail closed)."
+            exit 1
+          fi
+          if ! git cat-file -e "origin/$BASE:tool/review_merge_gate.py" 2>/dev/null; then
+            echo "::error::Could not read the merge gate from origin/$BASE; refusing to merge anything (fail closed)."
+            exit 1
+          fi
+          git show "origin/$BASE:tool/review_merge_gate.py" > /tmp/review_merge_gate.py
+          echo "Using the merge gate from origin/$BASE."
+          # The gate fails (and nothing is merged) when it cannot tell
+          # whether a pull request is merge-ready.
+          python3 /tmp/review_merge_gate.py enforce
+
       - name: Merge eligible pull requests
         uses: lirantal/github-action-automerge@1.0.1
+        env:
+          # The review bot merges with a squash, so the label-driven merge
+          # must not create a merge commit instead.
+          MERGE_METHOD: squash

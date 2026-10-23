@@ -231,7 +231,9 @@ endpoint.
 
 Every PR gets an automated review: the `call-bob` job of the CI workflow
 calls `.github/workflows/opencode-review-bob.yml`, which runs an OpenCode
-agent over the pull request diff.
+agent over the pull request diff. The step-by-step pipeline, the grade
+semantics and the fail-closed matrix are documented in
+[docs/opencode-review-bob.md](docs/opencode-review-bob.md).
 
 - **Pinned, verified CLI.** `tool/install_opencode_cli.sh` downloads the
   pinned npm tarball for the runner's platform and verifies its SHA-512
@@ -246,13 +248,44 @@ agent over the pull request diff.
   process; only the workflow itself talks to GitHub.
 - **Strict grade gate.** The review must carry a single `GRADE: <A|B|C|D>`
   line in its header (the models answer with a short status line before it)
-  and contain a `## Findings` section. `A`/`B` label the PR `automerge` and
-  approve it, `C`/`D` (or a missing grade) only post the review comment.
+  and contain a `## Findings` section. Only grade `A` labels the PR
+  `automerge`, approves it and merges it. Every lower grade (`B`, `C`, `D`)
+  and a missing grade only post the review comment and leave the pull
+  request open; the `automerge` label is removed as well, so the
+  label-based auto-merge workflow cannot pick the pull request up either.
   Grade lines planted in the diff are stripped before the diff reaches the
   model, and the gate is parsed by `tool/parse_review_grade.py`. That parser
   is taken from the base branch, so a pull request can never change the
   rules it is graded by — a gate change only takes effect for the pull
   requests that follow it.
+- **Fail-closed merge gate.** The merge decision lives in
+  `tool/review_merge_gate.py` (taken from the base branch, like the grade
+  parser) and is covered by unit tests
+  (`python3 -m unittest tool.test_review_merge_gate -v`, run in CI):
+  `A` merges, `B`/`C`/`D`/a missing grade never do, and every non-`A`
+  verdict drops the `automerge` label. The trusted helpers are required:
+  when the copy on the base branch cannot be read, the review and the
+  auto-merge workflow fail instead of falling back to the copy the pull
+  request controls.
+- **The grade belongs to the reviewed commit.** The head commit of the
+  pull request is captured next to the diff, and the merge gate only
+  records the grade when that commit is still the head commit. A pull
+  request that received a commit while the review ran is therefore never
+  merged on the strength of the grade of the previous commit: the gate
+  records nothing, drops the `automerge` label and merges nothing, and
+  the re-review of the new commit decides.
+- **No stale label can merge a pull request.** Before the review even
+  starts, the gate drops a leftover `automerge` label and marks the head
+  commit as "review pending"; if the label cannot be dropped, the review
+  job fails instead of merging. The verdict is then recorded as a commit
+  status (`opencode-review-grade`) on the head commit, and the `Automerge`
+  workflow re-checks that status before it merges anything: a pull request
+  is only merged while its *current* head commit carries a successful
+  `GRADE=A` status. New commits after an `A` grade, a review that never
+  finished and a lower grade all keep the pull request open for a human.
+  The label-driven merge uses `MERGE_METHOD: squash`, like the review job,
+  and the label is dropped again once the merge succeeded. The workflow
+  needs `issues: write` for the label, so it can drop it.
 - **Fixed model, no credentials.** The review always runs on
   `opencode/minimax-m3.1-flash-free`, the free model the repository
   configures in `opencode.jsonc`, so the bot and local development use the
