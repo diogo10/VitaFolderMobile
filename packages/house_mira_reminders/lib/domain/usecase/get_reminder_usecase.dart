@@ -27,25 +27,34 @@ class GetReminderUsecase {
     return remindersResult.fold(
       (err) => Left(Failure(message: err.message)),
       (reminders) async {
-        final people = await peopleRepository.getProfilesWithRoleForFamily(
-          familyId,
-        );
-        final peopleById = {
-          for (final person in people)
-            if (person.id != null) person.id!: person,
-        };
+        try {
+          final people = await peopleRepository.getProfilesWithRoleForFamily(
+            familyId,
+          );
+          final peopleById = {
+            for (final person in people)
+              if (person.id != null) person.id!: person,
+          };
 
-        return Right(
-          reminders.map((reminder) {
-            final person = peopleById[reminder.createdBy];
-            if (person == null) {
-              return reminder;
-            }
-            return reminder.copyWith(
-              createdBy: person.name ?? reminder.createdBy,
-            );
-          }).toList(),
-        );
+          return Right(
+            reminders.map((reminder) {
+              final person = peopleById[reminder.createdBy];
+              if (person == null) {
+                return reminder;
+              }
+              return reminder.copyWith(
+                createdBy: person.name ?? reminder.createdBy,
+              );
+            }).toList(),
+          );
+        } on Object catch (error) {
+          // The people lookup only decorates creator names. The repository
+          // throws on a transport/backend failure (e.g. a PostgREST 504), and
+          // an exception escaping this fold callback became an unhandled
+          // async error — a FATAL report (Crashlytics `8dc90b97`) — instead
+          // of the screen's error state. Surface it as a failure.
+          return Left(Failure(message: error.toString()));
+        }
       },
     );
   }
