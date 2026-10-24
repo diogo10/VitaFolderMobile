@@ -1,19 +1,43 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:house_mira_core/observability/app_logger.dart';
+import 'package:house_mira_core/observability/crash_reporter.dart';
 import 'package:house_mira_core/subscriptions/subscription_service.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+
+class _RecordingCrashReporter implements CrashReporter {
+  final List<String> logs = [];
+  final List<Object> errors = [];
+
+  @override
+  Future<void> log(String message) async => logs.add(message);
+
+  @override
+  Future<void> recordError(
+    Object error,
+    StackTrace stackTrace, {
+    String? reason,
+    Map<String, Object?>? context,
+    bool fatal = false,
+  }) async => errors.add(error);
+
+  @override
+  Future<void> setUserId(String? userId) async {}
+
+  @override
+  Future<void> setCustomKey(String key, Object value) async {}
+}
 
 class _FakePurchasesWrapper extends PurchasesWrapper {
   PurchasesConfiguration? configuredWith;
   LogLevel? logLevel;
-  Error? configureError;
+  Object? configureError;
   int configureCalls = 0;
   CustomerInfo? customerInfo;
-  Error? customerInfoError;
+  Object? customerInfoError;
   int customerInfoCalls = 0;
   Offerings? offerings;
-  Error? offeringsError;
+  Object? offeringsError;
   int offeringsCalls = 0;
 
   @override
@@ -316,6 +340,82 @@ void main() {
 
       expect(await service.isPro(), isFalse);
     });
+
+    test(
+      'disables billing for the session when RevenueCat rejects the key',
+      () async {
+        final purchases = _FakePurchasesWrapper()
+          ..customerInfoError = PlatformException(
+            code: '11',
+            message: 'There was a credentials issue.',
+            details: {'readableErrorCode': 'invalidCredentialsError'},
+          );
+        final service = await initializedService(purchases);
+
+        expect(await service.isPro(), isFalse);
+        expect(service.isBillingAvailable, isFalse);
+        // Retrying a rejected key cannot succeed, so later lookups never hit
+        // the store and the paywall falls back to its error state.
+        expect(await service.isPro(), isFalse);
+        expect(await service.getOfferingPrices(), isNull);
+        expect(purchases.customerInfoCalls, 1);
+        expect(purchases.offeringsCalls, 0);
+      },
+    );
+
+    test('keeps billing available after a transient store failure', () async {
+      final purchases = _FakePurchasesWrapper()
+        ..customerInfoError = PlatformException(
+          code: '10',
+          message: 'Network error.',
+          details: {'readableErrorCode': 'networkError'},
+        );
+      final service = await initializedService(purchases);
+
+      expect(await service.isPro(), isFalse);
+      expect(service.isBillingAvailable, isTrue);
+
+      purchases
+        ..customerInfoError = null
+        ..customerInfo = _customerInfo(proActive: true);
+      expect(await service.isPro(), isTrue);
+      expect(purchases.customerInfoCalls, 2);
+    });
+
+    test(
+      'a rejected key is logged once and never reported as a crash',
+      () async {
+        final reporter = _RecordingCrashReporter();
+        final purchases = _FakePurchasesWrapper()
+          ..customerInfoError = PlatformException(
+            code: '11',
+            message: 'There was a credentials issue.',
+            details: {'readableErrorCode': 'invalidCredentialsError'},
+          );
+        final service = SubscriptionService(
+          purchases: purchases,
+          logger: AppLogger(crashReporter: reporter, sink: (_) {}),
+          platformOverride: TargetPlatform.android,
+        );
+        expect(
+          await service.initialize(appleApiKey: '', googleApiKey: 'bad-key'),
+          isTrue,
+        );
+
+        expect(await service.isPro(), isFalse);
+        expect(await service.isPro(), isFalse);
+
+        // Fail-closed is a handled outcome: the credentials mistake stays a
+        // breadcrumb, not a Crashlytics non-fatal (issue `704f61c6`).
+        expect(reporter.errors, isEmpty);
+        expect(
+          reporter.logs.where(
+            (line) => line.contains('revenuecat billing disabled'),
+          ),
+          hasLength(1),
+        );
+      },
+    );
 
     test('caches a successful lookup within the TTL', () async {
       final purchases = _FakePurchasesWrapper()

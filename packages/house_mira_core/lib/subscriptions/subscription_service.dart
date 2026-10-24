@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:house_mira_core/observability/app_logger.dart';
 import 'package:house_mira_core/subscriptions/store_package_price.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -72,9 +73,31 @@ class SubscriptionService {
 
   bool _initialized = false;
   bool _usingTestStore = false;
+  bool _billingDisabled = false;
 
   /// Whether [initialize] has successfully configured the SDK.
   bool get isInitialized => _initialized;
+
+  /// Whether store lookups are still worth attempting.
+  ///
+  /// `false` before [initialize] succeeds and after RevenueCat rejects the
+  /// configured key (see [unrecoverableBillingErrorCodes]): a build-time
+  /// configuration mistake fails identically on every retry, so the service
+  /// stops calling the store and the app runs on free limits.
+  bool get isBillingAvailable => _initialized && !_billingDisabled;
+
+  /// RevenueCat `readableErrorCode` values that no retry can fix.
+  ///
+  /// They all mean the SDK is configured for a project/key the backend
+  /// rejects (missing app-specific key, wrong platform key, key from another
+  /// project). Crashlytics issue `704f61c6` was a session-long loop of these
+  /// lookups, each one recorded as a handled non-fatal.
+  static const Set<String> unrecoverableBillingErrorCodes = {
+    'invalidCredentialsError',
+    'invalidAppleSubscriptionKeyError',
+    'invalidAppUserIdError',
+    'configurationError',
+  };
 
   /// Whether the SDK was configured with the RevenueCat Test Store key.
   ///
@@ -97,17 +120,17 @@ class SubscriptionService {
 
   /// Whether the user holds the paid entitlement ([proEntitlementId]).
   ///
-  /// Returns `false` when billing is uninitialized or the lookup fails
-  /// (fail-closed: free limits apply). Never throws: every failure is
-  /// logged and reported instead. Successful lookups are cached for
-  /// [proCacheTtl] so a view pre-check plus the create-time re-check
+  /// Returns `false` when billing is uninitialized or disabled, or the
+  /// lookup fails (fail-closed: free limits apply). Never throws: every
+  /// failure is logged and reported instead. Successful lookups are cached
+  /// for [proCacheTtl] so a view pre-check plus the create-time re-check
   /// costs one billing lookup per flow; failures are never cached.
   ///
   /// Pass the current `AuthService.currentUserId` as [userId] so the cache
   /// is scoped to one account: a lookup for a different user (including
   /// `null` after logout) always refetches instead of reading stale data.
   Future<bool> isPro({String? userId}) async {
-    if (!_initialized) {
+    if (!isBillingAvailable) {
       return false;
     }
     final cached = _cachedIsPro;
@@ -126,6 +149,9 @@ class SubscriptionService {
       _cachedUserId = userId;
       return pro;
     } on Object catch (error, stackTrace) {
+      if (_disableBillingOnUnrecoverableError(error)) {
+        return false;
+      }
       _logger.warning(
         'entitlement check failed',
         tag: 'subscriptions',
@@ -138,12 +164,12 @@ class SubscriptionService {
 
   /// Monthly and annual prices of the current offering for the paywall.
   ///
-  /// Returns `null` when billing is uninitialized, there is no current
-  /// offering, a package is missing, or the lookup fails (fail-closed:
-  /// callers fall back to the mocked catalog on the Test Store and to an
-  /// error state in production). Never throws.
+  /// Returns `null` when billing is uninitialized or disabled, there is no
+  /// current offering, a package is missing, or the lookup fails
+  /// (fail-closed: callers fall back to the mocked catalog on the Test Store
+  /// and to an error state in production). Never throws.
   Future<OfferingPrices?> getOfferingPrices() async {
-    if (!_initialized) {
+    if (!isBillingAvailable) {
       return null;
     }
     try {
@@ -159,6 +185,9 @@ class SubscriptionService {
         annual: StorePackagePrice.fromPackage(annual),
       );
     } on Object catch (error, stackTrace) {
+      if (_disableBillingOnUnrecoverableError(error)) {
+        return null;
+      }
       _logger.warning(
         'offerings fetch failed',
         tag: 'subscriptions',
@@ -249,5 +278,42 @@ class SubscriptionService {
       );
       return false;
     }
+  }
+
+  /// Disables billing for the session when RevenueCat rejects the key.
+  ///
+  /// Returns `true` when [error] is one of
+  /// [unrecoverableBillingErrorCodes], after turning store lookups off.
+  /// Repeating the lookup cannot succeed, and each repeat used to open a
+  /// Crashlytics non-fatal for a failure the app already handles
+  /// (fail-closed to free limits), so it is logged exactly once — as a
+  /// warning line *without* the error object, which is what creates the
+  /// non-fatal issue.
+  bool _disableBillingOnUnrecoverableError(Object error) {
+    final code = _readablePurchasesErrorCode(error);
+    if (code == null || !unrecoverableBillingErrorCodes.contains(code)) {
+      return false;
+    }
+    _billingDisabled = true;
+    _logger.warning(
+      'revenuecat billing disabled',
+      tag: 'subscriptions',
+      context: {'reason': code},
+    );
+    return true;
+  }
+
+  /// Reads `details.readableErrorCode` from a RevenueCat
+  /// [PlatformException]; `null` for any other error shape.
+  static String? _readablePurchasesErrorCode(Object error) {
+    if (error is! PlatformException) {
+      return null;
+    }
+    final details = error.details;
+    if (details is! Map) {
+      return null;
+    }
+    final code = details['readableErrorCode'];
+    return code is String && code.isNotEmpty ? code : null;
   }
 }
