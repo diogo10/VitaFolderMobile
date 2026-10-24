@@ -46,13 +46,17 @@ class InvitePeopleCubit extends Cubit<InvitePeopleState> {
       );
 
       if (!result) {
-        _emitIfOpen(InvitePeopleError(code: InvitePeopleErrorCode.sendFailed));
+        _emitIfOpen(InvitePeopleError(InvitePeopleErrorCode.sendFailed));
         return;
       }
 
       _emitIfOpen(InvitePeopleSuccess());
-    } on Object catch (e) {
-      _emitIfOpen(InvitePeopleError(message: e.toString()));
+    } on Object catch (_) {
+      // The edge function rethrows `FunctionException` (e.g. a 502 from
+      // Resend, Crashlytics `fd17dfd5`). `EdgetFunctions` already logged it
+      // with its stack trace; the screen must show the localized
+      // "could not send" message instead of the raw exception text.
+      _emitIfOpen(InvitePeopleError(InvitePeopleErrorCode.sendFailed));
     }
   }
 }

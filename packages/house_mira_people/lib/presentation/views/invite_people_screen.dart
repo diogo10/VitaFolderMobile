@@ -82,9 +82,9 @@ class _InvitePeopleScreenState extends State<InvitePeopleScreen> {
             context.pop();
           }
           if (state is InvitePeopleError) {
-            final message = state.code == InvitePeopleErrorCode.sendFailed
-                ? l.invitePeopleError
-                : state.message ?? '';
+            final message = switch (state.code) {
+              InvitePeopleErrorCode.sendFailed => l.invitePeopleError,
+            };
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(SnackBar(content: Text(message)));
