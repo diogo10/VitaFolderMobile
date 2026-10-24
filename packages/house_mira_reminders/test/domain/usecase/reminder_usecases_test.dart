@@ -210,5 +210,29 @@ void main() {
       // A profile without an id never matches: the raw id is preserved.
       expect(result.getRight().toNullable()!.single.createdBy, 'u1');
     });
+
+    test(
+      'maps a throwing people lookup to Failure instead of crashing',
+      () async {
+        // `getProfilesWithRoleForFamily` lets a backend failure (e.g. the
+        // PostgREST 504 of Crashlytics `8dc90b97`) escape as an exception.
+        // Before the guard it escaped the fold callback and became an
+        // unhandled async error, reported as FATAL.
+        when(() => reminders.getReminders('f1')).thenAnswer(
+          (_) async => Right<Failure, List<ReminderEntity>>([entity()]),
+        );
+        when(
+          () => people.getProfilesWithRoleForFamily('f1'),
+        ).thenThrow(Exception('PostgrestException: 504 Gateway Timeout'));
+
+        final result = await GetReminderUsecase(
+          repository: reminders,
+          peopleRepository: people,
+        )('f1');
+
+        expect(result.isLeft(), isTrue);
+        expect(result.getLeft().toNullable()?.message, contains('504'));
+      },
+    );
   });
 }

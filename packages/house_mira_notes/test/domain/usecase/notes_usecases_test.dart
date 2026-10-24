@@ -111,6 +111,29 @@ void main() {
       expect(result.isLeft(), isTrue);
       expect(result.getLeft().toNullable()?.message, 'boom');
     });
+
+    test(
+      'maps a throwing people lookup to Failure instead of crashing',
+      () async {
+        // Same class as Crashlytics `8dc90b97` (reminders): the people lookup
+        // throws on a backend/transport failure and the exception used to
+        // escape the fold callback as an unhandled async error.
+        when(() => notes.getNotes('f1')).thenAnswer(
+          (_) async => Right<Failure, List<NoteEntity>>([entity()]),
+        );
+        when(
+          () => people.getProfilesWithRoleForFamily('f1'),
+        ).thenThrow(Exception('PostgrestException: 504 Gateway Timeout'));
+
+        final result = await GetNotesUsecase(
+          repository: notes,
+          peopleRepository: people,
+        )('f1');
+
+        expect(result.isLeft(), isTrue);
+        expect(result.getLeft().toNullable()?.message, contains('504'));
+      },
+    );
   });
 
   group('CreateNoteUsecase', () {

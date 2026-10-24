@@ -12,7 +12,7 @@ the merge decision lives in
 | --- | --- |
 | Workflow | `.github/workflows/opencode-review-bob.yml` |
 | Caller | `call-bob` job of [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) (`workflow_call`), or a manual `workflow_dispatch` with a `pr` input |
-| Model | `opencode/minimax-m3.1-flash-free` (fixed, free, no API key) |
+| Review model | Fixed; no provider credentials are supplied to the review agent |
 | Timeout | 30 minutes |
 | Concurrency | `opencode-review-bob-<pr><event-pr><ref>`, superseded runs cancelled |
 | Permissions | `contents: read` by default; the job adds `contents`, `pull-requests`, `issues` and `statuses` write |
@@ -107,8 +107,8 @@ while the review is still running.
    `opencode.jsonc`.
 2. Strips `GITHUB_TOKEN`/`GH_TOKEN` from every CLI call (`env -u`): the
    model never talks to GitHub.
-3. Warms up the provider catalog (`opencode models`) until the fixed model
-   is routable, with up to six attempts.
+3. Warms up the provider catalog (`opencode models`) until the fixed review
+  model is routable, with up to six attempts.
 4. Captures `reviewed_sha` from the API, builds the diff
    (`git diff origin/<base>...HEAD`, falling back to `gh pr diff`) and the
    diff stat (falling back to the PR metadata API), and re-checks that the
@@ -118,7 +118,7 @@ while the review is still running.
 6. Strips `GRADE:` lines from the diff and the stat before the model sees
    them, and truncates the diff to 100KB on line boundaries.
 7. Runs `opencode run --standalone --model ... --format json`, retrying
-   up to three times when the model is not routable yet. On failure it
+  up to three times when the review model is not routable yet. On failure it
    posts a comment with the runner log and exits 1, so a missing review
    can never look like an approval.
 8. Parses the grade from the model's **final message** with

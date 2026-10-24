@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:house_mira_core/auth/auth_service.dart';
 import 'package:house_mira_core/config/remote_config_service.dart';
 import 'package:house_mira_core/local_storage/local_storage_datasource.dart';
+import 'package:house_mira_core/notifications/notification_sender.dart';
 import 'package:house_mira_core/observability/app_logger.dart';
 import 'package:house_mira_core/observability/crash_reporter.dart';
 import 'package:house_mira_core/observability/performance_tracer.dart';
@@ -32,15 +33,25 @@ class ReminderServiceLocator {
         sl.isRegistered<CrashReporter>(instanceName: 'crashReporter')
         ? sl<CrashReporter>(instanceName: 'crashReporter')
         : null;
+    final notificationService = ReminderNotificationService(
+      storage: sl<LocalStorageDatasource>(
+        instanceName: 'localStorageDatasource',
+      ),
+      logger: logger,
+      tracer: tracer,
+    );
     sl
       ..registerSingleton<IReminderNotificationService>(
-        ReminderNotificationService(
-          storage: sl<LocalStorageDatasource>(
-            instanceName: 'localStorageDatasource',
-          ),
-          logger: logger,
-          tracer: tracer,
-        ),
+        notificationService,
+        instanceName: 'reminderNotificationService',
+      )
+      // GetIt keys registrations by the exact requested type, so consumers
+      // typed against the core [NotificationSender] seam (e.g. the account
+      // package's `NotificationSettingsCubit`) could not resolve this
+      // instance and `/notification-settings` threw "not registered" the
+      // first time it opened. Register the same singleton under both types.
+      ..registerSingleton<NotificationSender>(
+        notificationService,
         instanceName: 'reminderNotificationService',
       )
       ..registerSingleton<ReminderRepository>(

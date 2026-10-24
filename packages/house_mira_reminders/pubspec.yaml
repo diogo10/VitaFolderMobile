@@ -33,4 +33,5 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   very_good_analysis: ^10.2.0
+  shared_preferences: ^2.5.6
 

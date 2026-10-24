@@ -17,20 +17,28 @@ class GetNotesUsecase {
     return notesResult.fold((err) => Left(Failure(message: err.message)), (
       notes,
     ) async {
-      final people = await peopleRepository.getProfilesWithRoleForFamily(
-        familyId,
-      );
-      final peopleById = {
-        for (final person in people)
-          if (person.id != null) person.id!: person,
-      };
-      return Right(
-        notes.map((note) {
-          final person = peopleById[note.createdBy];
-          if (person == null) return note;
-          return note.copyWith(createdBy: person.name ?? note.createdBy);
-        }).toList(),
-      );
+      try {
+        final people = await peopleRepository.getProfilesWithRoleForFamily(
+          familyId,
+        );
+        final peopleById = {
+          for (final person in people)
+            if (person.id != null) person.id!: person,
+        };
+        return Right(
+          notes.map((note) {
+            final person = peopleById[note.createdBy];
+            if (person == null) return note;
+            return note.copyWith(createdBy: person.name ?? note.createdBy);
+          }).toList(),
+        );
+      } on Object catch (error) {
+        // Same crash class as `GetReminderUsecase`: the people lookup throws
+        // on a backend/transport failure, and an exception escaping this fold
+        // callback is an unhandled async error (FATAL). Report a failure
+        // instead so the notes screen shows its error state.
+        return Left(Failure(message: error.toString()));
+      }
     });
   }
 }

@@ -182,12 +182,19 @@ jobs:
           BASE="$BASE_BRANCH"
           echo "Reviewing PR #$PR_NUMBER (base: $BASE)"
 
-          # The review always runs on one fixed model: the free
-          # opencode/minimax-m3.1-flash-free, the same one the repository
-          # configures in opencode.jsonc for local development. It needs no
-          # API key, so the workflow takes no provider credentials at all.
-          MODEL="opencode/minimax-m3.1-flash-free"
-          echo "Using the fixed review model: $MODEL"
+          # Resolve the model from the trusted base-branch config. The PR
+          # cannot change this value, and project config stays disabled for
+          # the review agent.
+          if ! git cat-file -e "origin/$BASE:opencode.jsonc" 2>/dev/null; then
+            echo "::error::Could not read OpenCode config from origin/$BASE; refusing to review."
+            exit 1
+          fi
+          MODEL="$(git show "origin/$BASE:opencode.jsonc" \
+            | sed -nE 's/^  "model":[[:space:]]*"([^"]+)"[,]?[[:space:]]*$/\1/p')"
+          if [ -z "$MODEL" ] || [[ "$MODEL" == *$'\n'* ]]; then
+            echo "::error::Could not resolve exactly one review model from the trusted base config."
+            exit 1
+          fi
 
           # The review agent runs untrusted PR content, so it is sandboxed:
           # no shell, no file edits, no network fetch, no sub-agents, no
@@ -378,8 +385,6 @@ jobs:
               echo "## OpenCode v2 review failed"
               echo ""
               echo "The review run exited with status $RUN_STATUS for PR #$PR_NUMBER."
-              echo ""
-              echo "Model: \`$MODEL\`"
               echo ""
               echo "<details><summary>Runner log</summary>"
               echo ""

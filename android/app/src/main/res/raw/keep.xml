@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Keeps the reminder notification small icon in release builds.
+
+  Flutter's Gradle plugin enables R8 resource shrinking for release app
+  builds (`isMinifyEnabled` + `isShrinkResources`), so a drawable that is
+  only referenced by name from Dart is unreachable to the shrinker and gets
+  stripped from the APK/AAB. At runtime
+  `Resources.getIdentifier("ic_notification", "drawable", packageName)`
+  then returns 0, `flutter_local_notifications` throws `invalid_icon`, and
+  every reminder loses its small icon (Crashlytics `434603cf`).
+
+  `tools:keep` marks the drawable as used. aapt2 reads this file at build
+  time and never packages it.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_notification" />

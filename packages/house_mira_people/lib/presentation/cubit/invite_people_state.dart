@@ -19,7 +19,6 @@ class InvitePeopleSuccess extends InvitePeopleState {
 enum InvitePeopleErrorCode { sendFailed }
 
 class InvitePeopleError extends InvitePeopleState {
-  InvitePeopleError({this.message, this.code});
-  final String? message;
-  final InvitePeopleErrorCode? code;
+  InvitePeopleError(this.code);
+  final InvitePeopleErrorCode code;
 }

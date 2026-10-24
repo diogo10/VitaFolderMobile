@@ -88,5 +88,28 @@ void main() {
             'white-on-transparent silhouette, not an adaptive-icon mipmap',
       );
     });
+
+    test('release resource shrinking keeps the small icon', () {
+      expect(iconName, isNotNull);
+
+      // Flutter's Gradle plugin enables `isShrinkResources` for release app
+      // builds, so a drawable referenced only by name from Dart is stripped
+      // from the APK/AAB: `getIdentifier(...)` then returns 0 at runtime and
+      // the plugin throws `invalid_icon` (Crashlytics `434603cf`). The
+      // `tools:keep` entry in res/raw/keep.xml is what stops that.
+      final keep = File('android/app/src/main/res/raw/keep.xml');
+
+      expect(
+        keep.existsSync(),
+        isTrue,
+        reason:
+            'missing ${keep.path}; the shrinker strips drawables that are '
+            'only referenced by name at runtime',
+      );
+      expect(
+        keep.readAsStringSync(),
+        contains('tools:keep="@drawable/$iconName"'),
+      );
+    });
   });
 }

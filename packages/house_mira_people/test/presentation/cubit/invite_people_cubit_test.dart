@@ -1,4 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:house_mira_core/functions/edget_functions.dart';
 import 'package:house_mira_people/presentation/cubit/invite_people_cubit.dart';
@@ -122,9 +123,15 @@ void main() {
   );
 
   blocTest<InvitePeopleCubit, InvitePeopleState>(
-    'emits error message when sending throws',
+    'emits sendFailed instead of the raw exception when sending throws',
     build: build,
-    setUp: () => stubSendEmail(Exception('boom')),
+    setUp: () => stubSendEmail(
+      PlatformException(
+        code: 'FunctionException',
+        message: 'status: 502',
+        details: {'code': 'resend_failed'},
+      ),
+    ),
     act: (cubit) => cubit.sendInvite(
       email: 'ana@example.com',
       relationship: InviteRelationship.other,
@@ -133,9 +140,9 @@ void main() {
     expect: () => [
       isA<InvitePeopleLoading>(),
       isA<InvitePeopleError>().having(
-        (e) => e.message,
-        'message',
-        contains('boom'),
+        (e) => e.code,
+        'code',
+        InvitePeopleErrorCode.sendFailed,
       ),
     ],
   );
