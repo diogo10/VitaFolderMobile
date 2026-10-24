@@ -3,7 +3,7 @@
   "formatter": true,
   // Fixed model: the free OpenCode Zen model. It needs no API key, so no
   // provider credential is ever configured or passed to the agent.
-  "model": "opencode/minimax-m3.1-flash-free",
+  "model": "opencode/deepseek-v4.1-flash-free",
   "instructions": [
     "AGENTS.md"
   ],
@@ -78,7 +78,6 @@
   "agents": {
     "plan": {
       "mode": "primary",
-      "model": "opencode/minimax-m3.1-flash-free",
       "permissions": [
         { "action": "edit", "resource": "*", "effect": "deny" },
         { "action": "shell", "resource": "*", "effect": "deny" }
@@ -86,7 +85,6 @@
     },
     "code-reviewer": {
       "description": "Reviews code for best practices and potential issues",
-      "model": "opencode/minimax-m3.1-flash-free",
       "mode": "subagent",
       "system": "You are a code reviewer. Focus on security, performance, and maintainability.",
       // Deny file modification tools for review-only agent

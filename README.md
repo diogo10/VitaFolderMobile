@@ -286,13 +286,10 @@ semantics and the fail-closed matrix are documented in
   The label-driven merge uses `MERGE_METHOD: squash`, like the review job,
   and the label is dropped again once the merge succeeded. The workflow
   needs `issues: write` for the label, so it can drop it.
-- **Fixed model, no credentials.** The review always runs on
-  `opencode/minimax-m3.1-flash-free`, the free model the repository
-  configures in `opencode.jsonc`, so the bot and local development use the
-  same one. That model needs no API key, so the workflow takes no provider
-  credentials at all: there is no `OPENCODE_API_KEY` or `MINIMAX_API_KEY`
-  secret to configure, and no provider credential is exposed to the agent.
-  The model is not overridable — the `model` input was removed.
+- **Fixed model, no credentials.** The review uses a fixed model and does
+  not require provider credentials. No provider credential is exposed to
+  the review agent, and the model is not overridable — the `model` input
+  was removed.
 - **Cold-start safe.** On a cold runner the first CLI invocation can start
   before the provider catalog is loaded, and the model then has no route at
   all (`Model unavailable`). The job warms the catalog up first (it lists the
