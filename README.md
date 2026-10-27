@@ -323,6 +323,36 @@ Set these in GitHub repo → Settings → Secrets → Actions:
 2. Add tester emails
 3. Project settings → Service accounts → Generate new private key → store as `FIREBASE_SERVICE_ACCOUNT`
 
+### Android build toolchain (R8)
+
+Release builds are optimized with R8: code shrinking, obfuscation and
+**optimized resource shrinking** (Android vitals "DEX code optimization").
+Play only reports the optimized pipeline as enabled when the app is built with
+Android Gradle Plugin 9.0 or newer — from AGP 9 resource shrinking always runs
+inside R8, so resources referenced only from code that R8 removed are dropped
+instead of being kept alive by AAPT2 keep rules.
+
+| Component | Version | Why |
+| --- | --- | --- |
+| Android Gradle Plugin | 9.0.1 | optimized resource shrinking (`android/settings.gradle.kts`) |
+| Gradle | 9.1.0 | AGP 9.0 minimum, newest version Flutter 3.41.x supports (`android/gradle/wrapper/gradle-wrapper.properties`) |
+| google-services plugin | 4.5.0 | Gradle 9 / AGP 9 compatible |
+| Kotlin Gradle plugin | 2.2.20 | unchanged, required by `kotlin-android` |
+
+`android/gradle.properties` keeps `android.newDsl=false` and
+`android.builtInKotlin=false`: Flutter 3.41.6's Gradle plugin still reads the
+legacy `android {}` DSL and this app applies the `kotlin-android` plugin. Remove
+both once Flutter migrates (flutter/flutter#180137); AGP 10 removes the
+opt-outs. Neither flag affects optimized resource shrinking.
+
+Two follow-ups when touching R8:
+
+- Anything reached only by name at runtime must be listed in
+  `android/app/src/main/res/raw/keep.xml` (e.g. `@drawable/ic_notification`).
+- App-level ProGuard keep rules go in `android/app/proguard-rules.pro`. Verify
+  a release build's optimization report with
+  `unzip -p build/app/outputs/bundle/release/app-release.aab BUNDLE-METADATA/com.android.tools/r8.json`.
+
 ## Crashlytics MCP server
 
 Agents can read Crashlytics data (issues, sample stack traces, aggregated

@@ -59,6 +59,19 @@ android {
 
     buildTypes {
         release {
+            // R8 code + resource optimization, declared explicitly here even
+            // though the Flutter Gradle plugin already enables both for
+            // release app builds (it also adds proguard-android-optimize.txt,
+            // the Flutter engine rules and android/app/proguard-rules.pro for
+            // app-specific keep rules).
+            //
+            // On Android Gradle Plugin 9 resource shrinking always runs
+            // through R8, so isShrinkResources also turns on *optimized*
+            // resource shrinking: resources referenced only from code that R8
+            // removed are dropped instead of being pinned by AAPT2 keep rules.
+            // https://developer.android.com/topic/performance/app-optimization/enable-app-optimization#optimize-resource-shrinking
+            isMinifyEnabled = true
+            isShrinkResources = true
             signingConfig = if (keystorePropertiesFile.exists()) {
                 signingConfigs.getByName("release")
             } else {
