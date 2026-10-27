@@ -1,0 +1,64 @@
+name: bakeagent-run
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_title:
+        description: Task title
+        required: true
+      task_description:
+        description: Task description
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "bakeagent@users.noreply.github.com"
+          git config --global user.name "BakeAgent"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install OpenCode
+        run: npm install -g opencode-ai
+
+      - name: Run OpenCode
+        env:
+          TASK_TITLE: ${{ inputs.task_title }}
+          TASK_DESCRIPTION: ${{ inputs.task_description }}
+        run: |
+          if [ -f .env ]; then set -a; . ./.env; set +a; fi
+          opencode run "Implement this task in the repository. Do not create a pull request; just make and save the code changes.
+          Title: $TASK_TITLE
+          Description: $TASK_DESCRIPTION"
+
+      - name: Commit, push and open pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TASK_TITLE: ${{ inputs.task_title }}
+          TASK_DESCRIPTION: ${{ inputs.task_description }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          git add -A
+          if git diff --cached --quiet && [ "$(git rev-list --count origin/${{ github.event.repository.default_branch }}..HEAD)" = "0" ]; then
+            echo "No changes produced."; exit 0
+          fi
+          git diff --cached --quiet || git commit -m "$TASK_TITLE"
+          git push origin "HEAD:$BRANCH"
+          gh pr view "$BRANCH" >/dev/null 2>&1 || gh pr create --head "$BRANCH" --base "${{ github.event.repository.default_branch }}" --title "$TASK_TITLE" --body "$TASK_DESCRIPTION
+
+          _Created by BakeAgent via GitHub Actions._"
