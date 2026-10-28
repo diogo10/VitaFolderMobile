@@ -180,9 +180,10 @@ Details: [testing](.agents/references/testing.md).
   needed). Active project comes from .firebaserc. If a tool answers
   "The user is not currently logged into the Firebase CLI" the ADC file is
   missing; if it answers "PRECONDITION_FAILED ... requires an active
-  project" .firebaserc is missing. The service account holds the read-only
-  roles/firebase.crashlytics.viewer, so crashlytics_create_note answers
-  "403 PERMISSION_DENIED" - print the note text for the user instead.
+  project" .firebaserc is missing. The ADC key carries a write role, so
+  crashlytics_create_note records the triage note on the issue (verified
+  2026-10-28). A key granted only roles/firebase.crashlytics.viewer answers
+  "403 PERMISSION_DENIED" on notes - then print the note text for the user.
 - Crash review workflow: on a request like "Review the Firebase Crashes",
   load the `firebase-crashlytics` skill (.agents/skills/firebase-crashlytics/)
   and follow it: fetch topIssues via crashlytics_get_report, pull each

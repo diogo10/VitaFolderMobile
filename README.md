@@ -445,10 +445,12 @@ containers and CI:
    `140355243144`) → IAM & Admin → Service Accounts → **Create service
    account**. Name it e.g. `house-mira-crashlytics-reader`.
 2. Grant it **Firebase Crashlytics Viewer** (`roles/firebase.crashlytics.viewer`)
-   on that project. Nothing else — it is a read-only role. It covers every
-   report, issue and event read; `crashlytics_create_note` additionally needs
-   `firebasecrashlytics.notes.create` (e.g. `roles/firebase.crashlytics.admin`)
-   and answers `403 PERMISSION_DENIED` without it.
+   on that project for every report, issue and event read. To let the agent
+   record triage notes, add `firebasecrashlytics.notes.create` as well (e.g.
+   `roles/firebase.crashlytics.admin`) — the key in use today has it, verified
+   2026-10-28. A Viewer-only key answers `403 PERMISSION_DENIED` on
+   `crashlytics_create_note`; then the note text has to be copied into the
+   console by hand. Issue state (close/mute) is console-only either way.
 3. Create a JSON key and store it **outside the repo**:
 
    ```bash
@@ -498,9 +500,10 @@ firebase login <authorizationCode>
 ```
 
 The signed-in account needs the **Firebase Crashlytics Viewer**
-(`roles/firebase.crashlytics.viewer`) role on the project. The login state
-lives in `~/.config/configstore/firebase-tools.json`, which is usually empty
-in a fresh container — prefer option A there. Without credentials every
+(`roles/firebase.crashlytics.viewer`) role on the project, plus
+`firebasecrashlytics.notes.create` if it should write triage notes. The login
+state lives in `~/.config/configstore/firebase-tools.json`, which is usually
+empty in a fresh container — prefer option A there. Without credentials every
 Crashlytics tool fails with *"The user is not currently logged into the
 Firebase CLI"*.
 
@@ -795,6 +798,14 @@ Maps `409 sole_owner` → `SoleOwnerException(familyId)`, `401` → `AuthExcepti
 - Auth is enforced by `withSupabase({ auth: "user" })` — no valid caller JWT, no handler run.
 - Validates `to` (email shape); optional `locale` (`en`/`pt`, prefix-matched so `pt-BR` → `pt`, English fallback), `inviterName`, `familyName`, `inviteCode` (legacy, still accepted), `familyCode` (feeds the join-family CTA; must be strings when present). CORS preflight (`OPTIONS`) returns `ok`; only `POST` is accepted.
 - Renders subject + HTML server-side in the request locale using the app sand palette (`#FAF8F5` bg, `#634F39` headings, `#C2B299` CTA). CTA: `https://housemira.com/join-family?code=<familyCode>&email=<to>` (bare `/join-family` when no code; opens the website join page, `email` pre-fills its form).
+- **The sender domain must be verified in Resend.** Emails go out as
+  `contact@contact.housemira.com`, so the subdomain — not the root
+  `housemira.com` — needs the Resend DKIM and return-path records
+  (`resend._domainkey.contact.housemira.com`, `send.contact.housemira.com`).
+  An unverified sender domain answers `403 validation_error` ("The … domain is
+  not verified"), which the function returns as `502 resend_failed` and the app
+  reports as a non-fatal (Crashlytics `fd17dfd5`). Verify it on
+  <https://resend.com/domains> and re-check after any sender-address change.
 
 Responses:
 

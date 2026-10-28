@@ -94,10 +94,11 @@ Never print, copy, or commit the service-account key.
    > `reminder_notification_service.dart`; guard test added in
    > `test/android_manifest_test.dart`. Fix ships in 1.0.4.
 
-   The service account needs a role that includes
-   `firebasecrashlytics.notes.create` — `roles/firebase.crashlytics.viewer`
-   is read-only and answers `403 PERMISSION_DENIED`. When the note fails,
-   print the note text for the user instead of retrying.
+   The ADC key now carries a write role: `crashlytics_create_note` succeeds
+   (verified 2026-10-28), so record the note on the issue. A key granted only
+   `roles/firebase.crashlytics.viewer` has no `firebasecrashlytics.notes.create`
+   and answers `403 PERMISSION_DENIED`; when that happens, print the note text
+   for the user instead of retrying.
 
 9. **Report back.** A table: issue id, title, error type, impact, status
    (fixed / stale / needs user), and the verification result.
@@ -123,12 +124,14 @@ issue. Say so explicitly and hand the closing back to the user.
 
 - Read-only by default: the MCP tool allow-list has no deploy, no
   `firebase_update_environment`, no `crashlytics_update_issue`.
-- The service account's `roles/firebase.crashlytics.viewer` covers reads
-  only. `crashlytics_create_note` needs
-  `firebasecrashlytics.notes.create` (e.g.
-  `roles/firebase.crashlytics.admin`); without it the call answers
-  `403 PERMISSION_DENIED`. Print the note text for the user instead of
-  retrying.
+- The service account now holds a write role: `crashlytics_create_note`
+  works (verified 2026-10-28) because it has
+  `firebasecrashlytics.notes.create` (e.g. `roles/firebase.crashlytics.admin`).
+  A key granted only `roles/firebase.crashlytics.viewer` covers reads and
+  answers `403 PERMISSION_DENIED` on notes; then print the note text for the
+  user instead of retrying. Nothing else in the allow-list is writable —
+  `crashlytics_update_issue` stays unavailable, so issues are still closed or
+  muted by hand in the console.
 - Never print or commit the service-account key; it stays in
   `~/.config/gcloud/`.
 - Commit, push, or open a PR only when explicitly asked.
