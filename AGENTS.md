@@ -1,6 +1,6 @@
 # HouseMira — Agent Guidelines
 
-Family management app. Flutter 3.41.6 via FVM, Supabase backend,
+Family management app. Flutter 3.47.8 via FVM, Supabase backend,
 flutter_bloc Cubits, GetIt DI, go_router. Keep it clean, small, and tested.
 
 References: [architecture](.agents/references/architecture.md) ·

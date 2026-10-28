@@ -3,7 +3,7 @@
 ## Core Principles
 
 ### I. Flutter toolchain (FVM + very_good_analysis)
-The project MUST use Flutter 3.41.6 managed exclusively via FVM
+The project MUST use Flutter 3.47.8 managed exclusively via FVM
 (`.fvmrc`), and all CLI commands MUST be prefixed with `fvm`
 (never bare `flutter`/`dart`):
 `fvm flutter pub get`, `fvm flutter analyze`,

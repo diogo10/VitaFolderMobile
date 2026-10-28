@@ -335,12 +335,12 @@ instead of being kept alive by AAPT2 keep rules.
 | Component | Version | Why |
 | --- | --- | --- |
 | Android Gradle Plugin | 9.0.1 | optimized resource shrinking (`android/settings.gradle.kts`) |
-| Gradle | 9.1.0 | AGP 9.0 minimum, newest version Flutter 3.41.x supports (`android/gradle/wrapper/gradle-wrapper.properties`) |
+| Gradle | 9.1.0 | AGP 9.0 minimum; the Flutter 3.47.x tooling supports up to 9.3.1, this pin is the version CI builds with (`android/gradle/wrapper/gradle-wrapper.properties`) |
 | google-services plugin | 4.5.0 | Gradle 9 / AGP 9 compatible |
 | Kotlin Gradle plugin | 2.2.20 | unchanged, required by `kotlin-android` |
 
 `android/gradle.properties` keeps `android.newDsl=false` and
-`android.builtInKotlin=false`: Flutter 3.41.6's Gradle plugin still reads the
+`android.builtInKotlin=false`: Flutter 3.47.8's Gradle plugin still reads the
 legacy `android {}` DSL and this app applies the `kotlin-android` plugin. Remove
 both once Flutter migrates (flutter/flutter#180137); AGP 10 removes the
 opt-outs. Neither flag affects optimized resource shrinking.

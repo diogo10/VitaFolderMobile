@@ -1,7 +1,7 @@
 # Tasks: 001-notes — Shared Family Notes
 
 **Input**: Design documents from `specs/001-notes/` (spec.md, plan.md, research.md, data-model.md, contracts/, quickstart.md)
-**Stack**: Dart / Flutter 3.41.6 via FVM — all commands `fvm`-prefixed
+**Stack**: Dart / Flutter 3.47.8 via FVM — all commands `fvm`-prefixed
 
 ## Format: `[ID] [P?] [Story] Description`
 - **[P]**: Can run in parallel
