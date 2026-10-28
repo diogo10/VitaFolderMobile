@@ -131,3 +131,8 @@ app.*.symbols
 
 # FVM Version Cache
 .fvm/
+# BakeAgent run scratch files (.bakeagent/task.json, .bakeagent/prompt.txt).
+.bakeagent/
+
+# Local shell secrets (e.g. BAKEHUB_API_KEY for the devcontainer script).
+.env

@@ -1,64 +1,244 @@
 name: bakeagent-run
 
+# Runs one Bakehub task with the same dev container image a developer uses,
+# and publishes the result as one pull request.
+#
+# The task comes from the Bakehub queue (feedback first, then the next pending
+# task); the dispatch inputs override it, so a manual run needs no API key.
+# The image is built from the unmodified `.devcontainer/Dockerfile`
+# (tool/bakeagent_run.sh), and the container never sees a GitHub token: this
+# workflow commits, pushes and opens the pull request after the gate passed.
+
 on:
   workflow_dispatch:
     inputs:
       task_title:
-        description: Task title
-        required: true
+        description: Task title (overrides the Bakehub queue)
+        required: false
+        default: ""
       task_description:
-        description: Task description
+        description: Task description (used with task_title)
         required: false
         default: ""
 
 permissions:
   contents: write
   pull-requests: write
+  issues: write
+
+# One run per branch: two runs must not fight over the same checkout or task.
+concurrency:
+  group: bakeagent-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # No credential helper and no token in .git/config: the agent runs
+          # in this checkout and must not be able to push, even if a task
+          # description tries to make it. Every git network call below passes
+          # an authenticated URL explicitly.
+          persist-credentials: false
 
       - name: Configure Git
         run: |
           git config --global user.email "bakeagent@users.noreply.github.com"
           git config --global user.name "BakeAgent"
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Test the BakeAgent tooling
+        # Task selection, the agent prompt and the branch slug are unit tested
+        # in tool/test_bakehub_tasks.py. They run here, before a task is
+        # selected and before the image build, so a broken parser fails the run
+        # in seconds instead of after an hour. `ci.yml` is left untouched.
+        run: python3 -m unittest tool.test_bakehub_tasks -v
 
-      - name: Install OpenCode
-        run: npm install -g opencode-ai
-
-      - name: Run OpenCode
+      - name: Resolve the task
+        id: task
+        # The API key stays on the host: the task is selected here, and the
+        # container only executes the prompt. That also keeps the dev
+        # container's postStartCommand quiet (no key, no task).
         env:
-          TASK_TITLE: ${{ inputs.task_title }}
-          TASK_DESCRIPTION: ${{ inputs.task_description }}
+          BAKEHUB_API_KEY: ${{ secrets.BAKEHUB_API_KEY }}
+          BAKEHUB_API_URL: ${{ vars.BAKEHUB_API_URL }}
+          MANUAL_TITLE: ${{ inputs.task_title }}
+          MANUAL_DESCRIPTION: ${{ inputs.task_description }}
         run: |
-          if [ -f .env ]; then set -a; . ./.env; set +a; fi
-          opencode run "Implement this task in the repository. Do not create a pull request; just make and save the code changes.
-          Title: $TASK_TITLE
-          Description: $TASK_DESCRIPTION"
+          set -euo pipefail
+          mkdir -p .bakeagent
+          if [ -n "$MANUAL_TITLE" ]; then
+            python3 tool/bakehub_tasks.py manual \
+              --title "$MANUAL_TITLE" \
+              --description "$MANUAL_DESCRIPTION" \
+              --output .bakeagent/task.json
+          elif [ -n "$BAKEHUB_API_KEY" ]; then
+            python3 tool/bakehub_tasks.py select --output .bakeagent/task.json
+          else
+            echo "::error::No task title was given and the BAKEHUB_API_KEY secret is not configured."
+            exit 1
+          fi
+          python3 tool/bakehub_tasks.py outputs --task .bakeagent/task.json \
+            >> "$GITHUB_OUTPUT"
 
-      - name: Commit, push and open pull request
+      - name: Stop when there is no task
+        if: steps.task.outputs.has_task != 'true'
+        run: echo "::notice::No Bakehub task is pending; nothing to do."
+
+      - name: Prepare the branch
+        id: branch
+        if: steps.task.outputs.has_task == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TASK_TITLE: ${{ inputs.task_title }}
-          TASK_DESCRIPTION: ${{ inputs.task_description }}
-          BRANCH: ${{ github.ref_name }}
+          TASK_ID: ${{ steps.task.outputs.task_id }}
+          TASK_KIND: ${{ steps.task.outputs.task_kind }}
+          TASK_TITLE: ${{ steps.task.outputs.task_title }}
         run: |
-          git add -A
-          if git diff --cached --quiet && [ "$(git rev-list --count origin/${{ github.event.repository.default_branch }}..HEAD)" = "0" ]; then
-            echo "No changes produced."; exit 0
-          fi
-          git diff --cached --quiet || git commit -m "$TASK_TITLE"
-          git push origin "HEAD:$BRANCH"
-          gh pr view "$BRANCH" >/dev/null 2>&1 || gh pr create --head "$BRANCH" --base "${{ github.event.repository.default_branch }}" --title "$TASK_TITLE" --body "$TASK_DESCRIPTION
+          set -euo pipefail
 
-          _Created by BakeAgent via GitHub Actions._"
+          # The checkout has no stored credentials (see the Checkout step), so
+          # every network call authenticates with an explicit URL. The token
+          # lives in GH_TOKEN and never in .git/config.
+          REMOTE="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          # Bakehub never marks a pending task as done, only reviewer
+          # feedback is cleared, so a pending task that already produced a
+          # pull request would get a second one on every run. Match the task
+          # id written into the pull request body instead.
+          EXISTING=""
+          if [ -n "$TASK_ID" ]; then
+            EXISTING="$(gh pr list --state open --limit 100 \
+              --json number,headRefName,body \
+              --jq "[.[] | select((.body // \"\") | contains(\"Bakehub-Task-Id: $TASK_ID\"))][0] // empty")"
+          fi
+
+          if [ -n "$EXISTING" ]; then
+            PR_NUMBER="$(jq -r '.number' <<<"$EXISTING")"
+            PR_HEAD="$(jq -r '.headRefName' <<<"$EXISTING")"
+            if [ "$TASK_KIND" != "feedback" ]; then
+              echo "::notice::Task $TASK_ID already has open pull request #$PR_NUMBER; nothing to do."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            # Reviewer feedback belongs to the pull request that is already
+            # open: its branch is the place for the fix.
+            echo "Updating pull request #$PR_NUMBER on $PR_HEAD."
+            git fetch "$REMOTE" "+refs/heads/$PR_HEAD:refs/remotes/origin/$PR_HEAD"
+            git switch --force-create "$PR_HEAD" "refs/remotes/origin/$PR_HEAD"
+            echo "branch=$PR_HEAD" >> "$GITHUB_OUTPUT"
+            echo "pr=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          SLUG="$(python3 tool/bakehub_tasks.py slug --title "$TASK_TITLE")"
+          BRANCH="bakeagent/$SLUG"
+          if git ls-remote --exit-code --heads "$REMOTE" "$BRANCH" >/dev/null 2>&1; then
+            # The name is taken by a branch whose pull request is already
+            # closed or merged: keep this run on a branch of its own.
+            BRANCH="$BRANCH-$GITHUB_RUN_ID"
+          fi
+          git switch --create "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Write the agent prompt
+        if: success() && steps.task.outputs.has_task == 'true' && steps.branch.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          python3 tool/bakehub_tasks.py prompt \
+            --task .bakeagent/task.json > .bakeagent/prompt.txt
+          echo "::group::Task prompt"
+          cat .bakeagent/prompt.txt
+          echo "::endgroup::"
+
+      - name: Run BakeAgent in the dev container
+        # tool/bakeagent_run.sh builds the repository's .devcontainer/Dockerfile
+        # and runs the task in that image, so the devcontainer files stay
+        # untouched for CI. The script installs the pinned OpenCode CLI, runs
+        # the agent and the flutter analyze + flutter test gate inside the
+        # container, and gives the workspace back to the runner user.
+        if: success() && steps.task.outputs.has_task == 'true' && steps.branch.outputs.skip != 'true'
+        run: bash tool/bakeagent_run.sh
+
+      - name: Detect a change
+        id: change
+        if: success() && steps.task.outputs.has_task == 'true' && steps.branch.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "::notice::The task produced no change; nothing to publish."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            git status --short
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push
+        if: success() && steps.change.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TASK_TITLE: ${{ steps.task.outputs.task_title }}
+          BRANCH: ${{ steps.branch.outputs.branch }}
+        run: |
+          set -euo pipefail
+          git add -A
+          git commit -m "$TASK_TITLE"
+          # Explicit authenticated URL: the checkout stores no credentials, so
+          # the agent cannot push on its own.
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "HEAD:refs/heads/$BRANCH"
+
+      - name: Open or update the pull request
+        if: success() && steps.change.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_BRANCH: ${{ github.ref_name }}
+          BRANCH: ${{ steps.branch.outputs.branch }}
+          PR_NUMBER: ${{ steps.branch.outputs.pr }}
+          TASK_TITLE: ${{ steps.task.outputs.task_title }}
+          TASK_ID: ${{ steps.task.outputs.task_id }}
+          TASK_KIND: ${{ steps.task.outputs.task_kind }}
+        run: |
+          set -euo pipefail
+
+          {
+            echo "Automated change produced by BakeAgent."
+            echo ""
+            echo "- Task: $TASK_TITLE"
+            if [ -n "$TASK_ID" ]; then
+              echo "- Source: $TASK_KIND Bakehub task"
+            else
+              echo "- Source: manual dispatch"
+            fi
+            echo "- Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo ""
+            echo "Verified with \`flutter analyze --no-fatal-infos --fatal-warnings\`"
+            echo "and \`flutter test\` inside \`.devcontainer/Dockerfile\`."
+            if [ -n "$TASK_ID" ]; then
+              echo ""
+              # The duplicate guard of the next run matches this line.
+              echo "Bakehub-Task-Id: $TASK_ID"
+            fi
+          } > /tmp/pr_body.md
+
+          if [ -n "$PR_NUMBER" ]; then
+            gh pr comment "$PR_NUMBER" --body-file /tmp/pr_body.md
+            echo "::notice::Updated pull request #$PR_NUMBER."
+          else
+            gh pr create --base "$BASE_BRANCH" --head "$BRANCH" \
+              --title "$TASK_TITLE" --body-file /tmp/pr_body.md
+          fi
+
+      - name: Clear the Bakehub feedback
+        # Only once the fix is published: a failed run must keep the feedback
+        # so the next run picks it up again. Pending tasks are not cleared,
+        # the API has no "done" action for them.
+        if: success() && steps.change.outputs.has_changes == 'true' && steps.task.outputs.task_kind == 'feedback' && steps.task.outputs.task_id != ''
+        env:
+          BAKEHUB_API_KEY: ${{ secrets.BAKEHUB_API_KEY }}
+          BAKEHUB_API_URL: ${{ vars.BAKEHUB_API_URL }}
+          TASK_ID: ${{ steps.task.outputs.task_id }}
+        run: python3 tool/bakehub_tasks.py clear-feedback --task-id "$TASK_ID"

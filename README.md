@@ -305,6 +305,42 @@ semantics and the fail-closed matrix are documented in
   a human. A free-tier limit is not a defect the PR can fix, so it must not
   turn every PR red. Details: [docs/opencode-review-bob.md](docs/opencode-review-bob.md).
 
+### Automated tasks (BakeAgent)
+
+`.github/workflows/bakeagent-run.yml` runs one Bakehub task per dispatch and
+opens one pull request for it. It uses the same image a developer uses:
+`tool/bakeagent_run.sh` builds the repository's `.devcontainer/Dockerfile`
+(unmodified) and runs the task inside that container.
+
+- **One task, one branch, one PR.** The task comes from the Bakehub queue
+  (`get-pending-tasks`: reviewer feedback first, then the next pending task);
+  the `task_title`/`task_description` dispatch inputs override it. The change
+  lands on `bakeagent/<slug>` and a PR is opened against the dispatched
+  branch. A task that already has an open PR is not repeated: feedback updates
+  that PR, a pending task waits for a human.
+- **The dev container stays untouched.** The change lives in
+  `tool/bakeagent_run.sh` (build + run) and `tool/bakeagent_container.sh`
+  (inside the container), so `.devcontainer/` keeps serving developers:
+  same Dockerfile, same `postStartCommand`. Because the workflow runs the
+  image with `docker run`, no devcontainer lifecycle script runs in CI.
+- **Pinned CLI inside the container.** The image installs OpenCode with the
+  upstream floating installer; the task script replaces it with the pinned,
+  checksum-verified build from `tool/install_opencode_cli.sh`.
+- **Same gate as CI, before the push.** `flutter analyze
+  --no-fatal-infos --fatal-warnings` and `flutter test` run inside the
+  container; the agent gets two extra passes with the failure log, and nothing
+  is pushed while the gate is red.
+- **The agent never gets the GitHub token.** It edits and verifies only; the
+  workflow commits, pushes and opens the PR. The Bakehub API key stays on the
+  runner as well.
+- **Free model, quota-aware.** The agent uses the model from `opencode.jsonc`
+  (`opencode/deepseek-v4.1-flash-free`). A quota/credit exhaustion fails the
+  run with a message naming the model instead of publishing a half-done
+  change.
+
+Configure `BAKEHUB_API_KEY` (secret) and optionally `BAKEHUB_API_URL`
+(variable). Details: [docs/bakeagent.md](docs/bakeagent.md).
+
 ## APK Distribution
 
 Merging into `main` triggers `.github/workflows/build_apk.yml`:
