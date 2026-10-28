@@ -8,7 +8,7 @@
 
 ## Technical Context
 
-**Language/Version**: Dart / Flutter 3.41.6 via FVM (`.fvmrc`; all commands `fvm`-prefixed)
+**Language/Version**: Dart / Flutter 3.47.8 via FVM (`.fvmrc`; all commands `fvm`-prefixed)
 **Primary Dependencies**: `flutter_bloc` (Cubits), `get_it` (`lib/core/injections/service_locator.dart`), `go_router`, `supabase_flutter`, `fpdart` (`Either<Failure, T>`)
 **Storage**: [e.g. Supabase table(s) + RLS notes; else N/A — data access in `data/`, mapped to `Failure` at boundary]
 **Testing**: `fvm flutter test` (+ scoped `fvm flutter test test/features/<feature>`); coverage `fvm flutter test --coverage` + `python3 tool/check_business_logic_coverage.py` (100% per file under `lib/**/domain/`, `lib/**/application/`); secrets `bash tool/check_no_hardcoded_secrets.sh`

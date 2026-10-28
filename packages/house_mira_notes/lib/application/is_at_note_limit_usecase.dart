@@ -45,10 +45,11 @@ class IsAtNoteLimitUsecase {
       if (familyId == null) return false;
       if (await subscriptionService.isPro(userId: userId)) return false;
       final result = await notesRepository.getNotesCount(familyId);
-      return result.fold(
+      final bool limitReached = result.fold(
         (_) => false,
         (count) => UsageLimits.isNoteLimitReached(count: count, isPro: false),
       );
+      return limitReached;
     } on Object catch (_) {
       return false;
     }

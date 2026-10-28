@@ -155,3 +155,6 @@ jobs:
     uses: ./.github/workflows/opencode-review-bob.yml
     # No secrets are passed: the review runs on the free fixed model, which
     # needs no API key. The workflow only uses the automatic GITHUB_TOKEN.
+    # The called workflow validates the model before reviewing and bypasses
+    # the review (job succeeds, PR held for a human) when the free model is
+    # out of quota/credits, so a free-tier limit never blocks CI or main.

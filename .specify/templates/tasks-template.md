@@ -1,7 +1,7 @@
 # Tasks: [FEATURE NAME]
 
 **Input**: Design documents from `/specs/[###-feature-name]/`
-**Stack**: Dart / Flutter 3.41.6 via FVM — all commands `fvm`-prefixed
+**Stack**: Dart / Flutter 3.47.8 via FVM — all commands `fvm`-prefixed
 
 ## Format: `[ID] [P?] [Story] Description`
 - **[P]**: Can run in parallel

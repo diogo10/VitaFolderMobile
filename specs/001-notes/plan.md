@@ -8,7 +8,7 @@ Implement shared, color-coded family Notes (CRUD, `created_at DESC`, pull-to-ref
 
 ## Technical Context
 
-**Language/Version**: Dart / Flutter 3.41.6 via FVM (`.fvmrc`; all commands `fvm`-prefixed)
+**Language/Version**: Dart / Flutter 3.47.8 via FVM (`.fvmrc`; all commands `fvm`-prefixed)
 **Primary Dependencies**: `flutter_bloc` (Cubits), `get_it` (`lib/core/injections/service_locator.dart`), `go_router`, `supabase_flutter`, `fpdart` (`Either<Failure, T>`)
 **Storage**: Supabase `notes` table (new, in `sqls/notes_schema.sql`): `id uuid PK DEFAULT gen_random_uuid()`, `family_id uuid NOT NULL REFERENCES families(id) ON DELETE CASCADE`, `created_by uuid NOT NULL DEFAULT auth.uid()`, `title/content/color text NOT NULL`, `created_at/updated_at timestamptz NOT NULL DEFAULT now()` + `updated_at` trigger; `CHECK (color IN ('yellow','pink','blue','green','orange'))`; `CHECK (char_length(trim(title)) BETWEEN 1 AND 100 AND char_length(trim(content)) BETWEEN 1 AND 300)`; RLS `USING/WITH CHECK (EXISTS (... family_memberships ...))` mirroring `reminders` policies in `sqls/database_schema.sql`. Data access in `lib/features/notes/data/` (injected `SupabaseClient`, mapped to `Failure` at boundary).
 **Testing**: `fvm flutter test` (+ scoped `fvm flutter test test/features/notes`); coverage `fvm flutter test --coverage` + `python3 tool/check_business_logic_coverage.py` (100% per file under `lib/**/domain/`, `lib/**/application/`); secrets `bash tool/check_no_hardcoded_secrets.sh`

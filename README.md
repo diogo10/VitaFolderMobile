@@ -286,15 +286,24 @@ semantics and the fail-closed matrix are documented in
   The label-driven merge uses `MERGE_METHOD: squash`, like the review job,
   and the label is dropped again once the merge succeeded. The workflow
   needs `issues: write` for the label, so it can drop it.
-- **Fixed model, no credentials.** The review uses a fixed model and does
-  not require provider credentials. No provider credential is exposed to
-  the review agent, and the model is not overridable — the `model` input
-  was removed.
+- **Fixed model, no credentials.** The review uses the model configured in
+  `opencode.jsonc` (`opencode/deepseek-v4.1-flash-free`, read from the base
+  branch) and does not require provider credentials. No provider credential
+  is exposed to the review agent, and the model is not overridable — the
+  `model` input was removed.
 - **Cold-start safe.** On a cold runner the first CLI invocation can start
   before the provider catalog is loaded, and the model then has no route at
   all (`Model unavailable`). The job warms the catalog up first (it lists the
   models until the fixed one shows up) and retries the review when the model
   was not routable, so a cold start cannot silently skip the review.
+- **Validated model, quota bypass.** Before reviewing, the job sends one
+  minimal smoke-test request to the fixed model. A model missing from the
+  catalog fails the job (it was renamed/removed upstream). A quota or credit
+  limit (`provider.quota`, HTTP 429, "Free usage limit reached") — in the
+  preflight or mid-review — bypasses the review instead: the job succeeds,
+  no grade is recorded, the `automerge` label is dropped and the PR waits for
+  a human. A free-tier limit is not a defect the PR can fix, so it must not
+  turn every PR red. Details: [docs/opencode-review-bob.md](docs/opencode-review-bob.md).
 
 ## APK Distribution
 
@@ -335,12 +344,12 @@ instead of being kept alive by AAPT2 keep rules.
 | Component | Version | Why |
 | --- | --- | --- |
 | Android Gradle Plugin | 9.0.1 | optimized resource shrinking (`android/settings.gradle.kts`) |
-| Gradle | 9.1.0 | AGP 9.0 minimum, newest version Flutter 3.41.x supports (`android/gradle/wrapper/gradle-wrapper.properties`) |
+| Gradle | 9.1.0 | AGP 9.0 minimum; the Flutter 3.47.x tooling supports up to 9.3.1, this pin is the version CI builds with (`android/gradle/wrapper/gradle-wrapper.properties`) |
 | google-services plugin | 4.5.0 | Gradle 9 / AGP 9 compatible |
 | Kotlin Gradle plugin | 2.2.20 | unchanged, required by `kotlin-android` |
 
 `android/gradle.properties` keeps `android.newDsl=false` and
-`android.builtInKotlin=false`: Flutter 3.41.6's Gradle plugin still reads the
+`android.builtInKotlin=false`: Flutter 3.47.8's Gradle plugin still reads the
 legacy `android {}` DSL and this app applies the `kotlin-android` plugin. Remove
 both once Flutter migrates (flutter/flutter#180137); AGP 10 removes the
 opt-outs. Neither flag affects optimized resource shrinking.

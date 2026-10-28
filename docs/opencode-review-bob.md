@@ -17,6 +17,7 @@ the merge decision lives in
 | Concurrency | `opencode-review-bob-<pr><event-pr><ref>`, superseded runs cancelled |
 | Permissions | `contents: read` by default; the job adds `contents`, `pull-requests`, `issues` and `statuses` write |
 | Verdict storage | `opencode-review-grade` commit status on the PR head commit |
+| Quota failure | Review bypassed: no grade recorded, PR held for a human, job succeeds |
 
 ## When it runs
 
@@ -98,33 +99,57 @@ while the review is still running.
 - `tool/install_opencode_cli.sh` downloads the pinned npm tarball,
   verifies its SRI hash and the binary's SHA-256, then installs it.
 
-### 6. Review PR with OpenCode v2
+### 6. Validate the review model
+
+The review model is read from the trusted `opencode.jsonc` on
+`origin/<base>` (today `opencode/deepseek-v4.1-flash-free`) and probed
+before any review work happens:
 
 1. Writes a sandbox config to `/tmp/review_opencode_config.json` that
    denies shell, edits, webfetch, websearch, skills, sub-agents, tool
    execution and external directories. `OPENCODE_DISABLE_PROJECT_CONFIG=1`
    stops a PR from injecting MCP servers, agents or permissions through
-   `opencode.jsonc`.
-2. Strips `GITHUB_TOKEN`/`GH_TOKEN` from every CLI call (`env -u`): the
+   `opencode.jsonc`. Every CLI call of the job runs in that sandbox.
+2. Warms up the provider catalog (`opencode models`) until the fixed review
+   model is routable, with up to six attempts.
+3. Runs a one-request smoke test (`opencode run` answering "OK"): a
+   quota/credit limit only shows up on a real request, not in the catalog.
+
+| Smoke test outcome | Result |
+| --- | --- |
+| The model answers | The review runs |
+| `provider.quota`, HTTP 429, "Free usage limit reached", payment/credit errors | Review bypassed (section 9) |
+| The model is missing from the catalog | Job fails: it was renamed or removed upstream, so `opencode.jsonc` must be updated |
+| Any other failure | Job fails with the smoke-test log |
+
+The check costs one short answer and is bounded to 5 minutes, so a quota
+outage cannot burn the 30-minute job budget on a review that cannot finish.
+
+### 7. Review PR with OpenCode v2
+
+The step only runs when the validation reported the model usable.
+
+1. Strips `GITHUB_TOKEN`/`GH_TOKEN` from every CLI call (`env -u`): the
    model never talks to GitHub.
-3. Warms up the provider catalog (`opencode models`) until the fixed review
-  model is routable, with up to six attempts.
-4. Captures `reviewed_sha` from the API, builds the diff
+2. Captures `reviewed_sha` from the API, builds the diff
    (`git diff origin/<base>...HEAD`, falling back to `gh pr diff`) and the
    diff stat (falling back to the PR metadata API), and re-checks that the
    head commit did not move while the diff was built.
-5. Passes the prompt, the stat and the diff as `-f` attachments rather
+3. Passes the prompt, the stat and the diff as `-f` attachments rather
    than interpolating the diff into a shell variable or argument.
-6. Strips `GRADE:` lines from the diff and the stat before the model sees
+4. Strips `GRADE:` lines from the diff and the stat before the model sees
    them, and truncates the diff to 100KB on line boundaries.
-7. Runs `opencode run --standalone --model ... --format json`, retrying
-  up to three times when the review model is not routable yet. On failure it
-   posts a comment with the runner log and exits 1, so a missing review
-   can never look like an approval.
+5. Runs `opencode run --standalone --model ... --format json`, retrying
+   up to three times when the review model is not routable yet.
+6. If the run fails on a quota/credit limit (the validation can pass and
+   the quota can still run out mid-review), the review is bypassed like a
+   failed preflight (section 9) instead of failing the job.
+7. Any other failure posts a comment with the runner log and exits 1, so a
+   missing review can never look like an approval.
 8. Parses the grade from the model's **final message** with
    `tool/parse_review_grade.py`, also taken from `origin/<base>`.
 
-### 7. Publish review and apply the merge gate
+### 8. Publish review and apply the merge gate
 
 Posts the parsed review text as a PR comment (truncated to 60KB on line
 boundaries), then runs:
@@ -133,6 +158,22 @@ boundaries), then runs:
 python3 /tmp/review_merge_gate.py gate \
   --pr <n> --grade <A|B|C|D|empty> --reviewed-sha <sha>
 ```
+
+### 9. Record a bypassed review
+
+When the model cannot be used because of quota/cost — in the preflight or
+mid-review — the job does not fail. A free-tier limit is not something a
+pull request can fix, and a red required check would block every PR:
+
+- posts an `## Automated review bypassed` comment naming the model and the
+  reason;
+- records the bypass as a `::notice::` annotation on the run;
+- calls the trusted merge gate with **no grade**, which drops a stale
+  `automerge` label and records `GRADE=none needs a human merge` on the head
+  commit.
+
+No review and no grade mean the pull request is not merge-ready: it waits
+for a human. The job itself succeeds.
 
 ## Grades
 
@@ -212,7 +253,10 @@ anything while the helper is missing.
 | Merge gate or grade parser unreadable from base | Job fails closed |
 | Stale `automerge` label cannot be dropped | Job fails closed |
 | CLI download or checksum verification fails | Job fails |
-| Model run fails | Failure comment with the log, job fails |
+| Model missing from the provider catalog | Job fails; the model was renamed or removed upstream, so `opencode.jsonc` must be updated |
+| Model unusable because of quota/credits (preflight) | Review bypassed, job succeeds, PR held for a human |
+| Quota/credit limit reached during the review | Review bypassed, job succeeds, PR held for a human |
+| Model run fails for any other reason | Failure comment with the log, job fails |
 | No valid grade parsed | Review comment is posted, grade is empty, PR is held |
 | Head commit moved during the review | Grade not recorded, label dropped, job fails; the re-review decides |
 | Grade `A` but the merge fails | Job fails, nothing is silently left merge-ready |

@@ -3,7 +3,7 @@
 **Feature Branch**: `[###-feature-name]`
 **Created**: [DATE]
 **Status**: Draft
-**Stack**: Dart / Flutter 3.41.6 via FVM (`fvm flutter ...`)
+**Stack**: Dart / Flutter 3.47.8 via FVM (`fvm flutter ...`)
 
 ## User Scenarios & Testing *(mandatory)*
 
