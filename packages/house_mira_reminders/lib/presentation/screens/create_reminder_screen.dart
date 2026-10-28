@@ -839,12 +839,16 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
+        // Material (not a coloured Container) so the tile's ink splashes paint
+        // on the nearest Material ancestor instead of being hidden by a
+        // DecoratedBox background.
+        Material(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _sand200),
+            side: const BorderSide(color: _sand200),
           ),
+          clipBehavior: Clip.antiAlias,
           child: SwitchListTile(
             value: _notifyEnabled,
             onChanged: (value) async {

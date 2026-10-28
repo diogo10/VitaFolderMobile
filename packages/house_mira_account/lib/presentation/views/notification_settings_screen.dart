@@ -111,9 +111,12 @@ class _NotificationSettingsScreenState
                             ),
                           ),
                           const SizedBox(height: 12),
+                          // The shadow lives on the outer Container; the card
+                          // colour is painted by Material so the tile's ink
+                          // splashes stay visible (a coloured DecoratedBox
+                          // between a ListTile and its Material hides them).
                           Container(
                             decoration: BoxDecoration(
-                              color: context.colorScheme.surface,
                               borderRadius: BorderRadius.circular(28),
                               boxShadow: [
                                 BoxShadow(
@@ -125,45 +128,51 @@ class _NotificationSettingsScreenState
                                 ),
                               ],
                             ),
-                            child: Column(
-                              children: [
-                                SwitchListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 8,
-                                  ),
-                                  secondary: _SettingsIcon(
-                                    icon: Icons.notifications_active_rounded,
-                                    color: context.colorScheme.primary,
-                                  ),
-                                  title: Text(
-                                    l.notificationSettingsEnableNotifications,
-                                    style: context.textTheme.titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                  subtitle: Text(
-                                    enableSubtitle,
-                                    style: context.textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: context.colorScheme.onSurface
-                                              .withValues(alpha: 0.7),
+                            child: Material(
+                              color: context.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(28),
+                              clipBehavior: Clip.antiAlias,
+                              child: Column(
+                                children: [
+                                  SwitchListTile(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 8,
+                                    ),
+                                    secondary: _SettingsIcon(
+                                      icon: Icons.notifications_active_rounded,
+                                      color: context.colorScheme.primary,
+                                    ),
+                                    title: Text(
+                                      l.notificationSettingsEnableNotifications,
+                                      style: context.textTheme.titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                    subtitle: Text(
+                                      enableSubtitle,
+                                      style: context.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: context.colorScheme.onSurface
+                                                .withValues(alpha: 0.7),
+                                          ),
+                                    ),
+                                    value: loaded.notificationsEnabled,
+                                    onChanged: (value) => context
+                                        .read<NotificationSettingsCubit>()
+                                        .setNotificationsEnabled(
+                                          enabled: value,
                                         ),
                                   ),
-                                  value: loaded.notificationsEnabled,
-                                  onChanged: (value) => context
-                                      .read<NotificationSettingsCubit>()
-                                      .setNotificationsEnabled(
-                                        enabled: value,
-                                      ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                           const SizedBox(height: 16),
                           if (widget.showTestAction) ...[
                             Container(
                               decoration: BoxDecoration(
-                                color: context.colorScheme.surface,
                                 borderRadius: BorderRadius.circular(28),
                                 boxShadow: [
                                   BoxShadow(
@@ -176,33 +185,40 @@ class _NotificationSettingsScreenState
                                   ),
                                 ],
                               ),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 8,
-                                ),
-                                leading: _SettingsIcon(
-                                  icon: Icons.send_rounded,
-                                  color: context.colorScheme.primary,
-                                ),
-                                title: Text(
-                                  l.notificationSettingsTestAction,
-                                  style: context.textTheme.titleMedium
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                                subtitle: Text(
-                                  l.notificationSettingsTestSubtitle,
-                                  style: context.textTheme.bodySmall?.copyWith(
-                                    color: context.colorScheme.onSurface
-                                        .withValues(alpha: 0.7),
+                              child: Material(
+                                color: context.colorScheme.surface,
+                                borderRadius: BorderRadius.circular(28),
+                                clipBehavior: Clip.antiAlias,
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 8,
                                   ),
+                                  leading: _SettingsIcon(
+                                    icon: Icons.send_rounded,
+                                    color: context.colorScheme.primary,
+                                  ),
+                                  title: Text(
+                                    l.notificationSettingsTestAction,
+                                    style: context.textTheme.titleMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                  subtitle: Text(
+                                    l.notificationSettingsTestSubtitle,
+                                    style: context.textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: context.colorScheme.onSurface
+                                              .withValues(alpha: 0.7),
+                                        ),
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.chevron_right_rounded,
+                                  ),
+                                  onTap: () =>
+                                      _sendTestNotification(context, l),
                                 ),
-                                trailing: const Icon(
-                                  Icons.chevron_right_rounded,
-                                ),
-                                onTap: () => _sendTestNotification(context, l),
                               ),
                             ),
                           ],

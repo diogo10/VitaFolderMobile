@@ -168,9 +168,11 @@ class _AccountSettingsSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
+        // The shadow lives on the outer Container; the card colour is painted
+        // by Material so the ListTiles' ink splashes stay visible (a coloured
+        // DecoratedBox between a ListTile and its Material hides them).
         Container(
           decoration: BoxDecoration(
-            color: context.colorScheme.surface,
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
@@ -180,17 +182,22 @@ class _AccountSettingsSection extends StatelessWidget {
               ),
             ],
           ),
-          child: Column(
-            children: items
-                .asMap()
-                .entries
-                .map(
-                  (entry) => _AccountSettingsItem(
-                    data: entry.value,
-                    isLast: entry.key == items.length - 1,
-                  ),
-                )
-                .toList(growable: false),
+          child: Material(
+            color: context.colorScheme.surface,
+            borderRadius: BorderRadius.circular(28),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: items
+                  .asMap()
+                  .entries
+                  .map(
+                    (entry) => _AccountSettingsItem(
+                      data: entry.value,
+                      isLast: entry.key == items.length - 1,
+                    ),
+                  )
+                  .toList(growable: false),
+            ),
           ),
         ),
       ],
