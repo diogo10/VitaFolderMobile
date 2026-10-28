@@ -168,40 +168,38 @@ jobs:
           set -euo pipefail
           tool/install_opencode_cli.sh
 
-      - name: Review PR with OpenCode v2
-        id: review
+      - name: Validate the review model
+        id: model-check
+        # A bounded preflight: one smoke-test request against the fixed
+        # review model. It decides whether the review runs at all.
+        timeout-minutes: 5
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          INPUT_PR: ${{ inputs.pr }}
-          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
           BASE_BRANCH: ${{ steps.pr.outputs.base_branch }}
         run: |
           set -euo pipefail
 
-          BASE="$BASE_BRANCH"
-          echo "Reviewing PR #$PR_NUMBER (base: $BASE)"
-
           # Resolve the model from the trusted base-branch config. The PR
           # cannot change this value, and project config stays disabled for
           # the review agent.
-          if ! git cat-file -e "origin/$BASE:opencode.jsonc" 2>/dev/null; then
-            echo "::error::Could not read OpenCode config from origin/$BASE; refusing to review."
+          if ! git cat-file -e "origin/$BASE_BRANCH:opencode.jsonc" 2>/dev/null; then
+            echo "::error::Could not read OpenCode config from origin/$BASE_BRANCH; refusing to review."
             exit 1
           fi
-          MODEL="$(git show "origin/$BASE:opencode.jsonc" \
+          MODEL="$(git show "origin/$BASE_BRANCH:opencode.jsonc" \
             | sed -nE 's/^  "model":[[:space:]]*"([^"]+)"[,]?[[:space:]]*$/\1/p')"
           if [ -z "$MODEL" ] || [[ "$MODEL" == *$'\n'* ]]; then
             echo "::error::Could not resolve exactly one review model from the trusted base config."
             exit 1
           fi
+          echo "Review model: $MODEL"
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
 
           # The review agent runs untrusted PR content, so it is sandboxed:
           # no shell, no file edits, no network fetch, no sub-agents, no
           # skills, and no access outside the checkout. Project configuration
           # is disabled so a PR cannot inject MCP servers, agents or
           # permissions through opencode.jsonc. Every CLI call of this job
-          # runs in that sandbox, the warm-up included.
+          # runs in that sandbox, the smoke test included.
           cat > /tmp/review_opencode_config.json <<'CONFIG_EOF'
           {
             "formatter": false,
@@ -223,11 +221,18 @@ jobs:
           # reviews code, it never talks to GitHub.
           AGENT_ENV=(env -u GITHUB_TOKEN -u GH_TOKEN)
 
-          # Warm up the provider catalog before the review. The very first
-          # CLI invocation on a cold runner can start before the models.dev
-          # catalog is loaded, and the model then has no route at all
-          # ("provider.no-route" / "Model unavailable"). Listing the models
-          # forces that load; poll until the fixed model shows up.
+          # Cost/quota signals: the free model is rate limited, so a request
+          # can be rejected even when the model is routable. These patterns
+          # are deliberately specific: the review log carries repository
+          # content (tool output), and a stray word must not look like a
+          # quota error.
+          QUOTA_PATTERN='provider\.quota|free usage limit|"status":429|too many requests|insufficient (credit|funds|balance)|payment required|out of credits'
+
+          # Warm up the provider catalog before the smoke test. The very
+          # first CLI invocation on a cold runner can start before the
+          # models.dev catalog is loaded, and the model then has no route at
+          # all ("provider.no-route" / "Model unavailable"). Listing the
+          # models forces that load; poll until the fixed model shows up.
           MODEL_ROUTABLE=0
           for attempt in 1 2 3 4 5 6; do
             if OPENCODE_DISABLE_PROJECT_CONFIG=1 \
@@ -245,8 +250,76 @@ jobs:
             fi
           done
           if [ "$MODEL_ROUTABLE" -ne 1 ]; then
-            echo "::warning::The review model never showed up in the model list; the review may fail."
+            # A model that is not in the catalog was renamed or removed
+            # upstream: that is a configuration error in opencode.jsonc, not
+            # a quota problem, so it fails loudly instead of bypassing.
+            echo "::error::The review model '$MODEL' is not in the provider catalog (renamed or removed upstream); update the model in opencode.jsonc."
+            exit 1
           fi
+
+          # Smoke test: does the model actually answer? A quota/credit limit
+          # only shows up on a real request, so the validation is one minimal
+          # run instead of trusting the catalog listing.
+          PROBE_STATUS=0
+          OPENCODE_DISABLE_PROJECT_CONFIG=1 \
+          OPENCODE_CONFIG_CONTENT="$(cat /tmp/review_opencode_config.json)" \
+            "${AGENT_ENV[@]}" \
+            "$HOME/.opencode/bin/opencode" run \
+            --standalone \
+            --model "$MODEL" \
+            --format json \
+            "Reply with the single word OK." \
+            > /tmp/model_probe.jsonl 2>&1 || PROBE_STATUS=$?
+
+          if [ "$PROBE_STATUS" -eq 0 ]; then
+            echo "The review model answered the smoke test."
+            echo "usable=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "::group::Model smoke-test log"
+          cat /tmp/model_probe.jsonl
+          echo "::endgroup::"
+
+          if grep -qiE "$QUOTA_PATTERN" /tmp/model_probe.jsonl; then
+            # The model is healthy but out of quota/credits. The review is
+            # bypassed: no grade is recorded, the pull request stays open for
+            # a human, and the job does not fail the whole CI run because a
+            # free-tier limit is not a change that the pull request can fix.
+            echo "::warning::The review model '$MODEL' cannot be used right now (quota/cost limit). Bypassing the automated review; the pull request needs a human review."
+            echo "usable=false" >> "$GITHUB_OUTPUT"
+            echo "reason=cost" >> "$GITHUB_OUTPUT"
+            echo "We could not run the OpenCode review because the review model '$MODEL' is out of free quota." > /tmp/review_bypass_reason.txt
+            exit 0
+          fi
+
+          echo "::error::The review model '$MODEL' failed the smoke test (status $PROBE_STATUS); see the log above."
+          exit 1
+
+      - name: Review PR with OpenCode v2
+        id: review
+        if: steps.model-check.outputs.usable == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_PR: ${{ inputs.pr }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          BASE_BRANCH: ${{ steps.pr.outputs.base_branch }}
+          MODEL: ${{ steps.model-check.outputs.model }}
+        run: |
+          set -euo pipefail
+
+          BASE="$BASE_BRANCH"
+          echo "Reviewing PR #$PR_NUMBER (base: $BASE) with $MODEL"
+
+          # The GitHub token is stripped from every CLI call: the model
+          # reviews code, it never talks to GitHub.
+          AGENT_ENV=(env -u GITHUB_TOKEN -u GH_TOKEN)
+
+          # Same cost/quota signals as the smoke test in the validation step.
+          # The validation can pass and the quota can still run out mid-run
+          # (a review is many requests), so the outcome is checked here too.
+          QUOTA_PATTERN='provider\.quota|free usage limit|"status":429|too many requests|insufficient (credit|funds|balance)|payment required|out of credits'
 
           # Manual runs may target a PR on another branch: check out its head
           # so the diff and the working tree describe the same PR.
@@ -380,6 +453,16 @@ jobs:
             fi
             break
           done
+          if [ "$RUN_STATUS" -ne 0 ] && grep -qiE "$QUOTA_PATTERN" /tmp/review_run.jsonl; then
+            # The free model ran out of quota in the middle of the review.
+            # This is not a defect the pull request can fix: bypass the
+            # review, keep the pull request for a human and let the job
+            # succeed so a free-tier limit does not turn every PR red.
+            echo "::warning::The review model '$MODEL' ran out of quota/credits while reviewing. Bypassing the automated review; the pull request needs a human review."
+            echo "bypassed=cost" >> "$GITHUB_OUTPUT"
+            echo "The OpenCode review was bypassed because the review model '$MODEL' ran out of free quota during the review." > /tmp/review_bypass_reason.txt
+            exit 0
+          fi
           if [ "$RUN_STATUS" -ne 0 ]; then
             {
               echo "## OpenCode v2 review failed"
@@ -397,8 +480,9 @@ jobs:
               echo '```'
               echo "</details>"
               echo ""
-              echo "If the log mentions an unavailable model, the model was"
-              echo "renamed or removed from the provider catalog."
+              echo "Quota/credit limits are bypassed by the preflight and do"
+              echo "not reach this failure path; any other entry is a real"
+              echo "review failure."
             } > /tmp/review_failure.txt
             gh pr comment "$PR_NUMBER" --body-file /tmp/review_failure.txt || true
             echo "::error::OpenCode review run failed (status $RUN_STATUS)."
@@ -428,6 +512,9 @@ jobs:
           echo "grade=${GRADE:-}" >> "$GITHUB_OUTPUT"
 
       - name: Publish review and apply the merge gate
+        # A bypassed review has nothing to publish and no grade to record;
+        # the step below records the bypass instead.
+        if: steps.model-check.outputs.usable == 'true' && steps.review.outputs.bypassed != 'cost'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -471,3 +558,54 @@ jobs:
             --pr "$PR_NUMBER" \
             --grade "$GRADE" \
             --reviewed-sha "$REVIEWED_SHA"
+
+      - name: Record the bypassed review
+        # The fixed free model is limited (and needs no credential), so it
+        # can be out of quota. That is not a defect the pull request can fix,
+        # and failing the job turns every PR red for it. The review is
+        # bypassed instead: fail closed without failing CI.
+        if: steps.model-check.outputs.usable == 'false' || steps.review.outputs.bypassed == 'cost'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REVIEW_PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          REVIEW_MODEL: ${{ steps.model-check.outputs.model }}
+          BYPASS_REASON: ${{ steps.model-check.outputs.reason }}
+        run: |
+          set -euo pipefail
+
+          PR_NUMBER="$REVIEW_PR_NUMBER"
+          if [ ! -s /tmp/review_bypass_reason.txt ]; then
+            echo "The OpenCode review was bypassed because the review model '$REVIEW_MODEL' is out of free quota." \
+              > /tmp/review_bypass_reason.txt
+          fi
+          echo "Bypassing the review of PR #$PR_NUMBER (model: $REVIEW_MODEL, reason: ${BYPASS_REASON:-cost})."
+          echo "::notice::Automated review bypassed: $REVIEW_MODEL is out of quota/credits. PR #$PR_NUMBER is not merge-ready and needs a human review."
+
+          {
+            echo "## Automated review bypassed"
+            echo ""
+            cat /tmp/review_bypass_reason.txt
+            echo ""
+            echo "No review was produced, so **no grade was recorded** and this"
+            echo "pull request is **not merge-ready**: it needs a human review."
+            echo "A stale \`automerge\` label is dropped by the merge gate."
+          } > /tmp/review_bypass_comment.txt
+          gh pr comment "$PR_NUMBER" --body-file /tmp/review_bypass_comment.txt || true
+
+          REVIEWED_SHA="$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)"
+          if [ -z "$REVIEWED_SHA" ]; then
+            echo "::warning::Could not resolve the head commit of PR #$PR_NUMBER; no status was recorded (the label stays dropped by the prepare step)."
+            exit 0
+          fi
+          # Reuse the trusted merge gate with no grade: it drops a stale
+          # automerge label and records "GRADE=none needs a human merge" on
+          # the head commit. A gate failure only warns, because the bypass
+          # itself must not fail the run and the label was already dropped by
+          # the prepare step (nothing can merge either way).
+          if ! python3 /tmp/review_merge_gate.py gate \
+               --pr "$PR_NUMBER" \
+               --grade "" \
+               --reviewed-sha "$REVIEWED_SHA"; then
+            echo "::warning::The merge gate could not be applied after the bypass; nothing was merged."
+          fi

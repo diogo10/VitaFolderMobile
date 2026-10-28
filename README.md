@@ -286,15 +286,24 @@ semantics and the fail-closed matrix are documented in
   The label-driven merge uses `MERGE_METHOD: squash`, like the review job,
   and the label is dropped again once the merge succeeded. The workflow
   needs `issues: write` for the label, so it can drop it.
-- **Fixed model, no credentials.** The review uses a fixed model and does
-  not require provider credentials. No provider credential is exposed to
-  the review agent, and the model is not overridable — the `model` input
-  was removed.
+- **Fixed model, no credentials.** The review uses the model configured in
+  `opencode.jsonc` (`opencode/deepseek-v4.1-flash-free`, read from the base
+  branch) and does not require provider credentials. No provider credential
+  is exposed to the review agent, and the model is not overridable — the
+  `model` input was removed.
 - **Cold-start safe.** On a cold runner the first CLI invocation can start
   before the provider catalog is loaded, and the model then has no route at
   all (`Model unavailable`). The job warms the catalog up first (it lists the
   models until the fixed one shows up) and retries the review when the model
   was not routable, so a cold start cannot silently skip the review.
+- **Validated model, quota bypass.** Before reviewing, the job sends one
+  minimal smoke-test request to the fixed model. A model missing from the
+  catalog fails the job (it was renamed/removed upstream). A quota or credit
+  limit (`provider.quota`, HTTP 429, "Free usage limit reached") — in the
+  preflight or mid-review — bypasses the review instead: the job succeeds,
+  no grade is recorded, the `automerge` label is dropped and the PR waits for
+  a human. A free-tier limit is not a defect the PR can fix, so it must not
+  turn every PR red. Details: [docs/opencode-review-bob.md](docs/opencode-review-bob.md).
 
 ## APK Distribution
 
