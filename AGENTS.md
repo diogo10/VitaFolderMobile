@@ -152,6 +152,13 @@ Test runner and coverage gate details live in
 `.github/workflows/ci.yml` and `test/`.
 Details: [testing](.agents/references/testing.md).
 
+Device e2e (e2e.com) lives in `e2e/` and is not part of `flutter test`: it
+drives an installed build on an emulator/simulator and runs nightly in
+`.github/workflows/e2e-daily.yml`. Locators are `Semantics(identifier:)`
+values pinned by `test/features/onboarding/onboarding_semantics_test.dart`, and
+builds must carry `--dart-define=E2E_MODE=true` (no infinite animations).
+Plan and rationale: [e2e onboarding](.agents/plans/e2e-onboarding.md).
+
 ## Supabase & git
 
 - Backend and edge functions: see [supabase](.agents/references/supabase.md);

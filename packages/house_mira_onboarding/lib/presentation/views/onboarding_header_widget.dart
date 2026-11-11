@@ -3,7 +3,6 @@ import 'package:house_mira_core/generated/app_localizations.dart';
 import 'package:house_mira_core/theme/sand_palette.dart';
 
 class OnboardingHeaderWidget extends StatelessWidget {
-
   const OnboardingHeaderWidget({required this.onSkip, super.key});
   final VoidCallback onSkip;
 
@@ -27,13 +26,22 @@ class OnboardingHeaderWidget extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          TextButton(
-            onPressed: onSkip,
-            child: Text(
-              AppLocalizations.of(context)!.onboardingSkip,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: SandPalette.sand400,
-                fontWeight: FontWeight.w600,
+          // MergeSemantics folds the identifier into the TextButton's own
+          // node, so the e2e suite finds one element that is both
+          // `getByTestId('onboarding-skip')` and a button.
+          MergeSemantics(
+            child: Semantics(
+              identifier: 'onboarding-skip',
+              button: true,
+              child: TextButton(
+                onPressed: onSkip,
+                child: Text(
+                  AppLocalizations.of(context)!.onboardingSkip,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: SandPalette.sand400,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ),

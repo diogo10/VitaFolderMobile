@@ -3,9 +3,10 @@ import 'package:house_mira_core/generated/app_localizations.dart';
 import 'package:house_mira_core/theme/sand_palette.dart';
 
 class OnboardingFooterWidget extends StatelessWidget {
-
   const OnboardingFooterWidget({
-    required this.isLastPage, required this.onNext, super.key,
+    required this.isLastPage,
+    required this.onNext,
+    super.key,
   });
   final bool isLastPage;
   final VoidCallback onNext;
@@ -13,7 +14,7 @@ class OnboardingFooterWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    return DecoratedBox(
+    final button = DecoratedBox(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -58,6 +59,18 @@ class OnboardingFooterWidget extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+    // MergeSemantics puts the identifier and the button role on one node.
+    // Two ids on purpose: advancing and finishing are different behaviors, so
+    // the e2e suite asserts the state without matching localized copy.
+    return MergeSemantics(
+      child: Semantics(
+        identifier: isLastPage
+            ? 'onboarding-cta-finish'
+            : 'onboarding-cta-next',
+        button: true,
+        child: button,
       ),
     );
   }

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:house_mira_core/config/build_flags.dart';
+import 'package:house_mira_core/generated/app_localizations.dart';
+import 'package:house_mira_core/theme/sand_palette.dart';
 import 'package:house_mira_onboarding/presentation/views/onboarding_footer_widget.dart';
 import 'package:house_mira_onboarding/presentation/views/onboarding_header_widget.dart';
 import 'package:house_mira_onboarding/presentation/views/onboarding_hero_widget.dart';
 import 'package:house_mira_onboarding/presentation/views/onboarding_page_widget.dart';
 import 'package:house_mira_onboarding/presentation/views/onboarding_progress_widget.dart';
-import 'package:house_mira_core/generated/app_localizations.dart';
-import 'package:house_mira_core/theme/sand_palette.dart';
 
 class OnboardingView extends StatefulWidget {
   const OnboardingView({required this.onComplete, super.key});
@@ -20,6 +21,7 @@ class _OnboardingViewState extends State<OnboardingView> {
   int _currentPage = 0;
 
   static const _pageCount = 3;
+  static const _transitionDuration = Duration(milliseconds: 400);
 
   @override
   void dispose() {
@@ -29,17 +31,25 @@ class _OnboardingViewState extends State<OnboardingView> {
 
   Future<void> _onSkip() async {
     if (_currentPage == _pageCount - 1) return;
+    if (BuildFlags.e2eMode) {
+      _pageController.jumpToPage(_pageCount - 1);
+      return;
+    }
     await _pageController.animateToPage(
       _pageCount - 1,
-      duration: const Duration(milliseconds: 400),
+      duration: _transitionDuration,
       curve: Curves.easeInOut,
     );
   }
 
   Future<void> _onNext() async {
     if (_currentPage < _pageCount - 1) {
+      if (BuildFlags.e2eMode) {
+        _pageController.jumpToPage(_currentPage + 1);
+        return;
+      }
       await _pageController.nextPage(
-        duration: const Duration(milliseconds: 400),
+        duration: _transitionDuration,
         curve: Curves.easeInOut,
       );
     } else {
@@ -86,6 +96,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                     title: page.title,
                     subtitle: page.subtitle,
                     hero: page.hero,
+                    identifier: 'onboarding-slide-${index + 1}',
                   );
                 },
               ),

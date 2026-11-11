@@ -1,0 +1,17 @@
+{
+  "name": "housemira-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Device end-to-end suite for HouseMira (e2e.com), driven against an installed build.",
+  "scripts": {
+    "typecheck": "tsc",
+    "test:e2e:android": "e2e run --target android",
+    "test:e2e:ios": "e2e run --target ios"
+  },
+  "devDependencies": {
+    "@e2e-dev/mobile": "^0.12.6",
+    "@types/node": "^26.6.4",
+    "e2e": "^0.23.0",
+    "typescript": "^7.0.2"
+  }
+}

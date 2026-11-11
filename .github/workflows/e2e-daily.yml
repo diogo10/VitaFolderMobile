@@ -1,0 +1,128 @@
+name: E2E (daily)
+
+# Device end-to-end suite (e2e.com) for the onboarding journey. See
+# .agents/plans/e2e-onboarding.md and e2e/README.md.
+#
+# Nightly + on demand. Not wired to pull_request on purpose: a cold emulator
+# job costs ~20 minutes, and the Flutter suites already gate PRs.
+
+on:
+  schedule:
+    - cron: '0 4 * * *' # 04:00 UTC = 01:00 America/Sao_Paulo
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-daily
+  cancel-in-progress: false
+
+env:
+  # No telemetry from CI (e2e.com/docs/telemetry#in-ci).
+  E2E_TELEMETRY_DISABLED: '1'
+
+jobs:
+  android-onboarding:
+    name: Android — onboarding
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # The e2e suite runs against the prod Supabase project: onboarding is
+      # pre-auth and never writes, and no dedicated dev/e2e project exists yet
+      # (only SUPABASE_URL_PROD / SUPABASE_PUBLISHABLE_KEY_PROD are configured).
+      # Do not copy these two lines into a suite that signs in or writes — point
+      # them at a dedicated project instead. Keeping the E2E names makes that a
+      # two-line change here rather than an edit in every step.
+      SUPABASE_URL_E2E: ${{ secrets.SUPABASE_URL_PROD }}
+      SUPABASE_PUBLISHABLE_KEY_E2E: ${{ secrets.SUPABASE_PUBLISHABLE_KEY_PROD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: Verify e2e configuration is complete
+        # Fail here instead of at launch: an empty Supabase URL makes
+        # AppConfig throw at startup, which surfaces as APP_UNREACHABLE on every
+        # test and looks like a device problem.
+        run: |
+          if [ -z "$SUPABASE_URL_E2E" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY_E2E" ]; then
+            echo "::error::SUPABASE_URL_E2E / SUPABASE_PUBLISHABLE_KEY_E2E are empty (they come from the PROD secrets today; see e2e/README.md)."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK for e2e
+        # Profile and debug also run the suite (verified 6/6 each); release is
+        # used because it is the only build type with R8 + resource shrinking
+        # enabled here, so a missing proguard keep-rule fails this job instead
+        # of shipping. Without android/key.properties the build signs with the
+        # debug key, which is all an emulator needs.
+        run: >
+          flutter build apk --release
+          --dart-define=APP_FLAVOR=dev
+          --dart-define=E2E_MODE=true
+          --dart-define=SUPABASE_URL=$SUPABASE_URL_E2E
+          --dart-define=SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY_E2E
+
+      - name: Install e2e dependencies
+        working-directory: e2e
+        run: npm ci
+
+      - name: Typecheck the e2e suite
+        # Seconds, versus discovering a typo after the emulator boots.
+        working-directory: e2e
+        run: npm run typecheck
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run e2e on the emulator
+        # The action boots (and retries booting) the emulator, so a boot failure
+        # is its own step failure instead of an opaque APP_UNREACHABLE.
+        # api-level is pinned: the accessibility tree differs between Android
+        # releases, and an image bump must be a deliberate change.
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          emulator-options: >-
+            -no-window -no-audio -no-boot-anim -no-snapshot
+            -gpu swiftshader_indirect
+          script: |
+            adb install -r build/app/outputs/flutter-apk/app-release.apk
+            cd e2e
+            npx e2e doctor
+            npx e2e run --target android --reporter list,junit --max-failures 3
+
+      - name: Upload e2e report
+        # report.json, junit.xml and results/ (trace page + screenshots per
+        # test). Kept even on failure: that is the point of the artifact.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-android
+          path: e2e/.e2e/
+          retention-days: 14
+          if-no-files-found: warn
