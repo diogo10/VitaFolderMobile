@@ -10,7 +10,7 @@
 --
 -- Run in the Supabase dashboard (SQL editor) on the linked project, or via:
 --   supabase link --project-ref jheqalwrnztavzxjsdcj
---   supabase db execute --file sqls/allow_yearly_repeat_rule.sql
+--   supabase db execute --file sqls/reminders/allow_yearly_repeat_rule.sql
 --
 -- Verify afterwards (expect zero rows mentioning repeat_rule):
 --   SELECT conname, pg_get_constraintdef(oid)

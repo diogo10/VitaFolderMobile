@@ -33,7 +33,7 @@
 
 1. UI validators (editor form): trim-then-check-empty + length; localized errors (`notesTitleRequired/TooLong`, `notesContentRequired/TooLong`).
 2. `Note.from` null-on-invalid (same rule; list parsing drops nulls, never substitutes).
-3. DB `CHECK`s (trim-aware length + color allowlist) in `sqls/notes_schema.sql` — last line of defense for concurrent/offline races.
+3. DB `CHECK`s (trim-aware length + color allowlist) in `sqls/notes/notes_schema.sql` — last line of defense for concurrent/offline races.
 
 ## State transitions (list lifecycle, FR-102)
 

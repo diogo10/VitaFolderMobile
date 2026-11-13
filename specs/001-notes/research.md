@@ -12,8 +12,8 @@ All Technical Context unknowns resolved. No NEEDS CLARIFICATION remains.
 
 ## R2: Membership table (`family_memberships`)
 
-- **Decision**: Implement against the real table `family_memberships` (`family_id`, `user_id`, `role`). All `sqls/notes_schema.sql` RLS predicates use `EXISTS (SELECT 1 FROM family_memberships fm WHERE fm.family_id = notes.family_id AND fm.user_id = auth.uid())` (SELECT/UPDATE/DELETE `USING`, INSERT `WITH CHECK`), mirroring the `reminders` policies in `sqls/database_schema.sql:202-205`.
-- **Rationale**: Spec and codebase agree on `family_memberships` (`families`/`family_memberships` in the live `sqls/database_schema.sql`, `people_repository_impl.dart`, `auth_service.dart`). All `sqls/notes_schema.sql` RLS predicates use `EXISTS (SELECT 1 FROM family_memberships fm WHERE fm.family_id = notes.family_id AND fm.user_id = auth.uid())` (SELECT/UPDATE/DELETE `USING`, INSERT `WITH CHECK`), mirroring the `reminders` policies in `sqls/database_schema.sql`.
+- **Decision**: Implement against the real table `family_memberships` (`family_id`, `user_id`, `role`). All `sqls/notes/notes_schema.sql` RLS predicates use `EXISTS (SELECT 1 FROM family_memberships fm WHERE fm.family_id = notes.family_id AND fm.user_id = auth.uid())` (SELECT/UPDATE/DELETE `USING`, INSERT `WITH CHECK`), mirroring the `reminders` policies in `sqls/core/database_schema.sql:202-205`.
+- **Rationale**: Spec and codebase agree on `family_memberships` (`families`/`family_memberships` in the live `sqls/core/database_schema.sql`, `people_repository_impl.dart`, `auth_service.dart`). All `sqls/notes/notes_schema.sql` RLS predicates use `EXISTS (SELECT 1 FROM family_memberships fm WHERE fm.family_id = notes.family_id AND fm.user_id = auth.uid())` (SELECT/UPDATE/DELETE `USING`, INSERT `WITH CHECK`), mirroring the `reminders` policies in `sqls/core/database_schema.sql`.
 - **Alternatives considered**: A second `family_members` table — rejected (would fork the permission model; RLS would never match).
 
 ## R3: Rich-text storage (FR-109 bold/lists, 300-char limit, no attachments)

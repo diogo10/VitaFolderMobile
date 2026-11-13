@@ -1,7 +1,7 @@
 -- Versioned migration: public.faqs schema (Help & FAQ).
 --
--- Mirror of sqls/faq_schema.sql: keep both in sync; prefer `supabase db push`
--- over manual `supabase db query --linked --file sqls/faq_schema.sql`.
+-- Mirror of sqls/faq/faq_schema.sql: keep both in sync; prefer `supabase db push`
+-- over manual `supabase db query --linked --file sqls/faq/faq_schema.sql`.
 -- Idempotent (IF NOT EXISTS / DROP IF EXISTS guards) so re-running is safe.
 
 -- FAQ schema (Help & FAQ content migrated from docs/faq/README.md).
@@ -14,13 +14,13 @@
 --
 -- Run in the Supabase dashboard (SQL editor) on the linked project, or via:
 --   supabase link --project-ref jheqalwrnztavzxjsdcj
---   supabase db query --linked --file sqls/faq_schema.sql
+--   supabase db query --linked --file sqls/faq/faq_schema.sql
 --
 -- Then load the content (safe to re-run; see the seed header):
---   supabase db query --linked --file sqls/faq_seed.sql
+--   supabase db query --linked --file sqls/faq/faq_seed.sql
 --
 -- Preferred (versioned) path: supabase/migrations/20261013120000_faqs_schema.sql
--- and supabase/migrations/20261013121000_faqs_seed.sql mirror these sqls/
+-- and supabase/migrations/20261013121000_faqs_seed.sql mirror these sqls/faq/
 -- files. Prefer `supabase db push` so deploys are versioned; the manual
 -- `db query --linked` steps above remain as a fallback.
 --

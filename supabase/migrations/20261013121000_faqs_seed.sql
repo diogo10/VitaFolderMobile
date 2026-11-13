@@ -1,8 +1,8 @@
 -- Versioned migration: seed public.faqs with the 46 'en' rows from docs/faq/README.md.
 --
--- Mirror of sqls/faq_seed.sql (minus its explicit BEGIN/COMMIT wrapper):
+-- Mirror of sqls/faq/faq_seed.sql (minus its explicit BEGIN/COMMIT wrapper):
 -- keep both in sync; prefer `supabase db push` over manual
--- `supabase db query --linked --file sqls/faq_seed.sql`.
+-- `supabase db query --linked --file sqls/faq/faq_seed.sql`.
 -- Idempotent via ON CONFLICT (slug, locale) DO UPDATE.
 
 -- FAQ seed: content migrated from docs/faq/README.md (locale 'en').
@@ -11,18 +11,18 @@
 -- synced with the codebase: October 2026). After editing the README,
 -- regenerate this file and re-run it; do NOT hand-edit rows below.
 --
--- Prerequisite: sqls/faq_schema.sql (creates public.faqs + policies).
+-- Prerequisite: sqls/faq/faq_schema.sql (creates public.faqs + policies).
 -- Preferred (versioned) path: `supabase db push` applies
 -- supabase/migrations/20261013120000_faqs_schema.sql and
 -- supabase/migrations/20261013121000_faqs_seed.sql, which mirror these
--- sqls/ files. Manual fallback (the requester runs these manually; do not
+-- sqls/faq/ files. Manual fallback (the requester runs these manually; do not
 -- auto-execute):
 --   supabase link --project-ref jheqalwrnztavzxjsdcj
---   supabase db query --linked --file sqls/faq_seed.sql
+--   supabase db query --linked --file sqls/faq/faq_seed.sql
 --
 -- Atomic: supabase wraps this migration in a transaction, so a mid-file
 -- failure rolls back instead of leaving a half-loaded table. (The manual
--- sqls/faq_seed.sql copy wraps the same statements in BEGIN ... COMMIT.)
+-- sqls/faq/faq_seed.sql copy wraps the same statements in BEGIN ... COMMIT.)
 --
 -- Idempotent: re-running updates changed rows via ON CONFLICT. The DO UPDATE
 -- sets updated_at = now() explicitly so re-runs bump the timestamp even if

@@ -285,11 +285,11 @@ class PeopleRepositoryImpl implements PeopleRepository {
       //
       // Cleanup scope under the current policies:
       // - notes DELETE is membership-scoped
-      //   (sqls/notes_schema.sql:83-92 "notes_delete_member"): any member
+      //   (sqls/notes/notes_schema.sql:83-92 "notes_delete_member"): any member
       //   can delete any note in the family, so an admin removing someone
       //   else cleans up that member's notes.
       // - reminders DELETE is creator-scoped
-      //   (sqls/database_schema.sql:242 "Enable delete for users based on
+      //   (sqls/core/database_schema.sql:242 "Enable delete for users based on
       //   user_id"): only the creator's rows match, so an admin removing
       //   someone else leaves that member's reminders behind while the
       //   membership removal still proceeds. Self-leave (the common path)

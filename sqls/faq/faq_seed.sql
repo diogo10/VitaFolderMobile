@@ -4,14 +4,14 @@
 -- synced with the codebase: October 2026). After editing the README,
 -- regenerate this file and re-run it; do NOT hand-edit rows below.
 --
--- Prerequisite: sqls/faq_schema.sql (creates public.faqs + policies).
+-- Prerequisite: sqls/faq/faq_schema.sql (creates public.faqs + policies).
 -- Preferred (versioned) path: `supabase db push` applies
 -- supabase/migrations/20261013120000_faqs_schema.sql and
 -- supabase/migrations/20261013121000_faqs_seed.sql, which mirror these
--- sqls/ files. Manual fallback (the requester runs these manually; do not
+-- sqls/faq/ files. Manual fallback (the requester runs these manually; do not
 -- auto-execute):
 --   supabase link --project-ref jheqalwrnztavzxjsdcj
---   supabase db query --linked --file sqls/faq_seed.sql
+--   supabase db query --linked --file sqls/faq/faq_seed.sql
 --
 -- Atomic: the whole load below runs inside a single transaction
 -- (BEGIN ... COMMIT), so a mid-file failure rolls back instead of leaving
