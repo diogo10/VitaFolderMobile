@@ -1,8 +1,8 @@
 # Contract: notes schema (Supabase)
 
-**Spec**: [../spec.md](../spec.md) | **Target file**: `sqls/notes_schema.sql`
+**Spec**: [../spec.md](../spec.md) | **Target file**: `sqls/notes/notes_schema.sql`
 
-> Implementation phase creates `sqls/notes_schema.sql` satisfying this contract. Table/column names and CHECK shapes are frozen here; RLS uses `family_memberships` (see [research](../research.md) R2).
+> Implementation phase creates `sqls/notes/notes_schema.sql` satisfying this contract. Table/column names and CHECK shapes are frozen here; RLS uses `family_memberships` (see [research](../research.md) R2).
 
 - Table `notes`: `id uuid PRIMARY KEY DEFAULT gen_random_uuid()`, `family_id uuid NOT NULL REFERENCES families(id) ON DELETE CASCADE`, `created_by uuid NOT NULL DEFAULT auth.uid()`, `title text NOT NULL`, `content text NOT NULL`, `color text NOT NULL`, `created_at timestamptz NOT NULL DEFAULT now()`, `updated_at timestamptz NOT NULL DEFAULT now()`.
 - Checks: `CHECK (color IN ('yellow','pink','blue','green','orange'))`; `CHECK (char_length(btrim(title)) BETWEEN 1 AND 100 AND char_length(btrim(content)) BETWEEN 1 AND 300)` (`btrim` — bare `trim()` is keyword syntax in Postgres, not a callable function).

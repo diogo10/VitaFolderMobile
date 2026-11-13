@@ -11,7 +11,7 @@
 --
 -- Run in the Supabase dashboard (SQL editor) on the linked project, or via:
 --   supabase link --project-ref jheqalwrnztavzxjsdcj
---   supabase db query --linked --file sqls/fix_moddatetime.sql
+--   supabase db query --linked --file sqls/core/fix_moddatetime.sql
 --
 -- Verify afterwards with any direct edit, e.g. in the Table Editor change a
 -- note's color: the edit must save and updated_at must advance. Existing

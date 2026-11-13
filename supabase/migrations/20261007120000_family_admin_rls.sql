@@ -1,9 +1,9 @@
 -- Family admin RLS hardening (leave-family PR follow-up).
 --
 -- Tightens the permissive USING (true) policies dumped in
--- sqls/database_schema.sql:281 (families_auth_delete),
--- sqls/database_schema.sql:293 (families_auth_update) and
--- sqls/database_schema.sql:300 (family_memberships_auth_delete):
+-- sqls/core/database_schema.sql:281 (families_auth_delete),
+-- sqls/core/database_schema.sql:293 (families_auth_update) and
+-- sqls/core/database_schema.sql:300 (family_memberships_auth_delete):
 --
 --   * families UPDATE / DELETE: owner/admin of that family only.
 --   * family_memberships DELETE: the member themselves (self-leave) or

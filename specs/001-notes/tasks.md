@@ -10,10 +10,10 @@
 
 ## Phase 1: Setup
 
-- [X] T001 [P] Create `sqls/notes_schema.sql` per `contracts/notes_schema.md` (table + `CHECK (color IN ('yellow','pink','blue','green','orange'))` + `CHECK (char_length(trim(title)) BETWEEN 1 AND 100 AND char_length(trim(content)) BETWEEN 1 AND 300)` + `family_memberships` RLS + `updated_at` trigger)
+- [X] T001 [P] Create `sqls/notes/notes_schema.sql` per `contracts/notes_schema.md` (table + `CHECK (color IN ('yellow','pink','blue','green','orange'))` + `CHECK (char_length(trim(title)) BETWEEN 1 AND 100 AND char_length(trim(content)) BETWEEN 1 AND 300)` + `family_memberships` RLS + `updated_at` trigger)
 - [X] T002 [P] Create feature skeleton `lib/features/notes/{domain/{entities,repository,usecase},data/{models,repository},presentation/{cubit,views,widgets}}` and empty `lib/core/injections/notes/notes_service_locator.dart` aggregated in `lib/core/injections/service_locator.dart`
-- [ ] T003 Apply `sqls/notes_schema.sql` to the dev Supabase project via `supabase db push` (or dashboard SQL editor) and verify a non-member read is denied by RLS
-  - NOTE (2026-09-30): not applied by agent — repo has no `supabase/migrations` linkage (SQL ships in `sqls/` for the dashboard editor) and DDL needs the DB password. Paste `sqls/notes_schema.sql` into the Supabase dashboard SQL editor on VitaFolderMobileBackend (jheqalwrnztavzxjsdcj), then verify RLS with a non-member read.
+- [ ] T003 Apply `sqls/notes/notes_schema.sql` to the dev Supabase project via `supabase db push` (or dashboard SQL editor) and verify a non-member read is denied by RLS
+  - NOTE (2026-09-30): not applied by agent — repo has no `supabase/migrations` linkage (SQL ships in `sqls/` for the dashboard editor) and DDL needs the DB password. Paste `sqls/notes/notes_schema.sql` into the Supabase dashboard SQL editor on VitaFolderMobileBackend (jheqalwrnztavzxjsdcj), then verify RLS with a non-member read.
 
 ## Phase 2: Foundational
 

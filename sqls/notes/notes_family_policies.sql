@@ -10,7 +10,7 @@
 --
 -- Run in the Supabase dashboard (SQL editor) on the linked project, or via:
 --   supabase link --project-ref jheqalwrnztavzxjsdcj
---   supabase db query --linked --file sqls/notes_family_policies.sql
+--   supabase db query --linked --file sqls/notes/notes_family_policies.sql
 --
 -- Verify afterwards (expect the four notes_*_member policies):
 --   SELECT policyname, cmd, roles

@@ -5,13 +5,13 @@
 -- browsable as a guest, so both anon and authenticated roles get SELECT.
 -- No INSERT/UPDATE/DELETE policies are created for client roles: writes
 -- are service_role-only (service_role bypasses RLS). This mirrors the
--- policy block at the end of sqls/faq_schema.sql, extracted so policies
+-- policy block at the end of sqls/faq/faq_schema.sql, extracted so policies
 -- can be (re)applied without touching the table definition. Idempotent:
 -- safe to re-run at any time.
 --
 -- Run in the Supabase dashboard (SQL editor) on the linked project, or via:
 --   supabase link --project-ref jheqalwrnztavzxjsdcj
---   supabase db query --linked --file sqls/faq_policy.sql
+--   supabase db query --linked --file sqls/faq/faq_policy.sql
 --
 -- Verify afterwards (expect public read policies only, RLS enabled):
 --   SELECT policyname, cmd, roles

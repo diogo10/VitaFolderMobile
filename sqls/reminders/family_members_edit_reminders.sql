@@ -10,7 +10,7 @@
 --
 -- Run in the Supabase dashboard (SQL editor) on the linked project, or via:
 --   supabase link --project-ref jheqalwrnztavzxjsdcj
---   supabase db query --linked --file sqls/family_members_edit_reminders.sql
+--   supabase db query --linked --file sqls/reminders/family_members_edit_reminders.sql
 --
 -- Verify afterwards (expect the two new policies):
 --   SELECT policyname, cmd, roles
