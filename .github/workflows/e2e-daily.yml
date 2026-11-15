@@ -89,6 +89,23 @@ jobs:
         working-directory: e2e
         run: npm run typecheck
 
+      - name: Verify e2e config resolves and tests are discovered
+        # Same CLI the emulator step runs, from the same directory: catches a
+        # config the suite cannot find, a broken install, or an empty test
+        # selection in seconds instead of after the emulator has booted.
+        working-directory: e2e
+        run: |
+          test -x node_modules/.bin/e2e || {
+            echo "::error::e2e CLI missing from e2e/node_modules - did 'npm ci' run?"
+            exit 1
+          }
+          node_modules/.bin/e2e list --target android
+
+      - name: Check the e2e runner script parses
+        # A syntax error in ci-android.sh would otherwise surface only after the
+        # emulator has booted, ~10 minutes into the job.
+        run: bash -n e2e/ci-android.sh
+
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
@@ -101,6 +118,12 @@ jobs:
         # is its own step failure instead of an opaque APP_UNREACHABLE.
         # api-level is pinned: the accessibility tree differs between Android
         # releases, and an image bump must be a deliberate change.
+        #
+        # `script` is one line on purpose: the action runs every line of it in
+        # its own `/usr/bin/sh -c`, so a `cd e2e` on one line does not carry
+        # over to the next. That broke every nightly from 2026-11-12 to 11-15
+        # (the suite ran at the repo root and exited CONFIG_NOT_FOUND). All the
+        # steps now live in e2e/ci-android.sh, which resolves the repo itself.
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -110,19 +133,17 @@ jobs:
           emulator-options: >-
             -no-window -no-audio -no-boot-anim -no-snapshot
             -gpu swiftshader_indirect
-          script: |
-            adb install -r build/app/outputs/flutter-apk/app-release.apk
-            cd e2e
-            npx e2e doctor
-            npx e2e run --target android --reporter list,junit --max-failures 3
+          script: bash e2e/ci-android.sh
 
       - name: Upload e2e report
         # report.json, junit.xml and results/ (trace page + screenshots per
         # test). Kept even on failure: that is the point of the artifact.
+        # `error` on an empty path: a green run that produced no report means
+        # the suite never actually executed, which must not pass silently.
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-android
           path: e2e/.e2e/
           retention-days: 14
-          if-no-files-found: warn
+          if-no-files-found: error
