@@ -1,7 +1,7 @@
 # E2E plan — Onboarding, daily on GitHub Actions
 
 Status: implemented through phase 2 (suite green in `flutter test` + `e2e list`); CI job
-written but not yet run against GitHub — see §9.
+live and running nightly since 2026-11-12 — see §9 and §9.1 for the cwd fix.
 Framework: [e2e](https://e2e.com/docs/mobile) (`e2e` + `@e2e-dev/mobile`, Playwright-shaped APIs
 driving a real simulator/emulator through `agent-device`).
 Reference sample: [e2e-inc/e2e · examples/with-flutter](https://github.com/e2e-inc/e2e/tree/main/examples/with-flutter)
@@ -219,11 +219,9 @@ jobs:
           arch: x86_64
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
-          script: |
-            adb install -r build/app/outputs/flutter-apk/app-release.apk
-            cd e2e
-            npx e2e doctor
-            npx e2e run --target android --reporter list,junit --max-failures 3
+          # One line: the action runs each line of `script` in its own shell,
+          # so state (cwd included) does not carry over. See §9.
+          script: bash e2e/ci-android.sh
 
       - name: Upload e2e report
         if: always()
@@ -232,16 +230,24 @@ jobs:
           name: e2e-android
           path: e2e/.e2e/
           retention-days: 14
+          if-no-files-found: error
 ```
 
 Key details, all from the docs' mobile-CI contract:
 
+- **`e2e/ci-android.sh` owns the device work** (discovery, install, doctor, run) and resolves
+  its own directory, so the job's cwd cannot break it. It uses `e2e/node_modules/.bin/e2e`
+  (package-lock pinned) instead of `npx e2e`, refuses to start when the CLI, config, APK or
+  booted device is missing, and passes `--target android` to `doctor` — which otherwise
+  checks every configured target and fails on the iOS one on an ubuntu runner.
 - **Release build.** Not required by the framework — debug, profile and release all run the
   suite (verified 6/6 in each). Release is chosen because it is the only build type with
   `isMinifyEnabled`/`isShrinkResources` in this repo, so a missing `proguard-rules.pro` keep
   rule fails here instead of shipping. Profile is the faster local loop. Signing falls back to
   debug keys when `android/key.properties` is absent (`android/app/build.gradle.kts`), which
   is exactly what an emulator needs — no keystore secrets in this workflow.
+- **A pre-emulator step runs `e2e list --target android`** so a config-resolution or
+  empty-selection problem fails in seconds, not after the emulator boot.
 - **Emulator is booted by the action**, so a boot failure is a distinct step failure instead
   of a mysterious `APP_UNREACHABLE`.
 - **`disable-animations: true`** (system animator scales → 0) + `E2E_MODE` (Flutter-side
@@ -358,8 +364,8 @@ inert in a release build anyway — `AppFlavor` is read only by two `kDebugMode`
 | `…/onboarding_view.dart` | passes `onboarding-slide-N`; `jumpToPage` under `E2E_MODE` |
 | `…/onboarding_hero_widget.dart` | float/pulse tickers skipped under `E2E_MODE` |
 | `test/features/onboarding/onboarding_semantics_test.dart` | new: pins every identifier the suite uses |
-| `e2e/` | `package.json`, `package-lock.json`, `tsconfig.json`, `e2e.config.ts`, `tests/onboarding.e2e.ts`, `README.md`, `.gitignore` |
-| `.github/workflows/e2e-daily.yml` | Android job: release APK + KVM emulator + `e2e run` + artifact |
+| `e2e/` | `package.json`, `package-lock.json`, `tsconfig.json`, `e2e.config.ts`, `ci-android.sh`, `tests/onboarding.e2e.ts`, `README.md`, `.gitignore` |
+| `.github/workflows/e2e-daily.yml` | Android job: release APK + KVM emulator + `e2e/ci-android.sh` + artifact |
 
 Verification run locally:
 
@@ -386,6 +392,32 @@ Two findings from that device run, both fixed in the suite:
    `getByText('Home')`.
 
 Dependency note: the sample pins `e2e ^0.22.0` + `@e2e-dev/mobile ^0.12.5`, but `0.12.6` (what the caret resolves to) declares a peer of `e2e >=0.22.1`, which only `0.23.0` satisfies. The pair here is `e2e ^0.23.0` + `@e2e-dev/mobile ^0.12.6`, locked in `package-lock.json`. `ai` is an *optional* peer and is deliberately not installed — no agent steps.
+
+### 9.1 Nightly fix (2026-11-15)
+
+The first four scheduled runs (11-12 → 11-15) were all red, and none of them
+reached a test. The emulator action runs **each line** of `script:` in its own
+`/usr/bin/sh -c`, so the `cd e2e` line did not apply to the lines after it:
+`npx e2e doctor` executed at the repo root, found no `e2e.config.ts` and exited
+`CONFIG_NOT_FOUND` (exit 2) about two seconds after the emulator had finished
+booting. `npx` also hid the mistake by downloading `e2e@0.23.1` from the
+registry (there is no `node_modules` at the root), so the CLI under test was not
+the pinned one.
+
+Fixed by moving the device work into `e2e/ci-android.sh`, invoked as the single
+line `script: bash e2e/ci-android.sh`:
+
+- the script resolves its own directory, so the caller's cwd cannot split the
+  sequence;
+- it uses `e2e/node_modules/.bin/e2e` (package-lock pinned) and dies with a
+  `::error::` annotation when the CLI, config, APK or booted device is missing;
+- `doctor`, `list` and `run` all pass `--target android`, because `doctor`
+  otherwise checks every configured target and cannot pass for `ios` on an
+  ubuntu runner;
+- a pre-emulator `e2e list --target android` step turns a config or resolution
+  problem into a seconds-long failure instead of a 10-minute one;
+- the report upload is `if-no-files-found: error`, so a green job cannot be one
+  whose suite never produced a report.
 
 Still to do, in order:
 

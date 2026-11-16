@@ -11,6 +11,7 @@ Framework docs: [e2e.com/docs/mobile](https://e2e.com/docs/mobile).
 
 ```
 e2e.config.ts        targets (bundle id com.housemira.app), workers: 1
+ci-android.sh        device run for CI: pre-checks, install, doctor, run
 tests/*.e2e.ts       one file per feature; locators only, no agent/AI steps
 ```
 
@@ -126,6 +127,34 @@ npx e2e run --target ios
 `.github/workflows/e2e-daily.yml` runs the Android target nightly at 04:00 UTC
 (01:00 BRT) and on demand. It builds the release APK with the e2e switch, boots
 an emulator in its own step, and uploads `.e2e/` even when a test fails.
+
+The device work itself is `e2e/ci-android.sh`, called as one line
+(`script: bash e2e/ci-android.sh`). That is not style: the emulator action runs
+**every line** of its `script:` input in its own `/usr/bin/sh -c`, so a `cd e2e`
+on one line does not apply to the next. Every nightly from 2026-11-12 to 11-15
+failed exactly that way — the suite ran at the repo root, found no
+`e2e.config.ts` and exited `CONFIG_NOT_FOUND` two seconds after boot. The script
+resolves its own directory, so the caller's cwd cannot break it, and it fails
+fast (with a `::error::` annotation) when the CLI, config, APK or booted device
+is missing.
+
+Two more guards keep a red run honest:
+
+- the CLI is `e2e/node_modules/.bin/e2e` from `npm ci`, never `npx e2e`: with no
+  local install `npx` silently downloads the latest release, so a broken install
+  becomes an unreviewed CLI upgrade;
+- `doctor`, `list` and `run` all pass `--target android`: `doctor` checks every
+  configured target by default and would fail on the iOS target on an ubuntu
+  runner. A pre-emulator step runs `e2e list --target android` so a config or
+  resolution problem surfaces in seconds, and the artifact upload uses
+  `if-no-files-found: error`, so a green job cannot be one that never produced a
+  report.
+
+Run the same script locally with the emulator booted and the APK built:
+
+```bash
+bash e2e/ci-android.sh
+```
 
 **No new secrets needed.** The job aliases the existing prod credentials at job
 level and uses the `*_E2E` names below:
