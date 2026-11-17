@@ -146,9 +146,20 @@ Two more guards keep a red run honest:
 - `doctor`, `list` and `run` all pass `--target android`: `doctor` checks every
   configured target by default and would fail on the iOS target on an ubuntu
   runner. A pre-emulator step runs `e2e list --target android` so a config or
-  resolution problem surfaces in seconds, and the artifact upload uses
-  `if-no-files-found: error`, so a green job cannot be one that never produced a
-  report.
+  resolution problem surfaces in seconds, and `ci-android.sh` asserts
+  `.e2e/junit.xml` exists after a passing run, so a green job cannot be one that
+  never produced a report.
+
+The artifact upload is best effort: the job verdict comes from the run step, so
+the upload warns instead of failing when it finds nothing. Two details keep that
+honest and useful:
+
+- `include-hidden-files: true` is required — the bundle lives in `.e2e/`, and
+  `actions/upload-artifact@v4` skips hidden paths by default. Without it the
+  2026-11-17 nightly uploaded nothing (and went red) after the suite had passed
+  6/6 and written `.e2e/junit.xml`;
+- the report check lives in `ci-android.sh`, not in the upload step, so a run
+  that produces no report fails while naming the missing file.
 
 Run the same script locally with the emulator booted and the APK built:
 

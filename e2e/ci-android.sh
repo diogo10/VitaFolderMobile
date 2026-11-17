@@ -74,3 +74,13 @@ echo "== e2e doctor"
 # junit.xml + report.json + results/ land in .e2e/ for the workflow artifact.
 echo "== e2e run"
 "$cli" run --target android --reporter list,junit --max-failures 3
+
+# --- Report ------------------------------------------------------------------
+# The artifact upload is best effort (a missing bundle must not fail a run whose
+# tests passed), so "a green run produced a report" is asserted here instead:
+# junit.xml is written by a reporter this script asked for, and without it the
+# upload would have nothing to attach to a red or green nightly.
+echo "== verify report artifacts"
+[ -s "$script_dir/.e2e/junit.xml" ] ||
+  die "the e2e run finished but .e2e/junit.xml is missing or empty - check the --reporter flags."
+ls -1 "$script_dir/.e2e"
