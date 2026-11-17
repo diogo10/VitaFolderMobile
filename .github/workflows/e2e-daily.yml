@@ -138,12 +138,22 @@ jobs:
       - name: Upload e2e report
         # report.json, junit.xml and results/ (trace page + screenshots per
         # test). Kept even on failure: that is the point of the artifact.
-        # `error` on an empty path: a green run that produced no report means
-        # the suite never actually executed, which must not pass silently.
+        #
+        # `include-hidden-files: true`: the bundle lives in `.e2e/`, and
+        # upload-artifact v4 skips hidden paths by default. Without it the upload
+        # found nothing on 2026-11-17 even though the run had written
+        # `.e2e/junit.xml`, and failed a job whose six tests had passed.
+        #
+        # `warn` instead of `error`: this step is best effort, so the verdict
+        # comes from the run step and a missing report can never turn a red run
+        # green or a green run red. The "a green run produced a report" guarantee
+        # lives in e2e/ci-android.sh, right after the run, where it can name the
+        # missing file instead of surfacing as an upload error.
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-android
           path: e2e/.e2e/
           retention-days: 14
-          if-no-files-found: error
+          include-hidden-files: true
+          if-no-files-found: warn
