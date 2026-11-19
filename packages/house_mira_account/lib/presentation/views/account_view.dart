@@ -91,9 +91,17 @@ class _AccountViewState extends State<AccountView> {
             AccountLoginErrorCode.invalidCredentials ||
             AccountLoginErrorCode.unexpected => l.accountLoginFailed,
           };
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(message)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              // Stable e2e anchor: the copy is localized, the id is not.
+              content: Semantics(
+                identifier: 'account-login-error',
+                container: true,
+                liveRegion: true,
+                child: Text(message),
+              ),
+            ),
+          );
         }
 
         if (state is PasswordResetSent) {

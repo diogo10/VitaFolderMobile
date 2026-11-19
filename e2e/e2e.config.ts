@@ -20,6 +20,21 @@ const app = {
   permissions: { notifications: 'grant' as const },
 };
 
+// The valid-login account. CI supplies it as E2E_LOGIN_EMAIL /
+// E2E_LOGIN_PASSWORD (GitHub Actions repository secrets; see e2e/README.md).
+//
+// Declared through the framework's `credentials` block instead of reading the
+// environment in the test: a credential password is an opaque handle, so the
+// runner fills it, masks the field, and redacts it from reports and traces.
+//
+// The entry is omitted when the variables are unset so onboarding-only runs
+// (local, or a fork without secrets) still load; login.e2e.ts skips the
+// credential tests with a reason in that case, and CI fails a preflight step
+// before the emulator boots.
+const loginEmail = process.env.E2E_LOGIN_EMAIL?.trim() ?? '';
+const loginPassword = process.env.E2E_LOGIN_PASSWORD ?? '';
+const hasLoginCredentials = loginEmail !== '' && loginPassword !== '';
+
 export default {
   targets: [
     { name: 'android', engine: mobile({ platform: 'android' }), app },
@@ -30,4 +45,11 @@ export default {
   // One emulator/simulator per run: the suite is short and the onboarding flag
   // is device-global state, so parallel workers would fight over it.
   workers: 1,
+  ...(hasLoginCredentials
+    ? {
+        credentials: {
+          login: { username: loginEmail, password: loginPassword },
+        },
+      }
+    : {}),
 } satisfies E2EConfig;

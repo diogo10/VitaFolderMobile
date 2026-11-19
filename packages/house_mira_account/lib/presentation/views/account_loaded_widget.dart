@@ -20,17 +20,23 @@ class AccountLoadedWidget extends StatelessWidget {
 
     final loadedState = state;
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AccountHeaderWidget(
-              userName: loadedState.userName,
-              email: loadedState.email,
-            ),
-            AccountSettingsWidget(familyCode: loadedState.familyCode),
-          ],
+    return Semantics(
+      // Post-login anchor for the e2e suite: the signed-in account tree is
+      // the only place this identifier exists.
+      identifier: 'account-loaded',
+      container: true,
+      child: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AccountHeaderWidget(
+                userName: loadedState.userName,
+                email: loadedState.email,
+              ),
+              AccountSettingsWidget(familyCode: loadedState.familyCode),
+            ],
+          ),
         ),
       ),
     );

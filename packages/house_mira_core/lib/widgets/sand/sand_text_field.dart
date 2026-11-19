@@ -47,6 +47,7 @@ class SandLabeledField extends StatefulWidget {
     this.textCapitalization = TextCapitalization.none,
     this.validator,
     this.enabled = true,
+    this.identifier,
   });
   final TextEditingController controller;
   final String label;
@@ -60,12 +61,25 @@ class SandLabeledField extends StatefulWidget {
   final String? Function(String?)? validator;
   final bool enabled;
 
+  /// Stable semantics identifier for the device e2e suite.
+  ///
+  /// Only the input itself is annotated, never the label or helper: the id
+  /// must land on the text field's focusable semantics node so a device
+  /// runner can type into it.
+  final String? identifier;
+
   @override
   State<SandLabeledField> createState() => _SandLabeledFieldState();
 }
 
 class _SandLabeledFieldState extends State<SandLabeledField> {
   bool _obscured = true;
+
+  Widget _withIdentifier(Widget field) {
+    final identifier = widget.identifier;
+    if (identifier == null) return field;
+    return Semantics(identifier: identifier, child: field);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,31 +103,33 @@ class _SandLabeledFieldState extends State<SandLabeledField> {
             ],
           ),
         ),
-        TextFormField(
-          controller: widget.controller,
-          obscureText: widget.obscureText && _obscured,
-          keyboardType: widget.keyboardType,
-          textCapitalization: widget.textCapitalization,
-          enabled: widget.enabled,
-          style: theme.bodyMedium?.copyWith(color: SandPalette.sand600),
-          decoration: sandInputDecoration(
-            hint: widget.hint,
-            prefixIcon: widget.prefixIcon,
-            suffixIcon: widget.obscureText
-                ? IconButton(
-                    onPressed: () => setState(() => _obscured = !_obscured),
-                    icon: Icon(
-                      _obscured
-                          ? Icons.visibility_rounded
-                          : Icons.visibility_off_rounded,
-                      size: 18,
-                      color: SandPalette.sand300,
-                    ),
-                  )
-                : null,
-            context: context,
+        _withIdentifier(
+          TextFormField(
+            controller: widget.controller,
+            obscureText: widget.obscureText && _obscured,
+            keyboardType: widget.keyboardType,
+            textCapitalization: widget.textCapitalization,
+            enabled: widget.enabled,
+            style: theme.bodyMedium?.copyWith(color: SandPalette.sand600),
+            decoration: sandInputDecoration(
+              hint: widget.hint,
+              prefixIcon: widget.prefixIcon,
+              suffixIcon: widget.obscureText
+                  ? IconButton(
+                      onPressed: () => setState(() => _obscured = !_obscured),
+                      icon: Icon(
+                        _obscured
+                            ? Icons.visibility_rounded
+                            : Icons.visibility_off_rounded,
+                        size: 18,
+                        color: SandPalette.sand300,
+                      ),
+                    )
+                  : null,
+              context: context,
+            ),
+            validator: widget.validator,
           ),
-          validator: widget.validator,
         ),
         if (widget.helperText != null)
           Padding(

@@ -1,7 +1,7 @@
 name: E2E (daily)
 
-# Device end-to-end suite (e2e.com) for the onboarding journey. See
-# .agents/plans/e2e-onboarding.md and e2e/README.md.
+# Device end-to-end suite (e2e.com) for onboarding and email/password login.
+# See .agents/plans/e2e-onboarding.md and e2e/README.md.
 #
 # Nightly + on demand. Not wired to pull_request on purpose: a cold emulator
 # job costs ~20 minutes, and the Flutter suites already gate PRs.
@@ -21,18 +21,28 @@ env:
 
 jobs:
   android-onboarding:
-    name: Android — onboarding
+    name: Android — onboarding + login
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
       # The e2e suite runs against the prod Supabase project: onboarding is
       # pre-auth and never writes, and no dedicated dev/e2e project exists yet
       # (only SUPABASE_URL_PROD / SUPABASE_PUBLISHABLE_KEY_PROD are configured).
-      # Do not copy these two lines into a suite that signs in or writes — point
-      # them at a dedicated project instead. Keeping the E2E names makes that a
-      # two-line change here rather than an edit in every step.
+      # Keeping the E2E names makes a move to a dedicated project a two-line
+      # change here rather than an edit in every step.
+      #
+      # The login suite only authenticates and reads the signed-in profile: it
+      # never inserts, updates, or deletes family data, and it signs in with a
+      # dedicated test account (E2E_LOGIN_*). Before any write test is added,
+      # point these two lines at a dedicated project — see e2e/README.md.
       SUPABASE_URL_E2E: ${{ secrets.SUPABASE_URL_PROD }}
       SUPABASE_PUBLISHABLE_KEY_E2E: ${{ secrets.SUPABASE_PUBLISHABLE_KEY_PROD }}
+      # Valid-login account for e2e/tests/login.e2e.ts. Store both as
+      # repository secrets (Settings -> Secrets and variables -> Actions).
+      # They are handed to the runner only; e2e.config.ts exposes the password
+      # as an opaque credential handle so it is redacted from reports/traces.
+      E2E_LOGIN_EMAIL: ${{ secrets.E2E_LOGIN_EMAIL }}
+      E2E_LOGIN_PASSWORD: ${{ secrets.E2E_LOGIN_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -57,10 +67,17 @@ jobs:
       - name: Verify e2e configuration is complete
         # Fail here instead of at launch: an empty Supabase URL makes
         # AppConfig throw at startup, which surfaces as APP_UNREACHABLE on every
-        # test and looks like a device problem.
+        # test and looks like a device problem. The login pair is checked too:
+        # without it the credential tests would skip, turning "green daily" into
+        # a run that never exercised the valid-login path.
         run: |
-          if [ -z "$SUPABASE_URL_E2E" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY_E2E" ]; then
-            echo "::error::SUPABASE_URL_E2E / SUPABASE_PUBLISHABLE_KEY_E2E are empty (they come from the PROD secrets today; see e2e/README.md)."
+          missing=""
+          [ -n "$SUPABASE_URL_E2E" ] || missing="$missing SUPABASE_URL_E2E"
+          [ -n "$SUPABASE_PUBLISHABLE_KEY_E2E" ] || missing="$missing SUPABASE_PUBLISHABLE_KEY_E2E"
+          [ -n "$E2E_LOGIN_EMAIL" ] || missing="$missing E2E_LOGIN_EMAIL"
+          [ -n "$E2E_LOGIN_PASSWORD" ] || missing="$missing E2E_LOGIN_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing e2e configuration:$missing (see e2e/README.md)."
             exit 1
           fi
 
