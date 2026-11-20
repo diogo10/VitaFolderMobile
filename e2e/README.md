@@ -22,9 +22,15 @@ Locators come from `Semantics(identifier:)` in the app, not from visible copy:
 | `onboarding-slide-1`…`3` | `OnboardingPageWidget` (`Semantics(container: true)`) |
 | `onboarding-skip` | `OnboardingHeaderWidget` |
 | `onboarding-cta-next` / `onboarding-cta-finish` | `OnboardingFooterWidget`, id carries the state |
+| `account-email-field` / `account-password-field` | `AccountNoAccountAuthWidget` (`SandLabeledField`) |
+| `account-sign-in-button` | `AccountNoAccountAuthWidget` (`SandPrimaryButton`) |
+| `account-login-error` | `AccountView`, on the failed sign-in snackbar |
+| `account-loaded` | `AccountLoadedWidget`, the signed-in anchor |
 
-They are pinned by `test/features/onboarding/onboarding_semantics_test.dart`, so
-moving one fails fast in `flutter test` instead of on a device.
+The onboarding ids and the three login-form ids are pinned by
+`test/features/onboarding/onboarding_semantics_test.dart` and
+`packages/house_mira_account/test/presentation/views/account_login_semantics_test.dart`,
+so moving one fails fast in `flutter test` instead of on a device.
 
 ## Run locally (Android)
 
@@ -105,6 +111,47 @@ An `E2E_MODE` build is not required to pass — without it the suite still runs,
 but the heroes animate forever and the page transitions are 400 ms, which is
 slower and flakier on a cold emulator.
 
+## Login suite
+
+`tests/login.e2e.ts` covers the three email/password paths. The app has no
+standalone login route: a signed-out account tab is the login screen, so each
+test completes onboarding, taps the `Account` tab and waits for
+`account-email-field`.
+
+| Test | Input | Assertion |
+| --- | --- | --- |
+| Invalid email | `not-an-email` | `account-login-error` appears, form stays, `account-loaded` absent |
+| Invalid password | valid email + wrong password | same error and form assertions |
+| Valid login | `E2E_LOGIN_EMAIL` + `E2E_LOGIN_PASSWORD` | `account-loaded` appears, sign-in form gone |
+
+The valid account is declared in `e2e.config.ts` as the framework's
+`credentials.login` entry. The test fills `credentials.user('login').password`,
+an opaque handle: the runner types it, masks the field, and redacts it from
+reports and traces. The `process.env` read is only used to decide whether the
+credential tests can run; if either variable is unset they skip with a reason,
+so onboarding-only local runs still work. CI does not rely on that skip: a
+preflight step fails when either variable is missing.
+
+### Credentials in CI
+
+This repository's scheduled pipeline is GitHub Actions, not GitLab. The GitLab
+CI/CD variables from the task map to repository secrets:
+
+1. Settings → Secrets and variables → Actions → New repository secret.
+2. Add `E2E_LOGIN_EMAIL` (the dedicated test account's email).
+3. Add `E2E_LOGIN_PASSWORD` (its password).
+4. Keep the account dedicated to e2e: the login suite reads the profile and
+   never writes family data, but a shared human account would make runs
+   nondeterministic.
+
+They are passed to the runner as job-level env in `.github/workflows/e2e-daily.yml`.
+The same names work locally:
+
+```bash
+E2E_LOGIN_EMAIL='e2e@example.test' E2E_LOGIN_PASSWORD='…' \
+  npx e2e run --target android tests/login.e2e.ts
+```
+
 ## iOS
 
 The iOS simulator is **debug-only** in Flutter 3.47: `flutter build ios
@@ -167,25 +214,32 @@ Run the same script locally with the emulator booted and the APK built:
 bash e2e/ci-android.sh
 ```
 
-**No new secrets needed.** The job aliases the existing prod credentials at job
-level and uses the `*_E2E` names below:
+**Onboarding needs no new secrets.** The job aliases the existing prod
+credentials at job level and uses the `*_E2E` names below:
 
 ```yaml
 SUPABASE_URL_E2E: ${{ secrets.SUPABASE_URL_PROD }}
 SUPABASE_PUBLISHABLE_KEY_E2E: ${{ secrets.SUPABASE_PUBLISHABLE_KEY_PROD }}
 ```
 
-That is acceptable only because onboarding is pre-auth and writes nothing: the
-credentials exist to satisfy the fail-fast startup chain (`AppConfig` →
-`Supabase.initialize` → Remote Config → RevenueCat), not to read data. A suite
-that signs in, inserts, or asserts on server state must point those two lines at
-a dedicated project instead — do not build one on the prod project.
+The credentials exist to satisfy the fail-fast startup chain (`AppConfig` →
+`Supabase.initialize` → Remote Config → RevenueCat). The login suite adds two
+required repository secrets, `E2E_LOGIN_EMAIL` and `E2E_LOGIN_PASSWORD`; the
+workflow's preflight step fails, before the emulator boots, if any of the four
+is empty.
 
-RevenueCat keys are optional in `AppConfig` and are not needed here: billing
-init is skipped when they are empty, and onboarding is pre-auth. `APP_FLAVOR=dev`
-with prod credentials is intentional and inert in a release build: the flavor is
-read only by two `kDebugMode` gates and as a trace attribute, so it never changes
-which backend the release APK talks to.
+The login suite only authenticates and reads the signed-in profile. It does not
+insert, update, or delete family data, and it uses a dedicated test account. A
+dedicated Supabase project is still the right target before adding write tests
+(or if auth traffic on prod is not acceptable): change the two alias lines to
+`secrets.SUPABASE_URL_E2E` / `secrets.SUPABASE_PUBLISHABLE_KEY_E2E` — the job
+already uses those names — and seed the test account there.
+
+RevenueCat keys are optional in `AppConfig` and are not needed in e2e builds:
+billing init is skipped when they are empty. `APP_FLAVOR=dev` with prod
+credentials is intentional and inert in a release build: the flavor is read only
+by two `kDebugMode` gates and as a trace attribute, so it never changes which
+backend the release APK talks to.
 
 ## Rules
 

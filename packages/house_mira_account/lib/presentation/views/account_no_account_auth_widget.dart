@@ -79,6 +79,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         SandLabeledField(
+          identifier: 'account-email-field',
           controller: emailController,
           label: l.accountNoAccountEmailLabel,
           hint: l.accountNoAccountEmailPlaceholder,
@@ -87,6 +88,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         SandLabeledField(
+          identifier: 'account-password-field',
           controller: passwordController,
           label: l.accountNoAccountPasswordLabel,
           hint: l.accountNoAccountPasswordPlaceholder,
@@ -110,6 +112,7 @@ class AccountNoAccountAuthWidget extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         SandPrimaryButton(
+          identifier: 'account-sign-in-button',
           label: l.accountNoAccountSignIn,
           icon: Icons.login,
           isLoading: isLoading,
