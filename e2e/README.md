@@ -124,6 +124,16 @@ test completes onboarding, taps the `Account` tab and waits for
 | Invalid password | valid email + wrong password | same error and form assertions |
 | Valid login | `E2E_LOGIN_EMAIL` + `E2E_LOGIN_PASSWORD` | `account-loaded` appears, sign-in form gone |
 
+The signed-out account tab opens on the marketing header, which fills the
+emulator's 320x640 viewport, so the email/password form starts below the fold
+and is absent from the accessibility tree until the page scrolls. The suite
+therefore calls `screen.scrollUntilVisible(screen.getByTestId('account-sign-in-button'))`
+before filling the form — targeting the button, the form's last control, so the
+fields above it are on screen too — and scrolls each field and the button back
+into view after dismissing the keyboard. This is why the login tests need the
+full cold-start budget: the first scroll waits for `AccountCubit` to finish
+resolving the profile and render the signed-out form.
+
 The valid account is declared in `e2e.config.ts` as the framework's
 `credentials.login` entry. The test fills `credentials.user('login').password`,
 an opaque handle: the runner types it, masks the field, and redacts it from
