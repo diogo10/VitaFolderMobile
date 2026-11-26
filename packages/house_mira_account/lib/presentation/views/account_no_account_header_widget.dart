@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:house_mira_core/widgets/sand/sand_brand_mark.dart';
+import 'package:house_mira_core/config/build_flags.dart';
 import 'package:house_mira_core/generated/app_localizations.dart';
 import 'package:house_mira_core/theme/sand_palette.dart';
+import 'package:house_mira_core/widgets/sand/sand_brand_mark.dart';
 
 class AccountNoAccountHeaderWidget extends StatelessWidget {
   const AccountNoAccountHeaderWidget({super.key});
@@ -285,28 +286,39 @@ class _FloatAnimation extends StatefulWidget {
 
 class _FloatAnimationState extends State<_FloatAnimation>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 4),
-  )..repeat(reverse: true);
+  /// Null in e2e builds ([BuildFlags.e2eMode]): a forever-repeating animation
+  /// races every device snapshot and can wedge the iOS automation runner.
+  AnimationController? _controller;
 
-  late final Animation<double> _offset = Tween<double>(
-    begin: 0,
-    end: -8,
-  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  @override
+  void initState() {
+    super.initState();
+    if (!BuildFlags.e2eMode) {
+      _controller = AnimationController(
+        vsync: this,
+        duration: const Duration(seconds: 4),
+      )..repeat(reverse: true);
+    }
+  }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+    if (controller == null) {
+      return widget.child;
+    }
     return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) =>
-          Transform.translate(offset: Offset(0, _offset.value), child: child),
+      animation: controller,
+      builder: (context, child) => Transform.translate(
+        offset: Offset(0, -8 * Curves.easeInOut.transform(controller.value)),
+        child: child,
+      ),
       child: widget.child,
     );
   }

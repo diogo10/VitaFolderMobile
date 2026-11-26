@@ -41,9 +41,18 @@ async function openLoginForm(app: App, screen: Screen): Promise<void> {
   await screen.getByRole('button', ACCOUNT_TAB).tap();
   // AccountCubit resolves the profile over the network before it can decide
   // signed-out vs signed-in, so this needs the cold-start budget too.
-  await expect(screen.getByTestId('account-email-field')).toBeVisible({
-    timeout: COLD_START,
-  });
+  //
+  // The signed-out tab opens on the marketing header. On the emulator's
+  // 320x640 viewport the email/password form starts below the fold, so its
+  // fields are not in the accessibility tree until the page scrolls. Target
+  // the sign-in button (the form's last control) rather than the email field:
+  // stopping at the first field leaves the password field and the button
+  // below the fold for the fills and the tap.
+  await screen.scrollUntilVisible(
+    screen.getByTestId('account-sign-in-button'),
+    { timeout: COLD_START },
+  );
+  await expect(screen.getByTestId('account-email-field')).toBeVisible();
 }
 
 async function fillAndSubmit(
@@ -53,8 +62,18 @@ async function fillAndSubmit(
   password: string | Secret,
 ): Promise<void> {
   await screen.getByTestId('account-email-field').fill(email);
+  // The keyboard shrinks the scroll view, so dismiss it between fields and
+  // scroll each remaining control into view: on a 320x640 screen the form
+  // sits close to the fold once the keyboard is up.
+  await device.dismissKeyboard();
+  await screen.scrollUntilVisible(
+    screen.getByTestId('account-password-field'),
+  );
   await screen.getByTestId('account-password-field').fill(password);
   await device.dismissKeyboard();
+  await screen.scrollUntilVisible(
+    screen.getByTestId('account-sign-in-button'),
+  );
   await screen.getByTestId('account-sign-in-button').tap();
 }
 
