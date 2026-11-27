@@ -390,6 +390,15 @@ legacy `android {}` DSL and this app applies the `kotlin-android` plugin. Remove
 both once Flutter migrates (flutter/flutter#180137); AGP 10 removes the
 opt-outs. Neither flag affects optimized resource shrinking.
 
+Flutter's included Gradle build (`packages/flutter_tools/gradle`) resolves its
+Kotlin plugins from the Gradle Plugin Portal, which redirects the Kotlin BOM to
+Maven Central and can answer 404 on a cold runner. Every workflow that builds an
+Android artifact runs `bash tool/install_gradle_init_script.sh`, which installs
+`tool/gradle/flutter-tools-repositories.init.gradle.kts` into
+`$GRADLE_USER_HOME/init.d` so the included build resolves Kotlin from Maven
+Central first. Run the same command locally if a build fails with
+`Could not find org.jetbrains.kotlin:kotlin-gradle-plugins-bom`.
+
 Two follow-ups when touching R8:
 
 - Anything reached only by name at runtime must be listed in

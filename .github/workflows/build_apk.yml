@@ -23,6 +23,10 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Configure Gradle plugin repositories
+        # See tool/gradle/flutter-tools-repositories.init.gradle.kts.
+        run: bash tool/install_gradle_init_script.sh
+
       - name: Setup Android signing
         # Same stable upload keystore as build_aab_release.yml. Without this,
         # the profile APK falls back to the runner's ephemeral debug key whose

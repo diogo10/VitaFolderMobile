@@ -124,6 +124,13 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Configure Gradle plugin repositories
+        # Flutter's included Gradle build resolves Kotlin from the plugin
+        # portal by default, which redirects the Kotlin BOM to Maven Central
+        # and intermittently 404s. The init script makes Maven Central the
+        # primary plugin repository for that included build.
+        run: bash tool/install_gradle_init_script.sh
+
       - name: Build debug APK for size reporting
         # Debug build needs no backend secrets; it exists only so the
         # budget script can measure and report APK size in every PR.
