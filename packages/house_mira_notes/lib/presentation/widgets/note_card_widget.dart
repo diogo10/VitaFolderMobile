@@ -79,116 +79,124 @@ class NoteCardWidget extends StatelessWidget {
     final isFresh =
         DateTime.now().toUtc().difference(note.createdAt.toUtc()).inHours < 1;
     final author = note.createdBy;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: const BorderSide(color: SandPalette.sand100),
-      ),
-      color: background,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          decoration: BoxDecoration(
+    // One tappable node per card: a stable id for the device runner and a
+    // merged accessible name (title, body, author) for screen readers.
+    return MergeSemantics(
+      child: Semantics(
+        identifier: 'note-card-${note.id}',
+        button: true,
+        child: Card(
+          clipBehavior: Clip.antiAlias,
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: SandPalette.sand500.withValues(alpha: 0.10),
-                blurRadius: 18,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            side: const BorderSide(color: SandPalette.sand100),
           ),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: tile,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.sticky_note_2_rounded,
-                        size: 22,
-                        color: iconColor,
-                      ),
-                    ),
+          color: background,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(24),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: SandPalette.sand500.withValues(alpha: 0.10),
+                    blurRadius: 18,
+                    offset: const Offset(0, 4),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.topRight,
-                      child: Text(
-                        formatNoteTimeAgo(context, note.createdAt),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: isFresh
-                              ? const Color(0xFFD97706)
-                              : SandPalette.sand400,
+                ],
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: tile,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.sticky_note_2_rounded,
+                            size: 22,
+                            color: iconColor,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.topRight,
+                          child: Text(
+                            formatNoteTimeAgo(context, note.createdAt),
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: isFresh
+                                  ? const Color(0xFFD97706)
+                                  : SandPalette.sand400,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    note.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: SandPalette.sand700,
+                      height: 1.3,
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  NoteMarkdownText(content: note.content),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 10,
+                        backgroundColor: SandPalette.sand200,
+                        child: Text(
+                          author.isNotEmpty ? author[0].toUpperCase() : '?',
+                          style: const TextStyle(
+                            fontSize: 8,
+                            fontWeight: FontWeight.w600,
+                            color: SandPalette.sand600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          author,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: SandPalette.sand400,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                note.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontFamily: 'Outfit',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: SandPalette.sand700,
-                  height: 1.3,
-                ),
-              ),
-              const SizedBox(height: 8),
-              NoteMarkdownText(content: note.content),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 10,
-                    backgroundColor: SandPalette.sand200,
-                    child: Text(
-                      author.isNotEmpty ? author[0].toUpperCase() : '?',
-                      style: const TextStyle(
-                        fontSize: 8,
-                        fontWeight: FontWeight.w600,
-                        color: SandPalette.sand600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      author,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: SandPalette.sand400,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),

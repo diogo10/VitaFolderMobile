@@ -26,11 +26,20 @@ Locators come from `Semantics(identifier:)` in the app, not from visible copy:
 | `account-sign-in-button` | `AccountNoAccountAuthWidget` (`SandPrimaryButton`) |
 | `account-login-error` | `AccountView`, on the failed sign-in snackbar |
 | `account-loaded` | `AccountLoadedWidget`, the signed-in anchor |
+| `notes-add-button` | `NotesView`, the add FAB |
+| `notes-loaded` | `NotesView`, the loaded (empty or populated) list |
+| `note-card-<id>` | `NoteCardWidget`, one merged tappable node per card |
+| `note-editor-title` / `note-editor-content` | `NoteEditorScreen`, the two fields |
+| `note-editor-save` | `NoteEditorScreen` (`SandPrimaryButton(identifier:)`) |
+| `note-menu-edit` / `note-menu-remove` | `NotesView`, the card bottom sheet |
+| `note-delete-cancel` / `note-delete-confirm` | `NotesView`, the delete dialog |
 
 The onboarding ids and the three login-form ids are pinned by
 `test/features/onboarding/onboarding_semantics_test.dart` and
-`packages/house_mira_account/test/presentation/views/account_login_semantics_test.dart`,
-so moving one fails fast in `flutter test` instead of on a device.
+`packages/house_mira_account/test/presentation/views/account_login_semantics_test.dart`;
+the note ids are pinned by
+`packages/house_mira_notes/test/presentation/notes_semantics_test.dart`. Moving
+one fails fast in `flutter test` instead of on a device.
 
 ## Run locally (Android)
 
@@ -162,6 +171,58 @@ E2E_LOGIN_EMAIL='e2e@example.test' E2E_LOGIN_PASSWORD='…' \
   npx e2e run --target android tests/login.e2e.ts
 ```
 
+## Notes suite
+
+`tests/notes.e2e.ts` covers the note lifecycle from the Notes tab. Each test
+signs in fresh (`app.clearState()` wipes the stored session), opens the tab and
+starts from whatever notes the family already has:
+
+| Test | Flow | Assertion |
+| --- | --- | --- |
+| Create | add → fill title + content → Save | the new card is visible in the list |
+| Edit | card → Edit → change the title → Save | the new title is visible, the old one gone |
+| Delete | card → Remove → confirm | the card is gone from the list |
+
+Every note the suite creates is titled `E2E note <run> <label>`. Each test
+deletes its own note at the end, and `beforeEach` sweeps leftovers from a
+failed attempt (matching the `E2E note` prefix) before the test starts, so the
+free-tier cap of 3 notes is not consumed by abandoned rows.
+
+### Write gate
+
+This is the only suite that writes to the backend, so it is opt-in twice:
+
+- `E2E_LOGIN_EMAIL` / `E2E_LOGIN_PASSWORD` must be set (same account as the
+  login suite), and
+- `E2E_ALLOW_WRITES=1` must be set.
+
+Without either, the tests skip at collection with a reason in the report — the
+skip is a test option, not a body-level `test.skip()`, because `beforeEach`
+signs in and would otherwise fail first. CI enables writes by itself only when
+the dedicated e2e project's secrets exist (see below), so a job aliased to prod
+never writes to prod.
+
+Prerequisites for the account:
+
+- it belongs to a family — a family-less account is redirected to People when
+  the add button is tapped, and the editor never opens;
+- that family is below the free cap of 3 notes, or the account is Pro. Leftover
+  sweep keeps the suite within the cap; a family already full of real notes
+  cannot create one, and the test fails with a screenshot of the limit snackbar.
+
+Run it locally against a dedicated project (never prod):
+
+```bash
+E2E_LOGIN_EMAIL='e2e@example.test' E2E_LOGIN_PASSWORD='…' E2E_ALLOW_WRITES=1 \
+  npx e2e run --target android tests/notes.e2e.ts
+```
+
+The cards are one merged semantics node each (`MergeSemantics` in
+`NoteCardWidget`), so a card's accessible name is its whole text — timestamp,
+title, body and author. The suite therefore locates a card with
+`getByRole('button', { name: /<unique title>/ })` rather than an exact-text
+match, which also keeps it independent of the localized timestamp copy.
+
 ## iOS
 
 The iOS simulator is **debug-only** in Flutter 3.47: `flutter build ios
@@ -218,18 +279,25 @@ honest and useful:
 - the report check lives in `ci-android.sh`, not in the upload step, so a run
   that produces no report fails while naming the missing file.
 
+A "Summarize the e2e report" step (also `if: always()`, `continue-on-error`)
+adds the junit totals to the run page, so a red nightly can be triaged without
+downloading the artifact. The artifact stays the source of truth: `report.json`,
+`junit.xml` and `results/` (trace page + screenshots per test), retained 14
+days.
+
 Run the same script locally with the emulator booted and the APK built:
 
 ```bash
 bash e2e/ci-android.sh
 ```
 
-**Onboarding needs no new secrets.** The job aliases the existing prod
-credentials at job level and uses the `*_E2E` names below:
+**Read-only suites need no new secrets.** The job prefers a dedicated project
+and falls back to the existing prod credentials, so the nightly keeps working
+before that project exists:
 
 ```yaml
-SUPABASE_URL_E2E: ${{ secrets.SUPABASE_URL_PROD }}
-SUPABASE_PUBLISHABLE_KEY_E2E: ${{ secrets.SUPABASE_PUBLISHABLE_KEY_PROD }}
+SUPABASE_URL_E2E: ${{ secrets.SUPABASE_URL_E2E || secrets.SUPABASE_URL_PROD }}
+SUPABASE_PUBLISHABLE_KEY_E2E: ${{ secrets.SUPABASE_PUBLISHABLE_KEY_E2E || secrets.SUPABASE_PUBLISHABLE_KEY_PROD }}
 ```
 
 The credentials exist to satisfy the fail-fast startup chain (`AppConfig` →
@@ -238,12 +306,19 @@ required repository secrets, `E2E_LOGIN_EMAIL` and `E2E_LOGIN_PASSWORD`; the
 workflow's preflight step fails, before the emulator boots, if any of the four
 is empty.
 
-The login suite only authenticates and reads the signed-in profile. It does not
-insert, update, or delete family data, and it uses a dedicated test account. A
-dedicated Supabase project is still the right target before adding write tests
-(or if auth traffic on prod is not acceptable): change the two alias lines to
-`secrets.SUPABASE_URL_E2E` / `secrets.SUPABASE_PUBLISHABLE_KEY_E2E` — the job
-already uses those names — and seed the test account there.
+Onboarding and login only read. The notes suite writes, so the job derives the
+write gate from the dedicated secrets instead of hardcoding it:
+
+```yaml
+E2E_ALLOW_WRITES: ${{ secrets.SUPABASE_URL_E2E != '' && secrets.SUPABASE_PUBLISHABLE_KEY_E2E != '' && '1' || '0' }}
+```
+
+A prod-aliased job therefore skips the note tests (the preflight prints a
+`::notice::`) and never writes to prod. To run them, create a dedicated
+Supabase project and add `SUPABASE_URL_E2E` + `SUPABASE_PUBLISHABLE_KEY_E2E` as
+repository secrets; the next nightly switches the build over and enables the
+note tests, with no workflow edit. Seed the test account (and its family) in
+that project first.
 
 RevenueCat keys are optional in `AppConfig` and are not needed in e2e builds:
 billing init is skipped when they are empty. `APP_FLAVOR=dev` with prod
@@ -259,4 +334,5 @@ backend the release APK talks to.
 - **Never seed via UI shortcuts.** Tests always start from `app.clearState()`;
   a test that depends on another test's state is a bug.
 - **Assert ids, not copy.** Copy lives in `app_en.arb`/`app_pt.arb`; the only
-  text assertion allowed is a navigation anchor (`Home`).
+  text assertions allowed are navigation anchors (`Home`) and test-created data
+  (a note's unique title).

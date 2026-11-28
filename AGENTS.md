@@ -155,8 +155,12 @@ Details: [testing](.agents/references/testing.md).
 Device e2e (e2e.com) lives in `e2e/` and is not part of `flutter test`: it
 drives an installed build on an emulator/simulator and runs nightly in
 `.github/workflows/e2e-daily.yml`. Locators are `Semantics(identifier:)`
-values pinned by `test/features/onboarding/onboarding_semantics_test.dart`, and
-builds must carry `--dart-define=E2E_MODE=true` (no infinite animations).
+values pinned by `test/features/onboarding/onboarding_semantics_test.dart`
+(onboarding), `packages/house_mira_account/test/presentation/views/account_login_semantics_test.dart`
+(login) and `packages/house_mira_notes/test/presentation/notes_semantics_test.dart`
+(notes), and builds must carry `--dart-define=E2E_MODE=true` (no infinite
+animations). The notes suite writes, so it runs only with `E2E_ALLOW_WRITES=1`
+(CI sets it when a dedicated e2e Supabase project is configured).
 Plan and rationale: [e2e onboarding](.agents/plans/e2e-onboarding.md).
 
 ## Supabase & git

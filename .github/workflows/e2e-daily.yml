@@ -26,22 +26,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      # The e2e suite runs against the prod Supabase project: onboarding is
-      # pre-auth and never writes, and no dedicated dev/e2e project exists yet
-      # (only SUPABASE_URL_PROD / SUPABASE_PUBLISHABLE_KEY_PROD are configured).
-      # Keeping the E2E names makes a move to a dedicated project a two-line
-      # change here rather than an edit in every step.
-      #
-      # The login suite only authenticates and reads the signed-in profile: it
-      # never inserts, updates, or deletes family data, and it signs in with a
-      # dedicated test account (E2E_LOGIN_*). Before any write test is added,
-      # point these two lines at a dedicated project — see e2e/README.md.
-      SUPABASE_URL_E2E: ${{ secrets.SUPABASE_URL_PROD }}
-      SUPABASE_PUBLISHABLE_KEY_E2E: ${{ secrets.SUPABASE_PUBLISHABLE_KEY_PROD }}
-      # Valid-login account for e2e/tests/login.e2e.ts. Store both as
-      # repository secrets (Settings -> Secrets and variables -> Actions).
-      # They are handed to the runner only; e2e.config.ts exposes the password
-      # as an opaque credential handle so it is redacted from reports/traces.
+      # Dedicated e2e project first, prod aliased as a fallback: onboarding and
+      # login are read-only, so the nightly keeps working before a dedicated
+      # project exists. Add SUPABASE_URL_E2E + SUPABASE_PUBLISHABLE_KEY_E2E as
+      # repository secrets to switch the whole job over — no code change.
+      SUPABASE_URL_E2E: ${{ secrets.SUPABASE_URL_E2E || secrets.SUPABASE_URL_PROD }}
+      SUPABASE_PUBLISHABLE_KEY_E2E: ${{ secrets.SUPABASE_PUBLISHABLE_KEY_E2E || secrets.SUPABASE_PUBLISHABLE_KEY_PROD }}
+      # The notes suite creates, edits and deletes rows, so it is gated: it runs
+      # only when the two dedicated-project secrets above are configured. A
+      # prod-aliased job therefore never writes to prod, and the moment the
+      # dedicated project is provisioned the notes tests start running.
+      E2E_ALLOW_WRITES: ${{ secrets.SUPABASE_URL_E2E != '' && secrets.SUPABASE_PUBLISHABLE_KEY_E2E != '' && '1' || '0' }}
+      # Valid-login account for e2e/tests/login.e2e.ts and the notes suite.
+      # Store both as repository secrets (Settings -> Secrets and variables ->
+      # Actions). They are handed to the runner only; e2e.config.ts exposes the
+      # password as an opaque credential handle so it is redacted from
+      # reports/traces.
       E2E_LOGIN_EMAIL: ${{ secrets.E2E_LOGIN_EMAIL }}
       E2E_LOGIN_PASSWORD: ${{ secrets.E2E_LOGIN_PASSWORD }}
     steps:
@@ -80,6 +80,11 @@ jobs:
           if [ -n "$missing" ]; then
             echo "::error::Missing e2e configuration:$missing (see e2e/README.md)."
             exit 1
+          fi
+          if [ "$E2E_ALLOW_WRITES" = "1" ]; then
+            echo "e2e writes enabled: the note CRUD tests will run."
+          else
+            echo "::notice::E2E_ALLOW_WRITES is off (no dedicated e2e project): the note CRUD tests will skip."
           fi
 
       - name: Install dependencies
@@ -156,6 +161,48 @@ jobs:
             -no-window -no-audio -no-boot-anim -no-snapshot
             -gpu swiftshader_indirect
           script: bash e2e/ci-android.sh
+
+      - name: Summarize the e2e report
+        # The artifact below is the source of truth; this puts its totals on
+        # the run page so a red nightly can be triaged without downloading
+        # anything. Best effort, like the upload: the run step decides the
+        # verdict, never the summary.
+        if: always()
+        continue-on-error: true
+        run: |
+          report=e2e/.e2e/junit.xml
+          if [ ! -s "$report" ]; then
+            echo "No e2e report was produced." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          node -e '
+            const fs = require("fs");
+            const xml = fs.readFileSync("e2e/.e2e/junit.xml", "utf8");
+            const tags = [...xml.matchAll(/<testsuite\b[^>]*>/g)].map((m) => m[0]);
+            const total = (name) => tags.reduce((sum, tag) => {
+              const match = tag.match(new RegExp(name + "=\"(\\d+)\""));
+              return sum + (match ? Number(match[1]) : 0);
+            }, 0);
+            const rows = [
+              ["Tests", total("tests")],
+              ["Failures", total("failures")],
+              ["Errors", total("errors")],
+              ["Skipped", total("skipped")],
+            ];
+            const summary = [
+              "### E2E report",
+              "",
+              "| Metric | Value |",
+              "| --- | --- |",
+              ...rows.map(([key, value]) => "| " + key + " | " + value + " |"),
+              "",
+              "Full report: the `e2e-android` artifact (`report.json`, `junit.xml`, `results/`).",
+              "",
+            ].join("\n");
+            const out = process.env.GITHUB_STEP_SUMMARY;
+            if (out) fs.appendFileSync(out, summary);
+            else console.log(summary);
+          '
 
       - name: Upload e2e report
         # report.json, junit.xml and results/ (trace page + screenshots per

@@ -121,13 +121,25 @@ class _NotesViewState extends State<NotesView> {
         title: Text(l.notesDeleteDialogTitle),
         content: Text(l.notesDeleteDialogMessage),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l.notesDeleteDialogCancel),
+          MergeSemantics(
+            child: Semantics(
+              identifier: 'note-delete-cancel',
+              button: true,
+              child: TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(l.notesDeleteDialogCancel),
+              ),
+            ),
           ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l.notesDeleteDialogConfirm),
+          MergeSemantics(
+            child: Semantics(
+              identifier: 'note-delete-confirm',
+              button: true,
+              child: TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(l.notesDeleteDialogConfirm),
+              ),
+            ),
           ),
         ],
       ),
@@ -142,12 +154,18 @@ class _NotesViewState extends State<NotesView> {
     final cubit = context.read<NotesCubit>();
     return Scaffold(
       backgroundColor: SandPalette.sand50,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _handleAdd,
-        backgroundColor: SandPalette.sand500,
-        foregroundColor: Colors.white,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add_rounded, size: 28),
+      floatingActionButton: MergeSemantics(
+        child: Semantics(
+          identifier: 'notes-add-button',
+          button: true,
+          child: FloatingActionButton(
+            onPressed: _handleAdd,
+            backgroundColor: SandPalette.sand500,
+            foregroundColor: Colors.white,
+            shape: const CircleBorder(),
+            child: const Icon(Icons.add_rounded, size: 28),
+          ),
+        ),
       ),
       body: SafeArea(
         child: BlocBuilder<NotesCubit, NotesState>(
@@ -216,11 +234,13 @@ class _NotesViewState extends State<NotesView> {
           ),
         ),
       ),
-      NotesLoaded(:final notes) => _loadedBody(context, notes),
-      NotesLimitReached(:final notes) => _loadedBody(
-        context,
-        notes,
-        showLimitBanner: true,
+      NotesLoaded(:final notes) => Semantics(
+        identifier: 'notes-loaded',
+        child: _loadedBody(context, notes),
+      ),
+      NotesLimitReached(:final notes) => Semantics(
+        identifier: 'notes-loaded',
+        child: _loadedBody(context, notes, showLimitBanner: true),
       ),
     };
   }
@@ -420,11 +440,13 @@ class _NoteMenuSheet extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             _MenuItem(
+              identifier: 'note-menu-edit',
               icon: Icons.edit_rounded,
               label: l.notesEditTitle,
               onTap: onEdit,
             ),
             _MenuItem(
+              identifier: 'note-menu-remove',
               icon: Icons.delete_rounded,
               label: l.notesDeleteDialogConfirm,
               isDestructive: true,
@@ -440,11 +462,13 @@ class _NoteMenuSheet extends StatelessWidget {
 
 class _MenuItem extends StatelessWidget {
   const _MenuItem({
+    required this.identifier,
     required this.icon,
     required this.label,
     required this.onTap,
     this.isDestructive = false,
   });
+  final String identifier;
   final IconData icon;
   final String label;
   final bool isDestructive;
@@ -456,33 +480,37 @@ class _MenuItem extends StatelessWidget {
     final bgColor = isDestructive
         ? const Color(0xFFFCE4EC)
         : SandPalette.sand100;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: bgColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(child: Icon(icon, size: 20, color: color)),
+    return MergeSemantics(
+      child: Semantics(
+        identifier: identifier,
+        button: true,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(child: Icon(icon, size: 20, color: color)),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.w600, color: color),
+                  ),
+                ],
               ),
-              const SizedBox(width: 16),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
