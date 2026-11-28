@@ -244,6 +244,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                   children: [
                     Semantics(
+                      identifier: 'note-editor-title',
                       label: l.notesTitleLabel,
                       textField: true,
                       child: TextFormField(
@@ -274,6 +275,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     ),
                     const SizedBox(height: 12),
                     Semantics(
+                      identifier: 'note-editor-content',
                       label: l.notesContentLabel,
                       textField: true,
                       child: TextFormField(
@@ -430,6 +432,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       child: SafeArea(
         top: false,
         child: SandPrimaryButton(
+          identifier: 'note-editor-save',
           label: l.notesSave,
           icon: Icons.check_rounded,
           isLoading: _saving,
