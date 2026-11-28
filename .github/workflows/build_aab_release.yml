@@ -41,6 +41,10 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Configure Gradle plugin repositories
+        # See tool/gradle/flutter-tools-repositories.init.gradle.kts.
+        run: bash tool/install_gradle_init_script.sh
+
       - name: Resolve release version
         # Single source of truth: pubspec.yaml `version: <name>+<number>`
         # (e.g. `1.0.0+1`). Optional workflow inputs override it; anything

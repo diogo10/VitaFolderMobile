@@ -48,6 +48,29 @@ android {
         versionName = flutter.versionName
     }
 
+    // Flutter loads its engine through ReLinker
+    // (`FlutterJNI.loadLibrary` -> `ReLinker.loadLibrary(context, "flutter")`).
+    // ReLinker first tries `System.loadLibrary`; when that fails it falls back
+    // to `ApkLibraryInstaller.installLibrary`, which scans the *base* APK for
+    // `lib/<abi>/libflutter.so`. A Play-distributed AAB puts the native
+    // libraries in per-ABI config splits and, with the AGP default of
+    // uncompressed libraries (`extractNativeLibs=false`), the base APK has no
+    // `lib/` directory, so the installer throws
+    // `MissingLibraryException: Could not find 'libflutter.so' ... only
+    // found: []` before Dart starts (Crashlytics `ApkLibraryInstaller`).
+    //
+    // Legacy packaging compresses the `.so` files and sets
+    // `android:extractNativeLibs="true"`, so the package manager extracts
+    // them into the app's native library directory at install time.
+    // `System.loadLibrary` then succeeds and ReLinker never reaches the
+    // base-APK scanner. The trade-off is a slightly larger installed app;
+    // the alternative is a fatal crash on launch for affected installs.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     signingConfigs {
         create("release") {
             keyAlias = keystoreProperties["keyAlias"] as String?
